@@ -3,6 +3,7 @@ package account
 import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github/fims-proto/fims-proto-ms/internal/account/domain/type"
 	"testing"
 )
 
@@ -13,45 +14,45 @@ func TestNewAccount(t *testing.T) {
 		number         string
 		title          string
 		superiorNumber string
-		accType        Type
+		accType        _type.Type
 		verify         func(t *testing.T, account *Account, err error)
 	}{
 		{
-			"general_account_success", "1001", "库存现金", "", Assets,
+			"general_account_success", "1001", "库存现金", "", _type.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, "1001", account.Number())
 				assert.Equal(t, "库存现金", account.Title())
 				assert.Empty(t, account.SuperiorNumber())
-				assert.Equal(t, Assets, account.Type())
+				assert.Equal(t, _type.Assets, account.Type())
 			},
 		},
 		{
-			"subsidiary_account_success", "1001001", "库存现金某子项", "1001", Assets,
+			"subsidiary_account_success", "1001001", "库存现金某子项", "1001", _type.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, "1001001", account.Number())
 				assert.Equal(t, "库存现金某子项", account.Title())
 				assert.Equal(t, "1001", account.SuperiorNumber())
-				assert.Equal(t, Assets, account.Type())
+				assert.Equal(t, _type.Assets, account.Type())
 			},
 		},
 		{
-			"empty_number_error", "", "库存现金", "", Assets,
+			"empty_number_error", "", "库存现金", "", _type.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_title_error", "1001", "", "", Assets,
+			"empty_title_error", "1001", "", "", _type.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"invalid_superior_account_number_error", "1001001", "库存现金某子项", "1002", Assets,
+			"invalid_superior_account_number_error", "1001001", "库存现金某子项", "1002", _type.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)

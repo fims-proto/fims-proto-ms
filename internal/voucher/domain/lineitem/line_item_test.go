@@ -1,4 +1,4 @@
-package voucher
+package lineitem
 
 import (
 	"github.com/shopspring/decimal"

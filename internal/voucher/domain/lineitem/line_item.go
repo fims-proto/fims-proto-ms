@@ -1,4 +1,4 @@
-package voucher
+package lineitem
 
 import (
 	"github.com/pkg/errors"
@@ -33,6 +33,7 @@ func NewLineItem(summary string, accountNumber string, debit string, credit stri
 	if credit != "" && err != nil {
 		return nil, errors.New("invalid credit amount")
 	}
+
 	return &LineItem{
 		summary:       summary,
 		accountNumber: accountNumber,

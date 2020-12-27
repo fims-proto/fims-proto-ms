@@ -1,4 +1,4 @@
-package account
+package _type
 
 import "github.com/pkg/errors"
 
@@ -31,6 +31,7 @@ func NewAccountTypeFromString(name string) (Type, error) {
 			return accType, nil
 		}
 	}
+
 	return Type{}, errors.Errorf("unknown Account Type: '%s'", name)
 }
 
