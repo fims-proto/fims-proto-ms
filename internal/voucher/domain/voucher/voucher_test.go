@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestNewVoucher(t *testing.T) {
+func TestDomain_NewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name   string

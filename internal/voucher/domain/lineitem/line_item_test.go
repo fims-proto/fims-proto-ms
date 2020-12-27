@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func TestNewLineItem(t *testing.T) {
+func TestDomain_NewLineItem(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name          string
