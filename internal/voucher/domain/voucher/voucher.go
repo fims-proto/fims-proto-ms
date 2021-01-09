@@ -28,7 +28,7 @@ type Voucher struct {
 }
 
 func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem,
-	creatorUUID string, reviewerUUID string, isReviewed bool, auditorUUID string, isAudited bool) (*Voucher, error) {
+	creatorUUID string) (*Voucher, error) {
 
 	if uuid == "" {
 		return nil, errors.New("empty voucher uuid")
@@ -61,13 +61,13 @@ func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantit
 			uuid       string
 			isReviewed bool
 		}{
-			reviewerUUID, isReviewed,
+			"", false,
 		},
 		auditor: struct {
 			uuid      string
 			isAudited bool
 		}{
-			auditorUUID, isAudited,
+			"", false,
 		},
 	}, nil
 }

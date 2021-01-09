@@ -39,7 +39,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			voucher, err := NewVoucher(test.uuid, test.number, time.Now(), 0, test.items, "", "", false, "", false)
+			voucher, err := NewVoucher(test.uuid, test.number, time.Now(), 0, test.items, "")
 			test.verify(t, voucher, err)
 		})
 	}

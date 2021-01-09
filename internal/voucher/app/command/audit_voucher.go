@@ -5,7 +5,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 )
 
-type AuditVoucher struct {
+type AuditVoucherCmd struct {
 	VoucherUUID string
 	AuditorUUID string
 }
@@ -18,12 +18,10 @@ func NewAuditVoucherHandler(repo voucher.Repository) AuditVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return AuditVoucherHandler{
-		repo: repo,
-	}
+	return AuditVoucherHandler{repo: repo}
 }
 
-func (h AuditVoucherHandler) handle(ctx context.Context, cmd AuditVoucher) error {
+func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,

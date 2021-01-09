@@ -10,19 +10,19 @@ import (
 	"time"
 )
 
-func TestApp_HandleAuditVoucher(t *testing.T) {
+func TestApp_HandleReviewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name        string
-		constructor func(t *testing.T) *voucher.Voucher
-		auditorUUID string
+		name         string
+		constructor  func(t *testing.T) *voucher.Voucher
+		reviewerUUID string
 	}{
 		{
-			"normal_success",
-			func(t *testing.T) *voucher.Voucher {
-				return createVoucherForAuditTest(t, "")
+			name: "normal_success",
+			constructor: func(t *testing.T) *voucher.Voucher {
+				return createVoucherForReviewTest(t, "")
 			},
-			"aud1_uuid",
+			reviewerUUID: "aud1_uuid",
 		},
 	}
 	for _, test := range tests {
@@ -31,54 +31,54 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 			t.Parallel()
 
 			v := test.constructor(t)
-			deps := newAuditMockDeps()
+			deps := newReviewMockDeps()
 			deps.repository.vouchers = map[string]voucher.Voucher{
 				v.UUID(): *v,
 			}
 
-			err := deps.handler.Handle(context.Background(), AuditVoucherCmd{
-				VoucherUUID: v.UUID(),
-				AuditorUUID: test.auditorUUID,
+			err := deps.handler.Handle(context.Background(), ReviewVoucherCmd{
+				VoucherUUID:  v.UUID(),
+				ReviewerUUID: test.reviewerUUID,
 			})
 			assert.NoError(t, err)
 
-			assert.True(t, deps.repository.vouchers[v.UUID()].IsAudited())
+			assert.True(t, deps.repository.vouchers[v.UUID()].IsReviewed())
 		})
 	}
 }
 
-func createVoucherForAuditTest(t *testing.T, auditorUUID string) *voucher.Voucher {
+func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *voucher.Voucher {
 	v, err := voucher.NewVoucher("test_uuid", 1, time.Now(), 0, []lineitem.LineItem{}, "")
 	require.NoError(t, err)
-	if auditorUUID != "" {
-		err := v.Audit(auditorUUID)
+	if reviewerUUID != "" {
+		err := v.Review(reviewerUUID)
 		require.NoError(t, err)
 	}
 	return v
 }
 
-type auditMockDeps struct {
-	repository *auditRepoMock
-	handler    AuditVoucherHandler
+type reviewMockDeps struct {
+	repository *reviewRepoMock
+	handler    ReviewVoucherHandler
 }
 
-func newAuditMockDeps() auditMockDeps {
-	repository := &auditRepoMock{}
-	return auditMockDeps{
+func newReviewMockDeps() reviewMockDeps {
+	repository := &reviewRepoMock{}
+	return reviewMockDeps{
 		repository: repository,
-		handler:    AuditVoucherHandler{repository},
+		handler:    ReviewVoucherHandler{repository},
 	}
 }
 
-type auditRepoMock struct {
+type reviewRepoMock struct {
 	vouchers map[string]voucher.Voucher
 }
 
-func (r *auditRepoMock) AddVoucher(ctx context.Context, v *voucher.Voucher) error {
+func (r *reviewRepoMock) AddVoucher(ctx context.Context, v *voucher.Voucher) error {
 	panic("implement me")
 }
 
-func (r *auditRepoMock) UpdateVoucher(
+func (r *reviewRepoMock) UpdateVoucher(
 	ctx context.Context,
 	voucherUUID string,
 	updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),

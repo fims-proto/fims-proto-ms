@@ -5,8 +5,8 @@ import (
 )
 
 type Account struct {
-	number         string
-	title          string
-	superiorNumber string
-	accountType    accounttype.Type
+	Number         string
+	Title          string
+	SuperiorNumber string
+	AccountType    accounttype.Type
 }
