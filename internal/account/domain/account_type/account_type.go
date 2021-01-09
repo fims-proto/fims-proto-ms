@@ -1,4 +1,4 @@
-package _type
+package accounttype
 
 import "github.com/pkg/errors"
 
