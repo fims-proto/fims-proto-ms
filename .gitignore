@@ -17,3 +17,5 @@
 # vendor/
 
 .idea/
+# ignore vscode configuration folder in any layer
+*.vscode/
