@@ -15,7 +15,8 @@ import (
 func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
 	t.Parallel()
 	repo := NewVoucherMemoryRepository()
-	v, _ := voucher.NewVoucher("0000", 0, time.Now(), 0, []lineitem.LineItem{}, "0000")
+	v, err := voucher.NewVoucher("0000", 1, time.Now(), 0, []lineitem.LineItem{}, "0000")
+	require.NoError(t, err)
 	repo.data["0000"] = *v
 	for i := 0; i < 100; i++ {
 		go func() {
@@ -35,8 +36,9 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			v, _ := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), 0, time.Now(), 0, []lineitem.LineItem{}, "0000")
-			err := repo.AddVoucher(context.Background(), v)
+			v, err := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), 1, time.Now(), 0, []lineitem.LineItem{}, "0000")
+			require.NoError(t, err)
+			err = repo.AddVoucher(context.Background(), v)
 			require.NoError(t, err)
 		}()
 	}
@@ -48,7 +50,8 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 func TestAdapter_MemoryRepository_Update(t *testing.T) {
 	t.Parallel()
 	repo := NewVoucherMemoryRepository()
-	v, _ := voucher.NewVoucher("0000", 0, time.Now(), 0, []lineitem.LineItem{}, "0000")
+	v, err := voucher.NewVoucher("0000", 1, time.Now(), 0, []lineitem.LineItem{}, "0000")
+	require.NoError(t, err)
 	repo.data["0000"] = *v
 	for i := 0; i < 100; i++ {
 		go func() {

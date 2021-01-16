@@ -9,29 +9,40 @@ import (
 	"sync"
 )
 
-type VoucherMemoryRepository struct{
-	sync.RWMutex
+type VoucherMemoryRepository struct {
+	lock *sync.RWMutex
 	data map[string]voucher.Voucher
 }
 
 func NewVoucherMemoryRepository() VoucherMemoryRepository {
-	return VoucherMemoryRepository{data: make(map[string]voucher.Voucher)}
+	return VoucherMemoryRepository{
+		data: make(map[string]voucher.Voucher),
+		lock: &sync.RWMutex{},
+	}
 }
 
 func (h *VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *voucher.Voucher) error {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
 	_, ok := h.data[voucher.UUID()]
 	if ok {
 		return errors.Errorf("voucher %s exists", voucher.UUID())
 	}
+
 	h.data[voucher.UUID()] = *voucher
 	return nil
 }
 
 func (h *VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID string, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+	h.lock.Lock()
+	defer h.lock.Unlock()
+
 	v, ok := h.data[voucherUUID]
 	if !ok {
 		return errors.Errorf("voucher %s not exists", voucherUUID)
 	}
+
 	updatedVoucher, err := updateFn(&v)
 	if err != nil {
 		return errors.Wrapf(err, "voucher %s updated failed", voucherUUID)
