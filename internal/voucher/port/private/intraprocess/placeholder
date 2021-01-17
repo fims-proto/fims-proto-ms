@@ -1,0 +1,6 @@
+TOBE implemented
+
+Idea is if we go monolith way (with much possibilities) as start,
+communication among modules should be done via dependency call directly, via go channel maybe.
+
+Http/grpc is for microservice architecture.

@@ -6,7 +6,7 @@ import (
 )
 
 type Queries struct {
-	AllVouchers query.AllVouchersHandler
+	ReadVouchers query.ReadVouchersHandler
 }
 
 type Commands struct {
