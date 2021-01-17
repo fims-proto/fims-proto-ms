@@ -30,11 +30,11 @@ type RecordVoucherHandler struct {
 	repo voucher.Repository
 }
 
-func NewRecordVoucherHandler(repo voucher.Repository) ReviewVoucherHandler {
+func NewRecordVoucherHandler(repo voucher.Repository) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return ReviewVoucherHandler{repo: repo}
+	return RecordVoucherHandler{repo: repo}
 }
 
 func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) error {

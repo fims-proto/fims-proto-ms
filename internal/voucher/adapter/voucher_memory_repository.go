@@ -54,25 +54,37 @@ func (h *VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID
 func (h VoucherMemoryRepository) AllVouchers(ctx context.Context) ([]query.Voucher, error) {
 	var result []query.Voucher
 	for _, v := range h.data {
-		result = append(result, query.Voucher{
-			UUID:               v.UUID(),
-			Number:             v.Number(),
-			CreatedAt:          v.CreatedAt(),
-			AttachmentQuantity: v.AttachmentQuantity(),
-			LineItems:          h.itemModelToQuery(v.LineItems()),
-			Debit:              v.Debit().String(),
-			Credit:             v.Credit().String(),
-			CreatorUUID:        v.CreatorUUID(),
-			ReviewerUUID:       v.ReviewerUUID(),
-			IsReviewed:         v.IsReviewed(),
-			AuditorUUID:        v.AuditorUUID(),
-			IsAudited:          v.IsAudited(),
-		})
+		result = append(result, voucherModelToQuery(v))
 	}
 	return result, nil
 }
 
-func (h VoucherMemoryRepository) itemModelToQuery(items []lineitem.LineItem) []query.LineItem {
+func (h VoucherMemoryRepository) VoucherForUUID(uuid string, ctx context.Context) (query.Voucher, error) {
+	v, ok := h.data[uuid]
+	if !ok {
+		return query.Voucher{}, errors.Errorf("voucher %s not exists", uuid)
+	}
+	return voucherModelToQuery(v), nil
+}
+
+func voucherModelToQuery(v voucher.Voucher) query.Voucher {
+	return query.Voucher{
+		UUID:               v.UUID(),
+		Number:             v.Number(),
+		CreatedAt:          v.CreatedAt(),
+		AttachmentQuantity: v.AttachmentQuantity(),
+		LineItems:          itemModelToQuery(v.LineItems()),
+		Debit:              v.Debit().String(),
+		Credit:             v.Credit().String(),
+		CreatorUUID:        v.CreatorUUID(),
+		ReviewerUUID:       v.ReviewerUUID(),
+		IsReviewed:         v.IsReviewed(),
+		AuditorUUID:        v.AuditorUUID(),
+		IsAudited:          v.IsAudited(),
+	}
+}
+
+func itemModelToQuery(items []lineitem.LineItem) []query.LineItem {
 	var result []query.LineItem
 	for _, item := range items {
 		result = append(result, query.LineItem{
