@@ -119,3 +119,17 @@ func (v Voucher) IsReviewed() bool {
 func (v Voucher) IsAudited() bool {
 	return v.auditor.isAudited
 }
+
+func (v *Voucher) UpdateLineItem(idx int, newItem *lineitem.LineItem) error{
+	if(len(v.lineItems)<= idx){
+		return errors.New("accessing index out of range")
+	}
+	v.lineItems[idx] = *newItem
+	var debitInTotal decimal.Decimal
+	var creditInTotal decimal.Decimal
+	for _, item := range v.lineItems {
+		debitInTotal = debitInTotal.Add(item.Debit())
+		creditInTotal = creditInTotal.Add(item.Credit())
+	}
+	return nil
+}

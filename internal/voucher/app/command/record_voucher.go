@@ -19,12 +19,13 @@ type RecordVoucherCmd struct {
 	CreatorUUID        string
 }
 
-type LineItemCmd struct {
-	Summary       string
-	AccountNumber string
-	Debit         string
-	Credit        string
-}
+// TODO discuss should LineItemCmd or in a types.go file
+// type LineItemCmd struct {
+// 	Summary       string
+// 	AccountNumber string
+// 	Debit         string
+// 	Credit        string
+// }
 
 type RecordVoucherHandler struct {
 	repo voucher.Repository
