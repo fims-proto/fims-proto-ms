@@ -1,10 +1,11 @@
 package voucher
 
 import (
-	"github.com/pkg/errors"
-	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/shopspring/decimal"
 )
 
 type Voucher struct {
@@ -44,9 +45,9 @@ func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantit
 		creditInTotal = creditInTotal.Add(item.Credit())
 	}
 
-	if !debitInTotal.Equal(creditInTotal) {
-		return nil, errors.New("debit and credit not equal")
-	}
+	// if !debitInTotal.Equal(creditInTotal) {
+	// 	return nil, errors.New("debit and credit not equal")
+	// }
 
 	return &Voucher{
 		uuid:               uuid,
@@ -120,8 +121,8 @@ func (v Voucher) IsAudited() bool {
 	return v.auditor.isAudited
 }
 
-func (v *Voucher) UpdateLineItem(idx int, newItem *lineitem.LineItem) error{
-	if(len(v.lineItems)<= idx){
+func (v *Voucher) UpdateLineItem(idx int, newItem *lineitem.LineItem) error {
+	if len(v.lineItems) <= idx {
 		return errors.New("accessing index out of range")
 	}
 	v.lineItems[idx] = *newItem
@@ -131,5 +132,7 @@ func (v *Voucher) UpdateLineItem(idx int, newItem *lineitem.LineItem) error{
 		debitInTotal = debitInTotal.Add(item.Debit())
 		creditInTotal = creditInTotal.Add(item.Credit())
 	}
+	v.debit = debitInTotal
+	v.credit = creditInTotal
 	return nil
 }
