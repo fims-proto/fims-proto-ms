@@ -45,9 +45,9 @@ func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantit
 		creditInTotal = creditInTotal.Add(item.Credit())
 	}
 
-	// if !debitInTotal.Equal(creditInTotal) {
-	// 	return nil, errors.New("debit and credit not equal")
-	// }
+	if !debitInTotal.Equal(creditInTotal) {
+		return nil, errors.New("debit and credit not equal")
+	}
 
 	return &Voucher{
 		uuid:               uuid,
@@ -119,20 +119,4 @@ func (v Voucher) IsReviewed() bool {
 
 func (v Voucher) IsAudited() bool {
 	return v.auditor.isAudited
-}
-
-func (v *Voucher) UpdateLineItem(idx int, newItem *lineitem.LineItem) error {
-	if len(v.lineItems) <= idx {
-		return errors.New("accessing index out of range")
-	}
-	v.lineItems[idx] = *newItem
-	var debitInTotal decimal.Decimal
-	var creditInTotal decimal.Decimal
-	for _, item := range v.lineItems {
-		debitInTotal = debitInTotal.Add(item.Debit())
-		creditInTotal = creditInTotal.Add(item.Credit())
-	}
-	v.debit = debitInTotal
-	v.credit = creditInTotal
-	return nil
 }

@@ -12,16 +12,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestApp_HandleUpdateVoucherLineItemHandler(t *testing.T) {
+func TestApp_HandleUpdateVoucherHandler(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
-		constructor func() *UpdateVoucherLineItemCmd
+		constructor func() *UpdateVoucherCmd
 	}{
 		{
 			name: "normal_success",
-			constructor: func() *UpdateVoucherLineItemCmd {
-				return createUpdateVoucherLineItemCmd()
+			constructor: func() *UpdateVoucherCmd {
+				return createUpdateVoucherCmd()
 			},
 		},
 	}
@@ -39,40 +39,47 @@ func TestApp_HandleUpdateVoucherLineItemHandler(t *testing.T) {
 			assertions.NoError(err)
 			vouchers := deps.repository.vouchers
 
-			d100, _ := decimal.NewFromString("110")
+			d100, _ := decimal.NewFromString("100")
 
 			assertions.Equal(1, len(vouchers))
 			assertions.Equal(2, len(vouchers["0000"].LineItems()))
-			// assertions.Equal(d100, vouchers["0000"].Credit())
+			assertions.Equal(d100, vouchers["0000"].Credit())
 			assertions.Equal(d100, vouchers["0000"].Debit())
 			assertions.Equal("0000", vouchers["0000"].CreatorUUID())
 		})
 	}
 }
 
-func createUpdateVoucherLineItemCmd() *UpdateVoucherLineItemCmd {
-	lineItem := LineItemCmd{
-		Summary:       "test_item1",
-		AccountNumber: "1000",
-		Debit:         "100",
-		Credit:        "",
+func createUpdateVoucherCmd() *UpdateVoucherCmd {
+	lineItems := []LineItemCmd{
+		{
+			Summary:       "test_item1",
+			AccountNumber: "1000",
+			Debit:         "100",
+			Credit:        "",
+		},
+		{
+			Summary: "test_item2",
+			AccountNumber: "1000",
+			Debit: "",
+			Credit: "100",
+		},
 	}
-	return &UpdateVoucherLineItemCmd{
-		VoucherUUID: "0000",
-		ItemIndex:   1,
-		NewItem:     lineItem,
+	return &UpdateVoucherCmd{
+		UUID: "0000",
+		LineItems:     lineItems,
 	}
 }
 
 type updateDepsMock struct {
 	repository *updateRepoMock
-	handler    UpdateVoucherLineItemHandler
+	handler    UpdateVoucherHandler
 }
 
 func newupdateDepsMock() updateDepsMock {
 	repository := &updateRepoMock{vouchers: make(map[string]voucher.Voucher)}
 	item0, _ := lineitem.NewLineItem("test_item0", "1000", "10", "")
-	item1, _ := lineitem.NewLineItem("test_item1", "1000", "10", "")
+	item1, _ := lineitem.NewLineItem("test_item1", "1000", "", "10")
 	items := []lineitem.LineItem{*item0, *item1}
 	v, _ := voucher.NewVoucher(
 		"0000", 1,
@@ -84,7 +91,7 @@ func newupdateDepsMock() updateDepsMock {
 	repository.AddVoucher(context.Background(), v)
 	return updateDepsMock{
 		repository: repository,
-		handler:    UpdateVoucherLineItemHandler{repository},
+		handler:    UpdateVoucherHandler{repository},
 	}
 }
 
