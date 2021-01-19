@@ -41,7 +41,7 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd *UpdateVoucherCmd)
 	err := h.repo.UpdateVoucher(
 		ctx,
 		cmd.UUID,
-		func( v *voucher.Voucher) (*voucher.Voucher,error){
+		func(v *voucher.Voucher) (*voucher.Voucher, error) {
 			nv, err:=voucher.NewVoucher(
 				v.UUID(), 
 				v.Number(), 
