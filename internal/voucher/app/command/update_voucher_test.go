@@ -33,7 +33,7 @@ func TestApp_HandleUpdateVoucherHandler(t *testing.T) {
 			assertions := assert.New(t)
 
 			cmd := test.constructor()
-			deps := newupdateDepsMock()
+			deps := newUpdateDepsMock()
 			err := deps.handler.Handle(context.Background(), cmd)
 
 			assertions.NoError(err)
@@ -76,7 +76,7 @@ type updateDepsMock struct {
 	handler    UpdateVoucherHandler
 }
 
-func newupdateDepsMock() updateDepsMock {
+func newUpdateDepsMock() updateDepsMock {
 	repository := &updateRepoMock{vouchers: make(map[string]voucher.Voucher)}
 	item0, _ := lineitem.NewLineItem("test_item0", "1000", "10", "")
 	item1, _ := lineitem.NewLineItem("test_item1", "1000", "", "10")

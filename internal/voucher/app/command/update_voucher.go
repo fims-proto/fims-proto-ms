@@ -12,10 +12,10 @@ type UpdateVoucherCmd struct {
 }
 
 type UpdateVoucherHandler struct {
-	repo voucher.Repository
+	repo voucher.ActionModel
 }
 
-func NewUpdateVoucherHandler(repo voucher.Repository) UpdateVoucherHandler {
+func NewUpdateVoucherHandler(repo voucher.ActionModel) UpdateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

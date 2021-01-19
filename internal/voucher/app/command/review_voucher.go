@@ -11,10 +11,10 @@ type ReviewVoucherCmd struct {
 }
 
 type ReviewVoucherHandler struct {
-	repo voucher.Repository
+	repo voucher.ActionModel
 }
 
-func NewReviewVoucherHandler(repo voucher.Repository) ReviewVoucherHandler {
+func NewReviewVoucherHandler(repo voucher.ActionModel) ReviewVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

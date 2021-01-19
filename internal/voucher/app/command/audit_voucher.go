@@ -11,10 +11,10 @@ type AuditVoucherCmd struct {
 }
 
 type AuditVoucherHandler struct {
-	repo voucher.Repository
+	repo voucher.ActionModel
 }
 
-func NewAuditVoucherHandler(repo voucher.Repository) AuditVoucherHandler {
+func NewAuditVoucherHandler(repo voucher.ActionModel) AuditVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

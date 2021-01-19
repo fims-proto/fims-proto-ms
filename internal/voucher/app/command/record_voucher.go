@@ -28,10 +28,10 @@ type RecordVoucherCmd struct {
 // }
 
 type RecordVoucherHandler struct {
-	repo voucher.Repository
+	repo voucher.ActionModel
 }
 
-func NewRecordVoucherHandler(repo voucher.Repository) RecordVoucherHandler {
+func NewRecordVoucherHandler(repo voucher.ActionModel) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

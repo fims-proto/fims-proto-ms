@@ -13,7 +13,7 @@ func (e NotFoundError) Error() string {
 	return fmt.Sprintf("voucher %s not found", e.VoucherUUID)
 }
 
-type Repository interface {
+type ActionModel interface {
 	AddVoucher(ctx context.Context, v *Voucher) error
 	UpdateVoucher(
 		ctx context.Context,
