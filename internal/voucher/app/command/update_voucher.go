@@ -42,18 +42,11 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd *UpdateVoucherCmd)
 		ctx,
 		cmd.UUID,
 		func( v *voucher.Voucher) (*voucher.Voucher,error){
-			nv, err:=voucher.NewVoucher(
-				v.UUID(), 
-				v.Number(), 
-				v.CreatedAt(), 
-				v.AttachmentQuantity(),
-				lineItems,
-				v.CreatorUUID(),
-			)
-			if err != nil {
-				return nil, err
+			err:= v.Update(lineItems)
+			if err != nil{
+				return nil, err 
 			}
-			return nv, nil
+			return v, nil
 		},		
 	)
 	return err

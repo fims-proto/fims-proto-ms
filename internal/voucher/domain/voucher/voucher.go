@@ -28,6 +28,20 @@ type Voucher struct {
 	}
 }
 
+func validateItems(items []lineitem.LineItem)(decimal.Decimal, error){
+	var debitInTotal decimal.Decimal
+	var creditInTotal decimal.Decimal
+	for _, item := range items {
+		debitInTotal = debitInTotal.Add(item.Debit())
+		creditInTotal = creditInTotal.Add(item.Credit())
+	}
+
+	if !debitInTotal.Equal(creditInTotal) {
+		return decimal.Decimal{}, errors.New("debit and credit not equal")
+	}
+	return debitInTotal, nil
+}
+
 func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem,
 	creatorUUID string) (*Voucher, error) {
 
@@ -38,15 +52,9 @@ func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantit
 		return nil, errors.New("empty voucher number")
 	}
 
-	var debitInTotal decimal.Decimal
-	var creditInTotal decimal.Decimal
-	for _, item := range items {
-		debitInTotal = debitInTotal.Add(item.Debit())
-		creditInTotal = creditInTotal.Add(item.Credit())
-	}
-
-	if !debitInTotal.Equal(creditInTotal) {
-		return nil, errors.New("debit and credit not equal")
+	totalVal, err:=validateItems(items)
+	if err != nil{
+		return nil, err
 	}
 
 	return &Voucher{
@@ -55,8 +63,8 @@ func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantit
 		createdAt:          createdAt,
 		attachmentQuantity: attachmentQuantity,
 		lineItems:          items,
-		debit:              debitInTotal,
-		credit:             creditInTotal,
+		debit:              totalVal,
+		credit:             totalVal,
 		creatorUUID:        creatorUUID,
 		reviewer: struct {
 			uuid       string
@@ -119,4 +127,15 @@ func (v Voucher) IsReviewed() bool {
 
 func (v Voucher) IsAudited() bool {
 	return v.auditor.isAudited
+}
+
+func (v *Voucher) Update(items []lineitem.LineItem)error{
+	totalVal,err := validateItems(items)
+	if err != nil{
+		return err 
+	}
+	v.credit = totalVal
+	v.debit	= totalVal 
+	v.lineItems = items
+	return nil
 }
