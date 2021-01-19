@@ -13,6 +13,7 @@ type Commands struct {
 	RecordVoucher command.RecordVoucherHandler
 	AuditVoucher command.AuditVoucherHandler
 	ReviewVoucher command.ReviewVoucherHandler
+	UpdateVoucher command.UpdateVoucherHandler
 }
 
 type Application struct {

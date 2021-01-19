@@ -31,6 +31,7 @@ func newVoucherApplication() voucherApp.Application {
 			RecordVoucher: voucherCommand.NewRecordVoucherHandler(&memoryRepository),
 			AuditVoucher:  voucherCommand.NewAuditVoucherHandler(&memoryRepository),
 			ReviewVoucher: voucherCommand.NewReviewVoucherHandler(&memoryRepository),
+			UpdateVoucher: voucherCommand.NewUpdateVoucherHandler(&memoryRepository),
 		},
 	}
 }
