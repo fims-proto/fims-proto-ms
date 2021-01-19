@@ -34,7 +34,7 @@ func TestApp_HandleUpdateVoucherHandler(t *testing.T) {
 
 			cmd := test.constructor()
 			deps := newupdateDepsMock()
-			err := deps.handler.Handle(context.Background(), cmd)
+			err := deps.handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
 			vouchers := deps.repository.vouchers
