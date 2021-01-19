@@ -12,6 +12,12 @@ import (
 	"time"
 )
 
+// this is a simple check that the adapter implements the domain interface
+func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T){
+	t.Parallel()
+	var _ voucher.Repository = (*VoucherMemoryRepository)(nil)
+}
+
 func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
 	t.Parallel()
 	repo := prepareMemoryRepo(t)
