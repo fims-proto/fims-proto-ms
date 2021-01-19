@@ -51,6 +51,20 @@ func (h Handler) record(c *gin.Context) {
 	c.Writer.Header().Set("Content-Location", "/vouchers/" + cmd.UUID)
 }
 
+func (h Handler) update(c *gin.Context){
+	var cmd command.UpdateVoucherCmd
+	if err := c.ShouldBind(&cmd); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return 
+	}
+	cmd.UUID = c.Param("uuid")
+	if err := h.app.Commands.UpdateVoucher.Handle(c.Request.Context(), cmd); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusCreated)
+}
+
 func (h Handler) audit(c *gin.Context) {
 	// TODO openAPI
 	var cmd command.AuditVoucherCmd
@@ -87,6 +101,7 @@ func InitRouter(h Handler, r *gin.Engine) {
 		g.GET("/", h.allVouchers)
 		g.GET("/:uuid", h.voucherForUUID)
 		g.POST("/", h.record)
+		g.POST("/:uuid/update", h.update)
 		g.POST("/:uuid/audit", h.audit)
 		// TODO cancel audit
 		g.POST("/:uuid/review", h.review)

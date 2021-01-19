@@ -22,7 +22,7 @@ func NewUpdateVoucherHandler(repo voucher.Repository) UpdateVoucherHandler {
 	return UpdateVoucherHandler{repo: repo}
 }
 
-func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd *UpdateVoucherCmd) error {
+func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) error {
 	var lineItems []lineitem.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := lineitem.NewLineItem(
