@@ -13,7 +13,7 @@ import (
 )
 
 // this is a simple check that the adapter implements the domain interface
-func TestMemortRepo_Implements_Repo(t *testing.T){
+func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T){
 	t.Parallel()
 	var _ voucher.Repository = (*VoucherMemoryRepository)(nil)
 }
