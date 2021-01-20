@@ -101,7 +101,7 @@ func InitRouter(h Handler, r *gin.Engine) {
 		g.GET("/", h.allVouchers)
 		g.GET("/:uuid", h.voucherForUUID)
 		g.POST("/", h.record)
-		g.POST("/:uuid/update", h.update)
+		g.PATCH("/:uuid", h.update)
 		g.POST("/:uuid/audit", h.audit)
 		// TODO cancel audit
 		g.POST("/:uuid/review", h.review)
