@@ -28,7 +28,7 @@ type Voucher struct {
 	}
 }
 
-func validateItems(items []lineitem.LineItem)(decimal.Decimal, error){
+func validateItems(items []lineitem.LineItem) (decimal.Decimal, error) {
 	var debitInTotal decimal.Decimal
 	var creditInTotal decimal.Decimal
 	for _, item := range items {
@@ -52,8 +52,8 @@ func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantit
 		return nil, errors.New("empty voucher number")
 	}
 
-	totalVal, err:=validateItems(items)
-	if err != nil{
+	totalVal, err := validateItems(items)
+	if err != nil {
 		return nil, err
 	}
 
@@ -129,13 +129,13 @@ func (v Voucher) IsAudited() bool {
 	return v.auditor.isAudited
 }
 
-func (v *Voucher) Update(items []lineitem.LineItem)error{
-	totalVal,err := validateItems(items)
-	if err != nil{
-		return err 
+func (v *Voucher) Update(items []lineitem.LineItem) error {
+	totalVal, err := validateItems(items)
+	if err != nil {
+		return err
 	}
 	v.credit = totalVal
-	v.debit	= totalVal 
+	v.debit = totalVal
 	v.lineItems = items
 	return nil
 }

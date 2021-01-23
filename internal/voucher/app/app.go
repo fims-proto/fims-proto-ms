@@ -11,12 +11,12 @@ type Queries struct {
 
 type Commands struct {
 	RecordVoucher command.RecordVoucherHandler
-	AuditVoucher command.AuditVoucherHandler
+	AuditVoucher  command.AuditVoucherHandler
 	ReviewVoucher command.ReviewVoucherHandler
 	UpdateVoucher command.UpdateVoucherHandler
 }
 
 type Application struct {
-	Queries Queries
+	Queries  Queries
 	Commands Commands
 }

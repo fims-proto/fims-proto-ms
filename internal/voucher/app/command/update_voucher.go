@@ -2,27 +2,36 @@ package command
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 )
 
 type UpdateVoucherCmd struct {
-	UUID      string
-	LineItems []LineItemCmd
+	VoucherUUID string
+	LineItems   []LineItemCmd
 }
 
 type UpdateVoucherHandler struct {
-	repo voucher.Repository
+	repo       voucher.Repository
+	accService AccountService
 }
 
-func NewUpdateVoucherHandler(repo voucher.Repository) UpdateVoucherHandler {
+func NewUpdateVoucherHandler(repo voucher.Repository, accService AccountService) UpdateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return UpdateVoucherHandler{repo: repo}
+	if accService == nil {
+		panic("nil account service")
+	}
+	return UpdateVoucherHandler{
+		repo:       repo,
+		accService: accService,
+	}
 }
 
 func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) error {
+	var accNumbers []string
 	var lineItems []lineitem.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := lineitem.NewLineItem(
@@ -35,18 +44,20 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 			return err
 		}
 		lineItems = append(lineItems, *lineItem)
+		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
-	err := h.repo.UpdateVoucher(
+	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.UUID,
+		cmd.VoucherUUID,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {
-			err := v.Update(lineItems)
-			if err != nil {
+			if err := h.accService.ValidateExistence(ctx, accNumbers); err != nil {
+				return nil, errors.Wrap(err, "unable to validate account numbers")
+			}
+			if err := v.Update(lineItems); err != nil {
 				return nil, err
 			}
 			return v, nil
 		},
 	)
-	return err
 }

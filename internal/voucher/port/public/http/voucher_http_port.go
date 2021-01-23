@@ -48,16 +48,16 @@ func (h Handler) record(c *gin.Context) {
 	}
 	c.Status(http.StatusCreated)
 	// TODO figure out a way to avoid hard coded string of url
-	c.Writer.Header().Set("Content-Location", "/vouchers/" + cmd.UUID)
+	c.Writer.Header().Set("Content-Location", "/vouchers/"+cmd.UUID)
 }
 
-func (h Handler) update(c *gin.Context){
+func (h Handler) update(c *gin.Context) {
 	var cmd command.UpdateVoucherCmd
 	if err := c.ShouldBind(&cmd); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
-		return 
+		return
 	}
-	cmd.UUID = c.Param("uuid")
+	cmd.VoucherUUID = c.Param("uuid")
 	if err := h.app.Commands.UpdateVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return

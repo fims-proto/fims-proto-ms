@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"time"
@@ -19,27 +20,27 @@ type RecordVoucherCmd struct {
 	CreatorUUID        string
 }
 
-// TODO discuss should LineItemCmd or in a types.go file
-// type LineItemCmd struct {
-// 	Summary       string
-// 	AccountNumber string
-// 	Debit         string
-// 	Credit        string
-// }
-
 type RecordVoucherHandler struct {
-	repo voucher.Repository
+	repo       voucher.Repository
+	accService AccountService
 }
 
-func NewRecordVoucherHandler(repo voucher.Repository) RecordVoucherHandler {
+func NewRecordVoucherHandler(repo voucher.Repository, accService AccountService) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return RecordVoucherHandler{repo: repo}
+	if accService == nil {
+		panic("nil account service")
+	}
+	return RecordVoucherHandler{
+		repo:       repo,
+		accService: accService,
+	}
 }
 
 func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) error {
 	// object conversion, outside in: LineItemCmd -> domain/LineItem
+	var accNumbers []string
 	var lineItems []lineitem.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := lineitem.NewLineItem(
@@ -52,6 +53,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 			return err
 		}
 		lineItems = append(lineItems, *lineItem)
+		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
 	// object conversion, outside in: VoucherCmd -> domain/Voucher
@@ -65,6 +67,10 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 	)
 	if err != nil {
 		return err
+	}
+
+	if err = h.accService.ValidateExistence(ctx, accNumbers); err != nil {
+		return errors.Wrap(err, "unable to validate account numbers")
 	}
 
 	return h.repo.AddVoucher(ctx, newVoucher)
