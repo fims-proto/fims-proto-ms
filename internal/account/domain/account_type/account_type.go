@@ -8,11 +8,11 @@ type Type struct {
 }
 
 var (
-	Assets = Type{"assets"}
-	Liabilities = Type{"liabilities"}
-	Common = Type{"common"}
-	Equity = Type{"equity"}
-	Cost = Type{"cost"}
+	Assets        = Type{"assets"}
+	Liabilities   = Type{"liabilities"}
+	Common        = Type{"common"}
+	Equity        = Type{"equity"}
+	Cost          = Type{"cost"}
 	ProfitAndLoss = Type{"profit_and_loss"}
 )
 

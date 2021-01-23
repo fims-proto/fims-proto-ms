@@ -13,7 +13,7 @@ import (
 )
 
 // this is a simple check that the adapter implements the domain interface
-func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T){
+func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T) {
 	t.Parallel()
 	var _ voucher.Repository = (*VoucherMemoryRepository)(nil)
 }
@@ -34,7 +34,7 @@ func TestAdapter_MemoryRepository_ReadOne(t *testing.T) {
 	repo := prepareMemoryRepo(t)
 
 	scheduleRaceTest(20, func(_ int) {
-		v, err := repo.VoucherForUUID("0000", context.Background())
+		v, err := repo.VoucherForUUID(context.Background(), "0000")
 		require.NoError(t, err)
 		assert.Equal(t, "0000", v.UUID)
 	})

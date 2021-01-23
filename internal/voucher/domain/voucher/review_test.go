@@ -11,11 +11,11 @@ import (
 func TestDomain_VoucherReview(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name        string
+		name         string
 		doReview     bool // true - review, false - cancel review
-		constructor func(t *testing.T) *Voucher
+		constructor  func(t *testing.T) *Voucher
 		reviewerUUID string
-		verify      func(t *testing.T, v Voucher, err error)
+		verify       func(t *testing.T, v Voucher, err error)
 	}{
 		{
 			"review_success",
@@ -101,4 +101,3 @@ func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *Voucher {
 	}
 	return voucher
 }
-
