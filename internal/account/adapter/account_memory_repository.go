@@ -2,9 +2,10 @@ package adapter
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 type AccountMemoryRepository struct {

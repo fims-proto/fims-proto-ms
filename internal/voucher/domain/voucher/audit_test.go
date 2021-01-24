@@ -1,11 +1,12 @@
 package voucher
 
 import (
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestDomain_VoucherAudit(t *testing.T) {

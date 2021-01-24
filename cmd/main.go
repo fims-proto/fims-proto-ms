@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	accountAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
 	accountApp "github/fims-proto/fims-proto-ms/internal/account/app"
 	accountQuery "github/fims-proto/fims-proto-ms/internal/account/app/query"
@@ -12,6 +11,8 @@ import (
 	voucherCommand "github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	voucherQuery "github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	voucherHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 func main() {

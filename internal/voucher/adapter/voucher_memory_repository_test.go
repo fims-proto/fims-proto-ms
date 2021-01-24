@@ -2,14 +2,15 @@ package adapter
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // this is a simple check that the adapter implements the domain interface

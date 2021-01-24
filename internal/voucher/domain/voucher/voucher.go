@@ -44,7 +44,6 @@ func validateItems(items []lineitem.LineItem) (decimal.Decimal, error) {
 
 func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem,
 	creatorUUID string) (*Voucher, error) {
-
 	if uuid == "" {
 		return nil, errors.New("empty voucher uuid")
 	}

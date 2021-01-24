@@ -1,10 +1,11 @@
 package lineitem
 
 import (
+	"testing"
+
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func TestDomain_NewLineItem(t *testing.T) {
