@@ -1,16 +1,16 @@
 package main
 
 import (
-	accountAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
-	accountApp "github/fims-proto/fims-proto-ms/internal/account/app"
-	accountQuery "github/fims-proto/fims-proto-ms/internal/account/app/query"
-	accountIntraPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
-	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
-	voucherAccountAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
-	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
-	voucherCommand "github/fims-proto/fims-proto-ms/internal/voucher/app/command"
-	voucherQuery "github/fims-proto/fims-proto-ms/internal/voucher/app/query"
-	voucherHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
+	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
+	accountquery "github/fims-proto/fims-proto-ms/internal/account/app/query"
+	accountintraport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
+	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
+	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
+	voucherapp "github/fims-proto/fims-proto-ms/internal/voucher/app"
+	vouchercommand "github/fims-proto/fims-proto-ms/internal/voucher/app/command"
+	voucherquery "github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	voucherhttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,41 +20,41 @@ func main() {
 	voucherApplication := newVoucherApplication(accountInterface)
 
 	router := gin.Default()
-	voucherHttpPort.InitRouter(voucherHttpPort.NewHandler(voucherApplication), router)
+	voucherhttpport.InitRouter(voucherhttpport.NewHandler(voucherApplication), router)
 
 	if err := router.Run(":8080"); err != nil {
 		panic(err.Error())
 	}
 }
 
-func newVoucherApplication(accountInterface accountIntraPort.AccountInterface) voucherApp.Application {
-	memoryRepository := voucherAdapter.NewVoucherMemoryRepository()
-	accountService := voucherAccountAdapter.NewIntraprocessService(accountInterface)
+func newVoucherApplication(accountInterface accountintraport.AccountInterface) voucherapp.Application {
+	memoryRepository := voucheradapter.NewVoucherMemoryRepository()
+	accountService := voucheraccountadapter.NewIntraprocessService(accountInterface)
 
-	return voucherApp.Application{
-		Queries: voucherApp.Queries{
-			ReadVouchers: voucherQuery.NewAllVouchersHandler(memoryRepository),
+	return voucherapp.Application{
+		Queries: voucherapp.Queries{
+			ReadVouchers: voucherquery.NewAllVouchersHandler(memoryRepository),
 		},
-		Commands: voucherApp.Commands{
-			RecordVoucher: voucherCommand.NewRecordVoucherHandler(&memoryRepository, accountService),
-			AuditVoucher:  voucherCommand.NewAuditVoucherHandler(&memoryRepository),
-			ReviewVoucher: voucherCommand.NewReviewVoucherHandler(&memoryRepository),
-			UpdateVoucher: voucherCommand.NewUpdateVoucherHandler(&memoryRepository, accountService),
+		Commands: voucherapp.Commands{
+			RecordVoucher: vouchercommand.NewRecordVoucherHandler(&memoryRepository, accountService),
+			AuditVoucher:  vouchercommand.NewAuditVoucherHandler(&memoryRepository),
+			ReviewVoucher: vouchercommand.NewReviewVoucherHandler(&memoryRepository),
+			UpdateVoucher: vouchercommand.NewUpdateVoucherHandler(&memoryRepository, accountService),
 		},
 	}
 }
 
-func newAccountApplication() (accountApp.Application, accountIntraPort.AccountInterface) {
-	memoryRepository := accountAdapter.NewAccountMemoryRepository()
+func newAccountApplication() (accountapp.Application, accountintraport.AccountInterface) {
+	memoryRepository := accountadapter.NewAccountMemoryRepository()
 
-	application := accountApp.Application{
-		Queries: accountApp.Queries{
-			ValidateAccounts: accountQuery.NewValidateAccountsHandler(memoryRepository),
+	application := accountapp.Application{
+		Queries: accountapp.Queries{
+			ValidateAccounts: accountquery.NewValidateAccountsHandler(memoryRepository),
 		},
-		Commands: accountApp.Commands{},
+		Commands: accountapp.Commands{},
 	}
 
-	accountInterface := accountIntraPort.NewHandler(application)
+	accountInterface := accountintraport.NewHandler(application)
 
 	return application, accountInterface
 }
