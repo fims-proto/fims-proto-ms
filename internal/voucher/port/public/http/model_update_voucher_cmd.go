@@ -10,13 +10,9 @@
  */
 package http
 
-import (
-	"time"
-)
+type UpdateVoucherCmd struct {
 
-type PostTraining struct {
+	VoucherUUID string `json:"VoucherUUID,omitempty"`
 
-	Notes string `json:"notes"`
-
-	Time time.Time `json:"time"`
+	LineItems []LineItemCmd `json:"LineItems,omitempty"`
 }

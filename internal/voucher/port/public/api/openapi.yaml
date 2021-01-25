@@ -3,8 +3,8 @@ info:
   contact:
     email: xld704@gmail.com
     name: Lind Xiao
-  description: TODO
-  title: Wild Workouts trainings
+  description: HTTP port generated from openapi v3
+  title: fims-proto vouchers
   version: 1.0.0
 servers:
 - url: https://{hostname}/vouchers
@@ -267,6 +267,119 @@ components:
       required:
       - message
       - slug
+      type: object
+    AuditVoucherCmd:
+      properties:
+        VoucherUUID:
+          format: uuid
+          type: string
+        AuditorUUID:
+          format: uuid
+          type: string
+      type: object
+    RecordVoucherCmd:
+      properties:
+        UUID:
+          format: uuid
+          type: string
+        Number:
+          minimum: 0
+          type: integer
+        CreatedAt:
+          format: date-time
+          type: string
+        LineItems:
+          items:
+            $ref: '#/components/schemas/LineItemCmd'
+          type: array
+        Debit:
+          type: string
+        Credit:
+          type: string
+        CreatorUUID:
+          format: uuid
+          type: string
+      required:
+      - time
+      type: object
+    LineItemCmd:
+      properties:
+        Summary:
+          type: string
+        AccountNumber:
+          type: string
+        Debit:
+          type: string
+        Credit:
+          type: string
+      type: object
+    ReviewVoucherCmd:
+      properties:
+        VoucherUUID:
+          format: uuid
+          type: string
+        ReviewerUUID:
+          format: uuid
+          type: string
+      type: object
+    UpdateVoucherCmd:
+      properties:
+        VoucherUUID:
+          format: uuid
+          type: string
+        LineItems:
+          items:
+            $ref: '#/components/schemas/LineItemCmd'
+          type: array
+      type: object
+    LineItemQry:
+      properties:
+        Summary:
+          type: string
+        AccountNumber:
+          type: string
+        Debit:
+          type: string
+        Credit:
+          type: string
+      type: object
+    VoucherQry:
+      properties:
+        UUID:
+          format: uuid
+          type: string
+        Number:
+          minimum: 0
+          type: integer
+        CreatedAt:
+          format: date-time
+          type: string
+        AttachmentQuantity:
+          minimum: 0
+          type: integer
+        LineItems:
+          items:
+            $ref: '#/components/schemas/LineItemQry'
+          type: array
+        Debit:
+          type: string
+        Credit:
+          type: string
+        CreatorUUID:
+          format: uuid
+          type: string
+        ReviewerUUID:
+          format: uuid
+          type: string
+        IsReviewed:
+          type: boolean
+        AuditorUUID:
+          format: uuid
+          type: string
+        IsAudited:
+          type: boolean
+      required:
+      - time
       type: object
   securitySchemes:
     bearerAuth:

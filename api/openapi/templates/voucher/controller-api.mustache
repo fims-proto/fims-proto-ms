@@ -23,5 +23,5 @@ func NewHandler(app app.Application) Handler {
 
 // {{nickname}} - {{{summary}}}
 func (h Handler) {{nickname}}(c *gin.Context) {
-	h._{{nickname}}(c)
+	h._{{nickname}}(&c)
 }{{/operation}}{{/operations}}

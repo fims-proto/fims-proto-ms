@@ -20,7 +20,6 @@ func main() {
 
 	router := gin.Default()
 	voucherHttpPort.InitRouter(voucherHttpPort.NewHandler(voucherApplication), router)
-
 	if err := router.Run(":8080"); err != nil {
 		panic(err.Error())
 	}

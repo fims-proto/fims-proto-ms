@@ -10,13 +10,13 @@
  */
 package http
 
-import (
-	"time"
-)
+type LineItemCmd struct {
 
-type PostTraining struct {
+	Summary string `json:"Summary,omitempty"`
 
-	Notes string `json:"notes"`
+	AccountNumber string `json:"AccountNumber,omitempty"`
 
-	Time time.Time `json:"time"`
+	Debit string `json:"Debit,omitempty"`
+
+	Credit string `json:"Credit,omitempty"`
 }
