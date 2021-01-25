@@ -22,7 +22,7 @@ func (h Handler) _Update(c *gin.Context){
 	return
 }
 
-func (h Handler) _RecordVouchers(c *gin.Context){
+func (h Handler) _Record(c *gin.Context){
 	return
 }
 

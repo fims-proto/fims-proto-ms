@@ -50,10 +50,10 @@ func InitRouter(h Handler, router *gin.Engine) {
             h.Audit,
         },
         {
-            "RecordVouchers",
+            "Record",
             http.MethodPost,
             "/vouchers/",
-            h.RecordVouchers,
+            h.Record,
         },
         {
             "Review",

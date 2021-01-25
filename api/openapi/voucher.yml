@@ -25,34 +25,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Trainings'
+                $ref: '#/components/schemas/VouchersQry'
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
 
     post:
       tags:
         - Voucher
-      operationId: RecordVouchers
+      operationId: Record
       requestBody:
         description: todo
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/RecordVoucherCmd'
       responses:
-        '204':
+        '200':
           description: todo
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
 
   /{voucherUUID}:
     get:
@@ -68,14 +68,18 @@ paths:
           required: true
           description: todo
       responses:
-        '204':
+        '200':
           description: todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoucherQry'
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
     patch:
       tags:
         - Voucher
@@ -93,16 +97,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/UpdateVoucherCmd'
       responses:
-        '204':
+        '200':
           description: todo
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
 
   /{voucherUUID}/audit:
     post:
@@ -115,7 +119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/AuditVoucherCmd'
       parameters:
         - in: path
           name: voucherUUID
@@ -125,14 +129,14 @@ paths:
           required: true
           description: todo
       responses:
-        '204':
+        '200':
           description: todo
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
 
   /{voucherUUID}/review:
     post:
@@ -145,7 +149,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/ReviewVoucherCmd'
       parameters:
         - in: path
           name: voucherUUID
@@ -162,7 +166,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
 
 components:
   securitySchemes:
@@ -220,7 +224,7 @@ components:
           type: string
           format: date-time
 
-    Error1:
+    Error:
       type: object
       required:
         - slug
@@ -350,5 +354,9 @@ components:
           format: uuid
         IsAudited:
           type: boolean
-        
+    
+    VouchersQry:
+      type: array
+      items:
+        $ref: '#/components/schemas/VoucherQry'
     

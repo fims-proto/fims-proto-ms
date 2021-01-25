@@ -33,7 +33,7 @@ paths:
       tags:
       - Voucher
     post:
-      operationId: RecordVouchers
+      operationId: Record
       requestBody:
         content:
           application/json:
@@ -91,7 +91,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/UpdateVoucherCmd'
         description: todo
         required: true
       responses:
@@ -122,7 +122,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/AuditVoucherCmd'
         description: todo
         required: true
       responses:
@@ -153,7 +153,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/ReviewVoucherCmd'
         description: todo
         required: true
       responses:
@@ -269,6 +269,9 @@ components:
       - slug
       type: object
     AuditVoucherCmd:
+      example:
+        AuditorUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        VoucherUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
       properties:
         VoucherUUID:
           format: uuid
@@ -303,6 +306,11 @@ components:
       - time
       type: object
     LineItemCmd:
+      example:
+        Debit: Debit
+        Credit: Credit
+        Summary: Summary
+        AccountNumber: AccountNumber
       properties:
         Summary:
           type: string
@@ -314,6 +322,9 @@ components:
           type: string
       type: object
     ReviewVoucherCmd:
+      example:
+        ReviewerUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        VoucherUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
       properties:
         VoucherUUID:
           format: uuid
@@ -323,6 +334,17 @@ components:
           type: string
       type: object
     UpdateVoucherCmd:
+      example:
+        LineItems:
+        - Debit: Debit
+          Credit: Credit
+          Summary: Summary
+          AccountNumber: AccountNumber
+        - Debit: Debit
+          Credit: Credit
+          Summary: Summary
+          AccountNumber: AccountNumber
+        VoucherUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
       properties:
         VoucherUUID:
           format: uuid
@@ -381,6 +403,10 @@ components:
       required:
       - time
       type: object
+    VouchersQry:
+      items:
+        $ref: '#/components/schemas/VoucherQry'
+      type: array
   securitySchemes:
     bearerAuth:
       bearerFormat: JWT
