@@ -1,4 +1,4 @@
-# Go API Server for http
+# Go API Server for http_port
 
 TODO
 
@@ -13,7 +13,7 @@ To see how to make this your own, look here:
 [README](https://openapi-generator.tech)
 
 - API version: 1.0.0
-- Build date: 2021-01-24T20:53:41.157969-05:00[America/Detroit]
+- Build date: 2021-01-24T21:50:22.207350-05:00[America/Detroit]
 
 
 ### Running the server
@@ -25,12 +25,12 @@ go run main.go
 
 To run the server in a docker container
 ```
-docker build --network=host -t http .
+docker build --network=host -t http_port .
 ```
 
 Once image is built use
 ```
-docker run --rm -it http 
+docker run --rm -it http_port 
 ```
 
 

@@ -1,7 +1,6 @@
 Dockerfile
 README.md
 api/openapi.yaml
-go.mod
 http/api.go
 http/api_voucher.go
 http/api_voucher_service.go

@@ -7,14 +7,14 @@ info:
   title: Wild Workouts trainings
   version: 1.0.0
 servers:
-- url: https://{hostname}/api
+- url: https://{hostname}/vouchers
   variables:
     hostname:
       default: localhost
 security:
 - bearerAuth: []
 paths:
-  /trainings:
+  /:
     get:
       operationId: AllVouchers
       responses:
@@ -33,7 +33,7 @@ paths:
       tags:
       - Voucher
     post:
-      operationId: createTraining
+      operationId: RecordVouchers
       requestBody:
         content:
           application/json:
@@ -52,14 +52,14 @@ paths:
           description: unexpected error
       tags:
       - Voucher
-  /trainings/{trainingUUID}:
-    delete:
-      operationId: cancelTraining
+  /{voucherUUID}:
+    get:
+      operationId: VoucherForUUID
       parameters:
       - description: todo
         explode: false
         in: path
-        name: trainingUUID
+        name: voucherUUID
         required: true
         schema:
           format: uuid
@@ -76,45 +76,12 @@ paths:
           description: unexpected error
       tags:
       - Voucher
-  /trainings/{trainingUUID}/reschedule:
-    put:
-      operationId: rescheduleTraining
+    patch:
+      operationId: Update
       parameters:
-      - description: todo
-        explode: false
+      - explode: false
         in: path
-        name: trainingUUID
-        required: true
-        schema:
-          format: uuid
-          type: string
-        style: simple
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PostTraining'
-        description: todo
-        required: true
-      responses:
-        "204":
-          description: todo
-        default:
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-          description: unexpected error
-      tags:
-      - Voucher
-  /trainings/{trainingUUID}/request-reschedule:
-    put:
-      operationId: requestRescheduleTraining
-      parameters:
-      - description: todo
-        explode: false
-        in: path
-        name: trainingUUID
+        name: voucherUUID
         required: true
         schema:
           format: uuid
@@ -138,19 +105,26 @@ paths:
           description: unexpected error
       tags:
       - Voucher
-  /trainings/{trainingUUID}/approve-reschedule:
-    put:
-      operationId: approveRescheduleTraining
+  /{voucherUUID}/audit:
+    post:
+      operationId: Audit
       parameters:
       - description: todo
         explode: false
         in: path
-        name: trainingUUID
+        name: voucherUUID
         required: true
         schema:
           format: uuid
           type: string
         style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTraining'
+        description: todo
+        required: true
       responses:
         "204":
           description: todo
@@ -162,19 +136,26 @@ paths:
           description: unexpected error
       tags:
       - Voucher
-  /trainings/{trainingUUID}/reject-reschedule:
-    put:
-      operationId: rejectRescheduleTraining
+  /{voucherUUID}/review:
+    post:
+      operationId: Review
       parameters:
       - description: todo
         explode: false
         in: path
-        name: trainingUUID
+        name: voucherUUID
         required: true
         schema:
           format: uuid
           type: string
         style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTraining'
+        description: todo
+        required: true
       responses:
         "204":
           description: todo

@@ -14,16 +14,16 @@ import (
 	"log"
 	"net/http"
 
-	http "github.com/GIT_USER_ID/GIT_REPO_ID/http"
+	http_port "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	VoucherApiService := http.NewVoucherApiService()
-	VoucherApiController := http.NewVoucherApiController(VoucherApiService)
+	VoucherApiService := http_port.NewVoucherApiService()
+	VoucherApiController := http_port.NewVoucherApiController(VoucherApiService)
 
-	router := http.NewRouter(VoucherApiController)
+	router := http_port.NewRouter(VoucherApiController)
 
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
