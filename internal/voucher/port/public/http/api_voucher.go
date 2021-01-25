@@ -12,36 +12,53 @@ package http_port
 
 import (
 	"net/http"
-
+    "github/fims-proto/fims-proto-ms/internal/voucher/app"
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"github.com/gin-gonic/gin"
 )
 
+type Handler struct {
+	app app.Application
+}
+
+func NewHandler(app app.Application) Handler {
+	return Handler{app: app}
+}
+
+
+
+
 // AllVouchers - 
-func AllVouchers(c *gin.Context) {
+func (h Handler) AllVouchers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
+
 
 // Audit - 
-func Audit(c *gin.Context) {
+func (h Handler) Audit(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
+
 
 // RecordVouchers - 
-func RecordVouchers(c *gin.Context) {
+func (h Handler) RecordVouchers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
+
 
 // Review - 
-func Review(c *gin.Context) {
+func (h Handler) Review(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
+
 
 // Update - 
-func Update(c *gin.Context) {
+func (h Handler) Update(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
+
 // VoucherForUUID - 
-func VoucherForUUID(c *gin.Context) {
+func (h Handler) VoucherForUUID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
