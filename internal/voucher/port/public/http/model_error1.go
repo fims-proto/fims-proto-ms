@@ -10,7 +10,7 @@
 
 package http_port
 
-type Error struct {
+type Error1 struct {
 
 	Slug string `json:"slug"`
 

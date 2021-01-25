@@ -11,171 +11,37 @@
 package http_port
 
 import (
-	"encoding/json"
 	"net/http"
-	"strings"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-// A VoucherApiController binds http requests to an api service and writes the service results to the http response
-type VoucherApiController struct {
-	service VoucherApiServicer
-}
-
-// NewVoucherApiController creates a default api controller
-func NewVoucherApiController(s VoucherApiServicer) Router {
-	return &VoucherApiController{ service: s }
-}
-
-// Routes returns all of the api route for the VoucherApiController
-func (c *VoucherApiController) Routes() Routes {
-	return Routes{ 
-		{
-			"AllVouchers",
-			strings.ToUpper("Get"),
-			"/vouchers/",
-			c.AllVouchers,
-		},
-		{
-			"Audit",
-			strings.ToUpper("Post"),
-			"/vouchers/{voucherUUID}/audit",
-			c.Audit,
-		},
-		{
-			"RecordVouchers",
-			strings.ToUpper("Post"),
-			"/vouchers/",
-			c.RecordVouchers,
-		},
-		{
-			"Review",
-			strings.ToUpper("Post"),
-			"/vouchers/{voucherUUID}/review",
-			c.Review,
-		},
-		{
-			"Update",
-			strings.ToUpper("Patch"),
-			"/vouchers/{voucherUUID}",
-			c.Update,
-		},
-		{
-			"VoucherForUUID",
-			strings.ToUpper("Get"),
-			"/vouchers/{voucherUUID}",
-			c.VoucherForUUID,
-		},
-	}
-}
-
 // AllVouchers - 
-func (c *VoucherApiController) AllVouchers(w http.ResponseWriter, r *http.Request) { 
-	result, err := c.service.AllVouchers(r.Context())
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+func AllVouchers(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Audit - 
-func (c *VoucherApiController) Audit(w http.ResponseWriter, r *http.Request) { 
-	params := mux.Vars(r)
-	voucherUUID := params["voucherUUID"]
-	postTraining := &PostTraining{}
-	if err := json.NewDecoder(r.Body).Decode(&postTraining); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	result, err := c.service.Audit(r.Context(), voucherUUID, *postTraining)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+func Audit(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // RecordVouchers - 
-func (c *VoucherApiController) RecordVouchers(w http.ResponseWriter, r *http.Request) { 
-	postTraining := &PostTraining{}
-	if err := json.NewDecoder(r.Body).Decode(&postTraining); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	result, err := c.service.RecordVouchers(r.Context(), *postTraining)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+func RecordVouchers(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Review - 
-func (c *VoucherApiController) Review(w http.ResponseWriter, r *http.Request) { 
-	params := mux.Vars(r)
-	voucherUUID := params["voucherUUID"]
-	postTraining := &PostTraining{}
-	if err := json.NewDecoder(r.Body).Decode(&postTraining); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	result, err := c.service.Review(r.Context(), voucherUUID, *postTraining)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+func Review(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // Update - 
-func (c *VoucherApiController) Update(w http.ResponseWriter, r *http.Request) { 
-	params := mux.Vars(r)
-	voucherUUID := params["voucherUUID"]
-	postTraining := &PostTraining{}
-	if err := json.NewDecoder(r.Body).Decode(&postTraining); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	
-	result, err := c.service.Update(r.Context(), voucherUUID, *postTraining)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+func Update(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }
 
 // VoucherForUUID - 
-func (c *VoucherApiController) VoucherForUUID(w http.ResponseWriter, r *http.Request) { 
-	params := mux.Vars(r)
-	voucherUUID := params["voucherUUID"]
-	result, err := c.service.VoucherForUUID(r.Context(), voucherUUID)
-	//If an error occured, encode the error with the status code
-	if err != nil {
-		EncodeJSONResponse(err.Error(), &result.Code, w)
-		return
-	}
-	//If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-	
+func VoucherForUUID(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{})
 }

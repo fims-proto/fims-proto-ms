@@ -11,129 +11,97 @@
 package http_port
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
-	"os"
-	"strconv"
-	"github.com/gorilla/mux"
+
+	"github.com/gin-gonic/gin"
 )
 
-// A Route defines the parameters for an api endpoint
+// Route is the information for every URI.
 type Route struct {
+	// Name is the name of this Route.
 	Name        string
+	// Method is the string for the HTTP method. ex) GET, POST etc..
 	Method      string
+	// Pattern is the pattern of the URI.
 	Pattern     string
-	HandlerFunc http.HandlerFunc
+	// HandlerFunc is the handler function of this route.
+	HandlerFunc gin.HandlerFunc
 }
 
-// Routes are a collection of defined api endpoints
+// Routes is the list of the generated Route.
 type Routes []Route
 
-// Router defines the required methods for retrieving api routes
-type Router interface {
-	Routes() Routes
-}
-
-// NewRouter creates a new router for any number of api routers
-func NewRouter(routers ...Router) *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
-	for _, api := range routers {
-		for _, route := range api.Routes() {
-			var handler http.Handler
-			handler = route.HandlerFunc
-			handler = Logger(handler, route.Name)
-
-			router.
-				Methods(route.Method).
-				Path(route.Pattern).
-				Name(route.Name).
-				Handler(handler)
+// NewRouter returns a new router.
+func NewRouter() *gin.Engine {
+	router := gin.Default()
+	for _, route := range routes {
+		switch route.Method {
+		case http.MethodGet:
+			router.GET(route.Pattern, route.HandlerFunc)
+		case http.MethodPost:
+			router.POST(route.Pattern, route.HandlerFunc)
+		case http.MethodPut:
+			router.PUT(route.Pattern, route.HandlerFunc)
+		case http.MethodDelete:
+			router.DELETE(route.Pattern, route.HandlerFunc)
 		}
 	}
 
 	return router
 }
 
-// EncodeJSONResponse uses the json encoder to write an interface to the http response with an optional status code
-func EncodeJSONResponse(i interface{}, status *int, w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-	if status != nil {
-		w.WriteHeader(*status)
-	} else {
-		w.WriteHeader(http.StatusOK)
-	}
-
-	return json.NewEncoder(w).Encode(i)
+// Index is the index handler.
+func Index(c *gin.Context) {
+	c.String(http.StatusOK, "Hello World!")
 }
 
-// ReadFormFileToTempFile reads file data from a request form and writes it to a temporary file
-func ReadFormFileToTempFile(r *http.Request, key string) (*os.File, error) {
-	_, fileHeader, err := r.FormFile(key)
-	if err != nil {
-		return nil, err
-	}
+var routes = Routes{
+	{
+		"Index",
+		http.MethodGet,
+		"/vouchers/",
+		Index,
+	},
 
-	return readFileHeaderToTempFile(fileHeader)
-}
+	{
+		"AllVouchers",
+		http.MethodGet,
+		"/vouchers/",
+		AllVouchers,
+	},
 
-// ReadFormFilesToTempFiles reads files array data from a request form and writes it to a temporary files
-func ReadFormFilesToTempFiles(r *http.Request, key string) ([]*os.File, error) {
-	if err := r.ParseMultipartForm(32 << 20); err != nil {
-		return nil, err
-	}
+	{
+		"Audit",
+		http.MethodPost,
+		"/vouchers/:voucherUUID/audit",
+		Audit,
+	},
 
-	files := make([]*os.File, 0, len(r.MultipartForm.File[key]))
+	{
+		"RecordVouchers",
+		http.MethodPost,
+		"/vouchers/",
+		RecordVouchers,
+	},
 
-	for _, fileHeader := range r.MultipartForm.File[key] {
-		file, err := readFileHeaderToTempFile(fileHeader)
-		if err != nil {
-			return nil, err
-		}
+	{
+		"Review",
+		http.MethodPost,
+		"/vouchers/:voucherUUID/review",
+		Review,
+	},
 
-		files = append(files, file)
-	}
+	{
+		"Update",
+		http.MethodPatch,
+		"/vouchers/:voucherUUID",
+		Update,
+	},
 
-	return files, nil
-}
-
-// readFileHeaderToTempFile reads multipart.FileHeader and writes it to a temporary file
-func readFileHeaderToTempFile(fileHeader *multipart.FileHeader) (*os.File, error) {
-	formFile, err := fileHeader.Open()
-	if err != nil {
-		return nil, err
-	}
-
-	defer formFile.Close()
-
-	fileBytes, err := ioutil.ReadAll(formFile)
-	if err != nil {
-		return nil, err
-	}
-
-	file, err := ioutil.TempFile("", fileHeader.Filename)
-	if err != nil {
-		return nil, err
-	}
-
-	defer file.Close()
-
-	file.Write(fileBytes)
-
-	return file, nil
-}
-
-
-// parseInt64Parameter parses a sting parameter to an int64
-func parseInt64Parameter(param string) (int64, error) {
-	return strconv.ParseInt(param, 10, 64)
-}
-
-// parseInt32Parameter parses a sting parameter to an int32
-func parseInt32Parameter(param string) (int32, error) {
-	val, err := strconv.ParseInt(param, 10, 32)
-	if err != nil {
-		return -1, err
-	}
-	return int32(val), nil
+	{
+		"VoucherForUUID",
+		http.MethodGet,
+		"/vouchers/:voucherUUID",
+		VoucherForUUID,
+	},
 }

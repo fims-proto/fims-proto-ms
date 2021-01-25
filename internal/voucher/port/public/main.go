@@ -12,18 +12,21 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	http_port "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+	// WARNING!
+	// Change this to a fully-qualified import path
+	// once you place this file into your project.
+	// For example,
+	//
+	//    sw "github.com/myname/myrepo/http"
+	//
+	sw "./http"
 )
 
 func main() {
 	log.Printf("Server started")
 
-	VoucherApiService := http_port.NewVoucherApiService()
-	VoucherApiController := http_port.NewVoucherApiController(VoucherApiService)
+	router := sw.NewRouter()
 
-	router := http_port.NewRouter(VoucherApiController)
-
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(router.Run(":8080"))
 }

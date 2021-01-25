@@ -31,7 +31,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
 
     post:
       tags:
@@ -52,7 +52,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
 
   /{voucherUUID}:
     get:
@@ -75,7 +75,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
     patch:
       tags:
         - Voucher
@@ -102,7 +102,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
 
   /{voucherUUID}/audit:
     post:
@@ -132,7 +132,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
 
   /{voucherUUID}/review:
     post:
@@ -162,7 +162,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
 
 components:
   securitySchemes:
@@ -220,7 +220,7 @@ components:
           type: string
           format: date-time
 
-    Error:
+    Error1:
       type: object
       required:
         - slug

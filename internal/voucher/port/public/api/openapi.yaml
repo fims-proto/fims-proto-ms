@@ -28,7 +28,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
           description: unexpected error
       tags:
       - Voucher
@@ -48,7 +48,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
           description: unexpected error
       tags:
       - Voucher
@@ -72,7 +72,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
           description: unexpected error
       tags:
       - Voucher
@@ -101,7 +101,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
           description: unexpected error
       tags:
       - Voucher
@@ -132,7 +132,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
           description: unexpected error
       tags:
       - Voucher
@@ -163,7 +163,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Error1'
           description: unexpected error
       tags:
       - Voucher
@@ -258,7 +258,7 @@ components:
       - notes
       - time
       type: object
-    Error:
+    Error1:
       properties:
         slug:
           type: string

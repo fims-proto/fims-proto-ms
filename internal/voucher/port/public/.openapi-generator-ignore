@@ -23,3 +23,6 @@
 #!docs/README.md
 
 go.mod
+main.go
+Dockerfile
+http/README.md

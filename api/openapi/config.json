@@ -1,4 +1,4 @@
 {
     "packageName" : "http_port",
-    "sourceFolder": "http"
+    "apiPath": "http"
 }
