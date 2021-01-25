@@ -4,8 +4,8 @@ info:
   title: Wild Workouts trainings
   description: TODO
   contact:
-    name: Three Dots Labs
-    url: https://threedots.tech/
+    name: Lind Xiao 
+    email: xld704@gmail.com
 servers:
   - url: https://{hostname}/api
     variables:
@@ -16,7 +16,9 @@ security:
 paths:
   /trainings:
     get:
-      operationId: getTrainings
+      tags:
+        - Voucher
+      operationId: AllVouchers
       responses:
         '200':
           description: todo
@@ -32,6 +34,8 @@ paths:
                 $ref: '#/components/schemas/Error'
 
     post:
+      tags:
+        - Voucher
       operationId: createTraining
       requestBody:
         description: todo
@@ -52,6 +56,8 @@ paths:
 
   /trainings/{trainingUUID}:
     delete:
+      tags:
+        - Voucher
       operationId: cancelTraining
       parameters:
         - in: path
@@ -73,6 +79,8 @@ paths:
 
   /trainings/{trainingUUID}/reschedule:
     put:
+      tags:
+        - Voucher
       operationId: rescheduleTraining
       requestBody:
         description: todo
@@ -101,6 +109,8 @@ paths:
 
   /trainings/{trainingUUID}/request-reschedule:
     put:
+      tags:
+        - Voucher
       operationId: requestRescheduleTraining
       requestBody:
         description: todo
@@ -129,6 +139,8 @@ paths:
 
   /trainings/{trainingUUID}/approve-reschedule:
     put:
+      tags:
+        - Voucher
       operationId: approveRescheduleTraining
       parameters:
         - in: path
@@ -150,6 +162,8 @@ paths:
 
   /trainings/{trainingUUID}/reject-reschedule:
     put:
+      tags:
+        - Voucher
       operationId: rejectRescheduleTraining
       parameters:
         - in: path

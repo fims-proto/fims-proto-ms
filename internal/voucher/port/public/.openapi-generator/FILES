@@ -1,0 +1,16 @@
+Dockerfile
+README.md
+api/openapi.yaml
+go.mod
+http/api.go
+http/api_voucher.go
+http/api_voucher_service.go
+http/helpers.go
+http/impl.go
+http/logger.go
+http/model_error.go
+http/model_post_training.go
+http/model_training.go
+http/model_trainings.go
+http/routers.go
+main.go

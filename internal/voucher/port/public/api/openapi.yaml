@@ -1,0 +1,294 @@
+openapi: 3.0.0
+info:
+  contact:
+    email: xld704@gmail.com
+    name: Lind Xiao
+  description: TODO
+  title: Wild Workouts trainings
+  version: 1.0.0
+servers:
+- url: https://{hostname}/api
+  variables:
+    hostname:
+      default: localhost
+security:
+- bearerAuth: []
+paths:
+  /trainings:
+    get:
+      operationId: AllVouchers
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Trainings'
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+    post:
+      operationId: createTraining
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTraining'
+        description: todo
+        required: true
+      responses:
+        "204":
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+  /trainings/{trainingUUID}:
+    delete:
+      operationId: cancelTraining
+      parameters:
+      - description: todo
+        explode: false
+        in: path
+        name: trainingUUID
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+  /trainings/{trainingUUID}/reschedule:
+    put:
+      operationId: rescheduleTraining
+      parameters:
+      - description: todo
+        explode: false
+        in: path
+        name: trainingUUID
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTraining'
+        description: todo
+        required: true
+      responses:
+        "204":
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+  /trainings/{trainingUUID}/request-reschedule:
+    put:
+      operationId: requestRescheduleTraining
+      parameters:
+      - description: todo
+        explode: false
+        in: path
+        name: trainingUUID
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PostTraining'
+        description: todo
+        required: true
+      responses:
+        "204":
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+  /trainings/{trainingUUID}/approve-reschedule:
+    put:
+      operationId: approveRescheduleTraining
+      parameters:
+      - description: todo
+        explode: false
+        in: path
+        name: trainingUUID
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+  /trainings/{trainingUUID}/reject-reschedule:
+    put:
+      operationId: rejectRescheduleTraining
+      parameters:
+      - description: todo
+        explode: false
+        in: path
+        name: trainingUUID
+        required: true
+        schema:
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: todo
+        default:
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+          description: unexpected error
+      tags:
+      - Voucher
+components:
+  schemas:
+    Training:
+      example:
+        moveRequiresAccept: true
+        notes: let's do leg day!
+        canBeCancelled: true
+        userUuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        proposedTime: 2000-01-23T04:56:07.000+00:00
+        time: 2000-01-23T04:56:07.000+00:00
+        moveProposedBy: moveProposedBy
+        uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        user: Mariusz Pudzianowski
+      properties:
+        uuid:
+          format: uuid
+          type: string
+        user:
+          example: Mariusz Pudzianowski
+          type: string
+        userUuid:
+          format: uuid
+          type: string
+        notes:
+          example: let's do leg day!
+          type: string
+        time:
+          format: date-time
+          type: string
+        canBeCancelled:
+          type: boolean
+        moveRequiresAccept:
+          type: boolean
+        proposedTime:
+          format: date-time
+          type: string
+        moveProposedBy:
+          type: string
+      required:
+      - canBeCancelled
+      - moveRequiresAccept
+      - notes
+      - time
+      - user
+      - userUuid
+      - uuid
+      type: object
+    Trainings:
+      example:
+        trainings:
+        - moveRequiresAccept: true
+          notes: let's do leg day!
+          canBeCancelled: true
+          userUuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          proposedTime: 2000-01-23T04:56:07.000+00:00
+          time: 2000-01-23T04:56:07.000+00:00
+          moveProposedBy: moveProposedBy
+          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          user: Mariusz Pudzianowski
+        - moveRequiresAccept: true
+          notes: let's do leg day!
+          canBeCancelled: true
+          userUuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          proposedTime: 2000-01-23T04:56:07.000+00:00
+          time: 2000-01-23T04:56:07.000+00:00
+          moveProposedBy: moveProposedBy
+          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+          user: Mariusz Pudzianowski
+      properties:
+        trainings:
+          items:
+            $ref: '#/components/schemas/Training'
+          type: array
+      required:
+      - trainings
+      type: object
+    PostTraining:
+      example:
+        notes: let's do leg day!
+        time: 2000-01-23T04:56:07.000+00:00
+      properties:
+        notes:
+          example: let's do leg day!
+          type: string
+        time:
+          format: date-time
+          type: string
+      required:
+      - notes
+      - time
+      type: object
+    Error:
+      properties:
+        slug:
+          type: string
+        message:
+          type: string
+      required:
+      - message
+      - slug
+      type: object
+  securitySchemes:
+    bearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http

@@ -5,4 +5,4 @@ openapi: openapi_http
 
 .PHONY: openapi_http
 openapi_http:
-		openapi-generator generate --global-property=models,apis -g go-server -o ${VOUCHER_PORTDIR} -i ${OAPIDIR}/voucher.yml -c api/openapi/config.json
+		openapi-generator generate  -g go-server -o ${VOUCHER_PORTDIR} -i ${OAPIDIR}/voucher.yml -c api/openapi/config.json

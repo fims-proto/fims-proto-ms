@@ -10,7 +10,8 @@
 
 package http
 
-type Trainings struct {
-
-	Trainings []Training `json:"trainings"`
+//Implementation response defines an error code with the associated body
+type ImplResponse struct {
+	Code int
+	Body interface{}
 }
