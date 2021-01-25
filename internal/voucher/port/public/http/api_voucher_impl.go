@@ -1,0 +1,1 @@
+func (h Handler) _AllVouchers()

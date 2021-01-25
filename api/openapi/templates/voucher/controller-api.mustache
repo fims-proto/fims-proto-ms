@@ -23,5 +23,5 @@ func NewHandler(app app.Application) Handler {
 
 // {{nickname}} - {{{summary}}}
 func (h Handler) {{nickname}}(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._{{nickname}}(c)
 }{{/operation}}{{/operations}}

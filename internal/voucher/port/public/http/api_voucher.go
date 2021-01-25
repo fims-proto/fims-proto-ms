@@ -30,35 +30,35 @@ func NewHandler(app app.Application) Handler {
 
 // AllVouchers - 
 func (h Handler) AllVouchers(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._AllVouchers(c)
 }
 
 
 // Audit - 
 func (h Handler) Audit(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._Audit(c)
 }
 
 
 // RecordVouchers - 
 func (h Handler) RecordVouchers(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._RecordVouchers(c)
 }
 
 
 // Review - 
 func (h Handler) Review(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._Review(c)
 }
 
 
 // Update - 
 func (h Handler) Update(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._Update(c)
 }
 
 
 // VoucherForUUID - 
 func (h Handler) VoucherForUUID(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{})
+	h._VoucherForUUID(c)
 }
