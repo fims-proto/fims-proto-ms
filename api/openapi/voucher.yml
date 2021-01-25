@@ -7,14 +7,14 @@ info:
     name: Lind Xiao 
     email: xld704@gmail.com
 servers:
-  - url: https://{hostname}/api
+  - url: https://{hostname}/vouchers
     variables:
       hostname:
         default: localhost
 security:
   - bearerAuth: []
 paths:
-  /trainings:
+  /:
     get:
       tags:
         - Voucher
