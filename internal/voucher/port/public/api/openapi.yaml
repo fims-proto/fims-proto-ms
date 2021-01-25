@@ -22,13 +22,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Trainings'
+                $ref: '#/components/schemas/VouchersQry'
           description: todo
         default:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
           description: unexpected error
       tags:
       - Voucher
@@ -38,17 +38,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PostTraining'
+              $ref: '#/components/schemas/RecordVoucherCmd'
         description: todo
         required: true
       responses:
-        "204":
+        "200":
           description: todo
         default:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
           description: unexpected error
       tags:
       - Voucher
@@ -66,13 +66,17 @@ paths:
           type: string
         style: simple
       responses:
-        "204":
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoucherQry'
           description: todo
         default:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
           description: unexpected error
       tags:
       - Voucher
@@ -95,13 +99,13 @@ paths:
         description: todo
         required: true
       responses:
-        "204":
+        "200":
           description: todo
         default:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
           description: unexpected error
       tags:
       - Voucher
@@ -126,13 +130,13 @@ paths:
         description: todo
         required: true
       responses:
-        "204":
+        "200":
           description: todo
         default:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
           description: unexpected error
       tags:
       - Voucher
@@ -163,23 +167,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error1'
+                $ref: '#/components/schemas/Error'
           description: unexpected error
       tags:
       - Voucher
 components:
   schemas:
     Training:
-      example:
-        moveRequiresAccept: true
-        notes: let's do leg day!
-        canBeCancelled: true
-        userUuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        proposedTime: 2000-01-23T04:56:07.000+00:00
-        time: 2000-01-23T04:56:07.000+00:00
-        moveProposedBy: moveProposedBy
-        uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-        user: Mariusz Pudzianowski
       properties:
         uuid:
           format: uuid
@@ -215,26 +209,6 @@ components:
       - uuid
       type: object
     Trainings:
-      example:
-        trainings:
-        - moveRequiresAccept: true
-          notes: let's do leg day!
-          canBeCancelled: true
-          userUuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          proposedTime: 2000-01-23T04:56:07.000+00:00
-          time: 2000-01-23T04:56:07.000+00:00
-          moveProposedBy: moveProposedBy
-          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          user: Mariusz Pudzianowski
-        - moveRequiresAccept: true
-          notes: let's do leg day!
-          canBeCancelled: true
-          userUuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          proposedTime: 2000-01-23T04:56:07.000+00:00
-          time: 2000-01-23T04:56:07.000+00:00
-          moveProposedBy: moveProposedBy
-          uuid: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
-          user: Mariusz Pudzianowski
       properties:
         trainings:
           items:
@@ -244,9 +218,6 @@ components:
       - trainings
       type: object
     PostTraining:
-      example:
-        notes: let's do leg day!
-        time: 2000-01-23T04:56:07.000+00:00
       properties:
         notes:
           example: let's do leg day!
@@ -258,7 +229,7 @@ components:
       - notes
       - time
       type: object
-    Error1:
+    Error:
       properties:
         slug:
           type: string
@@ -281,6 +252,22 @@ components:
           type: string
       type: object
     RecordVoucherCmd:
+      example:
+        Debit: Debit
+        LineItems:
+        - Debit: Debit
+          Credit: Credit
+          Summary: Summary
+          AccountNumber: AccountNumber
+        - Debit: Debit
+          Credit: Credit
+          Summary: Summary
+          AccountNumber: AccountNumber
+        Credit: Credit
+        Number: 0
+        CreatedAt: 2000-01-23T04:56:07.000+00:00
+        CreatorUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        UUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
       properties:
         UUID:
           format: uuid
@@ -355,6 +342,11 @@ components:
           type: array
       type: object
     LineItemQry:
+      example:
+        Debit: Debit
+        Credit: Credit
+        Summary: Summary
+        AccountNumber: AccountNumber
       properties:
         Summary:
           type: string
@@ -366,6 +358,27 @@ components:
           type: string
       type: object
     VoucherQry:
+      example:
+        Debit: Debit
+        ReviewerUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        LineItems:
+        - Debit: Debit
+          Credit: Credit
+          Summary: Summary
+          AccountNumber: AccountNumber
+        - Debit: Debit
+          Credit: Credit
+          Summary: Summary
+          AccountNumber: AccountNumber
+        Credit: Credit
+        Number: 0
+        CreatedAt: 2000-01-23T04:56:07.000+00:00
+        IsReviewed: true
+        IsAudited: true
+        CreatorUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        UUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        AuditorUUID: 046b6c7f-0b8a-43b9-b35d-6489e6daee91
+        AttachmentQuantity: 0
       properties:
         UUID:
           format: uuid

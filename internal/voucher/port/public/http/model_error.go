@@ -10,7 +10,7 @@
  */
 package http
 
-type Error1 struct {
+type Error struct {
 
 	Slug string `json:"slug"`
 

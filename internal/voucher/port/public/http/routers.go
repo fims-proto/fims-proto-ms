@@ -31,12 +31,7 @@ type Route struct {
 // NewRouter returns a new router.
 func InitRouter(h Handler, router *gin.Engine) {
     var routes = []Route{
-        {
-            "Index",
-            http.MethodGet,
-            "/vouchers/",
-            Index,
-        },
+        
         {
             "AllVouchers",
             http.MethodGet,
@@ -90,7 +85,3 @@ func InitRouter(h Handler, router *gin.Engine) {
 	}
 }
 
-// Index is the index handler.
-func Index(c *gin.Context) {
-	c.String(http.StatusOK, "Hello World!")
-}

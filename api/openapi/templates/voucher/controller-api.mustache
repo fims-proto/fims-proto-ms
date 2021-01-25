@@ -3,9 +3,6 @@ package {{packageName}}
 
 {{#operations}}
 import (
-	"net/http"
-    "github/fims-proto/fims-proto-ms/internal/voucher/app"
-	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"github.com/gin-gonic/gin"
 )
 
@@ -23,5 +20,5 @@ func NewHandler(app app.Application) Handler {
 
 // {{nickname}} - {{{summary}}}
 func (h Handler) {{nickname}}(c *gin.Context) {
-	h._{{nickname}}(&c)
+	h._{{nickname}}(c)
 }{{/operation}}{{/operations}}

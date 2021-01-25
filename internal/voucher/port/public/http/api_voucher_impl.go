@@ -4,10 +4,21 @@ import(
 	"github/fims-proto/fims-proto-ms/internal/voucher/app"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"github.com/gin-gonic/gin"
+	"net/http"
 )
 
 func (h Handler) _AllVouchers(c *gin.Context){
-	return
+	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c.Request.Context())
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	var results []VoucherQry
+	for _, v := range vouchers {
+		result, err := VoucherQry{
+			
+		}
+	} 
 }
 
 func (h Handler) _Audit(c *gin.Context){
