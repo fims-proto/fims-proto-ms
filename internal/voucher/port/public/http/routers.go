@@ -11,8 +11,7 @@
 package http
 
 import (
-	"net/http"
-
+    "strings"
 	"github.com/gin-gonic/gin"
 )
 
@@ -29,59 +28,20 @@ type Route struct {
 }
 
 // NewRouter returns a new router.
-func InitRouter(h Handler, router *gin.Engine) {
-    var routes = []Route{
-        
-        {
-            "AllVouchers",
-            http.MethodGet,
-            "/vouchers/",
-            h.AllVouchers,
-        },
-        {
-            "Audit",
-            http.MethodPost,
-            "/vouchers/:uuid/audit",
-            h.Audit,
-        },
-        {
-            "Record",
-            http.MethodPost,
-            "/vouchers/",
-            h.Record,
-        },
-        {
-            "Review",
-            http.MethodPost,
-            "/vouchers/:uuid/review",
-            h.Review,
-        },
-        {
-            "Update",
-            http.MethodPatch,
-            "/vouchers/:uuid",
-            h.Update,
-        },
-        {
-            "VoucherForUUID",
-            http.MethodGet,
-            "/vouchers/:uuid",
-            h.VoucherForUUID,
-        },
-    }
-	for _, route := range routes {
-		switch route.Method {
-		case http.MethodGet:
-			router.GET(route.Pattern, route.HandlerFunc)
-		case http.MethodPost:
-			router.POST(route.Pattern, route.HandlerFunc)
-		case http.MethodPut:
-			router.PUT(route.Pattern, route.HandlerFunc)
-		case http.MethodDelete:
-			router.DELETE(route.Pattern, route.HandlerFunc)
-        case http.MethodPatch:
-            router.PATCH(route.Pattern, route.HandlerFunc)
-		}
-	}
+func InitRouter(h Handler, r *gin.Engine) {
+    g := r.Group("/vouchers")
+    
+    g.Handle(strings.ToUpper("Get"),"/",h.AllVouchers)
+    
+    g.Handle(strings.ToUpper("Post"),"/:uuid/audit",h.Audit)
+    
+    g.Handle(strings.ToUpper("Post"),"/",h.Record)
+    
+    g.Handle(strings.ToUpper("Post"),"/:uuid/review",h.Review)
+    
+    g.Handle(strings.ToUpper("Patch"),"/:uuid",h.Update)
+    
+    g.Handle(strings.ToUpper("Get"),"/:uuid",h.VoucherForUUID)
+    
 }
 
