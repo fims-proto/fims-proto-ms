@@ -44,4 +44,3 @@ func InitRouter(h Handler, r *gin.Engine) {
     g.Handle(strings.ToUpper("Get"), "/:uuid", h.VoucherForUUID)
     
 }
-

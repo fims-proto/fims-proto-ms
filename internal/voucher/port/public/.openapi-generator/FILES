@@ -8,4 +8,3 @@ http/model_record_voucher_cmd.go
 http/model_review_voucher_cmd.go
 http/model_update_voucher_cmd.go
 http/model_voucher_qry.go
-main.go
