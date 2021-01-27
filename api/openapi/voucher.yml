@@ -175,55 +175,6 @@ components:
       scheme: bearer
       bearerFormat: JWT
   schemas:
-    Training:
-      type: object
-      required: [uuid, user, userUuid, notes, time, canBeCancelled, moveRequiresAccept]
-      properties:
-        uuid:
-          type: string
-          format: uuid
-        user:
-          type: string
-          example: Mariusz Pudzianowski
-        userUuid:
-          type: string
-          format: uuid
-        notes:
-          type: string
-          example: "let's do leg day!"
-        time:
-          type: string
-          format: date-time
-        canBeCancelled:
-          type: boolean
-        moveRequiresAccept:
-          type: boolean
-        proposedTime:
-          type: string
-          format: date-time
-        moveProposedBy:
-          type: string
-
-    Trainings:
-      type: object
-      required: [trainings]
-      properties:
-        trainings:
-          type: array
-          items:
-            $ref: '#/components/schemas/Training'
-
-    PostTraining:
-      type: object
-      required: [time, notes]
-      properties:
-        notes:
-          type: string
-          example: "let's do leg day!"
-        time:
-          type: string
-          format: date-time
-
     Error:
       type: object
       required:

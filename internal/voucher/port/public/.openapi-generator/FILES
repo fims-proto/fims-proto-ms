@@ -4,11 +4,7 @@ http/model_audit_voucher_cmd.go
 http/model_error.go
 http/model_line_item_cmd.go
 http/model_line_item_qry.go
-http/model_post_training.go
 http/model_record_voucher_cmd.go
 http/model_review_voucher_cmd.go
-http/model_training.go
-http/model_trainings.go
 http/model_update_voucher_cmd.go
 http/model_voucher_qry.go
-http/routers.go
