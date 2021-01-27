@@ -31,17 +31,17 @@ type Route struct {
 func InitRouter(h Handler, r *gin.Engine) {
     g := r.Group("/vouchers")
     
-    g.Handle(strings.ToUpper("Get"),"/",h.AllVouchers)
+    g.Handle(strings.ToUpper("Get"), "/", h.AllVouchers)
     
-    g.Handle(strings.ToUpper("Post"),"/:uuid/audit",h.Audit)
+    g.Handle(strings.ToUpper("Post"), "/:uuid/audit", h.Audit)
     
-    g.Handle(strings.ToUpper("Post"),"/",h.Record)
+    g.Handle(strings.ToUpper("Post"), "/", h.Record)
     
-    g.Handle(strings.ToUpper("Post"),"/:uuid/review",h.Review)
+    g.Handle(strings.ToUpper("Post"), "/:uuid/review", h.Review)
     
-    g.Handle(strings.ToUpper("Patch"),"/:uuid",h.Update)
+    g.Handle(strings.ToUpper("Patch"), "/:uuid", h.Update)
     
-    g.Handle(strings.ToUpper("Get"),"/:uuid",h.VoucherForUUID)
+    g.Handle(strings.ToUpper("Get"), "/:uuid", h.VoucherForUUID)
     
 }
 

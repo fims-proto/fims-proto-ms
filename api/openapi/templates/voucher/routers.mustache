@@ -22,7 +22,7 @@ type Route struct {
 func InitRouter(h Handler, r *gin.Engine) {
     g := r.Group("{{{basePathWithoutHost}}}")
     {{#apiInfo}}{{#apis}}{{#operations}}{{#operation}}
-    g.Handle(strings.ToUpper("{{httpMethod}}"),"{{path}}",h.{{operationId}})
+    g.Handle(strings.ToUpper("{{httpMethod}}"), "{{path}}", h.{{operationId}})
     {{/operation}}{{/operations}}{{/apis}}{{/apiInfo}}
 }
 
