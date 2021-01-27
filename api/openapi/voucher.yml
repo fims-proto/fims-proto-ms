@@ -1,0 +1,365 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: fims-proto vouchers 
+  description: HTTP port generated from openapi v3
+  contact:
+    name: Lind Xiao 
+    email: xld704@gmail.com
+servers:
+  - url: https://{hostname}/vouchers
+    variables:
+      hostname:
+        default: localhost
+security:
+  - bearerAuth: []
+paths:
+  /:
+    get:
+      tags:
+        - Voucher
+      operationId: AllVouchers
+      responses:
+        '200':
+          description: todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VouchersQry'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      tags:
+        - Voucher
+      operationId: Record
+      requestBody:
+        description: todo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordVoucherCmd'
+      responses:
+        '200':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{uuid}:
+    get:
+      tags:
+        - Voucher
+      operationId: VoucherForUUID
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: todo
+      responses:
+        '200':
+          description: todo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoucherQry'
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    patch:
+      tags:
+        - Voucher
+      operationId: Update
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          required: true
+      requestBody:
+        description: todo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateVoucherCmd'
+      responses:
+        '200':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{uuid}/audit:
+    post:
+      tags:
+        - Voucher
+      operationId: Audit
+      requestBody:
+        description: todo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditVoucherCmd'
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: todo
+      responses:
+        '200':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{uuid}/review:
+    post:
+      tags:
+        - Voucher
+      operationId: Review
+      requestBody:
+        description: todo
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewVoucherCmd'
+      parameters:
+        - in: path
+          name: uuid 
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: todo
+      responses:
+        '204':
+          description: todo
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Training:
+      type: object
+      required: [uuid, user, userUuid, notes, time, canBeCancelled, moveRequiresAccept]
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        user:
+          type: string
+          example: Mariusz Pudzianowski
+        userUuid:
+          type: string
+          format: uuid
+        notes:
+          type: string
+          example: "let's do leg day!"
+        time:
+          type: string
+          format: date-time
+        canBeCancelled:
+          type: boolean
+        moveRequiresAccept:
+          type: boolean
+        proposedTime:
+          type: string
+          format: date-time
+        moveProposedBy:
+          type: string
+
+    Trainings:
+      type: object
+      required: [trainings]
+      properties:
+        trainings:
+          type: array
+          items:
+            $ref: '#/components/schemas/Training'
+
+    PostTraining:
+      type: object
+      required: [time, notes]
+      properties:
+        notes:
+          type: string
+          example: "let's do leg day!"
+        time:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required:
+        - slug
+        - message
+      properties:
+        slug:
+          type: string
+        message:
+          type: string
+    
+    AuditVoucherCmd:
+      type: object
+      properties:
+        VoucherUUID:
+          type: string
+          format: uuid
+        AuditorUUID:
+          type: string
+          format: uuid
+    
+    RecordVoucherCmd:
+      type: object
+      required:
+        - time
+      properties:
+        UUID:
+          type: string
+          format: uuid
+        Number: 
+          type: integer
+          minimum: 0
+        CreatedAt:
+          type: string
+          format: date-time
+        AttachmentQuantity:
+          type: integer
+          minimum: 0
+        LineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItemCmd'
+        Debit:
+          type: string
+        Credit:
+          type: string
+        CreatorUUID:
+          type: string
+          format: uuid
+
+    LineItemCmd:
+      type: object
+      properties:
+        Summary: 
+          type: string
+        AccountNumber:
+          type: string
+        Debit:
+          type: string
+        Credit:
+          type: string
+
+    ReviewVoucherCmd:
+      type: object
+      properties:
+        VoucherUUID:
+          type: string
+          format: uuid
+        ReviewerUUID:
+          type: string
+          format: uuid
+    
+    UpdateVoucherCmd:
+      type: object
+      properties:
+        VoucherUUID:
+          type: string
+          format: uuid
+        LineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItemCmd'
+
+    LineItemQry:
+      type: object
+      properties:
+        Summary:
+          type: string
+        AccountNumber:
+          type: string
+        Debit:
+          type: string
+        Credit:
+          type: string
+
+    VoucherQry:
+      type: object
+      required:
+        - time
+      properties:
+        UUID: 
+          type: string
+          format: uuid 
+        Number:
+          type: integer
+          minimum: 0
+        CreatedAt:
+          type: string
+          format: date-time
+        AttachmentQuantity:
+          type: integer
+          minimum: 0
+        LineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItemQry'
+        Debit:
+          type: string
+        Credit:
+          type: string
+        CreatorUUID:
+          type: string
+          format: uuid
+        ReviewerUUID:
+          type: string
+          format: uuid
+        IsReviewed:
+          type: boolean
+        AuditorUUID:
+          type: string
+          format: uuid
+        IsAudited:
+          type: boolean
+    
+    VouchersQry:
+      type: array
+      items:
+        $ref: '#/components/schemas/VoucherQry'
+    
