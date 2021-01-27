@@ -54,14 +54,14 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{voucherUUID}:
+  /{uuid}:
     get:
       tags:
         - Voucher
       operationId: VoucherForUUID
       parameters:
         - in: path
-          name: voucherUUID
+          name: uuid
           schema:
             type: string
             format: uuid
@@ -86,7 +86,7 @@ paths:
       operationId: Update
       parameters:
         - in: path
-          name: voucherUUID
+          name: uuid
           schema:
             type: string
             format: uuid
@@ -108,7 +108,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{voucherUUID}/audit:
+  /{uuid}/audit:
     post:
       tags:
         - Voucher
@@ -122,7 +122,7 @@ paths:
               $ref: '#/components/schemas/AuditVoucherCmd'
       parameters:
         - in: path
-          name: voucherUUID
+          name: uuid
           schema:
             type: string
             format: uuid
@@ -138,7 +138,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{voucherUUID}/review:
+  /{uuid}/review:
     post:
       tags:
         - Voucher
@@ -152,7 +152,7 @@ paths:
               $ref: '#/components/schemas/ReviewVoucherCmd'
       parameters:
         - in: path
-          name: voucherUUID
+          name: uuid 
           schema:
             type: string
             format: uuid
@@ -259,6 +259,9 @@ components:
         CreatedAt:
           type: string
           format: date-time
+        AttachmentQuantity:
+          type: integer
+          minimum: 0
         LineItems:
           type: array
           items:

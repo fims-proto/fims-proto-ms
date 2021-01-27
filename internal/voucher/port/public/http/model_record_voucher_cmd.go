@@ -22,6 +22,8 @@ type RecordVoucherCmd struct {
 
 	CreatedAt time.Time `json:"CreatedAt,omitempty"`
 
+	AttachmentQuantity int32 `json:"AttachmentQuantity,omitempty"`
+
 	LineItems []LineItemCmd `json:"LineItems,omitempty"`
 
 	Debit string `json:"Debit,omitempty"`

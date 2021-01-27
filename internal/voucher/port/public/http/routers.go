@@ -41,7 +41,7 @@ func InitRouter(h Handler, router *gin.Engine) {
         {
             "Audit",
             http.MethodPost,
-            "/vouchers/:voucherUUID/audit",
+            "/vouchers/:uuid/audit",
             h.Audit,
         },
         {
@@ -53,19 +53,19 @@ func InitRouter(h Handler, router *gin.Engine) {
         {
             "Review",
             http.MethodPost,
-            "/vouchers/:voucherUUID/review",
+            "/vouchers/:uuid/review",
             h.Review,
         },
         {
             "Update",
             http.MethodPatch,
-            "/vouchers/:voucherUUID",
+            "/vouchers/:uuid",
             h.Update,
         },
         {
             "VoucherForUUID",
             http.MethodGet,
-            "/vouchers/:voucherUUID",
+            "/vouchers/:uuid",
             h.VoucherForUUID,
         },
     }
