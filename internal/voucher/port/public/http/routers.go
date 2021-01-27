@@ -30,45 +30,45 @@ type Route struct {
 
 // NewRouter returns a new router.
 func InitRouter(h Handler, router *gin.Engine) {
-    var routes = []Route{
-        
-        {
-            "AllVouchers",
-            http.MethodGet,
-            "/vouchers/",
-            h.AllVouchers,
-        },
-        {
-            "Audit",
-            http.MethodPost,
-            "/vouchers/:uuid/audit",
-            h.Audit,
-        },
-        {
-            "Record",
-            http.MethodPost,
-            "/vouchers/",
-            h.Record,
-        },
-        {
-            "Review",
-            http.MethodPost,
-            "/vouchers/:uuid/review",
-            h.Review,
-        },
-        {
-            "Update",
-            http.MethodPatch,
-            "/vouchers/:uuid",
-            h.Update,
-        },
-        {
-            "VoucherForUUID",
-            http.MethodGet,
-            "/vouchers/:uuid",
-            h.VoucherForUUID,
-        },
-    }
+	var routes = []Route{
+		
+		{
+			"AllVouchers",
+			http.MethodGet,
+			"/vouchers/",
+			h.AllVouchers,
+		},
+		{
+			"Audit",
+			http.MethodPost,
+			"/vouchers/:uuid/audit",
+			h.Audit,
+		},
+		{
+			"Record",
+			http.MethodPost,
+			"/vouchers/",
+			h.Record,
+		},
+		{
+			"Review",
+			http.MethodPost,
+			"/vouchers/:uuid/review",
+			h.Review,
+		},
+		{
+			"Update",
+			http.MethodPatch,
+			"/vouchers/:uuid",
+			h.Update,
+		},
+		{
+			"VoucherForUUID",
+			http.MethodGet,
+			"/vouchers/:uuid",
+			h.VoucherForUUID,
+		},
+	}
 	for _, route := range routes {
 		switch route.Method {
 		case http.MethodGet:
@@ -79,8 +79,8 @@ func InitRouter(h Handler, router *gin.Engine) {
 			router.PUT(route.Pattern, route.HandlerFunc)
 		case http.MethodDelete:
 			router.DELETE(route.Pattern, route.HandlerFunc)
-        case http.MethodPatch:
-            router.PATCH(route.Pattern, route.HandlerFunc)
+		case http.MethodPatch:
+			router.PATCH(route.Pattern, route.HandlerFunc)
 		}
 	}
 }

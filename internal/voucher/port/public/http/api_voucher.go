@@ -24,37 +24,30 @@ func NewHandler(app app.Application) Handler {
 }
 
 
-
-
 // AllVouchers - 
 func (h Handler) AllVouchers(c *gin.Context) {
 	h._AllVouchers(c)
 }
-
 
 // Audit - 
 func (h Handler) Audit(c *gin.Context) {
 	h._Audit(c)
 }
 
-
 // Record - 
 func (h Handler) Record(c *gin.Context) {
 	h._Record(c)
 }
-
 
 // Review - 
 func (h Handler) Review(c *gin.Context) {
 	h._Review(c)
 }
 
-
 // Update - 
 func (h Handler) Update(c *gin.Context) {
 	h._Update(c)
 }
-
 
 // VoucherForUUID - 
 func (h Handler) VoucherForUUID(c *gin.Context) {
