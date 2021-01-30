@@ -2,14 +2,15 @@ package adapter
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"strconv"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 // this is a simple check that the adapter implements the domain interface
@@ -45,7 +46,7 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(20, func(i int) {
-		v, err := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), 1, time.Now(), 0, []lineitem.LineItem{}, "0000")
+		v, err := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), "1", time.Now(), 0, []lineitem.LineItem{}, "0000")
 		require.NoError(t, err)
 		err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
@@ -76,7 +77,7 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 
 func prepareMemoryRepo(t *testing.T) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := voucher.NewVoucher("0000", 1, time.Now(), 0, []lineitem.LineItem{}, "0000")
+	v, err := voucher.NewVoucher("0000", "1", time.Now(), 0, []lineitem.LineItem{}, "0000")
 	require.NoError(t, err)
 	repo.data["0000"] = *v
 	return repo

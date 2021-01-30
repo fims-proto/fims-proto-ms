@@ -2,12 +2,13 @@ package command
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestApp_HandleAuditVoucher(t *testing.T) {
@@ -50,7 +51,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 }
 
 func createVoucherForAuditTest(t *testing.T, auditorUUID string) *voucher.Voucher {
-	v, err := voucher.NewVoucher("test_uuid", 1, time.Now(), 0, []lineitem.LineItem{}, "")
+	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, []lineitem.LineItem{}, "")
 	require.NoError(t, err)
 	if auditorUUID != "" {
 		err := v.Audit(auditorUUID)

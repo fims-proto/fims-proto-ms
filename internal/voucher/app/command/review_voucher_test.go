@@ -2,12 +2,13 @@ package command
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestApp_HandleReviewVoucher(t *testing.T) {
@@ -50,7 +51,7 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *voucher.Voucher {
-	v, err := voucher.NewVoucher("test_uuid", 1, time.Now(), 0, []lineitem.LineItem{}, "")
+	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, []lineitem.LineItem{}, "")
 	require.NoError(t, err)
 	if reviewerUUID != "" {
 		err := v.Review(reviewerUUID)

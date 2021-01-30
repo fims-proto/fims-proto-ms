@@ -2,14 +2,14 @@ package account
 
 import (
 	"context"
-	accountPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
+	accountport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 )
 
 type IntraprocessService struct {
-	accInterface accountPort.AccountInterface
+	accInterface accountport.AccountInterface
 }
 
-func NewIntraprocessService(accInterface accountPort.AccountInterface) IntraprocessService {
+func NewIntraprocessService(accInterface accountport.AccountInterface) IntraprocessService {
 	return IntraprocessService{accInterface: accInterface}
 }
 

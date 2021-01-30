@@ -1,9 +1,10 @@
 package account
 
 import (
-	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
+	accounttype "github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 type Account struct {

@@ -14,7 +14,7 @@ type LineItem struct {
 type Voucher struct {
 	UUID string
 	// TODO 字号
-	Number             uint
+	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint
 	LineItems          []LineItem

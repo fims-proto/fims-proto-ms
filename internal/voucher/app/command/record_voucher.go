@@ -2,21 +2,20 @@ package command
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"time"
+
+	"github.com/pkg/errors"
 )
 
 type RecordVoucherCmd struct {
 	UUID string
 	// TODO 字号
-	Number             uint
+	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
-	Debit              string
-	Credit             string
 	CreatorUUID        string
 }
 

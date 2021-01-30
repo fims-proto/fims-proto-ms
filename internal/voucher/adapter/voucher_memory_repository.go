@@ -2,11 +2,12 @@ package adapter
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 type VoucherMemoryRepository struct {

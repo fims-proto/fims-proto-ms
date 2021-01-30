@@ -1,10 +1,11 @@
 package account
 
 import (
+	accounttype "github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
-	"testing"
 )
 
 func TestNewAccount(t *testing.T) {

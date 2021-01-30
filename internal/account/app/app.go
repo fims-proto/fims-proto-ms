@@ -6,8 +6,7 @@ type Queries struct {
 	ValidateAccounts query.ValidateAccountsHandler
 }
 
-type Commands struct {
-}
+type Commands struct{}
 
 type Application struct {
 	Queries  Queries

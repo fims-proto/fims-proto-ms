@@ -1,7 +1,7 @@
 package query
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
+	accounttype "github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
 )
 
 type Account struct {

@@ -2,9 +2,10 @@ package command
 
 import (
 	"context"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+
+	"github.com/pkg/errors"
 )
 
 type UpdateVoucherCmd struct {

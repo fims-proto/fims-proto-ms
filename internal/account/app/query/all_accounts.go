@@ -17,6 +17,6 @@ func NewAllAccountsHandler(readModel AllAccountsReadModel) AllAccountsHandler {
 	return AllAccountsHandler{readModel: readModel}
 }
 
-func (h AllAccountsHandler) handle(ctx context.Context) ([]Account, error) {
+func (h AllAccountsHandler) Handle(ctx context.Context) ([]Account, error) {
 	return h.readModel.AllAccounts(ctx)
 }

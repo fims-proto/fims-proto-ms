@@ -2,12 +2,13 @@ package command
 
 import (
 	"context"
-	"github.com/pkg/errors"
-	"github.com/shopspring/decimal"
-	"github.com/stretchr/testify/assert"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"testing"
 	"time"
+
+	"github.com/pkg/errors"
+	"github.com/shopspring/decimal"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestApp_HandleRecordVoucherHandler(t *testing.T) {
@@ -69,12 +70,10 @@ func createVoucherCmd() *RecordVoucherCmd {
 	}
 	return &RecordVoucherCmd{
 		UUID:               "0000",
-		Number:             1,
+		Number:             "1",
 		CreatedAt:          time.Now(),
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
-		Debit:              "100",
-		Credit:             "100",
 		CreatorUUID:        "0000",
 	}
 }

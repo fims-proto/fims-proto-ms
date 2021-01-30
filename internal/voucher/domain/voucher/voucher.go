@@ -11,7 +11,7 @@ import (
 type Voucher struct {
 	uuid string
 	// TODO 字号
-	number             uint
+	number             string
 	createdAt          time.Time
 	attachmentQuantity uint
 	lineItems          []lineitem.LineItem
@@ -42,13 +42,12 @@ func validateItems(items []lineitem.LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(uuid string, number uint, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem,
+func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem,
 	creatorUUID string) (*Voucher, error) {
-
 	if uuid == "" {
 		return nil, errors.New("empty voucher uuid")
 	}
-	if number == 0 {
+	if number == "" {
 		return nil, errors.New("empty voucher number")
 	}
 
@@ -85,7 +84,7 @@ func (v Voucher) UUID() string {
 	return v.uuid
 }
 
-func (v Voucher) Number() uint {
+func (v Voucher) Number() string {
 	return v.number
 }
 
