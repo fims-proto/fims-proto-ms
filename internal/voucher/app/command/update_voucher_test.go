@@ -79,7 +79,8 @@ func (r voucherRepoMock) initTestData() {
 	item1, _ := lineitem.NewLineItem("test_item1", "1000", "", "10")
 	items := []lineitem.LineItem{*item0, *item1}
 	v, _ := voucher.NewVoucher(
-		"0000", 1,
+		"0000",
+		"1",
 		time.Now(),
 		0,
 		items,

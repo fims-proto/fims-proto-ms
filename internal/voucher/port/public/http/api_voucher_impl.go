@@ -1,14 +1,23 @@
 //  implementation of generated openapi
 package http
-import(
+
+import (
+	"github/fims-proto/fims-proto-ms/internal/voucher/app"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
+type Handler struct {
+	app app.Application
+}
 
+func NewHandler(app app.Application) Handler {
+	return Handler{app: app}
+}
 
-func (h Handler) _AllVouchers(c *gin.Context){
+func (h Handler) AllVouchers(c *gin.Context) {
 	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c.Request.Context())
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -17,44 +26,43 @@ func (h Handler) _AllVouchers(c *gin.Context){
 	httpVouchers := []VoucherQry{}
 	for _, voucher := range vouchers {
 		httpItems := []LineItemQry{}
-		for _, item := range voucher.LineItems{
+		for _, item := range voucher.LineItems {
 			httpItem := LineItemQry{
-				Summary: item.Summary,
+				Summary:       item.Summary,
 				AccountNumber: item.AccountNumber,
-				Debit: item.Debit,
-				Credit: item.Credit,
+				Debit:         item.Debit,
+				Credit:        item.Credit,
 			}
 			httpItems = append(httpItems, httpItem)
 		}
 		httpVoucher := VoucherQry{
-			UUID: voucher.UUID,
-			Number: int32(voucher.Number),
-			CreatedAt: voucher.CreatedAt,
-			AttachmentQuantity: int32(voucher.AttachmentQuantity),
-			LineItems: httpItems,
-			Debit: voucher.Debit,
-			Credit: voucher.Credit,
-			CreatorUUID: voucher.CreatorUUID,
-			ReviewerUUID: voucher.ReviewerUUID,
-			AuditorUUID: voucher.AuditorUUID,
-			IsReviewed: voucher.IsReviewed,
-			IsAudited: voucher.IsAudited,
+			UUID:               voucher.UUID,
+			Number:             string(voucher.Number),
+			CreatedAt:          voucher.CreatedAt,
+			AttachmentQuantity: int(voucher.AttachmentQuantity),
+			LineItems:          httpItems,
+			Debit:              voucher.Debit,
+			Credit:             voucher.Credit,
+			CreatorUUID:        voucher.CreatorUUID,
+			ReviewerUUID:       voucher.ReviewerUUID,
+			AuditorUUID:        voucher.AuditorUUID,
+			IsReviewed:         voucher.IsReviewed,
+			IsAudited:          voucher.IsAudited,
 		}
 		httpVouchers = append(httpVouchers, httpVoucher)
 	}
 	c.JSON(http.StatusOK, httpVouchers)
 }
 
-func (h Handler) _Audit(c *gin.Context){
+func (h Handler) Audit(c *gin.Context) {
 	var httpCmd AuditVoucherCmd
 	if err := c.ShouldBind(&httpCmd); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	httpCmd.VoucherUUID = c.Param("uuid")
 	cmd := command.AuditVoucherCmd{
+		VoucherUUID: c.Param("uuid"),
 		AuditorUUID: httpCmd.AuditorUUID,
-		VoucherUUID: httpCmd.VoucherUUID,
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -63,15 +71,14 @@ func (h Handler) _Audit(c *gin.Context){
 	c.Status(http.StatusAccepted)
 }
 
-func (h Handler) _Review(c *gin.Context){
+func (h Handler) Review(c *gin.Context) {
 	var httpCmd ReviewVoucherCmd
 	if err := c.ShouldBind(&httpCmd); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	httpCmd.VoucherUUID = c.Param("uuid")
 	cmd := command.ReviewVoucherCmd{
-		VoucherUUID: httpCmd.VoucherUUID,
+		VoucherUUID:  c.Param("uuid"),
 		ReviewerUUID: httpCmd.ReviewerUUID,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
@@ -81,26 +88,25 @@ func (h Handler) _Review(c *gin.Context){
 	c.Status(http.StatusAccepted)
 }
 
-func (h Handler) _Update(c *gin.Context){
+func (h Handler) Update(c *gin.Context) {
 	var httpCmd UpdateVoucherCmd
 	if err := c.ShouldBind(&httpCmd); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	httpCmd.VoucherUUID = c.Param("uuid")
 	items := []command.LineItemCmd{}
-	for _, httpItem := range httpCmd.LineItems{
+	for _, httpItem := range httpCmd.LineItems {
 		item := command.LineItemCmd{
-			Summary: httpItem.Summary,
+			Summary:       httpItem.Summary,
 			AccountNumber: httpItem.AccountNumber,
-			Debit: httpItem.Debit,
-			Credit: httpItem.Credit,
+			Debit:         httpItem.Debit,
+			Credit:        httpItem.Credit,
 		}
 		items = append(items, item)
 	}
 	cmd := command.UpdateVoucherCmd{
-		VoucherUUID: httpCmd.VoucherUUID,
-		LineItems: items,
+		VoucherUUID: c.Param("uuid"),
+		LineItems:   items,
 	}
 	if err := h.app.Commands.UpdateVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -109,31 +115,29 @@ func (h Handler) _Update(c *gin.Context){
 	c.Status(http.StatusCreated)
 }
 
-func (h Handler) _Record(c *gin.Context){
+func (h Handler) Record(c *gin.Context) {
 	var httpCmd RecordVoucherCmd
 	if err := c.ShouldBind(&httpCmd); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	items := []command.LineItemCmd{}
-	for _, httpItem := range httpCmd.LineItems{
+	for _, httpItem := range httpCmd.LineItems {
 		item := command.LineItemCmd{
-			Summary: httpItem.Summary,
+			Summary:       httpItem.Summary,
 			AccountNumber: httpItem.AccountNumber,
-			Debit: httpItem.Debit,
-			Credit: httpItem.Credit,
+			Debit:         httpItem.Debit,
+			Credit:        httpItem.Credit,
 		}
 		items = append(items, item)
 	}
 	cmd := command.RecordVoucherCmd{
-		UUID: httpCmd.UUID,
-		Number: uint(httpCmd.Number),
-		CreatedAt: httpCmd.CreatedAt,
+		UUID:               httpCmd.UUID,
+		Number:             *httpCmd.Number,
+		CreatedAt:          httpCmd.CreatedAt,
 		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
-		LineItems: items,
-		Debit: httpCmd.Debit,
-		Credit: httpCmd.Credit,
-		CreatorUUID: httpCmd.CreatorUUID,
+		LineItems:          items,
+		CreatorUUID:        httpCmd.CreatorUUID,
 	}
 	if err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -144,36 +148,50 @@ func (h Handler) _Record(c *gin.Context){
 	c.Writer.Header().Set("Content-Location", "/vouchers/"+cmd.UUID)
 }
 
-func (h Handler) _VoucherForUUID(c *gin.Context){
+func (h Handler) VoucherForUUID(c *gin.Context) {
 	voucher, err := h.app.Queries.ReadVouchers.HandleReadForUUID(c.Param("uuid"), c.Request.Context())
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	httpItems := []LineItemQry {}
-	for _, item := range voucher.LineItems{
+	httpItems := []LineItemQry{}
+	for _, item := range voucher.LineItems {
 		httpItem := LineItemQry{
-			Summary: item.Summary,
+			Summary:       item.Summary,
 			AccountNumber: item.AccountNumber,
-			Debit: item.Debit,
-			Credit: item.Credit,
+			Debit:         item.Debit,
+			Credit:        item.Credit,
 		}
 		httpItems = append(httpItems, httpItem)
 	}
 
 	httpVoucher := VoucherQry{
-		UUID: voucher.UUID,
-		Number: int32(voucher.Number),
-		CreatedAt: voucher.CreatedAt,
-		AttachmentQuantity: int32(voucher.AttachmentQuantity),
-		LineItems: httpItems,
-		Debit: voucher.Debit,
-		Credit: voucher.Credit,
-		CreatorUUID: voucher.CreatorUUID,
-		ReviewerUUID: voucher.ReviewerUUID,
-		AuditorUUID: voucher.AuditorUUID,
-		IsReviewed: voucher.IsReviewed,
-		IsAudited: voucher.IsAudited,
+		UUID:               voucher.UUID,
+		Number:             voucher.Number,
+		CreatedAt:          voucher.CreatedAt,
+		AttachmentQuantity: int(voucher.AttachmentQuantity),
+		LineItems:          httpItems,
+		Debit:              voucher.Debit,
+		Credit:             voucher.Credit,
+		CreatorUUID:        voucher.CreatorUUID,
+		ReviewerUUID:       voucher.ReviewerUUID,
+		AuditorUUID:        voucher.AuditorUUID,
+		IsReviewed:         voucher.IsReviewed,
+		IsAudited:          voucher.IsAudited,
 	}
 	c.JSON(http.StatusOK, httpVoucher)
+}
+
+func InitRouter(h Handler, r *gin.Engine) {
+	g := r.Group("/vouchers")
+	{
+		g.GET("/", h.AllVouchers)
+		g.GET("/:uuid", h.VoucherForUUID)
+		g.POST("/", h.Record)
+		g.PATCH("/:uuid", h.Update)
+		g.POST("/:uuid/audit", h.Audit)
+		// TODO cancel audit
+		g.POST("/:uuid/review", h.Review)
+		// TODO cancel review
+	}
 }

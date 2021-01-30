@@ -51,7 +51,7 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *voucher.Voucher {
-	v, err := voucher.NewVoucher("test_uuid", 1, time.Now(), 0, []lineitem.LineItem{}, "")
+	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, []lineitem.LineItem{}, "")
 	require.NoError(t, err)
 	if reviewerUUID != "" {
 		err := v.Review(reviewerUUID)

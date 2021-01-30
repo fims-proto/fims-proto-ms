@@ -70,12 +70,10 @@ func createVoucherCmd() *RecordVoucherCmd {
 	}
 	return &RecordVoucherCmd{
 		UUID:               "0000",
-		Number:             1,
+		Number:             "1",
 		CreatedAt:          time.Now(),
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
-		Debit:              "100",
-		Credit:             "100",
 		CreatorUUID:        "0000",
 	}
 }

@@ -14,22 +14,22 @@ func TestDomain_NewVoucher(t *testing.T) {
 	tests := []struct {
 		name   string
 		uuid   string
-		number uint
+		number string
 		items  []lineitem.LineItem
 		verify func(t *testing.T, voucher *Voucher, err error)
 	}{
 		{
-			"normal_success", "test_uuid", 1, prepareBalancedItems(),
+			"normal_success", "test_uuid", "1", prepareBalancedItems(),
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.NoError(t, err)
 				assert.Equal(t, "test_uuid", voucher.UUID())
-				assert.Equal(t, uint(1), voucher.Number())
+				assert.Equal(t, "1", voucher.Number())
 				assert.Equal(t, "200", voucher.Credit().String())
 				assert.Equal(t, "200", voucher.Debit().String())
 			},
 		},
 		{
-			"imbalanced_error", "test_uuid", 1, prepareImbalancedItems(),
+			"imbalanced_error", "test_uuid", "1", prepareImbalancedItems(),
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
 				assert.Error(t, err)

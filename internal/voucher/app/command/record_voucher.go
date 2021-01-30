@@ -12,12 +12,10 @@ import (
 type RecordVoucherCmd struct {
 	UUID string
 	// TODO 字号
-	Number             uint
+	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
-	Debit              string
-	Credit             string
 	CreatorUUID        string
 }
 
