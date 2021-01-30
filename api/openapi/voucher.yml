@@ -201,6 +201,7 @@ components:
       properties:
         UUID:
           type: string
+          format: uuid
         Number: 
           type: string
         CreatedAt:
