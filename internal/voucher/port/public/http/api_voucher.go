@@ -1,4 +1,3 @@
-//  implementation of generated openapi
 package http
 
 import (
