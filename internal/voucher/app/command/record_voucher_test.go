@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"testing"
 	"time"
@@ -116,4 +117,17 @@ type accountServiceMock struct {
 func (s *accountServiceMock) ValidateExistence(ctx context.Context, accNumbers []string) error {
 	s.invoked = true
 	return nil
+}
+
+func prepareBalancedItems() []lineitem.LineItem {
+	item1, _ := lineitem.NewLineItem("test", "1000", "100", "")
+	item2, _ := lineitem.NewLineItem("test", "1001", "100", "")
+	item3, _ := lineitem.NewLineItem("test", "2000", "", "150")
+	item4, _ := lineitem.NewLineItem("test", "2001", "", "50")
+	return []lineitem.LineItem{
+		*item1,
+		*item2,
+		*item3,
+		*item4,
+	}
 }

@@ -46,7 +46,7 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(20, func(i int) {
-		v, err := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), "1", time.Now(), 0, []lineitem.LineItem{}, "0000")
+		v, err := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), "1", time.Now(), 0, prepareBalancedItems(), "0000")
 		require.NoError(t, err)
 		err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
@@ -77,7 +77,7 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 
 func prepareMemoryRepo(t *testing.T) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := voucher.NewVoucher("0000", "1", time.Now(), 0, []lineitem.LineItem{}, "0000")
+	v, err := voucher.NewVoucher("0000", "1", time.Now(), 0, prepareBalancedItems(), "0000")
 	require.NoError(t, err)
 	repo.data["0000"] = *v
 	return repo
@@ -100,4 +100,17 @@ func scheduleRaceTest(workers int, startToDo func(i int)) {
 
 	close(startWorkers)
 	workersDone.Wait()
+}
+
+func prepareBalancedItems() []lineitem.LineItem {
+	item1, _ := lineitem.NewLineItem("test", "1000", "100", "")
+	item2, _ := lineitem.NewLineItem("test", "1001", "100", "")
+	item3, _ := lineitem.NewLineItem("test", "2000", "", "150")
+	item4, _ := lineitem.NewLineItem("test", "2001", "", "50")
+	return []lineitem.LineItem{
+		*item1,
+		*item2,
+		*item3,
+		*item4,
+	}
 }

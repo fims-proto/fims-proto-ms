@@ -9,8 +9,7 @@ import (
 )
 
 type Voucher struct {
-	uuid string
-	// TODO 字号
+	uuid               string
 	number             string
 	createdAt          time.Time
 	attachmentQuantity uint
@@ -28,7 +27,11 @@ type Voucher struct {
 	}
 }
 
-func validateItems(items []lineitem.LineItem) (decimal.Decimal, error) {
+func sumItems(items []lineitem.LineItem) (decimal.Decimal, error) {
+	if len(items) == 0 {
+		return decimal.Decimal{}, errors.New("lineitem cannot be empty")
+	}
+
 	var debitInTotal decimal.Decimal
 	var creditInTotal decimal.Decimal
 	for _, item := range items {
@@ -51,7 +54,7 @@ func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuant
 		return nil, errors.New("empty voucher number")
 	}
 
-	totalVal, err := validateItems(items)
+	totalVal, err := sumItems(items)
 	if err != nil {
 		return nil, err
 	}
@@ -126,15 +129,4 @@ func (v Voucher) IsReviewed() bool {
 
 func (v Voucher) IsAudited() bool {
 	return v.auditor.isAudited
-}
-
-func (v *Voucher) Update(items []lineitem.LineItem) error {
-	totalVal, err := validateItems(items)
-	if err != nil {
-		return err
-	}
-	v.credit = totalVal
-	v.debit = totalVal
-	v.lineItems = items
-	return nil
 }

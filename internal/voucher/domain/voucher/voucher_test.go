@@ -35,6 +35,14 @@ func TestDomain_NewVoucher(t *testing.T) {
 				assert.Error(t, err)
 			},
 		},
+		{
+			"empty_lineitem_error", "test_uuid", "1",
+			[]lineitem.LineItem{},
+			func(t *testing.T, voucher *Voucher, err error) {
+				require.Nil(t, voucher)
+				assert.Error(t, err)
+			},
+		},
 	}
 	for _, test := range tests {
 		test := test
