@@ -10,8 +10,7 @@ import (
 )
 
 type RecordVoucherCmd struct {
-	UUID string
-	// TODO 字号
+	UUID               string
 	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint
