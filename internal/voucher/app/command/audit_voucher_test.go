@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"testing"
 	"time"
@@ -51,7 +50,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 }
 
 func createVoucherForAuditTest(t *testing.T, auditorUUID string) *voucher.Voucher {
-	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, []lineitem.LineItem{}, "")
+	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if auditorUUID != "" {
 		err := v.Audit(auditorUUID)

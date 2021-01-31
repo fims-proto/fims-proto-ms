@@ -1,7 +1,6 @@
 package voucher
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"testing"
 	"time"
 
@@ -94,7 +93,7 @@ func TestDomain_VoucherAudit(t *testing.T) {
 }
 
 func createVoucherForAuditTest(t *testing.T, auditorUUID string) *Voucher {
-	voucher, err := NewVoucher("test_uuid", "1", time.Now(), 0, []lineitem.LineItem{}, "")
+	voucher, err := NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if auditorUUID != "" {
 		err := voucher.Audit(auditorUUID)
