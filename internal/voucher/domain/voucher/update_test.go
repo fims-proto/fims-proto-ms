@@ -34,7 +34,7 @@ func TestDomain_VoucherUpdate(t *testing.T) {
 			},
 		},
 		{
-			"update_reviewed",
+			"update_audited",
 			func(t *testing.T) *Voucher {
 				return createVoucherForUpdateTest(t, false, true)
 			},

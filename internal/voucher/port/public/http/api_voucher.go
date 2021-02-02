@@ -132,7 +132,7 @@ func (h Handler) Record(c *gin.Context) {
 	}
 	cmd := command.RecordVoucherCmd{
 		UUID:               httpCmd.UUID,
-		Number:             *httpCmd.Number,
+		Number:             httpCmd.Number,
 		CreatedAt:          httpCmd.CreatedAt,
 		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
 		LineItems:          items,
