@@ -44,7 +44,7 @@ type RecordVoucherCmd struct {
 	CreatedAt          time.Time     `json:"CreatedAt"`
 	CreatorUUID        string        `json:"CreatorUUID"`
 	LineItems          []LineItemCmd `json:"LineItems"`
-	Number             *string       `json:"Number,omitempty"`
+	Number             string       `json:"Number"`
 	UUID               string        `json:"UUID"`
 }
 
