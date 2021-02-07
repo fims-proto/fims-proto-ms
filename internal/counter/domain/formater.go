@@ -6,7 +6,9 @@ import (
 )
 
 type Formater struct {
-	length uint
+	length uint // length of zero-padded number
+	prefix string 
+	sufix string
 }
 
 func (f Formater) format(count uint) (string, error){
@@ -14,7 +16,7 @@ func (f Formater) format(count uint) (string, error){
 	if len(count_str) > int(f.length){
 		return "", errors.New("Voucher Number exceeds the predefined length")
 	}
-	return count_str, nil
+	return f.prefix+count_str+f.sufix, nil
 }
 
 func (f Formater) SetLen(len uint) {
