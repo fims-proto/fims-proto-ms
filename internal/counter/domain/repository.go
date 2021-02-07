@@ -2,7 +2,6 @@ package counter
 
 import (
 	"context"
-	"fmt"
 )
 
 type Repository interface {
