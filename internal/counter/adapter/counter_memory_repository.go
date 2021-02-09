@@ -30,7 +30,7 @@ func (r *CounterMemoryRepository) AddCounter(ctx context.Context, counter *count
 	}
 	r.data.Store(	
 		counter.UUID, 
-		CounterWrapper{
+		&CounterWrapper{
 			lock: &sync.RWMutex{},
 			Counter: counter,
 		},
@@ -43,9 +43,9 @@ func (r *CounterMemoryRepository) ResetCounter(ctx context.Context, UUID string)
 	if !ok {
 		return errors.Errorf("Counter %s does not exist", UUID)
 	}
-	counterW.(CounterWrapper).lock.Lock()
-	defer counterW.(CounterWrapper).lock.Unlock()
-	err := counterW.(CounterWrapper).Counter.Reset()
+	counterW.(*CounterWrapper).lock.Lock()
+	defer counterW.(*CounterWrapper).lock.Unlock()
+	err := counterW.(*CounterWrapper).Counter.Reset()
 	if err != nil {
 		return errors.Wrapf(err, "Counter %s reset failed", UUID)
 	}
@@ -58,7 +58,7 @@ func (r *CounterMemoryRepository) GetNextFromCounter(ctx context.Context, UUID s
 	if !ok {
 		return "", errors.Errorf("Counter %s does not exist", UUID)
 	}
-	next, err := counterW.(CounterWrapper).Counter.Next()
+	next, err := counterW.(*CounterWrapper).Counter.Next()
 	if err != nil {
 		return "",errors.Wrapf(err, "Counter %s next failed", UUID)
 	}
