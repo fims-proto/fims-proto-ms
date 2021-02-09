@@ -8,44 +8,60 @@ import (
 	"github.com/pkg/errors"
 )
 
-type CounterMemoryRepository struct {
+type CounterWrapper struct {
+	Counter *counter.Counter
 	lock *sync.RWMutex
-	data map[string]counter.Counter
+}
+
+type CounterMemoryRepository struct {
+	data sync.Map
 }
 
 func NewCounterMemoryRepository() CounterMemoryRepository{
 	return CounterMemoryRepository{
-		lock: &sync.RWMutex{},
-		data: make(map[string]counter.Counter),
+		data: sync.Map{},
 	}
 }
 
-func (r *CounterMemoryRepository) ResetCounter(ctx context.Context, UUID string) error {
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	counter, ok := r.data[UUID]
-	if !ok {
-		errors.Errorf("Counter %s does not exist", UUID)
+func (r *CounterMemoryRepository) AddCounter(ctx context.Context, counter *counter.Counter) error {
+	_, ok := r.data.Load(counter.UUID)
+	if ok {
+		return errors.Errorf("Counter with UUID %s already exists", counter.UUID)
 	}
-	err := counter.Reset()
+	r.data.Store(	
+		counter.UUID, 
+		CounterWrapper{
+			lock: &sync.RWMutex{},
+			Counter: counter,
+		},
+	)
+	return nil
+}
+
+func (r *CounterMemoryRepository) ResetCounter(ctx context.Context, UUID string) error {
+	counterW, ok := r.data.Load(UUID)
+	if !ok {
+		return errors.Errorf("Counter %s does not exist", UUID)
+	}
+	counterW.(CounterWrapper).lock.Lock()
+	defer counterW.(CounterWrapper).lock.Unlock()
+	err := counterW.(CounterWrapper).Counter.Reset()
 	if err != nil {
 		return errors.Wrapf(err, "Counter %s reset failed", UUID)
 	}
-	r.data[UUID] = counter 
+	r.data.Store(UUID, counterW) 
 	return nil
 }
 
 func (r *CounterMemoryRepository) GetNextFromCounter(ctx context.Context, UUID string) (string,error){
-	r.lock.Lock()
-	defer r.lock.Unlock()
-	counter, ok := r.data[UUID]
+	counterW, ok := r.data.Load(UUID)
 	if !ok {
-		errors.Errorf("Counter %s does not exist", UUID)
+		return "", errors.Errorf("Counter %s does not exist", UUID)
 	}
-	next, err := counter.Next()
+	next, err := counterW.(CounterWrapper).Counter.Next()
 	if err != nil {
 		return "",errors.Wrapf(err, "Counter %s next failed", UUID)
 	}
-	r.data[UUID] = counter
+	r.data.Store(UUID,counterW)
 	return next, nil
 }

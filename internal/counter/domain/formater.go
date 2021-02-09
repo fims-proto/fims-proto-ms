@@ -14,7 +14,7 @@ type Formater struct {
 func (f Formater) format(count uint) (string, error){
 	count_str := fmt.Sprintf("%0*d",f.length,count)
 	if len(count_str) > int(f.length){
-		return "", errors.New("Voucher Number exceeds the predefined length")
+		return "", errors.Errorf("Counter Number exceeds the predefined length %d",f.length)
 	}
 	return f.prefix+count_str+f.sufix, nil
 }
