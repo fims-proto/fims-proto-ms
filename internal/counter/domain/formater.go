@@ -11,6 +11,14 @@ type Formater struct {
 	sufix string
 }
 
+func NewFormater(len uint, prefix string, sufix string) Formater{
+	return Formater{
+		length: len,
+		prefix: prefix,
+		sufix: sufix,
+	}
+}
+
 func (f Formater) format(count uint) (string, error){
 	count_str := fmt.Sprintf("%0*d",f.length,count)
 	if len(count_str) > int(f.length){

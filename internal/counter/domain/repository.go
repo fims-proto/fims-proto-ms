@@ -15,5 +15,9 @@ type Repository interface {
 		ctx context.Context,
 		counterUUID string,
 	) error
+	DeleteCounter(
+		ctx context.Context,
+		counterUUID string,
+	) error
 
 }

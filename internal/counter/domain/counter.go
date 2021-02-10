@@ -20,11 +20,7 @@ func NewCounter(UUID string, len uint,prefix string, sufix string) (*Counter, er
 	return &Counter{
 		UUID: UUID,
 		Current: 0,
-		formater: Formater{
-			length: len,
-			prefix: prefix,
-			sufix: sufix,
-		},
+		formater: NewFormater(len,prefix,sufix),
 		LastResetDate: time.Now(),
 	},nil
 }

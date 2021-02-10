@@ -65,3 +65,8 @@ func (r *CounterMemoryRepository) GetNextFromCounter(ctx context.Context, UUID s
 	r.data.Store(UUID,counterW)
 	return next, nil
 }
+
+func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, UUID string) error{
+	r.data.Delete(UUID)
+	return nil
+}
