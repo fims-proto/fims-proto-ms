@@ -53,8 +53,7 @@ func createVoucherForAuditTest(t *testing.T, auditorUUID string) *voucher.Vouche
 	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if auditorUUID != "" {
-		err := v.Audit(auditorUUID)
-		require.NoError(t, err)
+		v.Audit(auditorUUID)
 	}
 	return v
 }
