@@ -9,15 +9,15 @@ type CounterDeleteHandler struct {
 	repo counter.Repository
 }
 
-func NewCounterDeleteHandler(repo counter.Repository) CounterDeleteHandler{
+func NewCounterDeleteHandler(repo counter.Repository) CounterDeleteHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 	return CounterDeleteHandler{repo: repo}
 }
 
-func (h CounterDeleteHandler) Handle(ctx context.Context, cmd CounterDeleteCmd) error{
+func (h CounterDeleteHandler) Handle(ctx context.Context, cmd CounterDeleteCmd) error {
 	return h.repo.DeleteCounter(
-		ctx, 
+		ctx,
 		cmd.UUID)
 }

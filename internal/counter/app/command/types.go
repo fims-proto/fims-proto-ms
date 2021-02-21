@@ -13,8 +13,8 @@ type CounterDeleteCmd struct {
 }
 
 type CounterAddCmd struct {
-	UUID string
+	UUID   string
 	Length uint
 	Prefix string
-	Sufix string
+	Sufix  string
 }

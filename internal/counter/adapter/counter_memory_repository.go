@@ -10,14 +10,14 @@ import (
 
 type CounterWrapper struct {
 	Counter *counter.Counter
-	lock *sync.RWMutex
+	lock    *sync.RWMutex
 }
 
 type CounterMemoryRepository struct {
 	data sync.Map
 }
 
-func NewCounterMemoryRepository() CounterMemoryRepository{
+func NewCounterMemoryRepository() CounterMemoryRepository {
 	return CounterMemoryRepository{
 		data: sync.Map{},
 	}
@@ -28,10 +28,10 @@ func (r *CounterMemoryRepository) AddCounter(ctx context.Context, counter *count
 	if ok {
 		return errors.Errorf("Counter with UUID %s already exists", counter.UUID)
 	}
-	r.data.Store(	
-		counter.UUID, 
+	r.data.Store(
+		counter.UUID,
 		&CounterWrapper{
-			lock: &sync.RWMutex{},
+			lock:    &sync.RWMutex{},
 			Counter: counter,
 		},
 	)
@@ -49,24 +49,24 @@ func (r *CounterMemoryRepository) ResetCounter(ctx context.Context, UUID string)
 	if err != nil {
 		return errors.Wrapf(err, "Counter %s reset failed", UUID)
 	}
-	r.data.Store(UUID, counterW) 
+	r.data.Store(UUID, counterW)
 	return nil
 }
 
-func (r *CounterMemoryRepository) GetNextFromCounter(ctx context.Context, UUID string) (string,error){
+func (r *CounterMemoryRepository) GetNextFromCounter(ctx context.Context, UUID string) (string, error) {
 	counterW, ok := r.data.Load(UUID)
 	if !ok {
 		return "", errors.Errorf("Counter %s does not exist", UUID)
 	}
 	next, err := counterW.(*CounterWrapper).Counter.Next()
 	if err != nil {
-		return "",errors.Wrapf(err, "Counter %s next failed", UUID)
+		return "", errors.Wrapf(err, "Counter %s next failed", UUID)
 	}
-	r.data.Store(UUID,counterW)
+	r.data.Store(UUID, counterW)
 	return next, nil
 }
 
-func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, UUID string) error{
+func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, UUID string) error {
 	r.data.Delete(UUID)
 	return nil
 }

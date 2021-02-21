@@ -9,11 +9,11 @@ type IntraprocessService struct {
 	cntrInterface counterport.CounterInterface
 }
 
-func NewIntraprocessService(cntrInterface counterport.CounterInterface) IntraprocessService{
+func NewIntraprocessService(cntrInterface counterport.CounterInterface) IntraprocessService {
 	return IntraprocessService{cntrInterface: cntrInterface}
 }
 
-func (s IntraprocessService) Add(ctx context.Context,UUID string, len uint, prefix string, sufix string) error{
+func (s IntraprocessService) Add(ctx context.Context, UUID string, len uint, prefix string, sufix string) error {
 	return s.cntrInterface.Add(ctx, UUID, len, prefix, sufix)
 }
 

@@ -9,7 +9,7 @@ type CounterResetHandler struct {
 	repo counter.Repository
 }
 
-func NewCounterResetHandler (repo counter.Repository) CounterResetHandler{
+func NewCounterResetHandler(repo counter.Repository) CounterResetHandler {
 	if repo == nil {
 		panic(("nil repo"))
 	}
@@ -18,7 +18,7 @@ func NewCounterResetHandler (repo counter.Repository) CounterResetHandler{
 	}
 }
 
-func (h CounterResetHandler) Handle (ctx context.Context, cmd CounterResetCmd) error {
+func (h CounterResetHandler) Handle(ctx context.Context, cmd CounterResetCmd) error {
 	return h.repo.ResetCounter(
 		ctx,
 		cmd.UUID,

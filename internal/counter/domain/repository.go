@@ -1,4 +1,4 @@
-package counter 
+package counter
 
 import (
 	"context"
@@ -19,5 +19,4 @@ type Repository interface {
 		ctx context.Context,
 		counterUUID string,
 	) error
-
 }
