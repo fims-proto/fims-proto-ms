@@ -147,7 +147,7 @@ func (h Handler) Record(c *gin.Context) {
 	c.Writer.Header().Set("Content-Location", "/vouchers/"+cmd.UUID)
 }
 
-func (h Handler) VoucherForUUID(c *gin.Context) {
+func (h Handler) VoucherByUUID(c *gin.Context) {
 	voucher, err := h.app.Queries.ReadVouchers.HandleReadForUUID(c.Param("uuid"), c.Request.Context())
 	if err != nil {
 		c.Status(http.StatusNotFound)
@@ -185,7 +185,7 @@ func InitRouter(h Handler, r *gin.Engine) {
 	g := r.Group("/vouchers")
 	{
 		g.GET("/", h.AllVouchers)
-		g.GET("/:uuid", h.VoucherForUUID)
+		g.GET("/:uuid", h.VoucherByUUID)
 		g.POST("/", h.Record)
 		g.PATCH("/:uuid", h.Update)
 		g.POST("/:uuid/audit", h.Audit)

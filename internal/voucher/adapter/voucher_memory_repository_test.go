@@ -35,7 +35,7 @@ func TestAdapter_MemoryRepository_ReadOne(t *testing.T) {
 	repo := prepareMemoryRepo(t)
 
 	scheduleRaceTest(20, func(_ int) {
-		v, err := repo.VoucherForUUID(context.Background(), "0000")
+		v, err := repo.VoucherByUUID(context.Background(), "0000")
 		require.NoError(t, err)
 		assert.Equal(t, "0000", v.UUID)
 	})

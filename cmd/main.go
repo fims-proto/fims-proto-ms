@@ -33,7 +33,7 @@ func newVoucherApplication(accountInterface accountintraport.AccountInterface) v
 
 	return voucherapp.Application{
 		Queries: voucherapp.Queries{
-			ReadVouchers: voucherquery.NewAllVouchersHandler(memoryRepository),
+			ReadVouchers: voucherquery.NewReadVouchersHandler(memoryRepository),
 		},
 		Commands: voucherapp.Commands{
 			RecordVoucher: vouchercommand.NewRecordVoucherHandler(&memoryRepository, accountService),

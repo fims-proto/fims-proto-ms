@@ -7,10 +7,6 @@ import (
 	"time"
 )
 
-const (
-	BearerAuthScopes = "bearerAuth.Scopes"
-)
-
 // AuditVoucherCmd defines model for AuditVoucherCmd.
 type AuditVoucherCmd struct {
 	AuditorUUID string `json:"AuditorUUID"`
@@ -44,7 +40,7 @@ type RecordVoucherCmd struct {
 	CreatedAt          time.Time     `json:"CreatedAt"`
 	CreatorUUID        string        `json:"CreatorUUID"`
 	LineItems          []LineItemCmd `json:"LineItems"`
-	Number             string       `json:"Number"`
+	Number             string        `json:"Number"`
 	UUID               string        `json:"UUID"`
 }
 
@@ -89,14 +85,14 @@ type AuditJSONBody AuditVoucherCmd
 // ReviewJSONBody defines parameters for Review.
 type ReviewJSONBody ReviewVoucherCmd
 
-// RecordJSONRequestBody defines body for Record for application/json ContentType.
+// RecordRequestBody defines body for Record for application/json ContentType.
 type RecordJSONRequestBody RecordJSONBody
 
-// UpdateJSONRequestBody defines body for Update for application/json ContentType.
+// UpdateRequestBody defines body for Update for application/json ContentType.
 type UpdateJSONRequestBody UpdateJSONBody
 
-// AuditJSONRequestBody defines body for Audit for application/json ContentType.
+// AuditRequestBody defines body for Audit for application/json ContentType.
 type AuditJSONRequestBody AuditJSONBody
 
-// ReviewJSONRequestBody defines body for Review for application/json ContentType.
+// ReviewRequestBody defines body for Review for application/json ContentType.
 type ReviewJSONRequestBody ReviewJSONBody
