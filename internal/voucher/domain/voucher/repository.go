@@ -3,6 +3,8 @@ package voucher
 import (
 	"context"
 	"fmt"
+
+	"github.com/google/uuid"
 )
 
 type NotFoundError struct {
@@ -14,10 +16,10 @@ func (e NotFoundError) Error() string {
 }
 
 type Repository interface {
-	AddVoucher(ctx context.Context, v *Voucher) error
+	AddVoucher(ctx context.Context, v *Voucher) (uuid.UUID, error)
 	UpdateVoucher(
 		ctx context.Context,
-		voucherUUID string,
+		voucherUUID uuid.UUID,
 		updateFn func(v *Voucher) (*Voucher, error),
 	) error
 }

@@ -196,11 +196,8 @@ components:
     
     RecordVoucherCmd:
       type: object
-      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Creator]
+      required: [Number, CreatedAt, AttachmentQuantity, LineItems, Creator]
       properties:
-        UUID:
-          type: string
-          format: uuid
         Number: 
           type: string
         CreatedAt:

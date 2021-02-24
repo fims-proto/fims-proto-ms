@@ -41,7 +41,6 @@ type RecordVoucherCmd struct {
 	Creator            string        `json:"Creator"`
 	LineItems          []LineItemCmd `json:"LineItems"`
 	Number             string        `json:"Number"`
-	UUID               string        `json:"UUID"`
 }
 
 // ReviewVoucherCmd defines model for ReviewVoucherCmd.

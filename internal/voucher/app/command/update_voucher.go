@@ -5,11 +5,12 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type UpdateVoucherCmd struct {
-	VoucherUUID string
+	VoucherUUID uuid.UUID
 	LineItems   []LineItemCmd
 }
 

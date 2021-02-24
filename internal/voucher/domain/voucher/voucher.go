@@ -4,12 +4,13 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
 type Voucher struct {
-	uuid               string
+	uuid               uuid.UUID
 	number             string
 	createdAt          time.Time
 	attachmentQuantity uint
@@ -41,8 +42,8 @@ func sumItems(items []lineitem.LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem, creator string) (*Voucher, error) {
-	if uuid == "" {
+func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem, creator string) (*Voucher, error) {
+	if voucherUUID == uuid.Nil {
 		return nil, errors.New("empty voucher uuid")
 	}
 	if number == "" {
@@ -55,7 +56,7 @@ func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuant
 	}
 
 	return &Voucher{
-		uuid:               uuid,
+		uuid:               voucherUUID,
 		number:             number,
 		createdAt:          createdAt,
 		attachmentQuantity: attachmentQuantity,
@@ -70,7 +71,7 @@ func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuant
 	}, nil
 }
 
-func (v Voucher) UUID() string {
+func (v Voucher) UUID() uuid.UUID {
 	return v.uuid
 }
 

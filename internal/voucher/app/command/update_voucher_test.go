@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 )
@@ -43,11 +44,13 @@ func TestApp_HandleUpdateVoucherHandler(t *testing.T) {
 
 			d100, _ := decimal.NewFromString("100")
 
+			v := vouchers[uuid.NewSHA1(uuid.Nil, []byte("0000"))]
+
 			assertions.Len(vouchers, 1)
-			assertions.Len(vouchers["0000"].LineItems(), 2)
-			assertions.Equal(d100, vouchers["0000"].Credit())
-			assertions.Equal(d100, vouchers["0000"].Debit())
-			assertions.Equal("0000", vouchers["0000"].Creator())
+			assertions.Len(v.LineItems(), 2)
+			assertions.Equal(d100, v.Credit())
+			assertions.Equal(d100, v.Debit())
+			assertions.Equal("0000", v.Creator())
 			assertions.True(accServiceMock.invoked)
 		})
 	}
@@ -69,7 +72,7 @@ func createUpdateVoucherCmd() *UpdateVoucherCmd {
 		},
 	}
 	return &UpdateVoucherCmd{
-		VoucherUUID: "0000",
+		VoucherUUID: uuid.NewSHA1(uuid.Nil, []byte("0000")),
 		LineItems:   lineItems,
 	}
 }
@@ -79,12 +82,12 @@ func (r voucherRepoMock) initTestData() {
 	item1, _ := lineitem.NewLineItem("test_item1", "1000", "", "10")
 	items := []lineitem.LineItem{*item0, *item1}
 	v, _ := voucher.NewVoucher(
-		"0000",
+		uuid.NewSHA1(uuid.Nil, []byte("0000")),
 		"1",
 		time.Now(),
 		0,
 		items,
 		"0000",
 	)
-	r.vouchers["0000"] = *v
+	r.vouchers[v.UUID()] = *v
 }

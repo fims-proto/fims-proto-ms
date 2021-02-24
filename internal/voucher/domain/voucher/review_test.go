@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -93,7 +94,7 @@ func TestDomain_VoucherReview(t *testing.T) {
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *Voucher {
-	voucher, err := NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
+	voucher, err := NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if reviewerUUID != "" {
 		err := voucher.Review(reviewerUUID)

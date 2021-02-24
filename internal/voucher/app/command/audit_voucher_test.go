@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -32,7 +33,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 
 			v := test.constructor(t)
 			repoMock := newVoucherRepoMock()
-			repoMock.vouchers = map[string]voucher.Voucher{
+			repoMock.vouchers = map[uuid.UUID]voucher.Voucher{
 				v.UUID(): *v,
 			}
 
@@ -40,7 +41,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 
 			err := handler.Handle(context.Background(), AuditVoucherCmd{
 				VoucherUUID: v.UUID(),
-				AuditorUUID: test.auditorUUID,
+				Auditor:     test.auditorUUID,
 			})
 			assert.NoError(t, err)
 
@@ -50,7 +51,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 }
 
 func createVoucherForAuditTest(t *testing.T, auditorUUID string) *voucher.Voucher {
-	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
+	v, err := voucher.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if auditorUUID != "" {
 		err := v.Audit(auditorUUID)
