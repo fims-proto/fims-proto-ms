@@ -61,7 +61,7 @@ func (h VoucherMemoryRepository) AllVouchers(ctx context.Context) ([]query.Vouch
 	return result, nil
 }
 
-func (h VoucherMemoryRepository) VoucherForUUID(ctx context.Context, voucherUUID uuid.UUID) (query.Voucher, error) {
+func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, voucherUUID uuid.UUID) (query.Voucher, error) {
 	v, ok := h.data[voucherUUID]
 	if !ok {
 		return query.Voucher{}, errors.Errorf("voucher %s not exists", voucherUUID)

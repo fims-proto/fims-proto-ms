@@ -8,7 +8,7 @@ import (
 
 type vouchersReadModel interface {
 	AllVouchers(ctx context.Context) ([]Voucher, error)
-	VoucherForUUID(ctx context.Context, uuid uuid.UUID) (Voucher, error)
+	VoucherByUUID(ctx context.Context, uuid uuid.UUID) (Voucher, error)
 }
 
 type ReadVouchersHandler struct {
@@ -26,6 +26,6 @@ func (h ReadVouchersHandler) HandleReadAll(ctx context.Context) ([]Voucher, erro
 	return h.readModel.AllVouchers(ctx)
 }
 
-func (h ReadVouchersHandler) HandleReadForUUID(uuid uuid.UUID, ctx context.Context) (Voucher, error) {
-	return h.readModel.VoucherForUUID(ctx, uuid)
+func (h ReadVouchersHandler) HandleReadByUUID(uuid uuid.UUID, ctx context.Context) (Voucher, error) {
+	return h.readModel.VoucherByUUID(ctx, uuid)
 }

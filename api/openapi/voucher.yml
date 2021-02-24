@@ -58,7 +58,7 @@ paths:
     get:
       tags:
         - Voucher
-      operationId: VoucherForUUID
+      operationId: VoucherByUUID
       parameters:
         - in: path
           name: uuid
