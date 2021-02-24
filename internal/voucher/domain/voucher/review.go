@@ -3,7 +3,7 @@ package voucher
 import "github.com/pkg/errors"
 
 var (
-	ErrEmptyReviewer           = errors.New("reviewer uuid empty")
+	ErrEmptyReviewer           = errors.New("reviewer empty")
 	ErrVoucherAlreadyReviewed  = errors.New("voucher already reiviewed")
 	ErrVoucherNotReviewed      = errors.New("voucher not reviewed")
 	ErrDifferentReviewerCancel = errors.New("cancel review with different reviewer")

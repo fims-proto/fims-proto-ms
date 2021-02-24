@@ -3,7 +3,7 @@ package voucher
 import "github.com/pkg/errors"
 
 var (
-	ErrEmptyAuditor           = errors.New("auditor uuid empty")
+	ErrEmptyAuditor           = errors.New("auditor empty")
 	ErrVoucherAlreadyAudited  = errors.New("voucher already audited")
 	ErrVoucherNotAudited      = errors.New("voucher not audited")
 	ErrDifferentAuditorCancel = errors.New("cancel audit with different auditor")
