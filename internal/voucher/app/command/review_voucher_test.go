@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,16 +14,16 @@ import (
 func TestApp_HandleReviewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name         string
-		constructor  func(t *testing.T) *voucher.Voucher
-		reviewerUUID string
+		name        string
+		constructor func(t *testing.T) *voucher.Voucher
+		reviewer    string
 	}{
 		{
 			name: "normal_success",
 			constructor: func(t *testing.T) *voucher.Voucher {
 				return createVoucherForReviewTest(t, "")
 			},
-			reviewerUUID: "aud1_uuid",
+			reviewer: "aud1_uuid",
 		},
 	}
 	for _, test := range tests {
@@ -32,15 +33,15 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 
 			v := test.constructor(t)
 			repoMock := newVoucherRepoMock()
-			repoMock.vouchers = map[string]voucher.Voucher{
+			repoMock.vouchers = map[uuid.UUID]voucher.Voucher{
 				v.UUID(): *v,
 			}
 
 			handler := NewReviewVoucherHandler(repoMock)
 
 			err := handler.Handle(context.Background(), ReviewVoucherCmd{
-				VoucherUUID:  v.UUID(),
-				ReviewerUUID: test.reviewerUUID,
+				VoucherUUID: v.UUID(),
+				Reviewer:    test.reviewer,
 			})
 			assert.NoError(t, err)
 
@@ -49,11 +50,11 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 	}
 }
 
-func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *voucher.Voucher {
-	v, err := voucher.NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
+func createVoucherForReviewTest(t *testing.T, reviewer string) *voucher.Voucher {
+	v, err := voucher.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
-	if reviewerUUID != "" {
-		err := v.Review(reviewerUUID)
+	if reviewer != "" {
+		err := v.Review(reviewer)
 		require.NoError(t, err)
 	}
 	return v

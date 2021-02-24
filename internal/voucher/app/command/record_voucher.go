@@ -6,11 +6,11 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type RecordVoucherCmd struct {
-	UUID               string
 	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint
@@ -36,7 +36,7 @@ func NewRecordVoucherHandler(repo voucher.Repository, accService AccountService)
 	}
 }
 
-func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) error {
+func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (uuid.UUID, error) {
 	// object conversion, outside in: LineItemCmd -> domain/LineItem
 	var accNumbers []string
 	var lineItems []lineitem.LineItem
@@ -48,7 +48,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 			item.Credit,
 		)
 		if err != nil {
-			return err
+			return uuid.Nil, err
 		}
 		lineItems = append(lineItems, *lineItem)
 		accNumbers = append(accNumbers, item.AccountNumber)
@@ -56,7 +56,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 
 	// object conversion, outside in: VoucherCmd -> domain/Voucher
 	newVoucher, err := voucher.NewVoucher(
-		cmd.UUID,
+		uuid.New(),
 		cmd.Number,
 		cmd.CreatedAt,
 		cmd.AttachmentQuantity,
@@ -64,11 +64,11 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		cmd.CreatorUUID,
 	)
 	if err != nil {
-		return err
+		return uuid.Nil, err
 	}
 
 	if err = h.accService.ValidateExistence(ctx, accNumbers); err != nil {
-		return errors.Wrap(err, "unable to validate account numbers")
+		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
 	}
 
 	return h.repo.AddVoucher(ctx, newVoucher)

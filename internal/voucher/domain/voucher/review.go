@@ -3,32 +3,32 @@ package voucher
 import "github.com/pkg/errors"
 
 var (
-	ErrEmptyReviewer           = errors.New("reviewer uuid empty")
+	ErrEmptyReviewer           = errors.New("reviewer empty")
 	ErrVoucherAlreadyReviewed  = errors.New("voucher already reiviewed")
 	ErrVoucherNotReviewed      = errors.New("voucher not reviewed")
 	ErrDifferentReviewerCancel = errors.New("cancel review with different reviewer")
 )
 
-func (v *Voucher) Review(reviewerUUID string) error {
-	if v.reviewer.isReviewed {
+func (v *Voucher) Review(reviewer string) error {
+	if v.IsReviewed() {
 		return ErrVoucherAlreadyReviewed
 	}
-	if reviewerUUID == "" {
+	if reviewer == "" {
 		return ErrEmptyReviewer
 	}
-	v.reviewer.isReviewed = true
-	v.reviewer.uuid = reviewerUUID
+	v.isReviewed = true
+	v.reviewer = reviewer
 	return nil
 }
 
-func (v *Voucher) CancelReview(reviewerUUID string) error {
-	if !v.reviewer.isReviewed {
+func (v *Voucher) CancelReview(reviewer string) error {
+	if !v.IsReviewed() {
 		return ErrVoucherNotReviewed
 	}
-	if v.reviewer.uuid != reviewerUUID {
+	if v.Reviewer() != reviewer {
 		return ErrDifferentReviewerCancel
 	}
-	v.reviewer.isReviewed = false
-	v.reviewer.uuid = ""
+	v.isReviewed = false
+	v.reviewer = ""
 	return nil
 }

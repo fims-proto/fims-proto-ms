@@ -4,6 +4,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -11,11 +12,11 @@ import (
 func TestDomain_VoucherReview(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name         string
-		doReview     bool // true - review, false - cancel review
-		constructor  func(t *testing.T) *Voucher
-		reviewerUUID string
-		verify       func(t *testing.T, v Voucher, err error)
+		name        string
+		doReview    bool // true - review, false - cancel review
+		constructor func(t *testing.T) *Voucher
+		reviewer    string
+		verify      func(t *testing.T, v Voucher, err error)
 	}{
 		{
 			"review_success",
@@ -26,7 +27,7 @@ func TestDomain_VoucherReview(t *testing.T) {
 			"aud1_uuid",
 			func(t *testing.T, v Voucher, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "aud1_uuid", v.ReviewerUUID())
+				assert.Equal(t, "aud1_uuid", v.Reviewer())
 			},
 		},
 		{
@@ -49,7 +50,7 @@ func TestDomain_VoucherReview(t *testing.T) {
 			"aud1_uuid",
 			func(t *testing.T, v Voucher, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "", v.ReviewerUUID())
+				assert.Equal(t, "", v.Reviewer())
 				assert.False(t, v.IsReviewed())
 			},
 		},
@@ -83,20 +84,20 @@ func TestDomain_VoucherReview(t *testing.T) {
 			voucher := test.constructor(t)
 			var err error
 			if test.doReview {
-				err = voucher.Review(test.reviewerUUID)
+				err = voucher.Review(test.reviewer)
 			} else {
-				err = voucher.CancelReview(test.reviewerUUID)
+				err = voucher.CancelReview(test.reviewer)
 			}
 			test.verify(t, *voucher, err)
 		})
 	}
 }
 
-func createVoucherForReviewTest(t *testing.T, reviewerUUID string) *Voucher {
-	voucher, err := NewVoucher("test_uuid", "1", time.Now(), 0, prepareBalancedItems(), "")
+func createVoucherForReviewTest(t *testing.T, reviewer string) *Voucher {
+	voucher, err := NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
-	if reviewerUUID != "" {
-		err := voucher.Review(reviewerUUID)
+	if reviewer != "" {
+		err := voucher.Review(reviewer)
 		require.NoError(t, err)
 	}
 	return voucher

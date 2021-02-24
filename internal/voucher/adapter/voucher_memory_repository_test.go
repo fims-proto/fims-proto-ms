@@ -4,11 +4,11 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
-	"strconv"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -21,7 +21,8 @@ func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T) {
 
 func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
 	t.Parallel()
-	repo := prepareMemoryRepo(t)
+	voucherUUID := uuid.New()
+	repo := prepareMemoryRepo(t, voucherUUID)
 
 	scheduleRaceTest(20, func(_ int) {
 		vouchers, err := repo.AllVouchers(context.Background())
@@ -32,12 +33,13 @@ func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
 
 func TestAdapter_MemoryRepository_ReadOne(t *testing.T) {
 	t.Parallel()
-	repo := prepareMemoryRepo(t)
+	voucherUUID := uuid.New()
+	repo := prepareMemoryRepo(t, voucherUUID)
 
 	scheduleRaceTest(20, func(_ int) {
-		v, err := repo.VoucherForUUID(context.Background(), "0000")
+		v, err := repo.VoucherByUUID(context.Background(), voucherUUID)
 		require.NoError(t, err)
-		assert.Equal(t, "0000", v.UUID)
+		assert.Equal(t, voucherUUID, v.UUID)
 	})
 }
 
@@ -46,9 +48,9 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(20, func(i int) {
-		v, err := voucher.NewVoucher(strconv.FormatInt(int64(i), 10), "1", time.Now(), 0, prepareBalancedItems(), "0000")
+		v, err := voucher.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "0000")
 		require.NoError(t, err)
-		err = repo.AddVoucher(context.Background(), v)
+		_, err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
 	})
 
@@ -57,12 +59,13 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 
 func TestAdapter_MemoryRepository_Update(t *testing.T) {
 	t.Parallel()
-	repo := prepareMemoryRepo(t)
+	voucherUUID := uuid.New()
+	repo := prepareMemoryRepo(t, voucherUUID)
 
 	voucherAudited := make(chan int, 20)
 
 	scheduleRaceTest(20, func(i int) {
-		err := repo.UpdateVoucher(context.Background(), "0000", func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		err := repo.UpdateVoucher(context.Background(), voucherUUID, func(v *voucher.Voucher) (*voucher.Voucher, error) {
 			if err := v.Audit("testUUID"); err == nil {
 				// success
 				voucherAudited <- i
@@ -75,11 +78,11 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 	assert.Len(t, voucherAudited, 1, "voucher should be audit only once")
 }
 
-func prepareMemoryRepo(t *testing.T) VoucherMemoryRepository {
+func prepareMemoryRepo(t *testing.T, voucherUUID uuid.UUID) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := voucher.NewVoucher("0000", "1", time.Now(), 0, prepareBalancedItems(), "0000")
+	v, err := voucher.NewVoucher(voucherUUID, "1", time.Now(), 0, prepareBalancedItems(), "0000")
 	require.NoError(t, err)
-	repo.data["0000"] = *v
+	repo.data[v.UUID()] = *v
 	return repo
 }
 
