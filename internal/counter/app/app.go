@@ -6,7 +6,7 @@ type Commands struct {
 	NextCounter   command.CounterNextHandler
 	DeleteCounter command.CounterDeleteHandler
 	ResetCounter  command.CounterResetHandler
-	AddCounter    command.CounterAddHandler
+	CreateCounter command.CounterCreateHandler
 }
 
 type Application struct {

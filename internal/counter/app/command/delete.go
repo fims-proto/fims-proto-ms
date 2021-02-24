@@ -17,7 +17,5 @@ func NewCounterDeleteHandler(repo counter.Repository) CounterDeleteHandler {
 }
 
 func (h CounterDeleteHandler) Handle(ctx context.Context, cmd CounterDeleteCmd) error {
-	return h.repo.DeleteCounter(
-		ctx,
-		cmd.UUID)
+	return h.repo.DeleteCounter(ctx, cmd.CounterUUID)
 }

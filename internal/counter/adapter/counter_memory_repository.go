@@ -5,6 +5,7 @@ import (
 	counter "github/fims-proto/fims-proto-ms/internal/counter/domain"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -23,47 +24,59 @@ func NewCounterMemoryRepository() CounterMemoryRepository {
 	}
 }
 
-func (r *CounterMemoryRepository) AddCounter(ctx context.Context, counter *counter.Counter) error {
-	_, ok := r.data.Load(counter.UUID)
+func (r *CounterMemoryRepository) CreateCounter(ctx context.Context, c *counter.Counter) error {
+	_, ok := r.data.Load(c.UUID())
 	if ok {
-		return errors.Errorf("Counter with UUID %s already exists", counter.UUID)
+		return errors.Errorf("counter with UUID %s already exists", c.UUID())
 	}
 	r.data.Store(
-		counter.UUID,
+		c.UUID(),
 		&CounterWrapper{
 			lock:    &sync.RWMutex{},
-			Counter: counter,
+			Counter: c,
 		},
 	)
 	return nil
 }
 
-func (r *CounterMemoryRepository) ResetCounter(ctx context.Context, UUID string) error {
-	counterW, ok := r.data.Load(UUID)
+func (r *CounterMemoryRepository) UpdateCounter(ctx context.Context, counterUUID uuid.UUID, updateFn func(c *counter.Counter) (*counter.Counter, error)) error {
+	counterW, ok := r.data.Load(counterUUID)
 	if !ok {
-		return errors.Errorf("Counter %s does not exist", UUID)
+		return errors.Errorf("counter %s does not exist", counterUUID)
 	}
+
 	counterW.(*CounterWrapper).lock.Lock()
 	defer counterW.(*CounterWrapper).lock.Unlock()
-	err := counterW.(*CounterWrapper).Counter.Reset()
+
+	c, err := updateFn(counterW.(*CounterWrapper).Counter)
 	if err != nil {
-		return errors.Wrapf(err, "Counter %s reset failed", UUID)
+		return errors.Wrapf(err, "counter %s update failed", counterUUID)
 	}
-	r.data.Store(UUID, counterW)
+	counterW.(*CounterWrapper).Counter = c
+	r.data.Store(counterUUID, counterW)
 	return nil
 }
 
-func (r *CounterMemoryRepository) GetNextFromCounter(ctx context.Context, UUID string) (string, error) {
-	counterW, ok := r.data.Load(UUID)
+func (r *CounterMemoryRepository) UpdateAndRead(
+	ctx context.Context,
+	counterUUID uuid.UUID,
+	updateAndReadFn func(c *counter.Counter) (*counter.Counter, interface{}, error),
+) (interface{}, error) {
+	counterW, ok := r.data.Load(counterUUID)
 	if !ok {
-		return "", errors.Errorf("Counter %s does not exist", UUID)
+		return nil, errors.Errorf("counter %s does not exist", counterUUID)
 	}
-	next, err := counterW.(*CounterWrapper).Counter.Next()
+
+	counterW.(*CounterWrapper).lock.Lock()
+	defer counterW.(*CounterWrapper).lock.Unlock()
+
+	c, readValue, err := updateAndReadFn(counterW.(*CounterWrapper).Counter)
 	if err != nil {
-		return "", errors.Wrapf(err, "Counter %s next failed", UUID)
+		return nil, errors.Wrapf(err, "counter %s update and read failed", counterUUID)
 	}
-	r.data.Store(UUID, counterW)
-	return next, nil
+	counterW.(*CounterWrapper).Counter = c
+	r.data.Store(counterUUID, counterW)
+	return readValue, nil
 }
 
 func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, UUID string) error {

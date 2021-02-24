@@ -3,6 +3,7 @@ package counter
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -10,45 +11,43 @@ import (
 func TestDomain_NewCounter(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		UUID   string
-		len    uint
+		name   string
 		prefix string
 		sufix  string
 		verify func(t *testing.T, counter *Counter, err error)
 	}{
 		{
-			UUID:   "testUUID",
-			len:    6,
+			name:   "normal next",
 			prefix: "天字",
 			sufix:  "号",
 			verify: func(t *testing.T, counter *Counter, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "testUUID", counter.UUID)
-				next, err1 := counter.Next()
-				require.NoError(t, err1)
-				assert.Equal(t, next, "天字000001号")
+				assert.Equal(t, "天字0号", counter.Identifier())
+				counter.Next()
+				assert.Equal(t, "天字1号", counter.Identifier())
+				counter.Next()
+				assert.Equal(t, "天字2号", counter.Identifier())
 			},
 		},
 		{
-			UUID:   "testUUID",
-			len:    4,
+			name:   "normal reset and next",
 			prefix: "地煞",
 			sufix:  "位",
 			verify: func(t *testing.T, counter *Counter, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "testUUID", counter.UUID)
+				assert.Equal(t, "地煞0位", counter.Identifier())
 				counter.Next()
-				nn, err2 := counter.Next()
-				require.NoError(t, err2)
-				assert.Equal(t, nn, "地煞0002位")
+				assert.Equal(t, "地煞1位", counter.Identifier())
+				_ = counter.Reset()
+				assert.Equal(t, "地煞0位", counter.Identifier())
 			},
 		},
 	}
 	for _, test := range tests {
 		test := test
-		t.Run(test.UUID, func(t *testing.T) {
+		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			counter, err := NewCounter(test.UUID, test.len, test.prefix, test.sufix)
+			counter, err := NewCounter(uuid.New(), test.prefix, test.sufix)
 			test.verify(t, counter, err)
 		})
 	}

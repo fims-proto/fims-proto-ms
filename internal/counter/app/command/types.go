@@ -1,20 +1,20 @@
 package command
 
+import "github.com/google/uuid"
+
 type CounterNextCmd struct {
-	UUID string
+	CounterUUID uuid.UUID
 }
 
 type CounterResetCmd struct {
-	UUID string
+	CounterUUID uuid.UUID
 }
 
 type CounterDeleteCmd struct {
-	UUID string
+	CounterUUID uuid.UUID
 }
 
-type CounterAddCmd struct {
-	UUID   string
-	Length uint
+type CounterCreateCmd struct {
 	Prefix string
 	Sufix  string
 }
