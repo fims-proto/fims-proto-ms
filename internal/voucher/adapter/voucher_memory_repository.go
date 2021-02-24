@@ -77,10 +77,10 @@ func voucherModelToQuery(v voucher.Voucher) query.Voucher {
 		LineItems:          itemModelToQuery(v.LineItems()),
 		Debit:              v.Debit().String(),
 		Credit:             v.Credit().String(),
-		CreatorUUID:        v.CreatorUUID(),
-		ReviewerUUID:       v.ReviewerUUID(),
+		Creator:            v.Creator(),
+		Reviewer:           v.Reviewer(),
 		IsReviewed:         v.IsReviewed(),
-		AuditorUUID:        v.AuditorUUID(),
+		Auditor:            v.Auditor(),
 		IsAudited:          v.IsAudited(),
 	}
 }

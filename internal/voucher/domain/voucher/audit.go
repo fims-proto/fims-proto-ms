@@ -9,26 +9,26 @@ var (
 	ErrDifferentAuditorCancel = errors.New("cancel audit with different auditor")
 )
 
-func (v *Voucher) Audit(auditorUUID string) error {
-	if v.auditor.isAudited {
+func (v *Voucher) Audit(auditor string) error {
+	if v.IsAudited() {
 		return ErrVoucherAlreadyAudited
 	}
-	if auditorUUID == "" {
+	if auditor == "" {
 		return ErrEmptyAuditor
 	}
-	v.auditor.isAudited = true
-	v.auditor.uuid = auditorUUID
+	v.isAudited = true
+	v.auditor = auditor
 	return nil
 }
 
-func (v *Voucher) CancelAudit(auditorUUID string) error {
-	if !v.auditor.isAudited {
+func (v *Voucher) CancelAudit(auditor string) error {
+	if !v.IsAudited() {
 		return ErrVoucherNotAudited
 	}
-	if v.auditor.uuid != auditorUUID {
+	if v.Auditor() != auditor {
 		return ErrDifferentAuditorCancel
 	}
-	v.auditor.isAudited = false
-	v.auditor.uuid = ""
+	v.isAudited = false
+	v.auditor = ""
 	return nil
 }

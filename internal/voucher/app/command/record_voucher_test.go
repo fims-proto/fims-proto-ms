@@ -48,7 +48,7 @@ func TestApp_HandleRecordVoucherHandler(t *testing.T) {
 			assertions.Len(vouchers["0000"].LineItems(), 2)
 			assertions.Equal(d100, vouchers["0000"].Credit())
 			assertions.Equal(d100, vouchers["0000"].Debit())
-			assertions.Equal("0000", vouchers["0000"].CreatorUUID())
+			assertions.Equal("0000", vouchers["0000"].Creator())
 			assertions.True(accServiceMock.invoked)
 		})
 	}

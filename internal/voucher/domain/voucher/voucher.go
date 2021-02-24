@@ -16,15 +16,11 @@ type Voucher struct {
 	lineItems          []lineitem.LineItem
 	debit              decimal.Decimal
 	credit             decimal.Decimal
-	creatorUUID        string
-	reviewer           struct {
-		uuid       string
-		isReviewed bool
-	}
-	auditor struct {
-		uuid      string
-		isAudited bool
-	}
+	creator            string
+	reviewer           string
+	isReviewed         bool
+	auditor            string
+	isAudited          bool
 }
 
 func sumItems(items []lineitem.LineItem) (decimal.Decimal, error) {
@@ -45,8 +41,7 @@ func sumItems(items []lineitem.LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem,
-	creatorUUID string) (*Voucher, error) {
+func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem, creator string) (*Voucher, error) {
 	if uuid == "" {
 		return nil, errors.New("empty voucher uuid")
 	}
@@ -67,19 +62,11 @@ func NewVoucher(uuid string, number string, createdAt time.Time, attachmentQuant
 		lineItems:          items,
 		debit:              totalVal,
 		credit:             totalVal,
-		creatorUUID:        creatorUUID,
-		reviewer: struct {
-			uuid       string
-			isReviewed bool
-		}{
-			"", false,
-		},
-		auditor: struct {
-			uuid      string
-			isAudited bool
-		}{
-			"", false,
-		},
+		creator:            creator,
+		reviewer:           "",
+		isReviewed:         false,
+		auditor:            "",
+		isAudited:          false,
 	}, nil
 }
 
@@ -111,22 +98,22 @@ func (v Voucher) Credit() decimal.Decimal {
 	return v.credit
 }
 
-func (v Voucher) CreatorUUID() string {
-	return v.creatorUUID
+func (v Voucher) Creator() string {
+	return v.creator
 }
 
-func (v Voucher) ReviewerUUID() string {
-	return v.reviewer.uuid
+func (v Voucher) Reviewer() string {
+	return v.reviewer
 }
 
-func (v Voucher) AuditorUUID() string {
-	return v.auditor.uuid
+func (v Voucher) Auditor() string {
+	return v.auditor
 }
 
 func (v Voucher) IsReviewed() bool {
-	return v.reviewer.isReviewed
+	return v.isReviewed
 }
 
 func (v Voucher) IsAudited() bool {
-	return v.auditor.isAudited
+	return v.isAudited
 }

@@ -42,9 +42,9 @@ func (h Handler) AllVouchers(c *gin.Context) {
 			LineItems:          httpItems,
 			Debit:              voucher.Debit,
 			Credit:             voucher.Credit,
-			CreatorUUID:        voucher.CreatorUUID,
-			ReviewerUUID:       voucher.ReviewerUUID,
-			AuditorUUID:        voucher.AuditorUUID,
+			Creator:            voucher.Creator,
+			Reviewer:           voucher.Reviewer,
+			Auditor:            voucher.Auditor,
 			IsReviewed:         voucher.IsReviewed,
 			IsAudited:          voucher.IsAudited,
 		}
@@ -61,7 +61,7 @@ func (h Handler) Audit(c *gin.Context) {
 	}
 	cmd := command.AuditVoucherCmd{
 		VoucherUUID: c.Param("uuid"),
-		AuditorUUID: httpCmd.AuditorUUID,
+		AuditorUUID: httpCmd.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -78,7 +78,7 @@ func (h Handler) Review(c *gin.Context) {
 	}
 	cmd := command.ReviewVoucherCmd{
 		VoucherUUID:  c.Param("uuid"),
-		ReviewerUUID: httpCmd.ReviewerUUID,
+		ReviewerUUID: httpCmd.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -136,7 +136,7 @@ func (h Handler) Record(c *gin.Context) {
 		CreatedAt:          httpCmd.CreatedAt,
 		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
 		LineItems:          items,
-		CreatorUUID:        httpCmd.CreatorUUID,
+		CreatorUUID:        httpCmd.Creator,
 	}
 	if err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -172,9 +172,9 @@ func (h Handler) VoucherForUUID(c *gin.Context) {
 		LineItems:          httpItems,
 		Debit:              voucher.Debit,
 		Credit:             voucher.Credit,
-		CreatorUUID:        voucher.CreatorUUID,
-		ReviewerUUID:       voucher.ReviewerUUID,
-		AuditorUUID:        voucher.AuditorUUID,
+		Creator:            voucher.Creator,
+		Reviewer:           voucher.Reviewer,
+		Auditor:            voucher.Auditor,
 		IsReviewed:         voucher.IsReviewed,
 		IsAudited:          voucher.IsAudited,
 	}

@@ -26,7 +26,7 @@ func TestDomain_VoucherReview(t *testing.T) {
 			"aud1_uuid",
 			func(t *testing.T, v Voucher, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "aud1_uuid", v.ReviewerUUID())
+				assert.Equal(t, "aud1_uuid", v.Reviewer())
 			},
 		},
 		{
@@ -49,7 +49,7 @@ func TestDomain_VoucherReview(t *testing.T) {
 			"aud1_uuid",
 			func(t *testing.T, v Voucher, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "", v.ReviewerUUID())
+				assert.Equal(t, "", v.Reviewer())
 				assert.False(t, v.IsReviewed())
 			},
 		},
