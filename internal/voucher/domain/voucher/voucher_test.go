@@ -5,6 +5,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -13,30 +14,30 @@ func TestDomain_NewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name   string
-		uuid   string
+		uuid   uuid.UUID
 		number string
 		items  []lineitem.LineItem
 		verify func(t *testing.T, voucher *Voucher, err error)
 	}{
 		{
-			"normal_success", "test_uuid", "1", prepareBalancedItems(),
+			"normal_success", uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), "1", prepareBalancedItems(),
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.NoError(t, err)
-				assert.Equal(t, "test_uuid", voucher.UUID())
+				assert.Equal(t, uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), voucher.UUID())
 				assert.Equal(t, "1", voucher.Number())
 				assert.Equal(t, "200", voucher.Credit().String())
 				assert.Equal(t, "200", voucher.Debit().String())
 			},
 		},
 		{
-			"imbalanced_error", "test_uuid", "1", prepareImbalancedItems(),
+			"imbalanced_error", uuid.New(), "1", prepareImbalancedItems(),
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_lineitem_error", "test_uuid", "1",
+			"empty_lineitem_error", uuid.New(), "1",
 			[]lineitem.LineItem{},
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)

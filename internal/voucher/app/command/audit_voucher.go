@@ -3,11 +3,13 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+
+	"github.com/google/uuid"
 )
 
 type AuditVoucherCmd struct {
-	VoucherUUID string
-	AuditorUUID string
+	VoucherUUID uuid.UUID
+	Auditor     string
 }
 
 type AuditVoucherHandler struct {
@@ -26,7 +28,7 @@ func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) er
 		ctx,
 		cmd.VoucherUUID,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {
-			err := v.Audit(cmd.AuditorUUID)
+			err := v.Audit(cmd.Auditor)
 			return v, err
 		},
 	)

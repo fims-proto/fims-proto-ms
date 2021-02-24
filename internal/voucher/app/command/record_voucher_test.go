@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -37,18 +38,20 @@ func TestApp_HandleRecordVoucherHandler(t *testing.T) {
 			repoMock := newVoucherRepoMock()
 			accServiceMock := newAccountService()
 			handler := NewRecordVoucherHandler(repoMock, &accServiceMock)
-			err := handler.Handle(context.Background(), *cmd)
+			newUUID, err := handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
 			vouchers := repoMock.vouchers
 
 			d100, _ := decimal.NewFromString("100")
 
+			v := vouchers[newUUID]
+
 			assertions.Len(vouchers, 1)
-			assertions.Len(vouchers["0000"].LineItems(), 2)
-			assertions.Equal(d100, vouchers["0000"].Credit())
-			assertions.Equal(d100, vouchers["0000"].Debit())
-			assertions.Equal("0000", vouchers["0000"].CreatorUUID())
+			assertions.Len(v.LineItems(), 2)
+			assertions.Equal(d100, v.Credit())
+			assertions.Equal(d100, v.Debit())
+			assertions.Equal("0000", v.Creator())
 			assertions.True(accServiceMock.invoked)
 		})
 	}
@@ -70,7 +73,6 @@ func createVoucherCmd() *RecordVoucherCmd {
 		},
 	}
 	return &RecordVoucherCmd{
-		UUID:               "0000",
 		Number:             "1",
 		CreatedAt:          time.Now(),
 		AttachmentQuantity: 0,
@@ -80,7 +82,7 @@ func createVoucherCmd() *RecordVoucherCmd {
 }
 
 func newVoucherRepoMock() voucherRepoMock {
-	return voucherRepoMock{vouchers: make(map[string]voucher.Voucher)}
+	return voucherRepoMock{vouchers: make(map[uuid.UUID]voucher.Voucher)}
 }
 
 func newAccountService() accountServiceMock {
@@ -88,15 +90,15 @@ func newAccountService() accountServiceMock {
 }
 
 type voucherRepoMock struct {
-	vouchers map[string]voucher.Voucher
+	vouchers map[uuid.UUID]voucher.Voucher
 }
 
-func (r voucherRepoMock) AddVoucher(ctx context.Context, v *voucher.Voucher) error {
+func (r voucherRepoMock) AddVoucher(ctx context.Context, v *voucher.Voucher) (uuid.UUID, error) {
 	r.vouchers[v.UUID()] = *v
-	return nil
+	return v.UUID(), nil
 }
 
-func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID string, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
 	v, ok := r.vouchers[voucherUUID]
 	if !ok {
 		return errors.Errorf("voucher %s not exists", voucherUUID)

@@ -3,11 +3,13 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+
+	"github.com/google/uuid"
 )
 
 type ReviewVoucherCmd struct {
-	VoucherUUID  string
-	ReviewerUUID string
+	VoucherUUID uuid.UUID
+	Reviewer    string
 }
 
 type ReviewVoucherHandler struct {
@@ -26,7 +28,7 @@ func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) 
 		ctx,
 		cmd.VoucherUUID,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {
-			err := v.Review(cmd.ReviewerUUID)
+			err := v.Review(cmd.Reviewer)
 			return v, err
 		},
 	)
