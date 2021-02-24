@@ -16,7 +16,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 	tests := []struct {
 		name        string
 		constructor func(t *testing.T) *voucher.Voucher
-		auditorUUID string
+		auditor     string
 	}{
 		{
 			"normal_success",
@@ -41,7 +41,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 
 			err := handler.Handle(context.Background(), AuditVoucherCmd{
 				VoucherUUID: v.UUID(),
-				Auditor:     test.auditorUUID,
+				Auditor:     test.auditor,
 			})
 			assert.NoError(t, err)
 
@@ -50,11 +50,11 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 	}
 }
 
-func createVoucherForAuditTest(t *testing.T, auditorUUID string) *voucher.Voucher {
+func createVoucherForAuditTest(t *testing.T, auditor string) *voucher.Voucher {
 	v, err := voucher.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
-	if auditorUUID != "" {
-		err := v.Audit(auditorUUID)
+	if auditor != "" {
+		err := v.Audit(auditor)
 		require.NoError(t, err)
 	}
 	return v

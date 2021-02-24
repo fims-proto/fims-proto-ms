@@ -15,7 +15,7 @@ func TestDomain_VoucherAudit(t *testing.T) {
 		name        string
 		doAudit     bool // true - audit, false - cancel audit
 		constructor func(t *testing.T) *Voucher
-		auditorUUID string
+		auditor     string
 		verify      func(t *testing.T, v Voucher, err error)
 	}{
 		{
@@ -84,20 +84,20 @@ func TestDomain_VoucherAudit(t *testing.T) {
 			voucher := test.constructor(t)
 			var err error
 			if test.doAudit {
-				err = voucher.Audit(test.auditorUUID)
+				err = voucher.Audit(test.auditor)
 			} else {
-				err = voucher.CancelAudit(test.auditorUUID)
+				err = voucher.CancelAudit(test.auditor)
 			}
 			test.verify(t, *voucher, err)
 		})
 	}
 }
 
-func createVoucherForAuditTest(t *testing.T, auditorUUID string) *Voucher {
+func createVoucherForAuditTest(t *testing.T, auditor string) *Voucher {
 	voucher, err := NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
-	if auditorUUID != "" {
-		err := voucher.Audit(auditorUUID)
+	if auditor != "" {
+		err := voucher.Audit(auditor)
 		require.NoError(t, err)
 	}
 	return voucher
