@@ -2,18 +2,18 @@ package counter
 
 import "strconv"
 
-type Formater struct {
+type Formatter struct {
 	prefix string
 	sufix  string
 }
 
-func NewFormater(prefix string, sufix string) Formater {
-	return Formater{
+func NewFormatter(prefix string, sufix string) Formatter {
+	return Formatter{
 		prefix: prefix,
 		sufix:  sufix,
 	}
 }
 
-func (f Formater) format(count uint) string {
+func (f Formatter) format(count uint) string {
 	return f.prefix + strconv.Itoa(int(count)) + f.sufix
 }

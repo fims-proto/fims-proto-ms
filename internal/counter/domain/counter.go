@@ -10,7 +10,7 @@ import (
 type Counter struct {
 	uuid          uuid.UUID // this UUID should bind uniquely to the user
 	Current       uint
-	formater      Formater
+	formatter     Formatter
 	LastResetDate time.Time
 }
 
@@ -22,7 +22,7 @@ func NewCounter(counterUUID uuid.UUID, prefix string, sufix string) (*Counter, e
 	return &Counter{
 		uuid:          counterUUID,
 		Current:       0,
-		formater:      NewFormater(prefix, sufix),
+		formatter:     NewFormatter(prefix, sufix),
 		LastResetDate: time.Now(),
 	}, nil
 }
@@ -32,7 +32,7 @@ func (c *Counter) Next() {
 }
 
 func (c *Counter) Identifier() string {
-	return c.formater.format(c.Current)
+	return c.formatter.format(c.Current)
 }
 
 func (c *Counter) Reset() error {

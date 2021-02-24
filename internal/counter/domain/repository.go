@@ -7,7 +7,7 @@ import (
 )
 
 type Repository interface {
-	// maybe someday, reseting formater in Counter is necessary
+	// maybe someday, reseting formatter in Counter is necessary
 	CreateCounter(ctx context.Context, c *Counter) (uuid.UUID, error)
 	DeleteCounter(ctx context.Context, counterUUID uuid.UUID) error
 
