@@ -33,3 +33,14 @@ func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) 
 		},
 	)
 }
+
+func (h ReviewVoucherHandler) HandleCancel(ctx context.Context, cmd ReviewVoucherCmd) error {
+	return h.repo.UpdateVoucher(
+		ctx,
+		cmd.VoucherUUID,
+		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+			err := v.CancelReview(cmd.Reviewer)
+			return v, err
+		},
+	)
+}

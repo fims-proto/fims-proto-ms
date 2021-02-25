@@ -71,6 +71,23 @@ func (h Handler) Audit(c *gin.Context) {
 	c.Status(http.StatusAccepted)
 }
 
+func (h Handler) CancelAudit(c *gin.Context) {
+	var httpCmd AuditVoucherCmd
+	if err := c.ShouldBind(&httpCmd); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	cmd := command.AuditVoucherCmd{
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Auditor:     httpCmd.Auditor,
+	}
+	if err := h.app.Commands.AuditVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusAccepted)
+}
+
 func (h Handler) Review(c *gin.Context) {
 	var httpCmd ReviewVoucherCmd
 	if err := c.ShouldBind(&httpCmd); err != nil {
@@ -82,6 +99,23 @@ func (h Handler) Review(c *gin.Context) {
 		Reviewer:    httpCmd.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusAccepted)
+}
+
+func (h Handler) CancelReview(c *gin.Context) {
+	var httpCmd ReviewVoucherCmd
+	if err := c.ShouldBind(&httpCmd); err != nil {
+		c.String(http.StatusBadRequest, err.Error())
+		return
+	}
+	cmd := command.ReviewVoucherCmd{
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Reviewer:    httpCmd.Reviewer,
+	}
+	if err := h.app.Commands.ReviewVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -133,7 +167,6 @@ func (h Handler) Record(c *gin.Context) {
 	}
 	cmd := command.RecordVoucherCmd{
 		Number:             httpCmd.Number,
-		CreatedAt:          httpCmd.CreatedAt,
 		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
 		LineItems:          items,
 		CreatorUUID:        httpCmd.Creator,
@@ -190,8 +223,8 @@ func InitRouter(h Handler, r *gin.Engine) {
 		g.POST("/", h.Record)
 		g.PATCH("/:uuid", h.Update)
 		g.POST("/:uuid/audit", h.Audit)
-		// TODO cancel audit
+		g.POST("/:uuid/cancel-audit", h.CancelAudit)
 		g.POST("/:uuid/review", h.Review)
-		// TODO cancel review
+		g.POST("/:uuid/cancel-review", h.CancelReview)
 	}
 }
