@@ -182,7 +182,7 @@ func (h Handler) Record(c *gin.Context) {
 }
 
 func (h Handler) VoucherByUUID(c *gin.Context) {
-	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(uuid.MustParse(c.Param("uuid")), c.Request.Context())
+	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c.Request.Context(), uuid.MustParse(c.Param("uuid")))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
