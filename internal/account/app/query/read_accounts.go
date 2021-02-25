@@ -21,3 +21,7 @@ func NewReadAccountsHandler(readModel accountsReadModel) ReadAccountsHandler {
 func (h ReadAccountsHandler) HandleReadAll(ctx context.Context) ([]Account, error) {
 	return h.readModel.AllAccounts(ctx)
 }
+
+func (h ReadAccountsHandler) HandleReadByNumber(ctx context.Context, accountNumber string) (Account, error) {
+	return h.readModel.AccountByNumber(ctx, accountNumber)
+}
