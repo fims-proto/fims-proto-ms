@@ -189,19 +189,15 @@ components:
     
     AuditVoucherCmd:
       type: object
-      required: [AuditorUUID]
+      required: [Auditor]
       properties:
-        AuditorUUID:
+        Auditor:
           type: string
-          format: uuid
     
     RecordVoucherCmd:
       type: object
-      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, CreatorUUID]
+      required: [Number, CreatedAt, AttachmentQuantity, LineItems, Creator]
       properties:
-        UUID:
-          type: string
-          format: uuid
         Number: 
           type: string
         CreatedAt:
@@ -214,9 +210,8 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/LineItemCmd'
-        CreatorUUID:
+        Creator:
           type: string
-          format: uuid
 
     LineItemCmd:
       type: object
@@ -233,11 +228,10 @@ components:
 
     ReviewVoucherCmd:
       type: object
-      required: [ReviewerUUID]
+      required: [Reviewer]
       properties:
-        ReviewerUUID:
+        Reviewer:
           type: string
-          format: uuid
     
     UpdateVoucherCmd:
       type: object
@@ -263,7 +257,7 @@ components:
 
     VoucherQry:
       type: object
-      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, CreatorUUID, ReviewerUUID, IsReviewed, AuditorUUID, IsAudited]
+      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited]
       properties:
         UUID: 
           type: string
@@ -284,17 +278,14 @@ components:
           type: string
         Credit:
           type: string
-        CreatorUUID:
+        Creator:
           type: string
-          format: uuid
-        ReviewerUUID:
+        Reviewer:
           type: string
-          format: uuid
         IsReviewed:
           type: boolean
-        AuditorUUID:
+        Auditor:
           type: string
-          format: uuid
         IsAudited:
           type: boolean
     

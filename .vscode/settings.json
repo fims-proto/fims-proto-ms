@@ -4,5 +4,6 @@
     "gopls": {
         "formatting.gofumpt": true
     },
-    "go.lintOnSave": "workspace"
+    "go.lintOnSave": "workspace",
+    "editor.formatOnSave": true
 }

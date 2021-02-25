@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -35,16 +36,16 @@ func (h Handler) AllVouchers(c *gin.Context) {
 			httpItems = append(httpItems, httpItem)
 		}
 		httpVoucher := VoucherQry{
-			UUID:               voucher.UUID,
+			UUID:               voucher.UUID.String(),
 			Number:             string(voucher.Number),
 			CreatedAt:          voucher.CreatedAt,
 			AttachmentQuantity: int(voucher.AttachmentQuantity),
 			LineItems:          httpItems,
 			Debit:              voucher.Debit,
 			Credit:             voucher.Credit,
-			CreatorUUID:        voucher.CreatorUUID,
-			ReviewerUUID:       voucher.ReviewerUUID,
-			AuditorUUID:        voucher.AuditorUUID,
+			Creator:            voucher.Creator,
+			Reviewer:           voucher.Reviewer,
+			Auditor:            voucher.Auditor,
 			IsReviewed:         voucher.IsReviewed,
 			IsAudited:          voucher.IsAudited,
 		}
@@ -60,8 +61,8 @@ func (h Handler) Audit(c *gin.Context) {
 		return
 	}
 	cmd := command.AuditVoucherCmd{
-		VoucherUUID: c.Param("uuid"),
-		AuditorUUID: httpCmd.AuditorUUID,
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Auditor:     httpCmd.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -77,8 +78,8 @@ func (h Handler) Review(c *gin.Context) {
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
-		VoucherUUID:  c.Param("uuid"),
-		ReviewerUUID: httpCmd.ReviewerUUID,
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Reviewer:    httpCmd.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -104,7 +105,7 @@ func (h Handler) Update(c *gin.Context) {
 		items = append(items, item)
 	}
 	cmd := command.UpdateVoucherCmd{
-		VoucherUUID: c.Param("uuid"),
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
 		LineItems:   items,
 	}
 	if err := h.app.Commands.UpdateVoucher.Handle(c.Request.Context(), cmd); err != nil {
@@ -131,24 +132,24 @@ func (h Handler) Record(c *gin.Context) {
 		items = append(items, item)
 	}
 	cmd := command.RecordVoucherCmd{
-		UUID:               httpCmd.UUID,
 		Number:             httpCmd.Number,
 		CreatedAt:          httpCmd.CreatedAt,
 		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
 		LineItems:          items,
-		CreatorUUID:        httpCmd.CreatorUUID,
+		CreatorUUID:        httpCmd.Creator,
 	}
-	if err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd); err != nil {
+	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd)
+	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.Status(http.StatusCreated)
 	// TODO figure out a way to avoid hard coded string of url
-	c.Writer.Header().Set("Content-Location", "/vouchers/"+cmd.UUID)
+	c.Writer.Header().Set("Content-Location", "/vouchers/"+newUUID.String())
 }
 
 func (h Handler) VoucherByUUID(c *gin.Context) {
-	voucher, err := h.app.Queries.ReadVouchers.HandleReadForUUID(c.Param("uuid"), c.Request.Context())
+	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(uuid.MustParse(c.Param("uuid")), c.Request.Context())
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -165,16 +166,16 @@ func (h Handler) VoucherByUUID(c *gin.Context) {
 	}
 
 	httpVoucher := VoucherQry{
-		UUID:               voucher.UUID,
+		UUID:               voucher.UUID.String(),
 		Number:             voucher.Number,
 		CreatedAt:          voucher.CreatedAt,
 		AttachmentQuantity: int(voucher.AttachmentQuantity),
 		LineItems:          httpItems,
 		Debit:              voucher.Debit,
 		Credit:             voucher.Credit,
-		CreatorUUID:        voucher.CreatorUUID,
-		ReviewerUUID:       voucher.ReviewerUUID,
-		AuditorUUID:        voucher.AuditorUUID,
+		Creator:            voucher.Creator,
+		Reviewer:           voucher.Reviewer,
+		Auditor:            voucher.Auditor,
 		IsReviewed:         voucher.IsReviewed,
 		IsAudited:          voucher.IsAudited,
 	}

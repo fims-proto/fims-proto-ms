@@ -7,4 +7,4 @@ openapi_http:
 
 .PHONY: fmt
 fmt:
-	gofumpt -l -w internal/ cmd/ 
+	gofumpt -l -w internal/ cmd/

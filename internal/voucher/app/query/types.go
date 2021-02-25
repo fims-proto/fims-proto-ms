@@ -2,6 +2,8 @@ package query
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type LineItem struct {
@@ -12,16 +14,16 @@ type LineItem struct {
 }
 
 type Voucher struct {
-	UUID               string
+	UUID               uuid.UUID
 	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint
 	LineItems          []LineItem
 	Debit              string
 	Credit             string
-	CreatorUUID        string
-	ReviewerUUID       string
+	Creator            string
+	Reviewer           string
 	IsReviewed         bool
-	AuditorUUID        string
+	Auditor            string
 	IsAudited          bool
 }

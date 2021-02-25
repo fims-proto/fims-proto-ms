@@ -9,7 +9,7 @@ import (
 
 // AuditVoucherCmd defines model for AuditVoucherCmd.
 type AuditVoucherCmd struct {
-	AuditorUUID string `json:"AuditorUUID"`
+	Auditor string `json:"Auditor"`
 }
 
 // Error defines model for Error.
@@ -38,15 +38,14 @@ type LineItemQry struct {
 type RecordVoucherCmd struct {
 	AttachmentQuantity int           `json:"AttachmentQuantity"`
 	CreatedAt          time.Time     `json:"CreatedAt"`
-	CreatorUUID        string        `json:"CreatorUUID"`
+	Creator            string        `json:"Creator"`
 	LineItems          []LineItemCmd `json:"LineItems"`
 	Number             string        `json:"Number"`
-	UUID               string        `json:"UUID"`
 }
 
 // ReviewVoucherCmd defines model for ReviewVoucherCmd.
 type ReviewVoucherCmd struct {
-	ReviewerUUID string `json:"ReviewerUUID"`
+	Reviewer string `json:"Reviewer"`
 }
 
 // UpdateVoucherCmd defines model for UpdateVoucherCmd.
@@ -57,16 +56,16 @@ type UpdateVoucherCmd struct {
 // VoucherQry defines model for VoucherQry.
 type VoucherQry struct {
 	AttachmentQuantity int           `json:"AttachmentQuantity"`
-	AuditorUUID        string        `json:"AuditorUUID"`
+	Auditor            string        `json:"Auditor"`
 	CreatedAt          time.Time     `json:"CreatedAt"`
-	CreatorUUID        string        `json:"CreatorUUID"`
+	Creator            string        `json:"Creator"`
 	Credit             string        `json:"Credit"`
 	Debit              string        `json:"Debit"`
 	IsAudited          bool          `json:"IsAudited"`
 	IsReviewed         bool          `json:"IsReviewed"`
 	LineItems          []LineItemQry `json:"LineItems"`
 	Number             string        `json:"Number"`
-	ReviewerUUID       string        `json:"ReviewerUUID"`
+	Reviewer           string        `json:"Reviewer"`
 	UUID               string        `json:"UUID"`
 }
 

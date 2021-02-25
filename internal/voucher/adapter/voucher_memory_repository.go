@@ -7,35 +7,36 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"sync"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type VoucherMemoryRepository struct {
 	lock *sync.RWMutex
-	data map[string]voucher.Voucher
+	data map[uuid.UUID]voucher.Voucher
 }
 
 func NewVoucherMemoryRepository() VoucherMemoryRepository {
 	return VoucherMemoryRepository{
-		data: make(map[string]voucher.Voucher),
+		data: make(map[uuid.UUID]voucher.Voucher),
 		lock: &sync.RWMutex{},
 	}
 }
 
-func (h *VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *voucher.Voucher) error {
+func (h *VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *voucher.Voucher) (uuid.UUID, error) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
 	_, ok := h.data[voucher.UUID()]
 	if ok {
-		return errors.Errorf("voucher %s exists", voucher.UUID())
+		return uuid.Nil, errors.Errorf("voucher %s exists", voucher.UUID())
 	}
 
 	h.data[voucher.UUID()] = *voucher
-	return nil
+	return voucher.UUID(), nil
 }
 
-func (h *VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID string, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+func (h *VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -60,10 +61,10 @@ func (h VoucherMemoryRepository) AllVouchers(ctx context.Context) ([]query.Vouch
 	return result, nil
 }
 
-func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, uuid string) (query.Voucher, error) {
-	v, ok := h.data[uuid]
+func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, voucherUUID uuid.UUID) (query.Voucher, error) {
+	v, ok := h.data[voucherUUID]
 	if !ok {
-		return query.Voucher{}, errors.Errorf("voucher %s not exists", uuid)
+		return query.Voucher{}, errors.Errorf("voucher %s not exists", voucherUUID)
 	}
 	return voucherModelToQuery(v), nil
 }
@@ -77,10 +78,10 @@ func voucherModelToQuery(v voucher.Voucher) query.Voucher {
 		LineItems:          itemModelToQuery(v.LineItems()),
 		Debit:              v.Debit().String(),
 		Credit:             v.Credit().String(),
-		CreatorUUID:        v.CreatorUUID(),
-		ReviewerUUID:       v.ReviewerUUID(),
+		Creator:            v.Creator(),
+		Reviewer:           v.Reviewer(),
 		IsReviewed:         v.IsReviewed(),
-		AuditorUUID:        v.AuditorUUID(),
+		Auditor:            v.Auditor(),
 		IsAudited:          v.IsAudited(),
 	}
 }
