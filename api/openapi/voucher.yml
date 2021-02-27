@@ -21,7 +21,7 @@ paths:
       operationId: AllVouchers
       responses:
         '200':
-          description: todo
+          description: success
           content:
             application/json:
               schema:
@@ -38,15 +38,15 @@ paths:
         - Voucher
       operationId: Record
       requestBody:
-        description: todo
+        description: Record voucher payload
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/RecordVoucherCmd'
       responses:
-        '200':
-          description: todo
+        '201':
+          description: created
         default:
           description: unexpected error
           content:
@@ -66,10 +66,10 @@ paths:
             type: string
             format: uuid
           required: true
-          description: todo
+          description: UUID of voucher
       responses:
         '200':
-          description: todo
+          description: success
           content:
             application/json:
               schema:
@@ -92,15 +92,15 @@ paths:
             format: uuid
           required: true
       requestBody:
-        description: todo
+        description: Update voucher payload
         required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/UpdateVoucherCmd'
       responses:
-        '200':
-          description: todo
+        '202':
+          description: accepted
         default:
           description: unexpected error
           content:
@@ -114,7 +114,7 @@ paths:
         - Voucher
       operationId: Audit
       requestBody:
-        description: todo
+        description: Audit voucher payload
         required: true
         content:
           application/json:
@@ -127,10 +127,40 @@ paths:
             type: string
             format: uuid
           required: true
-          description: todo
+          description: UUID of voucher
       responses:
-        '200':
-          description: todo
+        '202':
+          description: accepted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /{uuid}/cancel-audit:
+    post:
+      tags:
+        - Voucher
+      operationId: CancelAudit
+      requestBody:
+        description: Cancel audit voucher payload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AuditVoucherCmd'
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: UUID of voucher
+      responses:
+        '202':
+          description: accepted
         default:
           description: unexpected error
           content:
@@ -144,7 +174,7 @@ paths:
         - Voucher
       operationId: Review
       requestBody:
-        description: todo
+        description: Review voucher payload
         required: true
         content:
           application/json:
@@ -157,10 +187,40 @@ paths:
             type: string
             format: uuid
           required: true
-          description: todo
+          description: UUID of voucher
       responses:
-        '204':
-          description: todo
+        '202':
+          description: accepted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  /{uuid}/cancel-review:
+    post:
+      tags:
+        - Voucher
+      operationId: CancelReview
+      requestBody:
+        description: Cancel review voucher payload
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewVoucherCmd'
+      parameters:
+        - in: path
+          name: uuid 
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: UUID of voucher
+      responses:
+        '202':
+          description: accepted
         default:
           description: unexpected error
           content:
@@ -196,13 +256,10 @@ components:
     
     RecordVoucherCmd:
       type: object
-      required: [Number, CreatedAt, AttachmentQuantity, LineItems, Creator]
+      required: [Number, AttachmentQuantity, LineItems, Creator]
       properties:
         Number: 
           type: string
-        CreatedAt:
-          type: string
-          format: date-time
         AttachmentQuantity:
           type: integer
           minimum: 0
