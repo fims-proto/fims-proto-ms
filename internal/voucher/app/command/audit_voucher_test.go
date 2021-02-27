@@ -15,15 +15,25 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
+		cancel      bool
 		constructor func(t *testing.T) *voucher.Voucher
 		auditor     string
 	}{
 		{
-			"normal_success",
+			"audit_success",
+			false,
 			func(t *testing.T) *voucher.Voucher {
 				return createVoucherForAuditTest(t, "")
 			},
-			"aud1_uuid",
+			"auditor1",
+		},
+		{
+			"cancel_audit_success",
+			true,
+			func(t *testing.T) *voucher.Voucher {
+				return createVoucherForAuditTest(t, "auditor1")
+			},
+			"auditor1",
 		},
 	}
 	for _, test := range tests {
@@ -39,13 +49,21 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 
 			handler := NewAuditVoucherHandler(repoMock)
 
-			err := handler.Handle(context.Background(), AuditVoucherCmd{
-				VoucherUUID: v.UUID(),
-				Auditor:     test.auditor,
-			})
-			assert.NoError(t, err)
-
-			assert.True(t, repoMock.vouchers[v.UUID()].IsAudited())
+			if test.cancel {
+				err := handler.HandleCancel(context.Background(), AuditVoucherCmd{
+					VoucherUUID: v.UUID(),
+					Auditor:     test.auditor,
+				})
+				assert.NoError(t, err)
+				assert.False(t, repoMock.vouchers[v.UUID()].IsAudited())
+			} else {
+				err := handler.Handle(context.Background(), AuditVoucherCmd{
+					VoucherUUID: v.UUID(),
+					Auditor:     test.auditor,
+				})
+				assert.NoError(t, err)
+				assert.True(t, repoMock.vouchers[v.UUID()].IsAudited())
+			}
 		})
 	}
 }

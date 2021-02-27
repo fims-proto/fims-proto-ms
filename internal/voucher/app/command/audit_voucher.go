@@ -33,3 +33,14 @@ func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) er
 		},
 	)
 }
+
+func (h AuditVoucherHandler) HandleCancel(ctx context.Context, cmd AuditVoucherCmd) error {
+	return h.repo.UpdateVoucher(
+		ctx,
+		cmd.VoucherUUID,
+		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+			err := v.CancelAudit(cmd.Auditor)
+			return v, err
+		},
+	)
+}

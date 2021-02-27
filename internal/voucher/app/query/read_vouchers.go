@@ -26,6 +26,6 @@ func (h ReadVouchersHandler) HandleReadAll(ctx context.Context) ([]Voucher, erro
 	return h.readModel.AllVouchers(ctx)
 }
 
-func (h ReadVouchersHandler) HandleReadByUUID(uuid uuid.UUID, ctx context.Context) (Voucher, error) {
+func (h ReadVouchersHandler) HandleReadByUUID(ctx context.Context, uuid uuid.UUID) (Voucher, error) {
 	return h.readModel.VoucherByUUID(ctx, uuid)
 }

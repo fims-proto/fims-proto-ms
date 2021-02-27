@@ -15,15 +15,25 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
+		cancel      bool
 		constructor func(t *testing.T) *voucher.Voucher
 		reviewer    string
 	}{
 		{
-			name: "normal_success",
+			name:   "review_success",
+			cancel: false,
 			constructor: func(t *testing.T) *voucher.Voucher {
 				return createVoucherForReviewTest(t, "")
 			},
-			reviewer: "aud1_uuid",
+			reviewer: "reviewer1",
+		},
+		{
+			name:   "cancel_review_success",
+			cancel: true,
+			constructor: func(t *testing.T) *voucher.Voucher {
+				return createVoucherForReviewTest(t, "reviewer1")
+			},
+			reviewer: "reviewer1",
 		},
 	}
 	for _, test := range tests {
@@ -39,13 +49,21 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 
 			handler := NewReviewVoucherHandler(repoMock)
 
-			err := handler.Handle(context.Background(), ReviewVoucherCmd{
-				VoucherUUID: v.UUID(),
-				Reviewer:    test.reviewer,
-			})
-			assert.NoError(t, err)
-
-			assert.True(t, repoMock.vouchers[v.UUID()].IsReviewed())
+			if test.cancel {
+				err := handler.HandleCancel(context.Background(), ReviewVoucherCmd{
+					VoucherUUID: v.UUID(),
+					Reviewer:    test.reviewer,
+				})
+				assert.NoError(t, err)
+				assert.False(t, repoMock.vouchers[v.UUID()].IsReviewed())
+			} else {
+				err := handler.Handle(context.Background(), ReviewVoucherCmd{
+					VoucherUUID: v.UUID(),
+					Reviewer:    test.reviewer,
+				})
+				assert.NoError(t, err)
+				assert.True(t, repoMock.vouchers[v.UUID()].IsReviewed())
+			}
 		})
 	}
 }

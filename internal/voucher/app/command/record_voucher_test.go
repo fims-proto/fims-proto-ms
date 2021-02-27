@@ -5,7 +5,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -74,7 +73,6 @@ func createVoucherCmd() *RecordVoucherCmd {
 	}
 	return &RecordVoucherCmd{
 		Number:             "1",
-		CreatedAt:          time.Now(),
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
 		CreatorUUID:        "0000",

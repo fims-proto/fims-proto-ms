@@ -37,7 +37,6 @@ type LineItemQry struct {
 // RecordVoucherCmd defines model for RecordVoucherCmd.
 type RecordVoucherCmd struct {
 	AttachmentQuantity int           `json:"AttachmentQuantity"`
-	CreatedAt          time.Time     `json:"CreatedAt"`
 	Creator            string        `json:"Creator"`
 	LineItems          []LineItemCmd `json:"LineItems"`
 	Number             string        `json:"Number"`
@@ -81,6 +80,12 @@ type UpdateJSONBody UpdateVoucherCmd
 // AuditJSONBody defines parameters for Audit.
 type AuditJSONBody AuditVoucherCmd
 
+// CancelAuditJSONBody defines parameters for CancelAudit.
+type CancelAuditJSONBody AuditVoucherCmd
+
+// CancelReviewJSONBody defines parameters for CancelReview.
+type CancelReviewJSONBody ReviewVoucherCmd
+
 // ReviewJSONBody defines parameters for Review.
 type ReviewJSONBody ReviewVoucherCmd
 
@@ -92,6 +97,12 @@ type UpdateJSONRequestBody UpdateJSONBody
 
 // AuditRequestBody defines body for Audit for application/json ContentType.
 type AuditJSONRequestBody AuditJSONBody
+
+// CancelAuditRequestBody defines body for CancelAudit for application/json ContentType.
+type CancelAuditJSONRequestBody CancelAuditJSONBody
+
+// CancelReviewRequestBody defines body for CancelReview for application/json ContentType.
+type CancelReviewJSONRequestBody CancelReviewJSONBody
 
 // ReviewRequestBody defines body for Review for application/json ContentType.
 type ReviewJSONRequestBody ReviewJSONBody

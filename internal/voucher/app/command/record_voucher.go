@@ -12,7 +12,6 @@ import (
 
 type RecordVoucherCmd struct {
 	Number             string
-	CreatedAt          time.Time
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
 	CreatorUUID        string
@@ -58,7 +57,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 	newVoucher, err := voucher.NewVoucher(
 		uuid.New(),
 		cmd.Number,
-		cmd.CreatedAt,
+		time.Now(),
 		cmd.AttachmentQuantity,
 		lineItems,
 		cmd.CreatorUUID,
