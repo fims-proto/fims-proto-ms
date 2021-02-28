@@ -75,7 +75,7 @@ func createVoucherCmd() *RecordVoucherCmd {
 		Number:             "1",
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
-		CreatorUUID:        "0000",
+		Creator:            "0000",
 	}
 }
 

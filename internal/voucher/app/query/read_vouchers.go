@@ -6,16 +6,16 @@ import (
 	"github.com/google/uuid"
 )
 
-type vouchersReadModel interface {
+type VouchersReadModel interface {
 	AllVouchers(ctx context.Context) ([]Voucher, error)
 	VoucherByUUID(ctx context.Context, uuid uuid.UUID) (Voucher, error)
 }
 
 type ReadVouchersHandler struct {
-	readModel vouchersReadModel
+	readModel VouchersReadModel
 }
 
-func NewReadVouchersHandler(readModel vouchersReadModel) ReadVouchersHandler {
+func NewReadVouchersHandler(readModel VouchersReadModel) ReadVouchersHandler {
 	if readModel == nil {
 		panic("nil readModel")
 	}

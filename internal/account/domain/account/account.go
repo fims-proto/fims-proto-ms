@@ -1,7 +1,7 @@
 package account
 
 import (
-	accounttype "github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -11,10 +11,10 @@ type Account struct {
 	number         string
 	title          string
 	superiorNumber string
-	accountType    accounttype.Type
+	accountType    commonAccount.Type
 }
 
-func NewAccount(number string, title string, superiorNumber string, accType accounttype.Type) (*Account, error) {
+func NewAccount(number string, title string, superiorNumber string, accType commonAccount.Type) (*Account, error) {
 	if number == "" {
 		return nil, errors.New("empty account number")
 	}
@@ -45,6 +45,6 @@ func (acc Account) SuperiorNumber() string {
 	return acc.superiorNumber
 }
 
-func (acc Account) Type() accounttype.Type {
+func (acc Account) Type() commonAccount.Type {
 	return acc.accountType
 }

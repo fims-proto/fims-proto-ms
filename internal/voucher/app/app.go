@@ -14,6 +14,7 @@ type Commands struct {
 	AuditVoucher  command.AuditVoucherHandler
 	ReviewVoucher command.ReviewVoucherHandler
 	UpdateVoucher command.UpdateVoucherHandler
+	PostVoucher   command.PostVoucherHandler
 }
 
 type Application struct {

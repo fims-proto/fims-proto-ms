@@ -146,7 +146,7 @@ func (h Handler) Update(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusCreated)
+	c.Status(http.StatusAccepted)
 }
 
 func (h Handler) Record(c *gin.Context) {
@@ -169,7 +169,7 @@ func (h Handler) Record(c *gin.Context) {
 		Number:             httpCmd.Number,
 		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
 		LineItems:          items,
-		CreatorUUID:        httpCmd.Creator,
+		Creator:            httpCmd.Creator,
 	}
 	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd)
 	if err != nil {
@@ -179,6 +179,17 @@ func (h Handler) Record(c *gin.Context) {
 	c.Status(http.StatusCreated)
 	// TODO figure out a way to avoid hard coded string of url
 	c.Writer.Header().Set("Content-Location", "/vouchers/"+newUUID.String())
+}
+
+func (h Handler) Post(c *gin.Context) {
+	cmd := command.PostVoucherCmd{
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+	}
+	if err := h.app.Commands.PostVoucher.Handler(c.Request.Context(), cmd); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusAccepted)
 }
 
 func (h Handler) VoucherByUUID(c *gin.Context) {
@@ -226,5 +237,6 @@ func InitRouter(h Handler, r *gin.Engine) {
 		g.POST("/:uuid/cancel-audit", h.CancelAudit)
 		g.POST("/:uuid/review", h.Review)
 		g.POST("/:uuid/cancel-review", h.CancelReview)
+		g.POST("/:uuid/post", h.Post)
 	}
 }

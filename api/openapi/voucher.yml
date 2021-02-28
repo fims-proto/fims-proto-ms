@@ -1,10 +1,10 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: fims-proto vouchers 
+  title: fims-proto vouchers
   description: HTTP port generated from openapi v3
   contact:
-    name: Lind Xiao 
+    name: Lind Xiao
     email: xld704@gmail.com
 servers:
   - url: https://{hostname}/vouchers
@@ -182,7 +182,7 @@ paths:
               $ref: '#/components/schemas/ReviewVoucherCmd'
       parameters:
         - in: path
-          name: uuid 
+          name: uuid
           schema:
             type: string
             format: uuid
@@ -212,7 +212,30 @@ paths:
               $ref: '#/components/schemas/ReviewVoucherCmd'
       parameters:
         - in: path
-          name: uuid 
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: UUID of voucher
+      responses:
+        '202':
+          description: accepted
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{uuid}/post:
+    post:
+      tags:
+        - Voucher
+      operationId: Post
+      parameters:
+        - in: path
+          name: uuid
           schema:
             type: string
             format: uuid
@@ -258,7 +281,7 @@ components:
       type: object
       required: [Number, AttachmentQuantity, LineItems, Creator]
       properties:
-        Number: 
+        Number:
           type: string
         AttachmentQuantity:
           type: integer
@@ -274,7 +297,7 @@ components:
       type: object
       required: [Summary, AccountNumber, Debit, Credit]
       properties:
-        Summary: 
+        Summary:
           type: string
         AccountNumber:
           type: string
@@ -316,9 +339,9 @@ components:
       type: object
       required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited]
       properties:
-        UUID: 
+        UUID:
           type: string
-          format: uuid 
+          format: uuid
         Number:
           type: string
         CreatedAt:

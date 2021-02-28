@@ -2,16 +2,16 @@ package query
 
 import "context"
 
-type accountsReadModel interface {
+type AccountsReadModel interface {
 	AllAccounts(ctx context.Context) ([]Account, error)
 	AccountByNumber(ctx context.Context, accountNumber string) (Account, error)
 }
 
 type ReadAccountsHandler struct {
-	readModel accountsReadModel
+	readModel AccountsReadModel
 }
 
-func NewReadAccountsHandler(readModel accountsReadModel) ReadAccountsHandler {
+func NewReadAccountsHandler(readModel AccountsReadModel) ReadAccountsHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}

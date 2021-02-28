@@ -1,7 +1,7 @@
 package account
 
 import (
-	accounttype "github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -15,45 +15,45 @@ func TestNewAccount(t *testing.T) {
 		number         string
 		title          string
 		superiorNumber string
-		accType        accounttype.Type
+		accType        commonAccount.Type
 		verify         func(t *testing.T, account *Account, err error)
 	}{
 		{
-			"general_account_success", "1001", "库存现金", "", accounttype.Assets,
+			"general_account_success", "1001", "库存现金", "", commonAccount.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, "1001", account.Number())
 				assert.Equal(t, "库存现金", account.Title())
 				assert.Empty(t, account.SuperiorNumber())
-				assert.Equal(t, accounttype.Assets, account.Type())
+				assert.Equal(t, commonAccount.Assets, account.Type())
 			},
 		},
 		{
-			"subsidiary_account_success", "1001001", "库存现金某子项", "1001", accounttype.Assets,
+			"subsidiary_account_success", "1001001", "库存现金某子项", "1001", commonAccount.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, "1001001", account.Number())
 				assert.Equal(t, "库存现金某子项", account.Title())
 				assert.Equal(t, "1001", account.SuperiorNumber())
-				assert.Equal(t, accounttype.Assets, account.Type())
+				assert.Equal(t, commonAccount.Assets, account.Type())
 			},
 		},
 		{
-			"empty_number_error", "", "库存现金", "", accounttype.Assets,
+			"empty_number_error", "", "库存现金", "", commonAccount.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_title_error", "1001", "", "", accounttype.Assets,
+			"empty_title_error", "1001", "", "", commonAccount.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"invalid_superior_account_number_error", "1001001", "库存现金某子项", "1002", accounttype.Assets,
+			"invalid_superior_account_number_error", "1001001", "库存现金某子项", "1002", commonAccount.Assets,
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)

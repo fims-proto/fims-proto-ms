@@ -14,7 +14,7 @@ type RecordVoucherCmd struct {
 	Number             string
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
-	CreatorUUID        string
+	Creator            string
 }
 
 type RecordVoucherHandler struct {
@@ -60,7 +60,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		time.Now(),
 		cmd.AttachmentQuantity,
 		lineItems,
-		cmd.CreatorUUID,
+		cmd.Creator,
 	)
 	if err != nil {
 		return uuid.Nil, err
