@@ -54,7 +54,7 @@ func newAccountApplication() (accountapp.Application, accountintraport.AccountIn
 		Commands: accountapp.Commands{},
 	}
 
-	accountInterface := accountintraport.NewHandler(application)
+	accountInterface := accountintraport.NewAccountInterface(application)
 
 	return application, accountInterface
 }
