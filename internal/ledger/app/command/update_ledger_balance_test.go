@@ -3,7 +3,7 @@ package command
 import (
 	"context"
 	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
-	"github/fims-proto/fims-proto-ms/internal/ledger/domain/ledger"
+	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 	"testing"
 
 	"github.com/google/uuid"
@@ -66,24 +66,28 @@ func TestApp_UpdateLedgerBalance(t *testing.T) {
 }
 
 type ledgerRepoMock struct {
-	ledgers map[string]*ledger.Ledger
+	ledgers map[string]*domain.Ledger
+}
+
+func (r ledgerRepoMock) AddLedger(ctx context.Context, l *domain.Ledger) error {
+	panic("not implemented")
 }
 
 func (r ledgerRepoMock) UpdateLedgers(
 	ctx context.Context,
 	ledgerNumbers []string,
-	updateFn func(ledgers []*ledger.Ledger) ([]*ledger.Ledger, error),
+	updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error),
 ) error {
 	// fetch entries from db
-	var ledgers []*ledger.Ledger
-	for dbNum, l := range r.ledgers {
-		for _, inputNum := range ledgerNumbers {
-			if inputNum == dbNum {
-				ledgers = append(ledgers, l)
-				break
-			}
+	var ledgers []*domain.Ledger
+	for _, inputNum := range ledgerNumbers {
+		l, ok := r.ledgers[inputNum]
+		if !ok {
+			return errors.Errorf("ledger number %s not exists", inputNum)
 		}
+		ledgers = append(ledgers, l)
 	}
+
 	// call updateFn
 	afterUpdateLedgers, err := updateFn(ledgers)
 	if err != nil {
@@ -97,22 +101,22 @@ func (r ledgerRepoMock) UpdateLedgers(
 }
 
 func (r ledgerRepoMock) initData() {
-	r.ledgers["1000"], _ = ledger.NewLedger("1000", "1000 ledger", "", commonAccount.Assets)
-	r.ledgers["100001"], _ = ledger.NewLedger("100001", "100001 ledger", "1000", commonAccount.Assets)
-	r.ledgers["10000101"], _ = ledger.NewLedger("10000101", "10000101 ledger", "100001", commonAccount.Assets)
+	r.ledgers["1000"], _ = domain.NewLedger("1000", "1000 ledger", "", commonAccount.Assets)
+	r.ledgers["100001"], _ = domain.NewLedger("100001", "100001 ledger", "1000", commonAccount.Assets)
+	r.ledgers["10000101"], _ = domain.NewLedger("10000101", "10000101 ledger", "100001", commonAccount.Assets)
 
-	r.ledgers["2000"], _ = ledger.NewLedger("2000", "2000 ledger", "", commonAccount.Liabilities)
-	r.ledgers["200002"], _ = ledger.NewLedger("200002", "200002 ledger", "2000", commonAccount.Liabilities)
-	r.ledgers["20000202"], _ = ledger.NewLedger("20000202", "20000202 ledger", "200002", commonAccount.Liabilities)
+	r.ledgers["2000"], _ = domain.NewLedger("2000", "2000 ledger", "", commonAccount.Liabilities)
+	r.ledgers["200002"], _ = domain.NewLedger("200002", "200002 ledger", "2000", commonAccount.Liabilities)
+	r.ledgers["20000202"], _ = domain.NewLedger("20000202", "20000202 ledger", "200002", commonAccount.Liabilities)
 }
 
 func newLedgerRepoMock() ledgerRepoMock {
-	return ledgerRepoMock{ledgers: make(map[string]*ledger.Ledger)}
+	return ledgerRepoMock{ledgers: make(map[string]*domain.Ledger)}
 }
 
 type accountServiceMock struct{}
 
-func (s accountServiceMock) readSuperiorNumbers(ctx context.Context, accountNumber string) ([]string, error) {
+func (s accountServiceMock) ReadSuperiorNumbers(ctx context.Context, accountNumber string) ([]string, error) {
 	if len(accountNumber) != 8 {
 		return nil, errors.New("let's test with 8 length account number")
 	}
@@ -125,7 +129,7 @@ func newAccountServiceMock() accountServiceMock {
 
 type voucherServiceMock struct{}
 
-func (s voucherServiceMock) checkVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error) {
+func (s voucherServiceMock) CheckVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error) {
 	return false, nil
 }
 

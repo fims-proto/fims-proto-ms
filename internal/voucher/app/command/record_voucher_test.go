@@ -2,8 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"testing"
 
 	"github.com/google/uuid"
@@ -80,7 +79,7 @@ func createVoucherCmd() *RecordVoucherCmd {
 }
 
 func newVoucherRepoMock() voucherRepoMock {
-	return voucherRepoMock{vouchers: make(map[uuid.UUID]voucher.Voucher)}
+	return voucherRepoMock{vouchers: make(map[uuid.UUID]domain.Voucher)}
 }
 
 func newAccountService() accountServiceMock {
@@ -88,15 +87,15 @@ func newAccountService() accountServiceMock {
 }
 
 type voucherRepoMock struct {
-	vouchers map[uuid.UUID]voucher.Voucher
+	vouchers map[uuid.UUID]domain.Voucher
 }
 
-func (r voucherRepoMock) AddVoucher(ctx context.Context, v *voucher.Voucher) (uuid.UUID, error) {
+func (r voucherRepoMock) AddVoucher(ctx context.Context, v *domain.Voucher) (uuid.UUID, error) {
 	r.vouchers[v.UUID()] = *v
 	return v.UUID(), nil
 }
 
-func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
 	v, ok := r.vouchers[voucherUUID]
 	if !ok {
 		return errors.Errorf("voucher %s not exists", voucherUUID)
@@ -119,12 +118,12 @@ func (s *accountServiceMock) ValidateExistence(ctx context.Context, accNumbers [
 	return nil
 }
 
-func prepareBalancedItems() []lineitem.LineItem {
-	item1, _ := lineitem.NewLineItem("test", "1000", "100", "")
-	item2, _ := lineitem.NewLineItem("test", "1001", "100", "")
-	item3, _ := lineitem.NewLineItem("test", "2000", "", "150")
-	item4, _ := lineitem.NewLineItem("test", "2001", "", "50")
-	return []lineitem.LineItem{
+func prepareBalancedItems() []domain.LineItem {
+	item1, _ := domain.NewLineItem("test", "1000", "100", "")
+	item2, _ := domain.NewLineItem("test", "1001", "100", "")
+	item3, _ := domain.NewLineItem("test", "2000", "", "150")
+	item4, _ := domain.NewLineItem("test", "2001", "", "50")
+	return []domain.LineItem{
 		*item1,
 		*item2,
 		*item3,

@@ -1,4 +1,4 @@
-package ledger
+package domain
 
 import (
 	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"

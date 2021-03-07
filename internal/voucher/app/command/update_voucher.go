@@ -2,8 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -15,11 +14,11 @@ type UpdateVoucherCmd struct {
 }
 
 type UpdateVoucherHandler struct {
-	repo       voucher.Repository
+	repo       domain.Repository
 	accService AccountService
 }
 
-func NewUpdateVoucherHandler(repo voucher.Repository, accService AccountService) UpdateVoucherHandler {
+func NewUpdateVoucherHandler(repo domain.Repository, accService AccountService) UpdateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -34,9 +33,9 @@ func NewUpdateVoucherHandler(repo voucher.Repository, accService AccountService)
 
 func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) error {
 	var accNumbers []string
-	var lineItems []lineitem.LineItem
+	var lineItems []domain.LineItem
 	for _, item := range cmd.LineItems {
-		lineItem, err := lineitem.NewLineItem(
+		lineItem, err := domain.NewLineItem(
 			item.Summary,
 			item.AccountNumber,
 			item.Debit,
@@ -52,7 +51,7 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
-		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		func(v *domain.Voucher) (*domain.Voucher, error) {
 			if err := h.accService.ValidateExistence(ctx, accNumbers); err != nil {
 				return nil, errors.Wrap(err, "unable to validate account numbers")
 			}

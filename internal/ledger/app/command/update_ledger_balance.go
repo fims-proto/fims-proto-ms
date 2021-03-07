@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/ledger/domain/ledger"
+	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -21,12 +21,12 @@ type UpdateLedgerBalanceCmd struct {
 }
 
 type UpdateLedgerBalanceHandler struct {
-	repo           ledger.Repository
+	repo           domain.Repository
 	accountService AccountService
 	voucherService VoucherService
 }
 
-func NewUpdateLedgerBalanceHandler(repo ledger.Repository, accountService AccountService, voucherService VoucherService) UpdateLedgerBalanceHandler {
+func NewUpdateLedgerBalanceHandler(repo domain.Repository, accountService AccountService, voucherService VoucherService) UpdateLedgerBalanceHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -45,7 +45,7 @@ func NewUpdateLedgerBalanceHandler(repo ledger.Repository, accountService Accoun
 
 func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedgerBalanceCmd) error {
 	// 1. check again if voucher already posted
-	voucherPosted, err := h.voucherService.checkVoucherPosted(ctx, cmd.VoucherUUID)
+	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.VoucherUUID)
 	if err != nil {
 		return errors.Wrap(err, "check voucher posted failed")
 	}
@@ -53,11 +53,11 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 		return errors.New("voucher already posted")
 	}
 
-	// 2. get all superios account numbers for lineitems
+	// 2. get all superior account numbers for lineitems
 	numberItemMap := make(map[string]*LineItemCmd)
 	var allLedgerNums []string
 	for _, item := range cmd.LineItems {
-		accNums, err := h.accountService.readSuperiorNumbers(ctx, item.AccountNumber)
+		accNums, err := h.accountService.ReadSuperiorNumbers(ctx, item.AccountNumber)
 		if err != nil {
 			return errors.Wrap(err, "read account superior number failed")
 		}
@@ -76,7 +76,7 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 	return h.repo.UpdateLedgers(
 		ctx,
 		allLedgerNums,
-		func(ledgers []*ledger.Ledger) ([]*ledger.Ledger, error) {
+		func(ledgers []*domain.Ledger) ([]*domain.Ledger, error) {
 			if len(ledgers) <= 0 {
 				return nil, errors.New("no ledgers found")
 			}

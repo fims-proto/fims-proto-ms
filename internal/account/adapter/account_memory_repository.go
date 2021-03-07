@@ -2,8 +2,8 @@ package adapter
 
 import (
 	"context"
-	query "github/fims-proto/fims-proto-ms/internal/account/app/query"
-	domain "github/fims-proto/fims-proto-ms/internal/account/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
+	"github/fims-proto/fims-proto-ms/internal/account/domain"
 	"sync"
 
 	"github.com/pkg/errors"

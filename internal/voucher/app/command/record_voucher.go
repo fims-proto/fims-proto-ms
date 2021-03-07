@@ -2,8 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"time"
 
 	"github.com/google/uuid"
@@ -18,11 +17,11 @@ type RecordVoucherCmd struct {
 }
 
 type RecordVoucherHandler struct {
-	repo       voucher.Repository
+	repo       domain.Repository
 	accService AccountService
 }
 
-func NewRecordVoucherHandler(repo voucher.Repository, accService AccountService) RecordVoucherHandler {
+func NewRecordVoucherHandler(repo domain.Repository, accService AccountService) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -36,11 +35,10 @@ func NewRecordVoucherHandler(repo voucher.Repository, accService AccountService)
 }
 
 func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (uuid.UUID, error) {
-	// object conversion, outside in: LineItemCmd -> domain/LineItem
 	var accNumbers []string
-	var lineItems []lineitem.LineItem
+	var lineItems []domain.LineItem
 	for _, item := range cmd.LineItems {
-		lineItem, err := lineitem.NewLineItem(
+		lineItem, err := domain.NewLineItem(
 			item.Summary,
 			item.AccountNumber,
 			item.Debit,
@@ -53,8 +51,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
-	// object conversion, outside in: VoucherCmd -> domain/Voucher
-	newVoucher, err := voucher.NewVoucher(
+	newVoucher, err := domain.NewVoucher(
 		uuid.New(),
 		cmd.Number,
 		time.Now(),

@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -14,6 +15,7 @@ type PostVoucherCmd struct {
 
 type PostVoucherHandler struct {
 	readModel     query.VouchersReadModel
+	repo          domain.Repository
 	ledgerService LedgerService
 }
 
@@ -32,5 +34,17 @@ func (h PostVoucherHandler) Handler(ctx context.Context, cmd PostVoucherCmd) err
 	if err != nil {
 		return errors.Wrap(err, "failed to read voucher while posting")
 	}
-	return h.ledgerService.PostVoucher(ctx, voucher)
+	if err = h.ledgerService.PostVoucher(ctx, voucher); err != nil {
+		return errors.Wrap(err, "failed to post voucher to ledgers")
+	}
+	return h.repo.UpdateVoucher(
+		ctx,
+		cmd.VoucherUUID,
+		func(v *domain.Voucher) (*domain.Voucher, error) {
+			if err := v.Post(); err != nil {
+				return nil, err
+			}
+			return v, err
+		},
+	)
 }

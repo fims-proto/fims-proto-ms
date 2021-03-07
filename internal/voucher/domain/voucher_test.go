@@ -1,7 +1,6 @@
-package voucher
+package domain
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"testing"
 	"time"
 
@@ -16,7 +15,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		name   string
 		uuid   uuid.UUID
 		number string
-		items  []lineitem.LineItem
+		items  []LineItem
 		verify func(t *testing.T, voucher *Voucher, err error)
 	}{
 		{
@@ -38,7 +37,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		},
 		{
 			"empty_lineitem_error", uuid.New(), "1",
-			[]lineitem.LineItem{},
+			[]LineItem{},
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
 				assert.Error(t, err)
@@ -55,12 +54,12 @@ func TestDomain_NewVoucher(t *testing.T) {
 	}
 }
 
-func prepareBalancedItems() []lineitem.LineItem {
-	item1, _ := lineitem.NewLineItem("test", "1000", "100", "")
-	item2, _ := lineitem.NewLineItem("test", "1001", "100", "")
-	item3, _ := lineitem.NewLineItem("test", "2000", "", "150")
-	item4, _ := lineitem.NewLineItem("test", "2001", "", "50")
-	return []lineitem.LineItem{
+func prepareBalancedItems() []LineItem {
+	item1, _ := NewLineItem("test", "1000", "100", "")
+	item2, _ := NewLineItem("test", "1001", "100", "")
+	item3, _ := NewLineItem("test", "2000", "", "150")
+	item4, _ := NewLineItem("test", "2001", "", "50")
+	return []LineItem{
 		*item1,
 		*item2,
 		*item3,
@@ -68,12 +67,12 @@ func prepareBalancedItems() []lineitem.LineItem {
 	}
 }
 
-func prepareImbalancedItems() []lineitem.LineItem {
-	item1, _ := lineitem.NewLineItem("test", "1000", "100", "")
-	item2, _ := lineitem.NewLineItem("test", "1001", "200", "")
-	item3, _ := lineitem.NewLineItem("test", "2000", "", "150")
-	item4, _ := lineitem.NewLineItem("test", "2001", "", "50")
-	return []lineitem.LineItem{
+func prepareImbalancedItems() []LineItem {
+	item1, _ := NewLineItem("test", "1000", "100", "")
+	item2, _ := NewLineItem("test", "1001", "200", "")
+	item3, _ := NewLineItem("test", "2000", "", "150")
+	item4, _ := NewLineItem("test", "2001", "", "50")
+	return []LineItem{
 		*item1,
 		*item2,
 		*item3,

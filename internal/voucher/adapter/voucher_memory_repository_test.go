@@ -2,8 +2,7 @@ package adapter
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"sync"
 	"testing"
 	"time"
@@ -16,7 +15,7 @@ import (
 // this is a simple check that the adapter implements the domain interface
 func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T) {
 	t.Parallel()
-	var _ voucher.Repository = (*VoucherMemoryRepository)(nil)
+	var _ domain.Repository = (*VoucherMemoryRepository)(nil)
 }
 
 func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
@@ -48,7 +47,7 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(20, func(i int) {
-		v, err := voucher.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "0000")
+		v, err := domain.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "0000")
 		require.NoError(t, err)
 		_, err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
@@ -65,7 +64,7 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 	voucherAudited := make(chan int, 20)
 
 	scheduleRaceTest(20, func(i int) {
-		err := repo.UpdateVoucher(context.Background(), voucherUUID, func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		err := repo.UpdateVoucher(context.Background(), voucherUUID, func(v *domain.Voucher) (*domain.Voucher, error) {
 			if err := v.Audit("testUUID"); err == nil {
 				// success
 				voucherAudited <- i
@@ -80,7 +79,7 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 
 func prepareMemoryRepo(t *testing.T, voucherUUID uuid.UUID) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := voucher.NewVoucher(voucherUUID, "1", time.Now(), 0, prepareBalancedItems(), "0000")
+	v, err := domain.NewVoucher(voucherUUID, "1", time.Now(), 0, prepareBalancedItems(), "0000")
 	require.NoError(t, err)
 	repo.data[v.UUID()] = *v
 	return repo
@@ -105,12 +104,12 @@ func scheduleRaceTest(workers int, startToDo func(i int)) {
 	workersDone.Wait()
 }
 
-func prepareBalancedItems() []lineitem.LineItem {
-	item1, _ := lineitem.NewLineItem("test", "1000", "100", "")
-	item2, _ := lineitem.NewLineItem("test", "1001", "100", "")
-	item3, _ := lineitem.NewLineItem("test", "2000", "", "150")
-	item4, _ := lineitem.NewLineItem("test", "2001", "", "50")
-	return []lineitem.LineItem{
+func prepareBalancedItems() []domain.LineItem {
+	item1, _ := domain.NewLineItem("test", "1000", "100", "")
+	item2, _ := domain.NewLineItem("test", "1001", "100", "")
+	item3, _ := domain.NewLineItem("test", "2000", "", "150")
+	item4, _ := domain.NewLineItem("test", "2001", "", "50")
+	return []domain.LineItem{
 		*item1,
 		*item2,
 		*item3,

@@ -1,4 +1,4 @@
-package lineitem
+package domain
 
 import (
 	"github.com/pkg/errors"

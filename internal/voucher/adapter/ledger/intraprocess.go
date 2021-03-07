@@ -6,12 +6,14 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 )
 
-type IntraprocessService struct {
+type IntraprocessAdapter struct {
 	ledgerInterface ledgerport.LedgerInterface
 }
 
-func NewIntraprocessService(ledgerInterface ledgerport.LedgerInterface) IntraprocessService {
-	return IntraprocessService{ledgerInterface: ledgerInterface}
+func NewIntraprocessAdapter(ledgerInterface ledgerport.LedgerInterface) IntraprocessAdapter {
+	return IntraprocessAdapter{ledgerInterface: ledgerInterface}
 }
 
-func (s IntraprocessService) PostVoucher(ctx context.Context, voucher query.Voucher) error
+func (s IntraprocessAdapter) PostVoucher(ctx context.Context, voucher query.Voucher) error {
+	return s.ledgerInterface.PostVoucher(ctx, mapFromVoucherQuery(voucher))
+}

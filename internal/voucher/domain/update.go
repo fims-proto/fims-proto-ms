@@ -1,8 +1,6 @@
-package voucher
+package domain
 
-import "github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-
-func (v *Voucher) Update(items []lineitem.LineItem) error {
+func (v *Voucher) Update(items []LineItem) error {
 	totalVal, err := sumItems(items)
 	if err != nil {
 		return err

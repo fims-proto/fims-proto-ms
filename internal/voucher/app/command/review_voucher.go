@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
 )
@@ -13,10 +13,10 @@ type ReviewVoucherCmd struct {
 }
 
 type ReviewVoucherHandler struct {
-	repo voucher.Repository
+	repo domain.Repository
 }
 
-func NewReviewVoucherHandler(repo voucher.Repository) ReviewVoucherHandler {
+func NewReviewVoucherHandler(repo domain.Repository) ReviewVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -27,7 +27,7 @@ func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) 
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
-		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.Review(cmd.Reviewer)
 			return v, err
 		},
@@ -38,7 +38,7 @@ func (h ReviewVoucherHandler) HandleCancel(ctx context.Context, cmd ReviewVouche
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
-		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.CancelReview(cmd.Reviewer)
 			return v, err
 		},

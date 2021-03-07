@@ -1,10 +1,17 @@
 package intraprocess
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/command"
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
-// use type from command directly, for now
-type UpdateLedgerBalanceCmd struct {
-	command.UpdateLedgerBalanceCmd
+type VoucherLineItemRequest struct {
+	AccountNumber string
+	Debit         decimal.Decimal
+	Credit        decimal.Decimal
+}
+
+type UpdateLedgerBalanceRequest struct {
+	VoucherUUID uuid.UUID
+	LineItems   []VoucherLineItemRequest
 }

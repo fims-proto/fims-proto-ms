@@ -1,7 +1,6 @@
-package voucher
+package domain
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +13,7 @@ type Voucher struct {
 	number             string
 	createdAt          time.Time
 	attachmentQuantity uint
-	lineItems          []lineitem.LineItem
+	lineItems          []LineItem
 	debit              decimal.Decimal
 	credit             decimal.Decimal
 	creator            string
@@ -22,9 +21,10 @@ type Voucher struct {
 	isReviewed         bool
 	auditor            string
 	isAudited          bool
+	isPosted           bool
 }
 
-func sumItems(items []lineitem.LineItem) (decimal.Decimal, error) {
+func sumItems(items []LineItem) (decimal.Decimal, error) {
 	if len(items) == 0 {
 		return decimal.Decimal{}, errors.New("lineitem cannot be empty")
 	}
@@ -42,7 +42,7 @@ func sumItems(items []lineitem.LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attachmentQuantity uint, items []lineitem.LineItem, creator string) (*Voucher, error) {
+func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
 	if voucherUUID == uuid.Nil {
 		return nil, errors.New("empty voucher uuid")
 	}
@@ -68,6 +68,7 @@ func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attac
 		isReviewed:         false,
 		auditor:            "",
 		isAudited:          false,
+		isPosted:           false,
 	}, nil
 }
 
@@ -87,7 +88,7 @@ func (v Voucher) AttachmentQuantity() uint {
 	return v.attachmentQuantity
 }
 
-func (v Voucher) LineItems() []lineitem.LineItem {
+func (v Voucher) LineItems() []LineItem {
 	return v.lineItems
 }
 
@@ -117,4 +118,8 @@ func (v Voucher) IsReviewed() bool {
 
 func (v Voucher) IsAudited() bool {
 	return v.isAudited
+}
+
+func (v Voucher) IsPosted() bool {
+	return v.isPosted
 }

@@ -25,7 +25,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VouchersQry'
+                $ref: '#/components/schemas/VouchersResponse'
         default:
           description: unexpected error
           content:
@@ -43,7 +43,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecordVoucherCmd'
+              $ref: '#/components/schemas/RecordVoucherRequest'
       responses:
         '201':
           description: created
@@ -73,7 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoucherQry'
+                $ref: '#/components/schemas/VoucherResponse'
         default:
           description: unexpected error
           content:
@@ -97,7 +97,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateVoucherCmd'
+              $ref: '#/components/schemas/UpdateVoucherRequest'
       responses:
         '202':
           description: accepted
@@ -119,7 +119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuditVoucherCmd'
+              $ref: '#/components/schemas/AuditVoucherRequest'
       parameters:
         - in: path
           name: uuid
@@ -149,7 +149,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuditVoucherCmd'
+              $ref: '#/components/schemas/AuditVoucherRequest'
       parameters:
         - in: path
           name: uuid
@@ -179,7 +179,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewVoucherCmd'
+              $ref: '#/components/schemas/ReviewVoucherRequest'
       parameters:
         - in: path
           name: uuid
@@ -209,7 +209,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewVoucherCmd'
+              $ref: '#/components/schemas/ReviewVoucherRequest'
       parameters:
         - in: path
           name: uuid
@@ -270,14 +270,14 @@ components:
         message:
           type: string
     
-    AuditVoucherCmd:
+    AuditVoucherRequest:
       type: object
       required: [Auditor]
       properties:
         Auditor:
           type: string
     
-    RecordVoucherCmd:
+    RecordVoucherRequest:
       type: object
       required: [Number, AttachmentQuantity, LineItems, Creator]
       properties:
@@ -289,11 +289,11 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemCmd'
+            $ref: '#/components/schemas/LineItemRequest'
         Creator:
           type: string
 
-    LineItemCmd:
+    LineItemRequest:
       type: object
       required: [Summary, AccountNumber, Debit, Credit]
       properties:
@@ -306,23 +306,23 @@ components:
         Credit:
           type: string
 
-    ReviewVoucherCmd:
+    ReviewVoucherRequest:
       type: object
       required: [Reviewer]
       properties:
         Reviewer:
           type: string
     
-    UpdateVoucherCmd:
+    UpdateVoucherRequest:
       type: object
       required: [LineItems]
       properties:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemCmd'
+            $ref: '#/components/schemas/LineItemRequest'
 
-    LineItemQry:
+    LineItemResponse:
       type: object
       required: [Summary, AccountNumber, Debit, Credit]
       properties:
@@ -335,9 +335,9 @@ components:
         Credit:
           type: string
 
-    VoucherQry:
+    VoucherResponse:
       type: object
-      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited]
+      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
       properties:
         UUID:
           type: string
@@ -353,7 +353,7 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemQry'
+            $ref: '#/components/schemas/LineItemResponse'
         Debit:
           type: string
         Credit:
@@ -368,9 +368,11 @@ components:
           type: string
         IsAudited:
           type: boolean
+        IsPosted:
+          type: boolean
     
-    VouchersQry:
+    VouchersResponse:
       type: array
       items:
-        $ref: '#/components/schemas/VoucherQry'
+        $ref: '#/components/schemas/VoucherResponse'
     

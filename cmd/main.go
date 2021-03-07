@@ -29,7 +29,7 @@ func main() {
 
 func newVoucherApplication(accountInterface accountintraport.AccountInterface) voucherapp.Application {
 	memoryRepository := voucheradapter.NewVoucherMemoryRepository()
-	accountService := voucheraccountadapter.NewIntraprocessService(accountInterface)
+	accountService := voucheraccountadapter.NewIntraprocessAdapter(accountInterface)
 
 	return voucherapp.Application{
 		Queries: voucherapp.Queries{

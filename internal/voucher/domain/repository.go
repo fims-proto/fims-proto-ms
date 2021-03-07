@@ -1,4 +1,4 @@
-package voucher
+package domain
 
 import (
 	"context"
