@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-// AuditVoucherCmd defines model for AuditVoucherCmd.
-type AuditVoucherCmd struct {
+// AuditVoucherRequest defines model for AuditVoucherRequest.
+type AuditVoucherRequest struct {
 	Auditor string `json:"Auditor"`
 }
 
@@ -18,76 +18,77 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
-// LineItemCmd defines model for LineItemCmd.
-type LineItemCmd struct {
+// LineItemRequest defines model for LineItemRequest.
+type LineItemRequest struct {
 	AccountNumber string `json:"AccountNumber"`
 	Credit        string `json:"Credit"`
 	Debit         string `json:"Debit"`
 	Summary       string `json:"Summary"`
 }
 
-// LineItemQry defines model for LineItemQry.
-type LineItemQry struct {
+// LineItemResponse defines model for LineItemResponse.
+type LineItemResponse struct {
 	AccountNumber string `json:"AccountNumber"`
 	Credit        string `json:"Credit"`
 	Debit         string `json:"Debit"`
 	Summary       string `json:"Summary"`
 }
 
-// RecordVoucherCmd defines model for RecordVoucherCmd.
-type RecordVoucherCmd struct {
-	AttachmentQuantity int           `json:"AttachmentQuantity"`
-	Creator            string        `json:"Creator"`
-	LineItems          []LineItemCmd `json:"LineItems"`
-	Number             string        `json:"Number"`
+// RecordVoucherRequest defines model for RecordVoucherRequest.
+type RecordVoucherRequest struct {
+	AttachmentQuantity int               `json:"AttachmentQuantity"`
+	Creator            string            `json:"Creator"`
+	LineItems          []LineItemRequest `json:"LineItems"`
+	Number             string            `json:"Number"`
 }
 
-// ReviewVoucherCmd defines model for ReviewVoucherCmd.
-type ReviewVoucherCmd struct {
+// ReviewVoucherRequest defines model for ReviewVoucherRequest.
+type ReviewVoucherRequest struct {
 	Reviewer string `json:"Reviewer"`
 }
 
-// UpdateVoucherCmd defines model for UpdateVoucherCmd.
-type UpdateVoucherCmd struct {
-	LineItems []LineItemCmd `json:"LineItems"`
+// UpdateVoucherRequest defines model for UpdateVoucherRequest.
+type UpdateVoucherRequest struct {
+	LineItems []LineItemRequest `json:"LineItems"`
 }
 
-// VoucherQry defines model for VoucherQry.
-type VoucherQry struct {
-	AttachmentQuantity int           `json:"AttachmentQuantity"`
-	Auditor            string        `json:"Auditor"`
-	CreatedAt          time.Time     `json:"CreatedAt"`
-	Creator            string        `json:"Creator"`
-	Credit             string        `json:"Credit"`
-	Debit              string        `json:"Debit"`
-	IsAudited          bool          `json:"IsAudited"`
-	IsReviewed         bool          `json:"IsReviewed"`
-	LineItems          []LineItemQry `json:"LineItems"`
-	Number             string        `json:"Number"`
-	Reviewer           string        `json:"Reviewer"`
-	UUID               string        `json:"UUID"`
+// VoucherResponse defines model for VoucherResponse.
+type VoucherResponse struct {
+	AttachmentQuantity int                `json:"AttachmentQuantity"`
+	Auditor            string             `json:"Auditor"`
+	CreatedAt          time.Time          `json:"CreatedAt"`
+	Creator            string             `json:"Creator"`
+	Credit             string             `json:"Credit"`
+	Debit              string             `json:"Debit"`
+	IsAudited          bool               `json:"IsAudited"`
+	IsPosted           bool               `json:"IsPosted"`
+	IsReviewed         bool               `json:"IsReviewed"`
+	LineItems          []LineItemResponse `json:"LineItems"`
+	Number             string             `json:"Number"`
+	Reviewer           string             `json:"Reviewer"`
+	UUID               string             `json:"UUID"`
 }
 
-// VouchersQry defines model for VouchersQry.
-type VouchersQry []VoucherQry
+// VouchersResponse defines model for VouchersResponse.
+type VouchersResponse []VoucherResponse
 
 // RecordJSONBody defines parameters for Record.
-type RecordJSONBody RecordVoucherCmd
+type RecordJSONBody RecordVoucherRequest
 
 // UpdateJSONBody defines parameters for Update.
-type UpdateJSONBody UpdateVoucherCmd
+type UpdateJSONBody UpdateVoucherRequest
 
 // AuditJSONBody defines parameters for Audit.
-type AuditJSONBody AuditVoucherCmd
+type AuditJSONBody AuditVoucherRequest
 
 // CancelAuditJSONBody defines parameters for CancelAudit.
-type CancelAuditJSONBody AuditVoucherCmd
+type CancelAuditJSONBody AuditVoucherRequest
 
 // CancelReviewJSONBody defines parameters for CancelReview.
-type CancelReviewJSONBody ReviewVoucherCmd
+type CancelReviewJSONBody ReviewVoucherRequest
 
 // ReviewJSONBody defines parameters for Review.
-type ReviewJSONBody ReviewVoucherCmd
+type ReviewJSONBody ReviewVoucherRequest
 
 // RecordRequestBody defines body for Record for application/json ContentType.
 type RecordJSONRequestBody RecordJSONBody

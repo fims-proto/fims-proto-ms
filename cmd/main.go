@@ -3,58 +3,63 @@ package main
 import (
 	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
-	accountquery "github/fims-proto/fims-proto-ms/internal/account/app/query"
 	accountintraport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
+	ledgeradapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter"
+	ledgeraccountadapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
+	ledgervoucheradapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/voucher"
+	ledgerapp "github/fims-proto/fims-proto-ms/internal/ledger/app"
+	ledgertesthttpport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
+	ledgerintraport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
 	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
+	voucherledgeradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/ledger"
 	voucherapp "github/fims-proto/fims-proto-ms/internal/voucher/app"
-	vouchercommand "github/fims-proto/fims-proto-ms/internal/voucher/app/command"
-	voucherquery "github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	voucherintraport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/intraprocess"
 	voucherhttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	_, accountInterface := newAccountApplication()
-	voucherApplication := newVoucherApplication(accountInterface)
+	// repositories
+	accountRepository := accountadapter.NewAccountMemoryRepository()
+	voucherRepository := voucheradapter.NewVoucherMemoryRepository()
+	ledgerRepository := ledgeradapter.NewLedgerMemoryRepository()
+
+	// application - will be passed by reference, in order to make injectinon work
+	accountApplication := accountapp.NewApplication()
+	voucherApplication := voucherapp.NewApplication()
+	ledgerApplication := ledgerapp.NewApplication()
+
+	// intrprocess interfaces
+	accountInterface := accountintraport.NewAccountInterface(&accountApplication)
+	voucherInterface := voucherintraport.NewVoucherInterface(&voucherApplication)
+	ledgerInterface := ledgerintraport.NewLedgerInterface(&ledgerApplication)
+
+	// account application dependencies injection
+	accountApplication.Inject(accountRepository)
+
+	// voucher application dependecies injection
+	voucherApplication.Inject(
+		voucherRepository,
+		voucherRepository,
+		voucheraccountadapter.NewIntraprocessAdapter(accountInterface),
+		voucherledgeradapter.NewIntraprocessAdapter(ledgerInterface),
+	)
+
+	// ledger application dependencies injection
+	ledgerApplication.Inject(
+		ledgerRepository,
+		ledgeraccountadapter.NewIntraprocessAdapter(accountInterface),
+		ledgervoucheradapter.NewIntraprocessAdapter(voucherInterface),
+	)
 
 	router := gin.Default()
-	voucherhttpport.InitRouter(voucherhttpport.NewHandler(voucherApplication), router)
+	voucherhttpport.InitRouter(voucherhttpport.NewHandler(&voucherApplication), router)
+	// TODO remove, test prupose
+	ledgertesthttpport.InitRouter(ledgertesthttpport.NewHandler(ledgerRepository), router)
 
 	if err := router.Run(":8080"); err != nil {
 		panic(err.Error())
 	}
-}
-
-func newVoucherApplication(accountInterface accountintraport.AccountInterface) voucherapp.Application {
-	memoryRepository := voucheradapter.NewVoucherMemoryRepository()
-	accountService := voucheraccountadapter.NewIntraprocessService(accountInterface)
-
-	return voucherapp.Application{
-		Queries: voucherapp.Queries{
-			ReadVouchers: voucherquery.NewAllVouchersHandler(memoryRepository),
-		},
-		Commands: voucherapp.Commands{
-			RecordVoucher: vouchercommand.NewRecordVoucherHandler(&memoryRepository, accountService),
-			AuditVoucher:  vouchercommand.NewAuditVoucherHandler(&memoryRepository),
-			ReviewVoucher: vouchercommand.NewReviewVoucherHandler(&memoryRepository),
-			UpdateVoucher: vouchercommand.NewUpdateVoucherHandler(&memoryRepository, accountService),
-		},
-	}
-}
-
-func newAccountApplication() (accountapp.Application, accountintraport.AccountInterface) {
-	memoryRepository := accountadapter.NewAccountMemoryRepository()
-
-	application := accountapp.Application{
-		Queries: accountapp.Queries{
-			ValidateAccounts: accountquery.NewValidateAccountsHandler(memoryRepository),
-		},
-		Commands: accountapp.Commands{},
-	}
-
-	accountInterface := accountintraport.NewHandler(application)
-
-	return application, accountInterface
 }

@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
 )
@@ -13,10 +13,10 @@ type AuditVoucherCmd struct {
 }
 
 type AuditVoucherHandler struct {
-	repo voucher.Repository
+	repo domain.Repository
 }
 
-func NewAuditVoucherHandler(repo voucher.Repository) AuditVoucherHandler {
+func NewAuditVoucherHandler(repo domain.Repository) AuditVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -27,7 +27,7 @@ func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) er
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
-		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.Audit(cmd.Auditor)
 			return v, err
 		},
@@ -38,7 +38,7 @@ func (h AuditVoucherHandler) HandleCancel(ctx context.Context, cmd AuditVoucherC
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
-		func(v *voucher.Voucher) (*voucher.Voucher, error) {
+		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.CancelAudit(cmd.Auditor)
 			return v, err
 		},

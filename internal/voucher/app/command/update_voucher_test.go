@@ -2,8 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"testing"
 	"time"
 
@@ -78,10 +77,10 @@ func createUpdateVoucherCmd() *UpdateVoucherCmd {
 }
 
 func (r voucherRepoMock) initTestData() {
-	item0, _ := lineitem.NewLineItem("test_item0", "1000", "10", "")
-	item1, _ := lineitem.NewLineItem("test_item1", "1000", "", "10")
-	items := []lineitem.LineItem{*item0, *item1}
-	v, _ := voucher.NewVoucher(
+	item0, _ := domain.NewLineItem("test_item0", "1000", "10", "")
+	item1, _ := domain.NewLineItem("test_item1", "1000", "", "10")
+	items := []domain.LineItem{*item0, *item1}
+	v, _ := domain.NewVoucher(
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),
 		"1",
 		time.Now(),
