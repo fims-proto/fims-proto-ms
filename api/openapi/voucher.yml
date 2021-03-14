@@ -99,8 +99,8 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdateVoucherRequest'
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -129,8 +129,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -159,8 +159,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -189,8 +189,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -219,8 +219,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -242,8 +242,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:

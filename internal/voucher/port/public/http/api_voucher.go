@@ -53,7 +53,7 @@ func (h Handler) Audit(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) CancelAudit(c *gin.Context) {
@@ -70,7 +70,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) Review(c *gin.Context) {
@@ -87,7 +87,7 @@ func (h Handler) Review(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) CancelReview(c *gin.Context) {
@@ -104,7 +104,7 @@ func (h Handler) CancelReview(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) Update(c *gin.Context) {
@@ -126,7 +126,7 @@ func (h Handler) Update(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) Record(c *gin.Context) {
@@ -153,7 +153,7 @@ func (h Handler) Post(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func InitRouter(h Handler, r *gin.Engine) {
