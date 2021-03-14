@@ -1,10 +1,10 @@
 openapi: "3.0.0"
 info:
   version: 1.0.0
-  title: fims-proto vouchers 
+  title: fims-proto vouchers
   description: HTTP port generated from openapi v3
   contact:
-    name: Lind Xiao 
+    name: Lind Xiao
     email: xld704@gmail.com
 servers:
   - url: https://{hostname}/vouchers
@@ -25,7 +25,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VouchersQry'
+                $ref: '#/components/schemas/VouchersResponse'
         default:
           description: unexpected error
           content:
@@ -43,7 +43,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecordVoucherCmd'
+              $ref: '#/components/schemas/RecordVoucherRequest'
       responses:
         '201':
           description: created
@@ -73,7 +73,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoucherQry'
+                $ref: '#/components/schemas/VoucherResponse'
         default:
           description: unexpected error
           content:
@@ -97,10 +97,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateVoucherCmd'
+              $ref: '#/components/schemas/UpdateVoucherRequest'
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -119,7 +119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuditVoucherCmd'
+              $ref: '#/components/schemas/AuditVoucherRequest'
       parameters:
         - in: path
           name: uuid
@@ -129,8 +129,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -149,7 +149,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuditVoucherCmd'
+              $ref: '#/components/schemas/AuditVoucherRequest'
       parameters:
         - in: path
           name: uuid
@@ -159,8 +159,8 @@ paths:
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -179,18 +179,18 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewVoucherCmd'
+              $ref: '#/components/schemas/ReviewVoucherRequest'
       parameters:
         - in: path
-          name: uuid 
+          name: uuid
           schema:
             type: string
             format: uuid
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -209,18 +209,41 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewVoucherCmd'
+              $ref: '#/components/schemas/ReviewVoucherRequest'
       parameters:
         - in: path
-          name: uuid 
+          name: uuid
           schema:
             type: string
             format: uuid
           required: true
           description: UUID of voucher
       responses:
-        '202':
-          description: accepted
+        '204':
+          description: no content
+        default:
+          description: unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /{uuid}/post:
+    post:
+      tags:
+        - Voucher
+      operationId: Post
+      parameters:
+        - in: path
+          name: uuid
+          schema:
+            type: string
+            format: uuid
+          required: true
+          description: UUID of voucher
+      responses:
+        '204':
+          description: no content
         default:
           description: unexpected error
           content:
@@ -247,18 +270,18 @@ components:
         message:
           type: string
     
-    AuditVoucherCmd:
+    AuditVoucherRequest:
       type: object
       required: [Auditor]
       properties:
         Auditor:
           type: string
     
-    RecordVoucherCmd:
+    RecordVoucherRequest:
       type: object
       required: [Number, AttachmentQuantity, LineItems, Creator]
       properties:
-        Number: 
+        Number:
           type: string
         AttachmentQuantity:
           type: integer
@@ -266,40 +289,11 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemCmd'
+            $ref: '#/components/schemas/LineItemRequest'
         Creator:
           type: string
 
-    LineItemCmd:
-      type: object
-      required: [Summary, AccountNumber, Debit, Credit]
-      properties:
-        Summary: 
-          type: string
-        AccountNumber:
-          type: string
-        Debit:
-          type: string
-        Credit:
-          type: string
-
-    ReviewVoucherCmd:
-      type: object
-      required: [Reviewer]
-      properties:
-        Reviewer:
-          type: string
-    
-    UpdateVoucherCmd:
-      type: object
-      required: [LineItems]
-      properties:
-        LineItems:
-          type: array
-          items:
-            $ref: '#/components/schemas/LineItemCmd'
-
-    LineItemQry:
+    LineItemRequest:
       type: object
       required: [Summary, AccountNumber, Debit, Credit]
       properties:
@@ -312,13 +306,42 @@ components:
         Credit:
           type: string
 
-    VoucherQry:
+    ReviewVoucherRequest:
       type: object
-      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited]
+      required: [Reviewer]
       properties:
-        UUID: 
+        Reviewer:
           type: string
-          format: uuid 
+    
+    UpdateVoucherRequest:
+      type: object
+      required: [LineItems]
+      properties:
+        LineItems:
+          type: array
+          items:
+            $ref: '#/components/schemas/LineItemRequest'
+
+    LineItemResponse:
+      type: object
+      required: [Summary, AccountNumber, Debit, Credit]
+      properties:
+        Summary:
+          type: string
+        AccountNumber:
+          type: string
+        Debit:
+          type: string
+        Credit:
+          type: string
+
+    VoucherResponse:
+      type: object
+      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
+      properties:
+        UUID:
+          type: string
+          format: uuid
         Number:
           type: string
         CreatedAt:
@@ -330,7 +353,7 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemQry'
+            $ref: '#/components/schemas/LineItemResponse'
         Debit:
           type: string
         Credit:
@@ -345,9 +368,11 @@ components:
           type: string
         IsAudited:
           type: boolean
+        IsPosted:
+          type: boolean
     
-    VouchersQry:
+    VouchersResponse:
       type: array
       items:
-        $ref: '#/components/schemas/VoucherQry'
+        $ref: '#/components/schemas/VoucherResponse'
     

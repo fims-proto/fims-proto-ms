@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"testing"
 	"time"
 
@@ -16,13 +16,13 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 	tests := []struct {
 		name        string
 		cancel      bool
-		constructor func(t *testing.T) *voucher.Voucher
+		constructor func(t *testing.T) *domain.Voucher
 		auditor     string
 	}{
 		{
 			"audit_success",
 			false,
-			func(t *testing.T) *voucher.Voucher {
+			func(t *testing.T) *domain.Voucher {
 				return createVoucherForAuditTest(t, "")
 			},
 			"auditor1",
@@ -30,7 +30,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 		{
 			"cancel_audit_success",
 			true,
-			func(t *testing.T) *voucher.Voucher {
+			func(t *testing.T) *domain.Voucher {
 				return createVoucherForAuditTest(t, "auditor1")
 			},
 			"auditor1",
@@ -43,7 +43,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 
 			v := test.constructor(t)
 			repoMock := newVoucherRepoMock()
-			repoMock.vouchers = map[uuid.UUID]voucher.Voucher{
+			repoMock.vouchers = map[uuid.UUID]domain.Voucher{
 				v.UUID(): *v,
 			}
 
@@ -68,8 +68,8 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 	}
 }
 
-func createVoucherForAuditTest(t *testing.T, auditor string) *voucher.Voucher {
-	v, err := voucher.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
+func createVoucherForAuditTest(t *testing.T, auditor string) *domain.Voucher {
+	v, err := domain.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if auditor != "" {
 		err := v.Audit(auditor)

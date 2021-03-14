@@ -26,4 +26,5 @@ type Voucher struct {
 	IsReviewed         bool
 	Auditor            string
 	IsAudited          bool
+	IsPosted           bool
 }

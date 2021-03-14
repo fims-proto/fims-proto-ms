@@ -10,10 +10,10 @@ import (
 )
 
 type Handler struct {
-	app app.Application
+	app *app.Application
 }
 
-func NewHandler(app app.Application) Handler {
+func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
@@ -23,119 +23,99 @@ func (h Handler) AllVouchers(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	httpVouchers := []VoucherQry{}
+	res := []VoucherResponse{}
 	for _, voucher := range vouchers {
-		httpItems := []LineItemQry{}
-		for _, item := range voucher.LineItems {
-			httpItem := LineItemQry{
-				Summary:       item.Summary,
-				AccountNumber: item.AccountNumber,
-				Debit:         item.Debit,
-				Credit:        item.Credit,
-			}
-			httpItems = append(httpItems, httpItem)
-		}
-		httpVoucher := VoucherQry{
-			UUID:               voucher.UUID.String(),
-			Number:             string(voucher.Number),
-			CreatedAt:          voucher.CreatedAt,
-			AttachmentQuantity: int(voucher.AttachmentQuantity),
-			LineItems:          httpItems,
-			Debit:              voucher.Debit,
-			Credit:             voucher.Credit,
-			Creator:            voucher.Creator,
-			Reviewer:           voucher.Reviewer,
-			Auditor:            voucher.Auditor,
-			IsReviewed:         voucher.IsReviewed,
-			IsAudited:          voucher.IsAudited,
-		}
-		httpVouchers = append(httpVouchers, httpVoucher)
+		res = append(res, mapFromVoucherQuery(voucher))
 	}
-	c.JSON(http.StatusOK, httpVouchers)
+	c.JSON(http.StatusOK, res)
+}
+
+func (h Handler) VoucherByUUID(c *gin.Context) {
+	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c.Request.Context(), uuid.MustParse(c.Param("uuid")))
+	if err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, mapFromVoucherQuery(voucher))
 }
 
 func (h Handler) Audit(c *gin.Context) {
-	var httpCmd AuditVoucherCmd
-	if err := c.ShouldBind(&httpCmd); err != nil {
+	var req AuditVoucherRequest
+	if err := c.ShouldBind(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	cmd := command.AuditVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("uuid")),
-		Auditor:     httpCmd.Auditor,
+		Auditor:     req.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) CancelAudit(c *gin.Context) {
-	var httpCmd AuditVoucherCmd
-	if err := c.ShouldBind(&httpCmd); err != nil {
+	var req AuditVoucherRequest
+	if err := c.ShouldBind(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	cmd := command.AuditVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("uuid")),
-		Auditor:     httpCmd.Auditor,
+		Auditor:     req.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) Review(c *gin.Context) {
-	var httpCmd ReviewVoucherCmd
-	if err := c.ShouldBind(&httpCmd); err != nil {
+	var req ReviewVoucherRequest
+	if err := c.ShouldBind(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("uuid")),
-		Reviewer:    httpCmd.Reviewer,
+		Reviewer:    req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) CancelReview(c *gin.Context) {
-	var httpCmd ReviewVoucherCmd
-	if err := c.ShouldBind(&httpCmd); err != nil {
+	var req ReviewVoucherRequest
+	if err := c.ShouldBind(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("uuid")),
-		Reviewer:    httpCmd.Reviewer,
+		Reviewer:    req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusAccepted)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) Update(c *gin.Context) {
-	var httpCmd UpdateVoucherCmd
-	if err := c.ShouldBind(&httpCmd); err != nil {
+	var req UpdateVoucherRequest
+	if err := c.ShouldBind(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	items := []command.LineItemCmd{}
-	for _, httpItem := range httpCmd.LineItems {
-		item := command.LineItemCmd{
-			Summary:       httpItem.Summary,
-			AccountNumber: httpItem.AccountNumber,
-			Debit:         httpItem.Debit,
-			Credit:        httpItem.Credit,
-		}
+	for _, itemReq := range req.LineItems {
+		item := itemReq.mapToCommand()
 		items = append(items, item)
 	}
 	cmd := command.UpdateVoucherCmd{
@@ -146,32 +126,16 @@ func (h Handler) Update(c *gin.Context) {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	c.Status(http.StatusCreated)
+	c.Status(http.StatusNoContent)
 }
 
 func (h Handler) Record(c *gin.Context) {
-	var httpCmd RecordVoucherCmd
-	if err := c.ShouldBind(&httpCmd); err != nil {
+	var req RecordVoucherRequest
+	if err := c.ShouldBind(&req); err != nil {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	items := []command.LineItemCmd{}
-	for _, httpItem := range httpCmd.LineItems {
-		item := command.LineItemCmd{
-			Summary:       httpItem.Summary,
-			AccountNumber: httpItem.AccountNumber,
-			Debit:         httpItem.Debit,
-			Credit:        httpItem.Credit,
-		}
-		items = append(items, item)
-	}
-	cmd := command.RecordVoucherCmd{
-		Number:             httpCmd.Number,
-		AttachmentQuantity: uint(httpCmd.AttachmentQuantity),
-		LineItems:          items,
-		CreatorUUID:        httpCmd.Creator,
-	}
-	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd)
+	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), req.mapToCommand())
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -181,38 +145,15 @@ func (h Handler) Record(c *gin.Context) {
 	c.Writer.Header().Set("Content-Location", "/vouchers/"+newUUID.String())
 }
 
-func (h Handler) VoucherByUUID(c *gin.Context) {
-	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c.Request.Context(), uuid.MustParse(c.Param("uuid")))
-	if err != nil {
-		c.Status(http.StatusNotFound)
+func (h Handler) Post(c *gin.Context) {
+	cmd := command.PostVoucherCmd{
+		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+	}
+	if err := h.app.Commands.PostVoucher.Handler(c.Request.Context(), cmd); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	httpItems := []LineItemQry{}
-	for _, item := range voucher.LineItems {
-		httpItem := LineItemQry{
-			Summary:       item.Summary,
-			AccountNumber: item.AccountNumber,
-			Debit:         item.Debit,
-			Credit:        item.Credit,
-		}
-		httpItems = append(httpItems, httpItem)
-	}
-
-	httpVoucher := VoucherQry{
-		UUID:               voucher.UUID.String(),
-		Number:             voucher.Number,
-		CreatedAt:          voucher.CreatedAt,
-		AttachmentQuantity: int(voucher.AttachmentQuantity),
-		LineItems:          httpItems,
-		Debit:              voucher.Debit,
-		Credit:             voucher.Credit,
-		Creator:            voucher.Creator,
-		Reviewer:           voucher.Reviewer,
-		Auditor:            voucher.Auditor,
-		IsReviewed:         voucher.IsReviewed,
-		IsAudited:          voucher.IsAudited,
-	}
-	c.JSON(http.StatusOK, httpVoucher)
+	c.Status(http.StatusNoContent)
 }
 
 func InitRouter(h Handler, r *gin.Engine) {
@@ -226,5 +167,6 @@ func InitRouter(h Handler, r *gin.Engine) {
 		g.POST("/:uuid/cancel-audit", h.CancelAudit)
 		g.POST("/:uuid/review", h.Review)
 		g.POST("/:uuid/cancel-review", h.CancelReview)
+		g.POST("/:uuid/post", h.Post)
 	}
 }

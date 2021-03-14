@@ -5,14 +5,14 @@ import (
 	accountport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 )
 
-type IntraprocessService struct {
-	accInterface accountport.AccountInterface
+type IntraprocessAdapter struct {
+	accountInterface accountport.AccountInterface
 }
 
-func NewIntraprocessService(accInterface accountport.AccountInterface) IntraprocessService {
-	return IntraprocessService{accInterface: accInterface}
+func NewIntraprocessAdapter(accountInterface accountport.AccountInterface) IntraprocessAdapter {
+	return IntraprocessAdapter{accountInterface: accountInterface}
 }
 
-func (s IntraprocessService) ValidateExistence(ctx context.Context, accNumbers []string) error {
-	return s.accInterface.ValidateExistence(ctx, accNumbers)
+func (s IntraprocessAdapter) ValidateExistence(ctx context.Context, accNumbers []string) error {
+	return s.accountInterface.ValidateExistence(ctx, accNumbers)
 }

@@ -2,8 +2,7 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/lineitem"
-	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,33 +13,32 @@ type RecordVoucherCmd struct {
 	Number             string
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
-	CreatorUUID        string
+	Creator            string
 }
 
 type RecordVoucherHandler struct {
-	repo       voucher.Repository
-	accService AccountService
+	repo           domain.Repository
+	accountService AccountService
 }
 
-func NewRecordVoucherHandler(repo voucher.Repository, accService AccountService) RecordVoucherHandler {
+func NewRecordVoucherHandler(repo domain.Repository, accountService AccountService) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	if accService == nil {
+	if accountService == nil {
 		panic("nil account service")
 	}
 	return RecordVoucherHandler{
-		repo:       repo,
-		accService: accService,
+		repo:           repo,
+		accountService: accountService,
 	}
 }
 
 func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (uuid.UUID, error) {
-	// object conversion, outside in: LineItemCmd -> domain/LineItem
 	var accNumbers []string
-	var lineItems []lineitem.LineItem
+	var lineItems []domain.LineItem
 	for _, item := range cmd.LineItems {
-		lineItem, err := lineitem.NewLineItem(
+		lineItem, err := domain.NewLineItem(
 			item.Summary,
 			item.AccountNumber,
 			item.Debit,
@@ -53,20 +51,19 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
-	// object conversion, outside in: VoucherCmd -> domain/Voucher
-	newVoucher, err := voucher.NewVoucher(
+	newVoucher, err := domain.NewVoucher(
 		uuid.New(),
 		cmd.Number,
 		time.Now(),
 		cmd.AttachmentQuantity,
 		lineItems,
-		cmd.CreatorUUID,
+		cmd.Creator,
 	)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
-	if err = h.accService.ValidateExistence(ctx, accNumbers); err != nil {
+	if err = h.accountService.ValidateExistence(ctx, accNumbers); err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
 	}
 
