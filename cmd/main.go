@@ -25,7 +25,7 @@ func main() {
 	voucherRepository := voucheradapter.NewVoucherMemoryRepository()
 	ledgerRepository := ledgeradapter.NewLedgerMemoryRepository()
 
-	// application - will be passed by reference
+	// application - will be passed by reference, in order to make injectinon work
 	accountApplication := accountapp.NewApplication()
 	voucherApplication := voucherapp.NewApplication()
 	ledgerApplication := ledgerapp.NewApplication()
