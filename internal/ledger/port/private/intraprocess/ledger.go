@@ -6,10 +6,10 @@ import (
 )
 
 type LedgerInterface struct {
-	app app.Application
+	app *app.Application
 }
 
-func NewLedgerInterface(app app.Application) LedgerInterface {
+func NewLedgerInterface(app *app.Application) LedgerInterface {
 	return LedgerInterface{app: app}
 }
 

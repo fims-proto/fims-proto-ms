@@ -10,10 +10,10 @@ import (
 )
 
 type Handler struct {
-	app app.Application
+	app *app.Application
 }
 
-func NewHandler(app app.Application) Handler {
+func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 

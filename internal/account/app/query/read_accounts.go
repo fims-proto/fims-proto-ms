@@ -5,6 +5,7 @@ import "context"
 type AccountsReadModel interface {
 	AllAccounts(ctx context.Context) ([]Account, error)
 	AccountByNumber(ctx context.Context, accountNumber string) (Account, error)
+	ValidateExistence(ctx context.Context, accNumbers []string) error
 }
 
 type ReadAccountsHandler struct {
@@ -24,4 +25,8 @@ func (h ReadAccountsHandler) HandleReadAll(ctx context.Context) ([]Account, erro
 
 func (h ReadAccountsHandler) HandleReadByNumber(ctx context.Context, accountNumber string) (Account, error) {
 	return h.readModel.AccountByNumber(ctx, accountNumber)
+}
+
+func (h ReadAccountsHandler) HandleValidateExistence(ctx context.Context, accNumbers []string) error {
+	return h.readModel.ValidateExistence(ctx, accNumbers)
 }

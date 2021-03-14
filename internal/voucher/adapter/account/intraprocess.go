@@ -6,13 +6,13 @@ import (
 )
 
 type IntraprocessAdapter struct {
-	accInterface accountport.AccountInterface
+	accountInterface accountport.AccountInterface
 }
 
-func NewIntraprocessAdapter(accInterface accountport.AccountInterface) IntraprocessAdapter {
-	return IntraprocessAdapter{accInterface: accInterface}
+func NewIntraprocessAdapter(accountInterface accountport.AccountInterface) IntraprocessAdapter {
+	return IntraprocessAdapter{accountInterface: accountInterface}
 }
 
 func (s IntraprocessAdapter) ValidateExistence(ctx context.Context, accNumbers []string) error {
-	return s.accInterface.ValidateExistence(ctx, accNumbers)
+	return s.accountInterface.ValidateExistence(ctx, accNumbers)
 }

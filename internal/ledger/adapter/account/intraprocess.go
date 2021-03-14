@@ -6,13 +6,13 @@ import (
 )
 
 type IntraprocessAdapter struct {
-	accInterface accountport.AccountInterface
+	accountInterface accountport.AccountInterface
 }
 
-func NewIntraprocessAdapter(accInterface accountport.AccountInterface) IntraprocessAdapter {
-	return IntraprocessAdapter{accInterface: accInterface}
+func NewIntraprocessAdapter(accountInterface accountport.AccountInterface) IntraprocessAdapter {
+	return IntraprocessAdapter{accountInterface: accountInterface}
 }
 
 func (s IntraprocessAdapter) ReadSuperiorNumbers(ctx context.Context, accountNumber string) ([]string, error) {
-	return s.accInterface.ReadSuperiorNumbers(ctx, accountNumber)
+	return s.accountInterface.ReadSuperiorNumbers(ctx, accountNumber)
 }

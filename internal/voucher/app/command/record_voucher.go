@@ -17,20 +17,20 @@ type RecordVoucherCmd struct {
 }
 
 type RecordVoucherHandler struct {
-	repo       domain.Repository
-	accService AccountService
+	repo           domain.Repository
+	accountService AccountService
 }
 
-func NewRecordVoucherHandler(repo domain.Repository, accService AccountService) RecordVoucherHandler {
+func NewRecordVoucherHandler(repo domain.Repository, accountService AccountService) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	if accService == nil {
+	if accountService == nil {
 		panic("nil account service")
 	}
 	return RecordVoucherHandler{
-		repo:       repo,
-		accService: accService,
+		repo:           repo,
+		accountService: accountService,
 	}
 }
 
@@ -63,7 +63,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		return uuid.Nil, err
 	}
 
-	if err = h.accService.ValidateExistence(ctx, accNumbers); err != nil {
+	if err = h.accountService.ValidateExistence(ctx, accNumbers); err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
 	}
 

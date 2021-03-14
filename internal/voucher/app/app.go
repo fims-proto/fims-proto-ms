@@ -3,6 +3,7 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 )
 
 type Queries struct {
@@ -20,4 +21,21 @@ type Commands struct {
 type Application struct {
 	Queries  Queries
 	Commands Commands
+}
+
+func NewApplication() Application {
+	return Application{}
+}
+
+func (a *Application) Inject(readModel query.VouchersReadModel, repo domain.Repository, accountService command.AccountService, ledgerService command.LedgerService) {
+	a.Queries = Queries{
+		ReadVouchers: query.NewReadVouchersHandler(readModel),
+	}
+	a.Commands = Commands{
+		RecordVoucher: command.NewRecordVoucherHandler(repo, accountService),
+		AuditVoucher:  command.NewAuditVoucherHandler(repo),
+		ReviewVoucher: command.NewReviewVoucherHandler(repo),
+		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService),
+		PostVoucher:   command.NewPostVoucherHandler(readModel, repo, ledgerService),
+	}
 }

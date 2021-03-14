@@ -9,10 +9,10 @@ import (
 )
 
 type VoucherInterface struct {
-	app app.Application
+	app *app.Application
 }
 
-func NewVoucherInterface(app app.Application) VoucherInterface {
+func NewVoucherInterface(app *app.Application) VoucherInterface {
 	return VoucherInterface{app: app}
 }
 

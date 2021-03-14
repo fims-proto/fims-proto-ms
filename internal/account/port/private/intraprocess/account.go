@@ -8,15 +8,15 @@ import (
 )
 
 type AccountInterface struct {
-	app app.Application
+	app *app.Application
 }
 
-func NewAccountInterface(app app.Application) AccountInterface {
+func NewAccountInterface(app *app.Application) AccountInterface {
 	return AccountInterface{app: app}
 }
 
 func (i AccountInterface) ValidateExistence(ctx context.Context, accNumbers []string) error {
-	return i.app.Queries.ValidateAccounts.HandleValidateExistence(ctx, accNumbers)
+	return i.app.Queries.ReadAccounts.HandleValidateExistence(ctx, accNumbers)
 }
 
 func (i AccountInterface) ReadSuperiorNumbers(ctx context.Context, accNumber string) ([]string, error) {
