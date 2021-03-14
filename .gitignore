@@ -18,4 +18,5 @@
 
 .vscode/launch.json
 .air.toml
+tmp/
 .idea/
