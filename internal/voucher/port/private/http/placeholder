@@ -1,4 +1,0 @@
-TOBE implemented
-
-The idea is, in case we're moving towards microservices architecture,
-http (or grpc) will going to be used for internal communication among backend ms (modules)

@@ -19,12 +19,13 @@ type PostVoucherHandler struct {
 	ledgerService LedgerService
 }
 
-func NewPostVoucherHandler(readModel query.VouchersReadModel, ledgerService LedgerService) PostVoucherHandler {
+func NewPostVoucherHandler(readModel query.VouchersReadModel, repo domain.Repository, ledgerService LedgerService) PostVoucherHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 	return PostVoucherHandler{
 		readModel:     readModel,
+		repo:          repo,
 		ledgerService: ledgerService,
 	}
 }

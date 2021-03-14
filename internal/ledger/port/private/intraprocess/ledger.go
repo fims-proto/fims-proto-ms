@@ -14,5 +14,5 @@ func NewLedgerInterface(app app.Application) LedgerInterface {
 }
 
 func (i LedgerInterface) PostVoucher(ctx context.Context, req UpdateLedgerBalanceRequest) error {
-	return i.app.Commands.UpdateLedgerBalanceHandler.Handle(ctx, req.mapToCommand())
+	return i.app.Commands.UpdateLedgerBalance.Handle(ctx, req.mapToCommand())
 }

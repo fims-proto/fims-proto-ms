@@ -22,7 +22,7 @@ func NewVoucherMemoryRepository() VoucherMemoryRepository {
 	}
 }
 
-func (h *VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *domain.Voucher) (uuid.UUID, error) {
+func (h VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *domain.Voucher) (uuid.UUID, error) {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
@@ -35,7 +35,7 @@ func (h *VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *domai
 	return voucher.UUID(), nil
 }
 
-func (h *VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
+func (h VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
