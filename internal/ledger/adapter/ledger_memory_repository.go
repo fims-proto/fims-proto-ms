@@ -62,3 +62,12 @@ func (r LedgerMemoryRepository) UpdateLedgers(
 	}
 	return nil
 }
+
+// TODO: remove, test purpose
+func (r LedgerMemoryRepository) AllLedgers(ctx context.Context) ([]domain.Ledger, error) {
+	allLedgers := []domain.Ledger{}
+	for _, v := range r.data {
+		allLedgers = append(allLedgers, v)
+	}
+	return allLedgers, nil
+}

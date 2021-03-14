@@ -8,6 +8,7 @@ import (
 	ledgeraccountadapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
 	ledgervoucheradapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/voucher"
 	ledgerapp "github/fims-proto/fims-proto-ms/internal/ledger/app"
+	ledgertesthttpport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
 	ledgerintraport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
 	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
@@ -55,6 +56,8 @@ func main() {
 
 	router := gin.Default()
 	voucherhttpport.InitRouter(voucherhttpport.NewHandler(&voucherApplication), router)
+	// TODO remove, test prupose
+	ledgertesthttpport.InitRouter(ledgertesthttpport.NewHandler(ledgerRepository), router)
 
 	if err := router.Run(":8080"); err != nil {
 		panic(err.Error())
