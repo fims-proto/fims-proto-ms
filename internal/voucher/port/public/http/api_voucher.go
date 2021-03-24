@@ -14,6 +14,9 @@ type Handler struct {
 }
 
 func NewHandler(app *app.Application) Handler {
+	if app == nil {
+		panic("nil application")
+	}
 	return Handler{app: app}
 }
 

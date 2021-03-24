@@ -12,6 +12,11 @@ func TestNewAccountTypeFromConstant(t *testing.T) {
 	assert.Equal(t, Assets, accountType)
 }
 
+func TestNewAccountTypeFromString(t *testing.T) {
+	accountType, _ := NewAccountTypeFromString("Assets")
+	assert.Equal(t, Assets, accountType)
+}
+
 func TestAccountTypeToString(t *testing.T) {
 	accountType, err := NewAccountType(Assets)
 	require.NoError(t, err)

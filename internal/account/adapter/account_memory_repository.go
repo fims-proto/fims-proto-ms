@@ -57,3 +57,22 @@ func (r AccountMemoryRepository) AccountByNumber(ctx context.Context, accountNum
 		},
 	}, nil
 }
+
+func (r AccountMemoryRepository) AddAccount(ctx context.Context, account *domain.Account) error {
+	panic("not implemented")
+}
+
+func (r AccountMemoryRepository) AddAccounts(ctx context.Context, accounts []*domain.Account) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	// clear map
+	for i := range r.data {
+		delete(r.data, i)
+	}
+
+	for _, account := range accounts {
+		r.data[account.Number()] = *account
+	}
+	return nil
+}

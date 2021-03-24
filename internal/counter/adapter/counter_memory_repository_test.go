@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 	counter "github/fims-proto/fims-proto-ms/internal/counter/domain"
+	"strconv"
 	"sync"
 	"testing"
 
@@ -16,20 +17,22 @@ func TestAdapter_MemoryRepository_Next(t *testing.T) {
 	counterUUID := uuid.New()
 	repo := prepareMemoryRepo(counterUUID)
 
-	target := map[string]bool{
-		"记1":  false,
-		"记2":  false,
-		"记3":  false,
-		"记4":  false,
-		"记5":  false,
-		"记6":  false,
-		"记7":  false,
-		"记8":  false,
-		"记9":  false,
-		"记10": false,
+	target := struct {
+		data map[string]bool
+		lock *sync.RWMutex
+	}{
+		data: make(map[string]bool, 30),
+		lock: &sync.RWMutex{},
 	}
 
-	scheduleRaceTest(10, func(i int) {
+	for i := 1; i <= 30; i++ {
+		target.data["记"+strconv.Itoa(i)] = false
+	}
+
+	scheduleRaceTest(30, func(i int) {
+		target.lock.Lock()
+		defer target.lock.Unlock()
+
 		ident, err := repo.UpdateAndRead(
 			context.Background(),
 			counterUUID,
@@ -40,10 +43,10 @@ func TestAdapter_MemoryRepository_Next(t *testing.T) {
 		)
 		require.NoError(t, err)
 		require.IsType(t, "string", ident)
-		assert.False(t, target[ident.(string)])
-		target[ident.(string)] = true
+		assert.False(t, target.data[ident.(string)])
+		target.data[ident.(string)] = true
 	})
-	for _, v := range target {
+	for _, v := range target.data {
 		assert.True(t, v)
 	}
 }

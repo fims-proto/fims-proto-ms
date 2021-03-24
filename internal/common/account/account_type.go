@@ -34,6 +34,16 @@ func NewAccountType(t Type) (Type, error) {
 	return Invalid, errors.Errorf("invalid account Type: '%d'", t)
 }
 
+func NewAccountTypeFromString(s string) (Type, error) {
+	for i, v := range availableTypes {
+		if v == s {
+			return i, nil
+		}
+	}
+
+	return Invalid, errors.Errorf("invalid account name: '%s'", s)
+}
+
 func (t Type) String() string {
 	for k, v := range availableTypes {
 		if k == t {
