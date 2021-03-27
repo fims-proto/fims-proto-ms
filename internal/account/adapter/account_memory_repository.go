@@ -21,48 +21,26 @@ func NewAccountMemoryRepository() AccountMemoryRepository {
 	}
 }
 
-func (r AccountMemoryRepository) ValidateExistence(ctx context.Context, accNumbers []string) error {
-	// TODO: fake logic for now
-	for _, accNumber := range accNumbers {
-		if accNumber == "0000" {
-			return errors.Errorf("invalid account number %s", accNumber)
-		}
-	}
-	return nil
-}
-
 func (r AccountMemoryRepository) AllAccounts(ctx context.Context) ([]query.Account, error) {
-	// TODO: fake logic for now
 	panic("not implemented")
 }
 
 func (r AccountMemoryRepository) AccountByNumber(ctx context.Context, accountNumber string) (query.Account, error) {
-	// TODO: fake logic for now
-	if len(accountNumber) != 8 {
-		return query.Account{}, errors.New("let's test with 8 length account number")
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+
+	result, err := r.readAccountWithSuperiorAccount(accountNumber)
+	if err != nil {
+		return query.Account{}, errors.Wrapf(err, "failed to read account by number %s", accountNumber)
 	}
-	return query.Account{
-		Number:      accountNumber,
-		Title:       "3rd lvl",
-		AccountType: "assets",
-		SuperiorAccount: &query.Account{
-			Number:      accountNumber[:6],
-			Title:       "2nd lvl",
-			AccountType: "assets",
-			SuperiorAccount: &query.Account{
-				Number:      accountNumber[:4],
-				Title:       "1st lvl",
-				AccountType: "assets",
-			},
-		},
-	}, nil
+	return result, nil
 }
 
 func (r AccountMemoryRepository) AddAccount(ctx context.Context, account *domain.Account) error {
 	panic("not implemented")
 }
 
-func (r AccountMemoryRepository) AddAccounts(ctx context.Context, accounts []*domain.Account) error {
+func (r AccountMemoryRepository) Dataload(ctx context.Context, accounts []*domain.Account) error {
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
@@ -75,4 +53,30 @@ func (r AccountMemoryRepository) AddAccounts(ctx context.Context, accounts []*do
 		r.data[account.Number()] = *account
 	}
 	return nil
+}
+
+func (r AccountMemoryRepository) readAccountWithSuperiorAccount(accountNumber string) (query.Account, error) {
+	account, ok := r.data[accountNumber]
+	if !ok {
+		return query.Account{}, errors.Errorf("account number %s does not exist", accountNumber)
+	}
+	result := mapFromDomainAccount(account)
+	if account.SuperiorNumber() == "" {
+		return result, nil
+	}
+	superiorAccount, err := r.readAccountWithSuperiorAccount(account.SuperiorNumber())
+	if err != nil {
+		return query.Account{}, err
+	}
+	result.SuperiorAccount = &superiorAccount
+	return result, nil
+}
+
+func mapFromDomainAccount(account domain.Account) query.Account {
+	return query.Account{
+		Number:          account.Number(),
+		Title:           account.Title(),
+		AccountType:     account.Type().String(),
+		SuperiorAccount: nil,
+	}
 }

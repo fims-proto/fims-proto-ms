@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
+	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 	"testing"
 
@@ -101,13 +101,13 @@ func (r ledgerRepoMock) UpdateLedgers(
 }
 
 func (r ledgerRepoMock) initData() {
-	r.ledgers["1000"], _ = domain.NewLedger("1000", "1000 ledger", "", commonAccount.Assets)
-	r.ledgers["100001"], _ = domain.NewLedger("100001", "100001 ledger", "1000", commonAccount.Assets)
-	r.ledgers["10000101"], _ = domain.NewLedger("10000101", "10000101 ledger", "100001", commonAccount.Assets)
+	r.ledgers["1000"], _ = domain.NewLedger("1000", "1000 ledger", "", commonaccount.Assets)
+	r.ledgers["100001"], _ = domain.NewLedger("100001", "100001 ledger", "1000", commonaccount.Assets)
+	r.ledgers["10000101"], _ = domain.NewLedger("10000101", "10000101 ledger", "100001", commonaccount.Assets)
 
-	r.ledgers["2000"], _ = domain.NewLedger("2000", "2000 ledger", "", commonAccount.Liabilities)
-	r.ledgers["200002"], _ = domain.NewLedger("200002", "200002 ledger", "2000", commonAccount.Liabilities)
-	r.ledgers["20000202"], _ = domain.NewLedger("20000202", "20000202 ledger", "200002", commonAccount.Liabilities)
+	r.ledgers["2000"], _ = domain.NewLedger("2000", "2000 ledger", "", commonaccount.Liabilities)
+	r.ledgers["200002"], _ = domain.NewLedger("200002", "200002 ledger", "2000", commonaccount.Liabilities)
+	r.ledgers["20000202"], _ = domain.NewLedger("20000202", "20000202 ledger", "200002", commonaccount.Liabilities)
 }
 
 func newLedgerRepoMock() ledgerRepoMock {

@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/csv"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
+	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"io"
 	"os"
+	"path/filepath"
 
 	"github.com/pkg/errors"
 )
@@ -15,7 +16,7 @@ type AccountDataloadCmd struct {
 	Number         string
 	Title          string
 	SuperiorNumber string
-	AccountType    commonAccount.Type
+	AccountType    commonaccount.Type
 }
 
 type AccountDataloadHandler struct {
@@ -44,16 +45,27 @@ func (h AccountDataloadHandler) Handle(ctx context.Context) error {
 		accounts = append(accounts, account)
 	}
 
-	return h.repo.AddAccounts(ctx, accounts)
+	return h.repo.Dataload(ctx, accounts)
 }
 
 func readFromCSV() ([]AccountDataloadCmd, error) {
-	csvFile, err := os.Open("dataload/accounts.csv")
+	workDir, err := os.Getwd()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not load dataload/accounts.csv file")
+		return nil, errors.Wrap(err, "could not get working directory")
+	}
+
+	csvFile, err := os.Open(filepath.Join(workDir, "internal", "dataload", "account", "accounts.csv"))
+	if err != nil {
+		return nil, errors.Wrap(err, "could not open file")
 	}
 
 	csvReader := csv.NewReader(csvFile)
+
+	// skip first line
+	_, err = csvReader.Read()
+	if err != nil {
+		return nil, errors.Wrap(err, "could not read file")
+	}
 
 	cmds := []AccountDataloadCmd{}
 	for {
@@ -62,16 +74,16 @@ func readFromCSV() ([]AccountDataloadCmd, error) {
 			break
 		}
 		if err != nil {
-			return nil, errors.Wrap(err, "could not read dataload/accounts.csv file")
+			return nil, errors.Wrap(err, "could not read file")
 		}
-		accountType, err := commonAccount.NewAccountTypeFromString(line[0])
+		accountType, err := commonaccount.NewAccountTypeFromString(line[0])
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to convert account type")
 		}
 		cmds = append(cmds, AccountDataloadCmd{
 			Number:         line[1],
 			Title:          line[2],
-			SuperiorNumber: "",
+			SuperiorNumber: line[3],
 			AccountType:    accountType,
 		})
 	}
