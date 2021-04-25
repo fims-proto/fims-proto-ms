@@ -1,7 +1,7 @@
 package domain
 
 import (
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
+	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"strings"
 
 	"github.com/pkg/errors"
@@ -12,13 +12,13 @@ type Ledger struct {
 	number         string
 	title          string
 	superiorNumber string
-	accountType    commonAccount.Type
+	accountType    commonaccount.Type
 	debit          decimal.Decimal
 	credit         decimal.Decimal
 	balance        decimal.Decimal
 }
 
-func NewLedger(number string, title string, superiorNumber string, accountType commonAccount.Type) (*Ledger, error) {
+func NewLedger(number string, title string, superiorNumber string, accountType commonaccount.Type) (*Ledger, error) {
 	if number == "" {
 		return nil, errors.New("empty ledger number")
 	}
@@ -29,7 +29,7 @@ func NewLedger(number string, title string, superiorNumber string, accountType c
 		return nil, errors.New("invalid superior ledger number")
 	}
 
-	accType, err := commonAccount.NewAccountType(accountType)
+	accType, err := commonaccount.NewAccountType(accountType)
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid account type")
 	}
@@ -57,7 +57,7 @@ func (l Ledger) SuperiorNumber() string {
 	return l.superiorNumber
 }
 
-func (l Ledger) AccountType() commonAccount.Type {
+func (l Ledger) AccountType() commonaccount.Type {
 	return l.accountType
 }
 

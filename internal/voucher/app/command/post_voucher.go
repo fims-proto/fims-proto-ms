@@ -35,9 +35,23 @@ func (h PostVoucherHandler) Handler(ctx context.Context, cmd PostVoucherCmd) err
 	if err != nil {
 		return errors.Wrap(err, "failed to read voucher while posting")
 	}
+
+	if !voucher.IsReviewed {
+		return errors.Errorf("voucher %s not reviewed", cmd.VoucherUUID)
+	}
+
+	if !voucher.IsAudited {
+		return errors.Errorf("voucher %s not audited", cmd.VoucherUUID)
+	}
+
+	if voucher.IsPosted {
+		return errors.Errorf("voucher %s is already posted", cmd.VoucherUUID)
+	}
+
 	if err = h.ledgerService.PostVoucher(ctx, voucher); err != nil {
 		return errors.Wrap(err, "failed to post voucher to ledgers")
 	}
+
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,

@@ -2,7 +2,7 @@ package command
 
 import (
 	"context"
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
+	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 	"testing"
 
@@ -42,13 +42,59 @@ func TestApp_UpdateLedgerBalance(t *testing.T) {
 			},
 			verify: func(t *testing.T, err error, repo ledgerRepoMock) {
 				require.NoError(t, err)
-				assert.Equal(t, decimal.RequireFromString("100"), repo.ledgers["1000"].Balance())
-				assert.Equal(t, decimal.RequireFromString("100"), repo.ledgers["100001"].Balance())
-				assert.Equal(t, decimal.RequireFromString("100"), repo.ledgers["10000101"].Balance())
+				assert.Equal(t, "100", repo.ledgers["1000"].Balance().String())
+				assert.Equal(t, "100", repo.ledgers["100001"].Balance().String())
+				assert.Equal(t, "100", repo.ledgers["10000101"].Balance().String())
 
-				assert.Equal(t, decimal.RequireFromString("-100"), repo.ledgers["2000"].Balance())
-				assert.Equal(t, decimal.RequireFromString("-100"), repo.ledgers["200002"].Balance())
-				assert.Equal(t, decimal.RequireFromString("-100"), repo.ledgers["20000202"].Balance())
+				assert.Equal(t, "100", repo.ledgers["1000"].Debit().String())
+				assert.Equal(t, "100", repo.ledgers["100001"].Debit().String())
+				assert.Equal(t, "100", repo.ledgers["10000101"].Debit().String())
+
+				assert.Equal(t, "-100", repo.ledgers["2000"].Balance().String())
+				assert.Equal(t, "-100", repo.ledgers["200002"].Balance().String())
+				assert.Equal(t, "-100", repo.ledgers["20000202"].Balance().String())
+
+				assert.Equal(t, "100", repo.ledgers["2000"].Debit().String())
+				assert.Equal(t, "100", repo.ledgers["200002"].Debit().String())
+				assert.Equal(t, "100", repo.ledgers["20000202"].Debit().String())
+			},
+		},
+		{
+			name: "update_success_2",
+			cmdConstructor: func() UpdateLedgerBalanceCmd {
+				return UpdateLedgerBalanceCmd{
+					VoucherUUID: uuid.New(),
+					LineItems: []LineItemCmd{
+						{
+							AccountNumber: "10000101",
+							Debit:         decimal.RequireFromString("100"),
+							Credit:        decimal.Zero,
+						},
+						{
+							AccountNumber: "30000101",
+							Debit:         decimal.Zero,
+							Credit:        decimal.RequireFromString("100"),
+						},
+					},
+				}
+			},
+			verify: func(t *testing.T, err error, repo ledgerRepoMock) {
+				require.NoError(t, err)
+				assert.Equal(t, "100", repo.ledgers["1000"].Balance().String())
+				assert.Equal(t, "100", repo.ledgers["100001"].Balance().String())
+				assert.Equal(t, "100", repo.ledgers["10000101"].Balance().String())
+
+				assert.Equal(t, "100", repo.ledgers["1000"].Debit().String())
+				assert.Equal(t, "100", repo.ledgers["100001"].Debit().String())
+				assert.Equal(t, "100", repo.ledgers["10000101"].Debit().String())
+
+				assert.Equal(t, "-100", repo.ledgers["3000"].Balance().String())
+				assert.Equal(t, "-100", repo.ledgers["300001"].Balance().String())
+				assert.Equal(t, "-100", repo.ledgers["30000101"].Balance().String())
+
+				assert.Equal(t, "100", repo.ledgers["3000"].Credit().String())
+				assert.Equal(t, "100", repo.ledgers["300001"].Credit().String())
+				assert.Equal(t, "100", repo.ledgers["30000101"].Credit().String())
 			},
 		},
 	}
@@ -70,6 +116,10 @@ type ledgerRepoMock struct {
 }
 
 func (r ledgerRepoMock) AddLedger(ctx context.Context, l *domain.Ledger) error {
+	panic("not implemented")
+}
+
+func (r ledgerRepoMock) Dataload(ctx context.Context, ls []*domain.Ledger) error {
 	panic("not implemented")
 }
 
@@ -101,13 +151,17 @@ func (r ledgerRepoMock) UpdateLedgers(
 }
 
 func (r ledgerRepoMock) initData() {
-	r.ledgers["1000"], _ = domain.NewLedger("1000", "1000 ledger", "", commonAccount.Assets)
-	r.ledgers["100001"], _ = domain.NewLedger("100001", "100001 ledger", "1000", commonAccount.Assets)
-	r.ledgers["10000101"], _ = domain.NewLedger("10000101", "10000101 ledger", "100001", commonAccount.Assets)
+	r.ledgers["1000"], _ = domain.NewLedger("1000", "1000 ledger", "", commonaccount.Assets)
+	r.ledgers["100001"], _ = domain.NewLedger("100001", "100001 ledger", "1000", commonaccount.Assets)
+	r.ledgers["10000101"], _ = domain.NewLedger("10000101", "10000101 ledger", "100001", commonaccount.Assets)
 
-	r.ledgers["2000"], _ = domain.NewLedger("2000", "2000 ledger", "", commonAccount.Liabilities)
-	r.ledgers["200002"], _ = domain.NewLedger("200002", "200002 ledger", "2000", commonAccount.Liabilities)
-	r.ledgers["20000202"], _ = domain.NewLedger("20000202", "20000202 ledger", "200002", commonAccount.Liabilities)
+	r.ledgers["2000"], _ = domain.NewLedger("2000", "2000 ledger", "", commonaccount.Liabilities)
+	r.ledgers["200002"], _ = domain.NewLedger("200002", "200002 ledger", "2000", commonaccount.Liabilities)
+	r.ledgers["20000202"], _ = domain.NewLedger("20000202", "20000202 ledger", "200002", commonaccount.Liabilities)
+
+	r.ledgers["3000"], _ = domain.NewLedger("3000", "3000 ledger", "", commonaccount.Assets)
+	r.ledgers["300001"], _ = domain.NewLedger("300001", "300001 ledger", "3000", commonaccount.Assets)
+	r.ledgers["30000101"], _ = domain.NewLedger("30000101", "30000101 ledger", "300001", commonaccount.Assets)
 }
 
 func newLedgerRepoMock() ledgerRepoMock {

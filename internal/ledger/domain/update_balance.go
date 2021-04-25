@@ -1,23 +1,23 @@
 package domain
 
 import (
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
+	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 
 	"github.com/shopspring/decimal"
 )
 
 func (l *Ledger) UpdateBalance(debit decimal.Decimal, credit decimal.Decimal) error {
-	l.debit.Add(debit)
-	l.credit.Add(credit)
+	l.debit = l.debit.Add(debit)
+	l.credit = l.credit.Add(credit)
 
 	switch l.AccountType() {
-	case commonAccount.Assets, commonAccount.Cost:
+	case commonaccount.Assets, commonaccount.Cost:
 		l.balance = l.balance.Add(debit).Sub(credit)
-	case commonAccount.Liabilities, commonAccount.Equity:
+	case commonaccount.Liabilities, commonaccount.Equity:
 		l.balance = l.balance.Add(credit).Sub(debit)
-	case commonAccount.ProfitAndLoss:
+	case commonaccount.ProfitAndLoss:
 		// no balance for this type of account
-	case commonAccount.Common:
+	case commonaccount.Common:
 		// TODO not sure how to handle
 		panic("common account type not supported yet")
 	}

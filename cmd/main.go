@@ -2,7 +2,9 @@ package main
 
 import (
 	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
+	accountledgeradapter "github/fims-proto/fims-proto-ms/internal/account/adapter/ledger"
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
+	accountprivatehttpport "github/fims-proto/fims-proto-ms/internal/account/port/private/http"
 	accountintraport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 	ledgeradapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter"
 	ledgeraccountadapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
@@ -15,7 +17,7 @@ import (
 	voucherledgeradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/ledger"
 	voucherapp "github/fims-proto/fims-proto-ms/internal/voucher/app"
 	voucherintraport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/intraprocess"
-	voucherhttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+	voucherpublichttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -36,10 +38,13 @@ func main() {
 	voucherInterface := voucherintraport.NewVoucherInterface(&voucherApplication)
 	ledgerInterface := ledgerintraport.NewLedgerInterface(&ledgerApplication)
 
-	// account application dependencies injection
-	accountApplication.Inject(accountRepository)
+	// application dependencies injection
+	accountApplication.Inject(
+		accountRepository,
+		accountRepository,
+		accountledgeradapter.NewIntraprocessAdapter(ledgerInterface),
+	)
 
-	// voucher application dependecies injection
 	voucherApplication.Inject(
 		voucherRepository,
 		voucherRepository,
@@ -47,7 +52,6 @@ func main() {
 		voucherledgeradapter.NewIntraprocessAdapter(ledgerInterface),
 	)
 
-	// ledger application dependencies injection
 	ledgerApplication.Inject(
 		ledgerRepository,
 		ledgeraccountadapter.NewIntraprocessAdapter(accountInterface),
@@ -55,7 +59,8 @@ func main() {
 	)
 
 	router := gin.Default()
-	voucherhttpport.InitRouter(voucherhttpport.NewHandler(&voucherApplication), router)
+	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
+	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), router)
 	// TODO remove, test prupose
 	ledgertesthttpport.InitRouter(ledgertesthttpport.NewHandler(ledgerRepository), router)
 

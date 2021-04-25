@@ -54,7 +54,7 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 	}
 
 	// 2. get all superior account numbers for lineitems
-	numberItemMap := make(map[string]*LineItemCmd)
+	numberItemMap := make(map[string]LineItemCmd)
 	var allLedgerNums []string
 	for _, item := range cmd.LineItems {
 		accNums, err := h.accountService.ReadSuperiorNumbers(ctx, item.AccountNumber)
@@ -63,7 +63,7 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 		}
 
 		for _, accNum := range accNums {
-			numberItemMap[accNum] = &item
+			numberItemMap[accNum] = item
 		}
 		allLedgerNums = append(allLedgerNums, accNums...)
 	}

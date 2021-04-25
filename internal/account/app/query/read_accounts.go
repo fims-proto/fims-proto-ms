@@ -1,11 +1,14 @@
 package query
 
-import "context"
+import (
+	"context"
+
+	"github.com/pkg/errors"
+)
 
 type AccountsReadModel interface {
 	AllAccounts(ctx context.Context) ([]Account, error)
 	AccountByNumber(ctx context.Context, accountNumber string) (Account, error)
-	ValidateExistence(ctx context.Context, accNumbers []string) error
 }
 
 type ReadAccountsHandler struct {
@@ -28,5 +31,10 @@ func (h ReadAccountsHandler) HandleReadByNumber(ctx context.Context, accountNumb
 }
 
 func (h ReadAccountsHandler) HandleValidateExistence(ctx context.Context, accNumbers []string) error {
-	return h.readModel.ValidateExistence(ctx, accNumbers)
+	for _, accountNumber := range accNumbers {
+		if _, err := h.readModel.AccountByNumber(ctx, accountNumber); err != nil {
+			return errors.Wrapf(err, "validate existence of account %s failed", accountNumber)
+		}
+	}
+	return nil
 }
