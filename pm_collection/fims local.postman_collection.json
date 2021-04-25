@@ -1,0 +1,1052 @@
+{
+	"info": {
+		"_postman_id": "d19b7103-8bf0-4961-aa9b-504dbbd69ad4",
+		"name": "fims local",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Accounts dataload",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/private/accounts/dataload",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"private",
+						"accounts",
+						"dataload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[test] all ledgers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ledgers exists (count more than 0)\", function () {",
+							"    pm.expect(pm.response.json().length).to.gt(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/ledgers-test",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"ledgers-test"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "record voucher 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Record voucher 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
+							"pm.collectionVariables.set(\"voucherUUID_1\", newVoucherLocation.split(\"/\")[2]);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read voucher by uuid",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read voucher by uuid 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "all vouchers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read all voucher\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "review 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Review voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Reviewer\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/review",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cancel review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Cancel review voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Reviewer\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/cancel-review",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"cancel-review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Aduti voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Auditor\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/audit",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cancel audit",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Cancel audit voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Auditor\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/cancel-audit",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"cancel-audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update voucher 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Update voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"LineItems\": [\n        {\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1001\",\n            \"Debit\": \"101\"\n        },\n        {\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1002001\",\n            \"Credit\": \"101\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "attempt to post voucher 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher failed\", function () {",
+							"    pm.response.to.have.status(500);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "review 1 again",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Review voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Reviewer\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/review",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit 1 again",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Aduti voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Auditor\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/audit",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post voucher 1",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_1}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "record voucher 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Record voucher 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
+							"pm.collectionVariables.set(\"voucherUUID_2\", newVoucherLocation.split(\"/\")[2]);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "review 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Review voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Reviewer\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}/review",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_2}}",
+						"review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Aduti voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Auditor\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}/audit",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_2}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post voucher 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_2}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "record voucher 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Record voucher 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
+							"pm.collectionVariables.set(\"voucherUUID_3\", newVoucherLocation.split(\"/\")[2]);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "review 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Review voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Reviewer\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}/review",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_3}}",
+						"review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Aduti voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Auditor\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}/audit",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_3}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post voucher 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_3}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "record voucher 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Record voucher 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
+							"pm.collectionVariables.set(\"voucherUUID_4\", newVoucherLocation.split(\"/\")[2]);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "review 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Review voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Reviewer\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}/review",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_4}}",
+						"review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Aduti voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"Auditor\": \"lizzy\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}/audit",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_4}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post voucher 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}/post",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_4}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "voucherUUID_1",
+			"value": ""
+		},
+		{
+			"key": "voucherUUID_2",
+			"value": ""
+		},
+		{
+			"key": "voucherUUID_3",
+			"value": ""
+		},
+		{
+			"key": "voucherUUID_4",
+			"value": ""
+		}
+	]
+}
