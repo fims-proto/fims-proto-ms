@@ -9,4 +9,5 @@ type Repository interface {
 		ledgerNumbers []string,
 		updateFn func(ledgers []*Ledger) ([]*Ledger, error),
 	) error
+	Dataload(ctx context.Context, ledgers []*Ledger) error
 }

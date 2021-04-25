@@ -7,8 +7,8 @@ import (
 )
 
 func (l *Ledger) UpdateBalance(debit decimal.Decimal, credit decimal.Decimal) error {
-	l.debit.Add(debit)
-	l.credit.Add(credit)
+	l.debit = l.debit.Add(debit)
+	l.credit = l.credit.Add(credit)
 
 	switch l.AccountType() {
 	case commonaccount.Assets, commonaccount.Cost:

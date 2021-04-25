@@ -2,6 +2,7 @@ package main
 
 import (
 	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
+	accountledgeradapter "github/fims-proto/fims-proto-ms/internal/account/adapter/ledger"
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
 	accountprivatehttpport "github/fims-proto/fims-proto-ms/internal/account/port/private/http"
 	accountintraport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
@@ -38,7 +39,11 @@ func main() {
 	ledgerInterface := ledgerintraport.NewLedgerInterface(&ledgerApplication)
 
 	// application dependencies injection
-	accountApplication.Inject(accountRepository, accountRepository)
+	accountApplication.Inject(
+		accountRepository,
+		accountRepository,
+		accountledgeradapter.NewIntraprocessAdapter(ledgerInterface),
+	)
 
 	voucherApplication.Inject(
 		voucherRepository,

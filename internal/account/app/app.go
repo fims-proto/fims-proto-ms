@@ -23,11 +23,11 @@ func NewApplication() Application {
 	return Application{}
 }
 
-func (a *Application) Inject(readModel query.AccountsReadModel, repo domain.Repository) {
+func (a *Application) Inject(readModel query.AccountsReadModel, repo domain.Repository, ledgerService command.LedgerService) {
 	a.Queries = Queries{
 		ReadAccounts: query.NewReadAccountsHandler(readModel),
 	}
 	a.Commands = Commands{
-		LoadAccounts: command.NewAccountDataloadHandler(repo),
+		LoadAccounts: command.NewAccountDataloadHandler(repo, ledgerService),
 	}
 }

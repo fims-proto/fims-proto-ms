@@ -63,6 +63,21 @@ func (r LedgerMemoryRepository) UpdateLedgers(
 	return nil
 }
 
+func (r LedgerMemoryRepository) Dataload(ctx context.Context, ledgers []*domain.Ledger) error {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+
+	// clear map
+	for i := range r.data {
+		delete(r.data, i)
+	}
+
+	for _, ledger := range ledgers {
+		r.data[ledger.Number()] = *ledger
+	}
+	return nil
+}
+
 // TODO: remove, test purpose
 func (r LedgerMemoryRepository) AllLedgers(ctx context.Context) ([]domain.Ledger, error) {
 	allLedgers := []domain.Ledger{}

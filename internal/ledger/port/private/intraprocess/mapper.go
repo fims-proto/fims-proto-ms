@@ -20,3 +20,12 @@ func (r VoucherLineItemRequest) mapToCommand() command.LineItemCmd {
 		Credit:        r.Credit,
 	}
 }
+
+func (r LoadLedgersRequest) mapToCommand() command.LedgerDataloadCmd {
+	return command.LedgerDataloadCmd{
+		Number:         r.Number,
+		Title:          r.Title,
+		SuperiorNumber: r.SuperiorNumber,
+		AccountType:    r.AccountType,
+	}
+}

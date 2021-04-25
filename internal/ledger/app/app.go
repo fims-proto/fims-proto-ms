@@ -9,6 +9,7 @@ type Queries struct{}
 
 type Commands struct {
 	UpdateLedgerBalance command.UpdateLedgerBalanceHandler
+	LoadLedgers         command.LedgerDataloadHandler
 }
 
 type Application struct {
@@ -24,5 +25,6 @@ func (a *Application) Inject(repo domain.Repository, accountService command.Acco
 	a.Queries = Queries{}
 	a.Commands = Commands{
 		UpdateLedgerBalance: command.NewUpdateLedgerBalanceHandler(repo, accountService, voucherService),
+		LoadLedgers:         command.NewLedgerDataloadHandler(repo),
 	}
 }

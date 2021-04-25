@@ -20,14 +20,21 @@ type AccountDataloadCmd struct {
 }
 
 type AccountDataloadHandler struct {
-	repo domain.Repository
+	repo          domain.Repository
+	ledgerService LedgerService
 }
 
-func NewAccountDataloadHandler(repo domain.Repository) AccountDataloadHandler {
+func NewAccountDataloadHandler(repo domain.Repository, ledgerService LedgerService) AccountDataloadHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return AccountDataloadHandler{repo: repo}
+	if ledgerService == nil {
+		panic("nil ledger service")
+	}
+	return AccountDataloadHandler{
+		repo:          repo,
+		ledgerService: ledgerService,
+	}
 }
 
 func (h AccountDataloadHandler) Handle(ctx context.Context) error {
@@ -43,6 +50,14 @@ func (h AccountDataloadHandler) Handle(ctx context.Context) error {
 			return errors.Wrapf(err, "dataload failed on account %s", cmd.Number)
 		}
 		accounts = append(accounts, account)
+	}
+
+	var immutableAccounts []domain.Account
+	for _, account := range accounts {
+		immutableAccounts = append(immutableAccounts, *account)
+	}
+	if err := h.ledgerService.LoadLedgers(ctx, immutableAccounts); err != nil {
+		return errors.Wrap(err, "ledger service failed to load data")
 	}
 
 	return h.repo.Dataload(ctx, accounts)

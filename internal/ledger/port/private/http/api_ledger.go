@@ -5,7 +5,6 @@ package http
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/ledger/adapter"
-	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -18,25 +17,6 @@ type Handler struct {
 
 func NewHandler(repo adapter.LedgerMemoryRepository) Handler {
 	return Handler{repo: repo}
-}
-
-func (h Handler) loadLedgers(c *gin.Context) {
-	l1, _ := domain.NewLedger("10000101", "1000-01-01", "100001", 1)
-	l2, _ := domain.NewLedger("100001", "1000-01", "1000", 1)
-	l3, _ := domain.NewLedger("1000", "1000", "", 1)
-	l4, _ := domain.NewLedger("20000202", "2000-02-02", "200002", 3)
-	l5, _ := domain.NewLedger("200002", "2000-02", "2000", 3)
-	l6, _ := domain.NewLedger("2000", "2000", "", 3)
-	ls := []*domain.Ledger{l1, l2, l3, l4, l5, l6}
-
-	for _, l := range ls {
-		if err := h.repo.AddLedger(c.Request.Context(), l); err != nil {
-			c.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-	}
-
-	c.Status(http.StatusCreated)
 }
 
 func (h Handler) allLedgers(c *gin.Context) {
@@ -62,7 +42,6 @@ func InitRouter(h Handler, r *gin.Engine) {
 	g := r.Group("/ledgers-test")
 	{
 		g.GET("/", h.allLedgers)
-		g.POST("/load", h.loadLedgers)
 	}
 }
 
