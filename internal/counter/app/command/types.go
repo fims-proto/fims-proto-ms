@@ -15,6 +15,7 @@ type CounterDeleteCmd struct {
 }
 
 type CounterCreateCmd struct {
-	Prefix string
-	Sufix  string
+	Prefix         string
+	Sufix          string
+	BusinessObject string
 }

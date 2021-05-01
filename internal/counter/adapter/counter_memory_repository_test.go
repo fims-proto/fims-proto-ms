@@ -53,7 +53,7 @@ func TestAdapter_MemoryRepository_Next(t *testing.T) {
 
 func prepareMemoryRepo(counterUUID uuid.UUID) *CounterMemoryRepository {
 	repo := NewCounterMemoryRepository()
-	counter, _ := counter.NewCounter(counterUUID, "记", "")
+	counter, _ := counter.NewCounter(counterUUID, "", "记", "")
 	_ = repo.CreateCounter(context.Background(), counter)
 	return &repo
 }

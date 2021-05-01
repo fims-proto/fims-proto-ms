@@ -1,4 +1,4 @@
-package counter
+package domain
 
 import (
 	"time"
@@ -7,37 +7,45 @@ import (
 	"github.com/pkg/errors"
 )
 
+/*
+ * currently we only use business object field to match counter.
+ * in the future we may introduce another object - counter configuration to match business object to counter object
+ */
 type Counter struct {
-	uuid          uuid.UUID // this UUID should bind uniquely to the user
-	Current       uint
-	formatter     Formatter
-	LastResetDate time.Time
+	uuid           uuid.UUID
+	businessObject string
+	current        uint
+	formatter      Formatter
+	lastResetDate  time.Time
 }
 
-func NewCounter(counterUUID uuid.UUID, prefix string, sufix string) (*Counter, error) {
+func NewCounter(counterUUID uuid.UUID, businessObject string, prefix string, sufix string) (*Counter, error) {
 	if counterUUID == uuid.Nil {
-		return nil, errors.New("empty Numbering service UUID provided")
+		return nil, errors.New("empty numbering service UUID provided")
+	}
+	if businessObject == "" {
+		return nil, errors.New("empty target business object")
 	}
 
 	return &Counter{
 		uuid:          counterUUID,
-		Current:       0,
+		current:       0,
 		formatter:     NewFormatter(prefix, sufix),
-		LastResetDate: time.Now(),
+		lastResetDate: time.Now(),
 	}, nil
 }
 
 func (c *Counter) Next() {
-	c.Current++
+	c.current++
 }
 
 func (c *Counter) Identifier() string {
-	return c.formatter.format(c.Current)
+	return c.formatter.format(c.current)
 }
 
 func (c *Counter) Reset() error {
-	c.Current = 0
-	c.LastResetDate = time.Now()
+	c.current = 0
+	c.lastResetDate = time.Now()
 	return nil
 }
 
