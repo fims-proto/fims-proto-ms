@@ -39,6 +39,39 @@
 			"response": []
 		},
 		{
+			"name": "Counters dataload",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/private/counters/dataload",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"private",
+						"counters",
+						"dataload"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "[test] all ledgers",
 			"event": [
 				{
@@ -91,7 +124,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"CreatorUUID\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -112,7 +145,7 @@
 			"response": []
 		},
 		{
-			"name": "read voucher by uuid",
+			"name": "read voucher by uuid 1",
 			"event": [
 				{
 					"listen": "test",
@@ -120,6 +153,11 @@
 						"exec": [
 							"pm.test(\"Read voucher by uuid 200\", function () {",
 							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Number check\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.Number).to.eql(\"记1号\");",
 							"});"
 						],
 						"type": "text/javascript"
@@ -555,7 +593,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"CreatorUUID\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -570,6 +608,43 @@
 					"port": "8080",
 					"path": [
 						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read voucher by uuid 2",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read voucher by uuid 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Number check\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.Number).to.eql(\"记2号\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_2}}"
 					]
 				}
 			},
@@ -714,7 +789,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"CreatorUUID\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -729,6 +804,43 @@
 					"port": "8080",
 					"path": [
 						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read voucher by uuid 3",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read voucher by uuid 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Number check\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.Number).to.eql(\"记3号\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_3}}"
 					]
 				}
 			},
@@ -873,7 +985,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"Number\": \"1\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"CreatorUUID\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -888,6 +1000,43 @@
 					"port": "8080",
 					"path": [
 						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read voucher by uuid 4",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read voucher by uuid 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Number check\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData.Number).to.eql(\"记4号\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"vouchers",
+						"{{voucherUUID_4}}"
 					]
 				}
 			},
