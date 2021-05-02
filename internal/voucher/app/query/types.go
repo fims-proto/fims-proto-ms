@@ -15,6 +15,7 @@ type LineItem struct {
 
 type Voucher struct {
 	UUID               uuid.UUID
+	VoucherType        string
 	Number             string
 	CreatedAt          time.Time
 	AttachmentQuantity uint

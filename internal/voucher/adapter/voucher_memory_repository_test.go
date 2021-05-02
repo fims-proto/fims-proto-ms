@@ -3,6 +3,7 @@ package adapter
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
+	"strconv"
 	"sync"
 	"testing"
 	"time"
@@ -47,7 +48,7 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(30, func(i int) {
-		v, err := domain.NewVoucher(uuid.New(), "1", time.Now(), 0, prepareBalancedItems(), "0000")
+		v, err := domain.NewVoucher(uuid.New(), domain.GeneralVoucher, strconv.Itoa(i), time.Now(), 0, prepareBalancedItems(), "0000")
 		require.NoError(t, err)
 		_, err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
@@ -79,7 +80,7 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 
 func prepareMemoryRepo(t *testing.T, voucherUUID uuid.UUID) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := domain.NewVoucher(voucherUUID, "1", time.Now(), 0, prepareBalancedItems(), "0000")
+	v, err := domain.NewVoucher(voucherUUID, domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "0000")
 	require.NoError(t, err)
 	repo.data[v.UUID()] = *v
 	return repo

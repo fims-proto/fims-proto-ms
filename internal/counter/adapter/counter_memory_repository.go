@@ -2,6 +2,8 @@ package adapter
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/counter/app/query"
+	"github/fims-proto/fims-proto-ms/internal/counter/domain"
 	counter "github/fims-proto/fims-proto-ms/internal/counter/domain"
 	"sync"
 
@@ -79,7 +81,32 @@ func (r *CounterMemoryRepository) UpdateAndRead(
 	return readValue, nil
 }
 
-func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, UUID string) error {
-	r.data.Delete(UUID)
+func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, counterUUID uuid.UUID) error {
+	r.data.Delete(counterUUID)
 	return nil
+}
+
+func (r *CounterMemoryRepository) CounterByBusinessObject(ctx context.Context, businessObject string) (query.Counter, error) {
+	var counterUUID uuid.UUID
+	r.data.Range(func(key, value interface{}) bool {
+		if value.(*CounterWrapper).Counter.BusinessObject() == businessObject {
+			counterUUID = value.(*CounterWrapper).Counter.UUID()
+			return false
+		}
+		return true
+	})
+	if counterUUID == uuid.Nil {
+		return query.Counter{}, errors.Errorf("cannot find counter with business object %s", businessObject)
+	}
+	counterW, ok := r.data.Load(counterUUID)
+	if !ok {
+		return query.Counter{}, errors.Errorf("counter %s does not exist", counterUUID)
+	}
+	return MapFromDomainCounter(*counterW.(*CounterWrapper).Counter), nil
+}
+
+func MapFromDomainCounter(c domain.Counter) query.Counter {
+	return query.Counter{
+		CounterUUID: c.UUID(),
+	}
 }

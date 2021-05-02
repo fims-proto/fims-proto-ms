@@ -27,12 +27,18 @@ func NewApplication() Application {
 	return Application{}
 }
 
-func (a *Application) Inject(readModel query.VouchersReadModel, repo domain.Repository, accountService command.AccountService, ledgerService command.LedgerService) {
+func (a *Application) Inject(
+	readModel query.VouchersReadModel,
+	repo domain.Repository,
+	accountService command.AccountService,
+	ledgerService command.LedgerService,
+	counterService command.CounterService,
+) {
 	a.Queries = Queries{
 		ReadVouchers: query.NewReadVouchersHandler(readModel),
 	}
 	a.Commands = Commands{
-		RecordVoucher: command.NewRecordVoucherHandler(repo, accountService),
+		RecordVoucher: command.NewRecordVoucherHandler(repo, accountService, counterService),
 		AuditVoucher:  command.NewAuditVoucherHandler(repo),
 		ReviewVoucher: command.NewReviewVoucherHandler(repo),
 		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService),

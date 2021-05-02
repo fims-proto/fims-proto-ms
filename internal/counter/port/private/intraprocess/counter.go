@@ -10,14 +10,14 @@ import (
 )
 
 type CounterInterface struct {
-	app app.Application
+	app *app.Application
 }
 
-func NewCounterInterface(app app.Application) CounterInterface {
+func NewCounterInterface(app *app.Application) CounterInterface {
 	return CounterInterface{app: app}
 }
 
-func (i CounterInterface) Create(ctx context.Context, req CreateCounterRequest) (uuid.UUID, error) {
+func (i CounterInterface) Create(ctx context.Context, req CreateCounterRequest) error {
 	return i.app.Commands.CreateCounter.Handle(ctx, req.mapToCommand())
 }
 

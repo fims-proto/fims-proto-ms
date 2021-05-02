@@ -3,8 +3,6 @@ package counter
 import (
 	"context"
 	counterport "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
-
-	"github.com/google/uuid"
 )
 
 type IntraprocessAdapter struct {
@@ -15,6 +13,6 @@ func NewIntraprocessAdapter(cntrInterface counterport.CounterInterface) Intrapro
 	return IntraprocessAdapter{cntrInterface: cntrInterface}
 }
 
-func (s IntraprocessAdapter) Next(ctx context.Context, counterUUID uuid.UUID) (string, error) {
-	return s.cntrInterface.Next(ctx, counterUUID)
+func (s IntraprocessAdapter) GetNextIdentifier(ctx context.Context, businessObject string) (string, error) {
+	return s.cntrInterface.Next(ctx, businessObject)
 }

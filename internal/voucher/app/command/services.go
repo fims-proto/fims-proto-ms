@@ -12,3 +12,7 @@ type AccountService interface {
 type LedgerService interface {
 	PostVoucher(ctx context.Context, voucher query.Voucher) error
 }
+
+type CounterService interface {
+	GetNextIdentifier(ctx context.Context, businessObject string) (string, error)
+}

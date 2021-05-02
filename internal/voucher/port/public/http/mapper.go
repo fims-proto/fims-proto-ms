@@ -20,7 +20,7 @@ func (r RecordVoucherRequest) mapToCommand() command.RecordVoucherCmd {
 		itemCmd = append(itemCmd, item.mapToCommand())
 	}
 	return command.RecordVoucherCmd{
-		Number:             r.Number,
+		VoucherType:        r.VoucherType,
 		AttachmentQuantity: uint(r.AttachmentQuantity),
 		LineItems:          itemCmd,
 		Creator:            r.Creator,
@@ -43,6 +43,7 @@ func mapFromVoucherQuery(q query.Voucher) VoucherResponse {
 	}
 	return VoucherResponse{
 		UUID:               q.UUID.String(),
+		Type:               q.VoucherType,
 		Number:             string(q.Number),
 		CreatedAt:          q.CreatedAt,
 		AttachmentQuantity: int(q.AttachmentQuantity),

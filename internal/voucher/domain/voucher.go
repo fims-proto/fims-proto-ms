@@ -10,6 +10,7 @@ import (
 
 type Voucher struct {
 	uuid               uuid.UUID
+	voucherType        VoucherType
 	number             string
 	createdAt          time.Time
 	attachmentQuantity uint
@@ -42,7 +43,7 @@ func sumItems(items []LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
+func NewVoucher(voucherUUID uuid.UUID, voucherType VoucherType, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
 	if voucherUUID == uuid.Nil {
 		return nil, errors.New("empty voucher uuid")
 	}
@@ -57,6 +58,7 @@ func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attac
 
 	return &Voucher{
 		uuid:               voucherUUID,
+		voucherType:        voucherType,
 		number:             number,
 		createdAt:          createdAt,
 		attachmentQuantity: attachmentQuantity,
@@ -74,6 +76,10 @@ func NewVoucher(voucherUUID uuid.UUID, number string, createdAt time.Time, attac
 
 func (v Voucher) UUID() uuid.UUID {
 	return v.uuid
+}
+
+func (v Voucher) Type() VoucherType {
+	return v.voucherType
 }
 
 func (v Voucher) Number() string {

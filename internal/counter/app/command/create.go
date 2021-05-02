@@ -18,10 +18,10 @@ func NewCounterCreateHandler(repo counter.Repository) CounterCreateHandler {
 	return CounterCreateHandler{repo: repo}
 }
 
-func (h CounterCreateHandler) Handle(ctx context.Context, cmd CounterCreateCmd) (uuid.UUID, error) {
+func (h CounterCreateHandler) Handle(ctx context.Context, cmd CounterCreateCmd) error {
 	counter, err := counter.NewCounter(uuid.New(), cmd.BusinessObject, cmd.Prefix, cmd.Sufix)
 	if err != nil {
-		return uuid.Nil, err
+		return err
 	}
 	return h.repo.CreateCounter(ctx, counter)
 }

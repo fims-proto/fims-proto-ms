@@ -28,10 +28,11 @@ func NewCounter(counterUUID uuid.UUID, businessObject string, prefix string, suf
 	}
 
 	return &Counter{
-		uuid:          counterUUID,
-		current:       0,
-		formatter:     NewFormatter(prefix, sufix),
-		lastResetDate: time.Now(),
+		uuid:           counterUUID,
+		current:        0,
+		businessObject: businessObject,
+		formatter:      NewFormatter(prefix, sufix),
+		lastResetDate:  time.Now(),
 	}, nil
 }
 
@@ -51,4 +52,8 @@ func (c *Counter) Reset() error {
 
 func (c *Counter) UUID() uuid.UUID {
 	return c.uuid
+}
+
+func (c Counter) BusinessObject() string {
+	return c.businessObject
 }
