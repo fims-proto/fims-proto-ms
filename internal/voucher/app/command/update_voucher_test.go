@@ -82,6 +82,7 @@ func (r voucherRepoMock) initTestData() {
 	items := []domain.LineItem{*item0, *item1}
 	v, _ := domain.NewVoucher(
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),
+		domain.GeneralVoucher,
 		"1",
 		time.Now(),
 		0,

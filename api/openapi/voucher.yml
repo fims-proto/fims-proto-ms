@@ -279,9 +279,9 @@ components:
     
     RecordVoucherRequest:
       type: object
-      required: [Number, AttachmentQuantity, LineItems, Creator]
+      required: [VoucherType, AttachmentQuantity, LineItems, Creator]
       properties:
-        Number:
+        VoucherType:
           type: string
         AttachmentQuantity:
           type: integer
@@ -337,11 +337,13 @@ components:
 
     VoucherResponse:
       type: object
-      required: [UUID, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
+      required: [UUID, Type, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
       properties:
         UUID:
           type: string
           format: uuid
+        Type:
+          type: string
         Number:
           type: string
         CreatedAt:

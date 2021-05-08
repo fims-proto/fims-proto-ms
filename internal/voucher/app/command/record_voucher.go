@@ -10,7 +10,7 @@ import (
 )
 
 type RecordVoucherCmd struct {
-	Number             string
+	VoucherType        string
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
 	Creator            string
@@ -19,18 +19,23 @@ type RecordVoucherCmd struct {
 type RecordVoucherHandler struct {
 	repo           domain.Repository
 	accountService AccountService
+	counterService CounterService
 }
 
-func NewRecordVoucherHandler(repo domain.Repository, accountService AccountService) RecordVoucherHandler {
+func NewRecordVoucherHandler(repo domain.Repository, accountService AccountService, counterService CounterService) RecordVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 	if accountService == nil {
 		panic("nil account service")
 	}
+	if counterService == nil {
+		panic("nil counter service")
+	}
 	return RecordVoucherHandler{
 		repo:           repo,
 		accountService: accountService,
+		counterService: counterService,
 	}
 }
 
@@ -51,9 +56,20 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
+	voucherType, err := domain.NewVoucherTypeFromString(cmd.VoucherType)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "unable to use voucher type")
+	}
+
+	identifier, err := h.counterService.GetNextIdentifier(ctx, voucherType.String())
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "unable to generate next number")
+	}
+
 	newVoucher, err := domain.NewVoucher(
 		uuid.New(),
-		cmd.Number,
+		voucherType,
+		identifier,
 		time.Now(),
 		cmd.AttachmentQuantity,
 		lineItems,

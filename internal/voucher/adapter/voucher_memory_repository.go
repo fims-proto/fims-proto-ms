@@ -31,6 +31,12 @@ func (h VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *domain
 		return uuid.Nil, errors.Errorf("voucher %s exists", voucher.UUID())
 	}
 
+	for _, v := range h.data {
+		if voucher.Number() == v.Number() {
+			return uuid.Nil, errors.Errorf("voucher number %s exists", voucher.Number())
+		}
+	}
+
 	h.data[voucher.UUID()] = *voucher
 	return voucher.UUID(), nil
 }
@@ -71,6 +77,7 @@ func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, voucherUUID 
 func mapFromDomainVoucher(v domain.Voucher) query.Voucher {
 	return query.Voucher{
 		UUID:               v.UUID(),
+		VoucherType:        v.Type().String(),
 		Number:             v.Number(),
 		CreatedAt:          v.CreatedAt(),
 		AttachmentQuantity: v.AttachmentQuantity(),

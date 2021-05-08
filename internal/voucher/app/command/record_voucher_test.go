@@ -35,7 +35,8 @@ func TestApp_HandleRecordVoucherHandler(t *testing.T) {
 
 			repoMock := newVoucherRepoMock()
 			accServiceMock := newAccountService()
-			handler := NewRecordVoucherHandler(repoMock, &accServiceMock)
+			cntServiceMock := newCounterService()
+			handler := NewRecordVoucherHandler(repoMock, &accServiceMock, &cntServiceMock)
 			newUUID, err := handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
@@ -71,7 +72,7 @@ func createVoucherCmd() *RecordVoucherCmd {
 		},
 	}
 	return &RecordVoucherCmd{
-		Number:             "1",
+		VoucherType:        "GENERAL_VOUCHER",
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
 		Creator:            "0000",
@@ -84,6 +85,10 @@ func newVoucherRepoMock() voucherRepoMock {
 
 func newAccountService() accountServiceMock {
 	return accountServiceMock{invoked: false}
+}
+
+func newCounterService() counterServiceMock {
+	return counterServiceMock{invoked: false}
 }
 
 type voucherRepoMock struct {
@@ -116,6 +121,15 @@ type accountServiceMock struct {
 func (s *accountServiceMock) ValidateExistence(ctx context.Context, accNumbers []string) error {
 	s.invoked = true
 	return nil
+}
+
+type counterServiceMock struct {
+	invoked bool
+}
+
+func (c *counterServiceMock) GetNextIdentifier(ctx context.Context, bo string) (string, error) {
+	c.invoked = true
+	return "1", nil
 }
 
 func prepareBalancedItems() []domain.LineItem {

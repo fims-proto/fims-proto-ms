@@ -1,4 +1,4 @@
-package counter
+package domain
 
 import (
 	"context"
@@ -8,7 +8,7 @@ import (
 
 type Repository interface {
 	// maybe someday, reseting formatter in Counter is necessary
-	CreateCounter(ctx context.Context, c *Counter) (uuid.UUID, error)
+	CreateCounter(ctx context.Context, c *Counter) error
 	DeleteCounter(ctx context.Context, counterUUID uuid.UUID) error
 
 	UpdateCounter(
