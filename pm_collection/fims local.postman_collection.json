@@ -24,11 +24,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/private/accounts/dataload",
+					"raw": "{{host}}:{{port}}/private/accounts/dataload",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"private",
 						"accounts",
@@ -57,11 +57,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/private/counters/dataload",
+					"raw": "{{host}}:{{port}}/private/counters/dataload",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"private",
 						"counters",
@@ -90,11 +90,11 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/ledgers-test",
+					"raw": "{{host}}:{{port}}/ledgers-test",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"ledgers-test"
 					]
@@ -132,11 +132,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers",
+					"raw": "{{host}}:{{port}}/vouchers",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers"
 					]
@@ -168,11 +168,11 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}"
@@ -200,11 +200,11 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers",
+					"raw": "{{host}}:{{port}}/vouchers",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers"
 					]
@@ -240,11 +240,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/review",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/review",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -282,11 +282,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/cancel-review",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/cancel-review",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -324,11 +324,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/audit",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/audit",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -366,11 +366,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/cancel-audit",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/cancel-audit",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -408,11 +408,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}"
@@ -440,11 +440,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/post",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/post",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -482,11 +482,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/review",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/review",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -524,11 +524,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/audit",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/audit",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -557,11 +557,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_1}}/post",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_1}}/post",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_1}}",
@@ -601,11 +601,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers",
+					"raw": "{{host}}:{{port}}/vouchers",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers"
 					]
@@ -637,11 +637,11 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_2}}",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_2}}"
@@ -678,11 +678,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}/review",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_2}}/review",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_2}}",
@@ -720,11 +720,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}/audit",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_2}}/audit",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_2}}",
@@ -753,11 +753,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_2}}/post",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_2}}/post",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_2}}",
@@ -797,11 +797,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers",
+					"raw": "{{host}}:{{port}}/vouchers",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers"
 					]
@@ -833,11 +833,11 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_3}}",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_3}}"
@@ -874,11 +874,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}/review",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_3}}/review",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_3}}",
@@ -916,11 +916,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}/audit",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_3}}/audit",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_3}}",
@@ -949,11 +949,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_3}}/post",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_3}}/post",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_3}}",
@@ -993,11 +993,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers",
+					"raw": "{{host}}:{{port}}/vouchers",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers"
 					]
@@ -1029,11 +1029,11 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_4}}",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_4}}"
@@ -1070,11 +1070,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}/review",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_4}}/review",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_4}}",
@@ -1112,11 +1112,11 @@
 					}
 				},
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}/audit",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_4}}/audit",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_4}}",
@@ -1145,11 +1145,11 @@
 				"method": "POST",
 				"header": [],
 				"url": {
-					"raw": "localhost:8080/vouchers/{{voucherUUID_4}}/post",
+					"raw": "{{host}}:{{port}}/vouchers/{{voucherUUID_4}}/post",
 					"host": [
-						"localhost"
+						"{{host}}"
 					],
-					"port": "8080",
+					"port": "{{port}}",
 					"path": [
 						"vouchers",
 						"{{voucherUUID_4}}",
@@ -1196,6 +1196,14 @@
 		{
 			"key": "voucherUUID_4",
 			"value": ""
+		},
+		{
+			"key": "host",
+			"value": "{{host}}"
+		},
+		{
+			"key": "port",
+			"value": "{{port}}"
 		}
 	]
 }
