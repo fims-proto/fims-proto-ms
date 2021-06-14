@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/user"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"time"
 
@@ -40,6 +41,10 @@ func NewRecordVoucherHandler(repo domain.Repository, accountService AccountServi
 }
 
 func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (uuid.UUID, error) {
+	if err := user.VerifyAuth("current-user", "current-sob", "voucher", "create"); err != nil {
+		return uuid.Nil, errors.Wrap(err, "failed verifing permission")
+	}
+
 	var accNumbers []string
 	var lineItems []domain.LineItem
 	for _, item := range cmd.LineItems {

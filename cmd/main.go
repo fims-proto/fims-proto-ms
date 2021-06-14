@@ -1,11 +1,13 @@
 package main
 
 import (
+	"flag"
 	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter"
 	accountledgeradapter "github/fims-proto/fims-proto-ms/internal/account/adapter/ledger"
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
 	accountprivatehttpport "github/fims-proto/fims-proto-ms/internal/account/port/private/http"
 	accountintraport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	counteradapter "github/fims-proto/fims-proto-ms/internal/counter/adapter"
 	counterapp "github/fims-proto/fims-proto-ms/internal/counter/app"
 	counterprivatehttpport "github/fims-proto/fims-proto-ms/internal/counter/port/private/http"
@@ -16,6 +18,7 @@ import (
 	ledgerapp "github/fims-proto/fims-proto-ms/internal/ledger/app"
 	ledgertesthttpport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
 	ledgerintraport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
+	"github/fims-proto/fims-proto-ms/internal/user"
 	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
 	vouchercounteradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
@@ -28,6 +31,9 @@ import (
 )
 
 func main() {
+	flag.Parse()
+	log.InitLoggers(log.NewStdLogEnablerAdapter(), log.NewStdLoggerAdapter())
+
 	// repositories
 	accountRepository := accountadapter.NewAccountMemoryRepository()
 	voucherRepository := voucheradapter.NewVoucherMemoryRepository()
@@ -73,6 +79,7 @@ func main() {
 	)
 
 	router := gin.Default()
+	router.Use(user.Authn())
 	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
 	// below 2 are for dataload, can be integrated into onboarding procedure
 	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), router)
