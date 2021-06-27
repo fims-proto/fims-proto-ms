@@ -21,6 +21,7 @@ func mapFromVoucherQuery(q query.Voucher) ledgerport.UpdateLedgerBalanceRequest 
 		itemReq = append(itemReq, mapFromLineItemQuery(item))
 	}
 	return ledgerport.UpdateLedgerBalanceRequest{
+		Sob:         q.Sob,
 		VoucherUUID: q.UUID,
 		LineItems:   itemReq,
 	}

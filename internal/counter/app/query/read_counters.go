@@ -3,7 +3,7 @@ package query
 import "context"
 
 type CountersReadModel interface {
-	CounterByBusinessObject(ctx context.Context, businessObject string) (Counter, error)
+	CounterByBusinessObject(ctx context.Context, sep string, businessObject []string) (Counter, error)
 }
 
 type ReadCountersHandler struct {
@@ -17,6 +17,6 @@ func NewReadCountersHandler(readModel CountersReadModel) ReadCountersHandler {
 	return ReadCountersHandler{readModel: readModel}
 }
 
-func (h ReadCountersHandler) HandleByBusinessObject(ctx context.Context, businessObject string) (Counter, error) {
-	return h.readModel.CounterByBusinessObject(ctx, businessObject)
+func (h ReadCountersHandler) HandleByBusinessObject(ctx context.Context, sep string, businessObjects []string) (Counter, error) {
+	return h.readModel.CounterByBusinessObject(ctx, sep, businessObjects)
 }

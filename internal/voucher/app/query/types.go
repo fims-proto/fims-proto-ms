@@ -14,6 +14,7 @@ type LineItem struct {
 }
 
 type Voucher struct {
+	Sob                string
 	UUID               uuid.UUID
 	VoucherType        string
 	Number             string

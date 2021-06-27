@@ -14,11 +14,18 @@ servers:
 security:
   - bearerAuth: []
 paths:
-  /:
+  /{sob}/:
     get:
       tags:
         - Voucher
       operationId: AllVouchers
+      parameters:
+        - in: path
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
       responses:
         '200':
           description: success
@@ -37,6 +44,13 @@ paths:
       tags:
         - Voucher
       operationId: Record
+      parameters:
+        - in: path
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
       requestBody:
         description: Record voucher payload
         required: true
@@ -54,14 +68,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{uuid}:
+  /{sob}/{voucherId}:
     get:
       tags:
         - Voucher
       operationId: VoucherByUUID
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
@@ -86,11 +106,18 @@ paths:
       operationId: Update
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
           required: true
+          description: UUID of voucher
       requestBody:
         description: Update voucher payload
         required: true
@@ -108,7 +135,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{uuid}/audit:
+  /{sob}/{voucherId}/audit:
     post:
       tags:
         - Voucher
@@ -122,7 +149,13 @@ paths:
               $ref: '#/components/schemas/AuditVoucherRequest'
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
@@ -138,7 +171,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   
-  /{uuid}/cancel-audit:
+  /{sob}/{voucherId}/cancel-audit:
     post:
       tags:
         - Voucher
@@ -152,7 +185,13 @@ paths:
               $ref: '#/components/schemas/AuditVoucherRequest'
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
@@ -168,7 +207,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{uuid}/review:
+  /{sob}/{voucherId}/review:
     post:
       tags:
         - Voucher
@@ -182,7 +221,13 @@ paths:
               $ref: '#/components/schemas/ReviewVoucherRequest'
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
@@ -198,7 +243,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
   
-  /{uuid}/cancel-review:
+  /{sob}/{voucherId}/cancel-review:
     post:
       tags:
         - Voucher
@@ -212,7 +257,13 @@ paths:
               $ref: '#/components/schemas/ReviewVoucherRequest'
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
@@ -228,14 +279,20 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /{uuid}/post:
+  /{sob}/{voucherId}/post:
     post:
       tags:
         - Voucher
       operationId: Post
       parameters:
         - in: path
-          name: uuid
+          name: sob
+          schema:
+            type: string
+          required: true
+          description: sob
+        - in: path
+          name: voucherId
           schema:
             type: string
             format: uuid
@@ -337,8 +394,10 @@ components:
 
     VoucherResponse:
       type: object
-      required: [UUID, Type, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
+      required: [Sob, UUID, Type, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
       properties:
+        Sob:
+          type: string
         UUID:
           type: string
           format: uuid

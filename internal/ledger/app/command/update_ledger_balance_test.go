@@ -125,6 +125,7 @@ func (r ledgerRepoMock) Dataload(ctx context.Context, ls []*domain.Ledger) error
 
 func (r ledgerRepoMock) UpdateLedgers(
 	ctx context.Context,
+	sob string,
 	ledgerNumbers []string,
 	updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error),
 ) error {
@@ -151,17 +152,19 @@ func (r ledgerRepoMock) UpdateLedgers(
 }
 
 func (r ledgerRepoMock) initData() {
-	r.ledgers["1000"], _ = domain.NewLedger("1000", "1000 ledger", "", commonaccount.Assets)
-	r.ledgers["100001"], _ = domain.NewLedger("100001", "100001 ledger", "1000", commonaccount.Assets)
-	r.ledgers["10000101"], _ = domain.NewLedger("10000101", "10000101 ledger", "100001", commonaccount.Assets)
+	sob := "test_sob"
 
-	r.ledgers["2000"], _ = domain.NewLedger("2000", "2000 ledger", "", commonaccount.Liabilities)
-	r.ledgers["200002"], _ = domain.NewLedger("200002", "200002 ledger", "2000", commonaccount.Liabilities)
-	r.ledgers["20000202"], _ = domain.NewLedger("20000202", "20000202 ledger", "200002", commonaccount.Liabilities)
+	r.ledgers["1000"], _ = domain.NewLedger(sob, "1000", "1000 ledger", "", commonaccount.Assets)
+	r.ledgers["100001"], _ = domain.NewLedger(sob, "100001", "100001 ledger", "1000", commonaccount.Assets)
+	r.ledgers["10000101"], _ = domain.NewLedger(sob, "10000101", "10000101 ledger", "100001", commonaccount.Assets)
 
-	r.ledgers["3000"], _ = domain.NewLedger("3000", "3000 ledger", "", commonaccount.Assets)
-	r.ledgers["300001"], _ = domain.NewLedger("300001", "300001 ledger", "3000", commonaccount.Assets)
-	r.ledgers["30000101"], _ = domain.NewLedger("30000101", "30000101 ledger", "300001", commonaccount.Assets)
+	r.ledgers["2000"], _ = domain.NewLedger(sob, "2000", "2000 ledger", "", commonaccount.Liabilities)
+	r.ledgers["200002"], _ = domain.NewLedger(sob, "200002", "200002 ledger", "2000", commonaccount.Liabilities)
+	r.ledgers["20000202"], _ = domain.NewLedger(sob, "20000202", "20000202 ledger", "200002", commonaccount.Liabilities)
+
+	r.ledgers["3000"], _ = domain.NewLedger(sob, "3000", "3000 ledger", "", commonaccount.Assets)
+	r.ledgers["300001"], _ = domain.NewLedger(sob, "300001", "300001 ledger", "3000", commonaccount.Assets)
+	r.ledgers["30000101"], _ = domain.NewLedger(sob, "30000101", "30000101 ledger", "300001", commonaccount.Assets)
 }
 
 func newLedgerRepoMock() ledgerRepoMock {
@@ -170,7 +173,7 @@ func newLedgerRepoMock() ledgerRepoMock {
 
 type accountServiceMock struct{}
 
-func (s accountServiceMock) ReadSuperiorNumbers(ctx context.Context, accountNumber string) ([]string, error) {
+func (s accountServiceMock) ReadSuperiorNumbers(ctx context.Context, sob, accountNumber string) ([]string, error) {
 	if len(accountNumber) != 8 {
 		return nil, errors.New("let's test with 8 length account number")
 	}
@@ -183,7 +186,7 @@ func newAccountServiceMock() accountServiceMock {
 
 type voucherServiceMock struct{}
 
-func (s voucherServiceMock) CheckVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error) {
+func (s voucherServiceMock) CheckVoucherPosted(ctx context.Context, sob string, voucherUUID uuid.UUID) (bool, error) {
 	return false, nil
 }
 

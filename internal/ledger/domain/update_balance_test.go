@@ -58,6 +58,6 @@ func TestDomain_LedgerUpdateBalance(t *testing.T) {
 }
 
 func prepareLedger(accType commonaccount.Type) Ledger {
-	l, _ := NewLedger("0000", "test", "", accType)
+	l, _ := NewLedger("test_sob", "0000", "test", "", accType)
 	return *l
 }

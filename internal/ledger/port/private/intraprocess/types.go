@@ -14,6 +14,7 @@ type VoucherLineItemRequest struct {
 }
 
 type UpdateLedgerBalanceRequest struct {
+	Sob         string
 	VoucherUUID uuid.UUID
 	LineItems   []VoucherLineItemRequest
 }

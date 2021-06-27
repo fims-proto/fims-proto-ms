@@ -6,5 +6,5 @@ import (
 )
 
 type LedgerService interface {
-	LoadLedgers(ctx context.Context, accounts []domain.Account) error
+	LoadLedgers(ctx context.Context, sob string, accounts []domain.Account) error
 }

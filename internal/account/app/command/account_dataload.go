@@ -37,7 +37,7 @@ func NewAccountDataloadHandler(repo domain.Repository, ledgerService LedgerServi
 	}
 }
 
-func (h AccountDataloadHandler) Handle(ctx context.Context) error {
+func (h AccountDataloadHandler) Handle(ctx context.Context, sob string) error {
 	accountCmds, err := readFromCSV()
 	if err != nil {
 		return err
@@ -45,7 +45,7 @@ func (h AccountDataloadHandler) Handle(ctx context.Context) error {
 
 	var accounts []*domain.Account
 	for _, cmd := range accountCmds {
-		account, err := domain.NewAccount(cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
+		account, err := domain.NewAccount(sob, cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
 		if err != nil {
 			return errors.Wrapf(err, "dataload failed on account %s", cmd.Number)
 		}
@@ -56,7 +56,7 @@ func (h AccountDataloadHandler) Handle(ctx context.Context) error {
 	for _, account := range accounts {
 		immutableAccounts = append(immutableAccounts, *account)
 	}
-	if err := h.ledgerService.LoadLedgers(ctx, immutableAccounts); err != nil {
+	if err := h.ledgerService.LoadLedgers(ctx, sob, immutableAccounts); err != nil {
 		return errors.Wrap(err, "ledger service failed to load data")
 	}
 

@@ -16,6 +16,7 @@ type LineItemCmd struct {
 }
 
 type UpdateLedgerBalanceCmd struct {
+	Sob         string
 	VoucherUUID uuid.UUID
 	LineItems   []LineItemCmd
 }
@@ -45,7 +46,7 @@ func NewUpdateLedgerBalanceHandler(repo domain.Repository, accountService Accoun
 
 func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedgerBalanceCmd) error {
 	// 1. check again if voucher already posted
-	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.VoucherUUID)
+	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.Sob, cmd.VoucherUUID)
 	if err != nil {
 		return errors.Wrap(err, "check voucher posted failed")
 	}
@@ -57,7 +58,7 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 	numberItemMap := make(map[string]LineItemCmd)
 	var allLedgerNums []string
 	for _, item := range cmd.LineItems {
-		accNums, err := h.accountService.ReadSuperiorNumbers(ctx, item.AccountNumber)
+		accNums, err := h.accountService.ReadSuperiorNumbers(ctx, cmd.Sob, item.AccountNumber)
 		if err != nil {
 			return errors.Wrap(err, "read account superior number failed")
 		}
@@ -75,6 +76,7 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 	// 3. do the update
 	return h.repo.UpdateLedgers(
 		ctx,
+		cmd.Sob,
 		allLedgerNums,
 		func(ledgers []*domain.Ledger) ([]*domain.Ledger, error) {
 			if len(ledgers) <= 0 {

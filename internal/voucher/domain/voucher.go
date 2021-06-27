@@ -9,6 +9,7 @@ import (
 )
 
 type Voucher struct {
+	sob                string
 	uuid               uuid.UUID
 	voucherType        VoucherType
 	number             string
@@ -43,7 +44,10 @@ func sumItems(items []LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(voucherUUID uuid.UUID, voucherType VoucherType, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
+func NewVoucher(sob string, voucherUUID uuid.UUID, voucherType VoucherType, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
+	if sob == "" {
+		return nil, errors.New("empty sob")
+	}
 	if voucherUUID == uuid.Nil {
 		return nil, errors.New("empty voucher uuid")
 	}
@@ -57,6 +61,7 @@ func NewVoucher(voucherUUID uuid.UUID, voucherType VoucherType, number string, c
 	}
 
 	return &Voucher{
+		sob:                sob,
 		uuid:               voucherUUID,
 		voucherType:        voucherType,
 		number:             number,
@@ -72,6 +77,10 @@ func NewVoucher(voucherUUID uuid.UUID, voucherType VoucherType, number string, c
 		isAudited:          false,
 		isPosted:           false,
 	}, nil
+}
+
+func (v Voucher) Sob() string {
+	return v.sob
 }
 
 func (v Voucher) UUID() uuid.UUID {

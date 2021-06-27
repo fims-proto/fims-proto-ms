@@ -25,6 +25,7 @@ func (h Handler) allLedgers(c *gin.Context) {
 	res := []Ledger{}
 	for _, l := range ls {
 		res = append(res, Ledger{
+			Sob:            l.Sob(),
 			Number:         l.Number(),
 			Title:          l.Title(),
 			SuperiorNumber: l.SuperiorNumber(),
@@ -46,6 +47,7 @@ func InitRouter(h Handler, r *gin.Engine) {
 }
 
 type Ledger struct {
+	Sob            string
 	Number         string
 	Title          string
 	SuperiorNumber string

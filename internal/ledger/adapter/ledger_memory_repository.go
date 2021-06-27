@@ -24,16 +24,17 @@ func (r LedgerMemoryRepository) AddLedger(ctx context.Context, l *domain.Ledger)
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	_, ok := r.data[l.Number()]
+	_, ok := r.data[l.Sob()+l.Number()]
 	if ok {
 		return errors.Errorf("ledger exists with number %s", l.Number())
 	}
-	r.data[l.Number()] = *l
+	r.data[l.Sob()+l.Number()] = *l
 	return nil
 }
 
 func (r LedgerMemoryRepository) UpdateLedgers(
 	ctx context.Context,
+	sob string,
 	ledgerNumbers []string,
 	updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error),
 ) error {
@@ -43,7 +44,7 @@ func (r LedgerMemoryRepository) UpdateLedgers(
 	// fetch entries from db
 	var ledgers []*domain.Ledger
 	for _, inputNum := range ledgerNumbers {
-		l, ok := r.data[inputNum]
+		l, ok := r.data[sob+inputNum]
 		if !ok {
 			return errors.Errorf("ledger number %s not exists", inputNum)
 		}
@@ -58,7 +59,7 @@ func (r LedgerMemoryRepository) UpdateLedgers(
 
 	// update db
 	for _, l := range afterUpdateLedgers {
-		r.data[l.Number()] = *l
+		r.data[l.Sob()+l.Number()] = *l
 	}
 	return nil
 }
@@ -67,13 +68,19 @@ func (r LedgerMemoryRepository) Dataload(ctx context.Context, ledgers []*domain.
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
+	if len(ledgers) == 0 {
+		return nil
+	}
+
 	// clear map
-	for i := range r.data {
-		delete(r.data, i)
+	for i, v := range r.data {
+		if v.Sob() == ledgers[0].Sob() {
+			delete(r.data, i)
+		}
 	}
 
 	for _, ledger := range ledgers {
-		r.data[ledger.Number()] = *ledger
+		r.data[ledger.Sob()+ledger.Number()] = *ledger
 	}
 	return nil
 }

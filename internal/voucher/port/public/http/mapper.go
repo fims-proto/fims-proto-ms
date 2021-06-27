@@ -42,6 +42,7 @@ func mapFromVoucherQuery(q query.Voucher) VoucherResponse {
 		itemRes = append(itemRes, mapFromLineItemQuery(item))
 	}
 	return VoucherResponse{
+		Sob:                q.Sob,
 		UUID:               q.UUID.String(),
 		Type:               q.VoucherType,
 		Number:             string(q.Number),

@@ -22,10 +22,10 @@ func TestAdapter_MemoryRepository_InterfaceImplemented(t *testing.T) {
 func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
 	t.Parallel()
 	voucherUUID := uuid.New()
-	repo := prepareMemoryRepo(t, voucherUUID)
+	repo := prepareMemoryRepo(t, "test_sob", voucherUUID)
 
 	scheduleRaceTest(30, func(_ int) {
-		vouchers, err := repo.AllVouchers(context.Background())
+		vouchers, err := repo.AllVouchers(context.Background(), "test_sob")
 		require.NoError(t, err)
 		assert.Len(t, vouchers, 1)
 	})
@@ -34,10 +34,10 @@ func TestAdapter_MemoryRepository_ReadAll(t *testing.T) {
 func TestAdapter_MemoryRepository_ReadOne(t *testing.T) {
 	t.Parallel()
 	voucherUUID := uuid.New()
-	repo := prepareMemoryRepo(t, voucherUUID)
+	repo := prepareMemoryRepo(t, "test_sob", voucherUUID)
 
 	scheduleRaceTest(30, func(_ int) {
-		v, err := repo.VoucherByUUID(context.Background(), voucherUUID)
+		v, err := repo.VoucherByUUID(context.Background(), "test_sob", voucherUUID)
 		require.NoError(t, err)
 		assert.Equal(t, voucherUUID, v.UUID)
 	})
@@ -48,7 +48,7 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(30, func(i int) {
-		v, err := domain.NewVoucher(uuid.New(), domain.GeneralVoucher, strconv.Itoa(i), time.Now(), 0, prepareBalancedItems(), "0000")
+		v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, strconv.Itoa(i), time.Now(), 0, prepareBalancedItems(), "0000")
 		require.NoError(t, err)
 		_, err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
@@ -60,12 +60,12 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 func TestAdapter_MemoryRepository_Update(t *testing.T) {
 	t.Parallel()
 	voucherUUID := uuid.New()
-	repo := prepareMemoryRepo(t, voucherUUID)
+	repo := prepareMemoryRepo(t, "test_sob", voucherUUID)
 
 	voucherAudited := make(chan int, 30)
 
 	scheduleRaceTest(30, func(i int) {
-		err := repo.UpdateVoucher(context.Background(), voucherUUID, func(v *domain.Voucher) (*domain.Voucher, error) {
+		err := repo.UpdateVoucher(context.Background(), "test_sob", voucherUUID, func(v *domain.Voucher) (*domain.Voucher, error) {
 			if err := v.Audit("testUUID"); err == nil {
 				// success
 				voucherAudited <- i
@@ -78,11 +78,11 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 	assert.Len(t, voucherAudited, 1, "voucher should be audit only once")
 }
 
-func prepareMemoryRepo(t *testing.T, voucherUUID uuid.UUID) VoucherMemoryRepository {
+func prepareMemoryRepo(t *testing.T, sob string, voucherUUID uuid.UUID) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := domain.NewVoucher(voucherUUID, domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "0000")
+	v, err := domain.NewVoucher(sob, voucherUUID, domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "0000")
 	require.NoError(t, err)
-	repo.data[v.UUID()] = *v
+	repo.data[sob+v.UUID().String()] = *v
 	return repo
 }
 

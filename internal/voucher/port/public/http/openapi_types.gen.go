@@ -70,6 +70,7 @@ type VoucherResponse struct {
 	LineItems          []LineItemResponse `json:"LineItems"`
 	Number             string             `json:"Number"`
 	Reviewer           string             `json:"Reviewer"`
+	Sob                string             `json:"Sob"`
 	Type               string             `json:"Type"`
 	UUID               string             `json:"UUID"`
 }

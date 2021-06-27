@@ -13,6 +13,6 @@ func NewIntraprocessAdapter(accountInterface accountport.AccountInterface) Intra
 	return IntraprocessAdapter{accountInterface: accountInterface}
 }
 
-func (s IntraprocessAdapter) ValidateExistence(ctx context.Context, accNumbers []string) error {
-	return s.accountInterface.ValidateExistence(ctx, accNumbers)
+func (s IntraprocessAdapter) ValidateExistence(ctx context.Context, sob string, accNumbers []string) error {
+	return s.accountInterface.ValidateExistence(ctx, sob, accNumbers)
 }

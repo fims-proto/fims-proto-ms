@@ -86,17 +86,22 @@ func (r *CounterMemoryRepository) DeleteCounter(ctx context.Context, counterUUID
 	return nil
 }
 
-func (r *CounterMemoryRepository) CounterByBusinessObject(ctx context.Context, businessObject string) (query.Counter, error) {
+func (r *CounterMemoryRepository) CounterByBusinessObject(ctx context.Context, sep string, businessObjects []string) (query.Counter, error) {
+	m, err := domain.NewMatcher(sep, businessObjects...)
+	if err != nil {
+		return query.Counter{}, errors.Errorf("cannot create counter matcher: %s", businessObjects)
+	}
+
 	var counterUUID uuid.UUID
 	r.data.Range(func(key, value interface{}) bool {
-		if value.(*CounterWrapper).Counter.BusinessObject() == businessObject {
+		if value.(*CounterWrapper).Counter.BusinessObject() == m.String() {
 			counterUUID = value.(*CounterWrapper).Counter.UUID()
 			return false
 		}
 		return true
 	})
 	if counterUUID == uuid.Nil {
-		return query.Counter{}, errors.Errorf("cannot find counter with business object %s", businessObject)
+		return query.Counter{}, errors.Errorf("cannot find counter with business object %s", m.String())
 	}
 	counterW, ok := r.data.Load(counterUUID)
 	if !ok {
