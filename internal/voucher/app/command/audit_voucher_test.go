@@ -69,7 +69,7 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 }
 
 func createVoucherForAuditTest(t *testing.T, auditor string) *domain.Voucher {
-	v, err := domain.NewVoucher(uuid.New(), domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "")
+	v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if auditor != "" {
 		err := v.Audit(auditor)

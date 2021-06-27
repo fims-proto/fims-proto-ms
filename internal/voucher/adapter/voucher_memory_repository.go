@@ -12,12 +12,12 @@ import (
 
 type VoucherMemoryRepository struct {
 	lock *sync.RWMutex
-	data map[uuid.UUID]domain.Voucher
+	data map[string]domain.Voucher
 }
 
 func NewVoucherMemoryRepository() VoucherMemoryRepository {
 	return VoucherMemoryRepository{
-		data: make(map[uuid.UUID]domain.Voucher),
+		data: make(map[string]domain.Voucher),
 		lock: &sync.RWMutex{},
 	}
 }
@@ -26,26 +26,26 @@ func (h VoucherMemoryRepository) AddVoucher(ctx context.Context, voucher *domain
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	_, ok := h.data[voucher.UUID()]
+	_, ok := h.data[voucher.Sob()+voucher.UUID().String()]
 	if ok {
 		return uuid.Nil, errors.Errorf("voucher %s exists", voucher.UUID())
 	}
 
 	for _, v := range h.data {
-		if voucher.Number() == v.Number() {
+		if voucher.Sob() == v.Sob() && voucher.Number() == v.Number() {
 			return uuid.Nil, errors.Errorf("voucher number %s exists", voucher.Number())
 		}
 	}
 
-	h.data[voucher.UUID()] = *voucher
+	h.data[voucher.Sob()+voucher.UUID().String()] = *voucher
 	return voucher.UUID(), nil
 }
 
-func (h VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
+func (h VoucherMemoryRepository) UpdateVoucher(ctx context.Context, sob string, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
 	h.lock.Lock()
 	defer h.lock.Unlock()
 
-	v, ok := h.data[voucherUUID]
+	v, ok := h.data[sob+voucherUUID.String()]
 	if !ok {
 		return errors.Errorf("voucher %s not exists", voucherUUID)
 	}
@@ -54,20 +54,22 @@ func (h VoucherMemoryRepository) UpdateVoucher(ctx context.Context, voucherUUID 
 	if err != nil {
 		return errors.Wrapf(err, "voucher %s updated failed", voucherUUID)
 	}
-	h.data[voucherUUID] = *updatedVoucher
+	h.data[sob+voucherUUID.String()] = *updatedVoucher
 	return nil
 }
 
-func (h VoucherMemoryRepository) AllVouchers(ctx context.Context) ([]query.Voucher, error) {
+func (h VoucherMemoryRepository) AllVouchers(ctx context.Context, sob string) ([]query.Voucher, error) {
 	var result []query.Voucher
 	for _, v := range h.data {
-		result = append(result, mapFromDomainVoucher(v))
+		if v.Sob() == sob {
+			result = append(result, mapFromDomainVoucher(v))
+		}
 	}
 	return result, nil
 }
 
-func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, voucherUUID uuid.UUID) (query.Voucher, error) {
-	v, ok := h.data[voucherUUID]
+func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, sob string, voucherUUID uuid.UUID) (query.Voucher, error) {
+	v, ok := h.data[sob+voucherUUID.String()]
 	if !ok {
 		return query.Voucher{}, errors.Errorf("voucher %s not exists", voucherUUID)
 	}
@@ -76,6 +78,7 @@ func (h VoucherMemoryRepository) VoucherByUUID(ctx context.Context, voucherUUID 
 
 func mapFromDomainVoucher(v domain.Voucher) query.Voucher {
 	return query.Voucher{
+		Sob:                v.Sob(),
 		UUID:               v.UUID(),
 		VoucherType:        v.Type().String(),
 		Number:             v.Number(),

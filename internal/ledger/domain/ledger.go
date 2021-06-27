@@ -9,6 +9,7 @@ import (
 )
 
 type Ledger struct {
+	sob            string
 	number         string
 	title          string
 	superiorNumber string
@@ -18,7 +19,10 @@ type Ledger struct {
 	balance        decimal.Decimal
 }
 
-func NewLedger(number string, title string, superiorNumber string, accountType commonaccount.Type) (*Ledger, error) {
+func NewLedger(sob, number, title, superiorNumber string, accountType commonaccount.Type) (*Ledger, error) {
+	if sob == "" {
+		return nil, errors.New("empty sob")
+	}
 	if number == "" {
 		return nil, errors.New("empty ledger number")
 	}
@@ -35,6 +39,7 @@ func NewLedger(number string, title string, superiorNumber string, accountType c
 	}
 
 	return &Ledger{
+		sob:            sob,
 		number:         number,
 		title:          title,
 		superiorNumber: superiorNumber,
@@ -43,6 +48,10 @@ func NewLedger(number string, title string, superiorNumber string, accountType c
 		credit:         decimal.RequireFromString("0"),
 		balance:        decimal.RequireFromString("0"),
 	}, nil
+}
+
+func (l Ledger) Sob() string {
+	return l.sob
 }
 
 func (l Ledger) Number() string {

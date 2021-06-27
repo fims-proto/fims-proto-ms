@@ -15,12 +15,12 @@ func NewAccountInterface(app *app.Application) AccountInterface {
 	return AccountInterface{app: app}
 }
 
-func (i AccountInterface) ValidateExistence(ctx context.Context, accNumbers []string) error {
-	return i.app.Queries.ReadAccounts.HandleValidateExistence(ctx, accNumbers)
+func (i AccountInterface) ValidateExistence(ctx context.Context, sob string, accNumbers []string) error {
+	return i.app.Queries.ReadAccounts.HandleValidateExistence(ctx, sob, accNumbers)
 }
 
-func (i AccountInterface) ReadSuperiorNumbers(ctx context.Context, accNumber string) ([]string, error) {
-	acc, err := i.app.Queries.ReadAccounts.HandleReadByNumber(ctx, accNumber)
+func (i AccountInterface) ReadSuperiorNumbers(ctx context.Context, sob, accNumber string) ([]string, error) {
+	acc, err := i.app.Queries.ReadAccounts.HandleReadByNumber(ctx, sob, accNumber)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to read account by number %s", accNumber)
 	}

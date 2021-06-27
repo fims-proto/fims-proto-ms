@@ -13,6 +13,6 @@ func NewIntraprocessAdapter(cntrInterface counterport.CounterInterface) Intrapro
 	return IntraprocessAdapter{cntrInterface: cntrInterface}
 }
 
-func (s IntraprocessAdapter) GetNextIdentifier(ctx context.Context, businessObject string) (string, error) {
-	return s.cntrInterface.Next(ctx, businessObject)
+func (s IntraprocessAdapter) GetNextIdentifier(ctx context.Context, businessObjects ...string) (string, error) {
+	return s.cntrInterface.Next(ctx, "", businessObjects)
 }

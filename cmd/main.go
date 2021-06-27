@@ -18,6 +18,9 @@ import (
 	ledgerapp "github/fims-proto/fims-proto-ms/internal/ledger/app"
 	ledgertesthttpport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
 	ledgerintraport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
+	sobadapter "github/fims-proto/fims-proto-ms/internal/sob/adapter"
+	sobapp "github/fims-proto/fims-proto-ms/internal/sob/app"
+	sobpublichttpport "github/fims-proto/fims-proto-ms/internal/sob/port/public/http"
 	"github/fims-proto/fims-proto-ms/internal/user"
 	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
@@ -35,12 +38,14 @@ func main() {
 	log.InitLoggers(log.NewStdLogEnablerAdapter(), log.NewStdLoggerAdapter())
 
 	// repositories
+	sobRepository := sobadapter.NewSobMemoryRepository()
 	accountRepository := accountadapter.NewAccountMemoryRepository()
 	voucherRepository := voucheradapter.NewVoucherMemoryRepository()
 	ledgerRepository := ledgeradapter.NewLedgerMemoryRepository()
 	counterRepository := counteradapter.NewCounterMemoryRepository()
 
 	// application - will be passed by reference, in order to make injectinon work
+	sobApplication := sobapp.NewApplication()
 	accountApplication := accountapp.NewApplication()
 	voucherApplication := voucherapp.NewApplication()
 	ledgerApplication := ledgerapp.NewApplication()
@@ -53,6 +58,8 @@ func main() {
 	counterInterface := counterintraport.NewCounterInterface(&counterApplication)
 
 	// application dependencies injection
+	sobApplication.Inject(sobRepository, sobRepository)
+
 	accountApplication.Inject(
 		accountRepository,
 		accountRepository,
@@ -80,6 +87,7 @@ func main() {
 
 	router := gin.Default()
 	router.Use(user.Authn())
+	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), router)
 	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
 	// below 2 are for dataload, can be integrated into onboarding procedure
 	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), router)

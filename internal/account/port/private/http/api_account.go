@@ -19,7 +19,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 func (h Handler) Dataload(c *gin.Context) {
-	if err := h.app.Commands.LoadAccounts.Handle(c.Request.Context()); err != nil {
+	if err := h.app.Commands.LoadAccounts.Handle(c.Request.Context(), c.Param("sob")); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -27,7 +27,7 @@ func (h Handler) Dataload(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.Engine) {
-	g := r.Group("/private/accounts")
+	g := r.Group("/private/accounts/:sob")
 	{
 		g.POST("/dataload", h.Dataload)
 	}

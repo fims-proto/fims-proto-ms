@@ -2,33 +2,37 @@ package domain
 
 import (
 	"errors"
-
-	"github.com/google/uuid"
 )
 
 type Sob struct {
-	uuid uuid.UUID
-	name string
+	id          string
+	name        string
+	description string
 }
 
-func NewSob(sobUUID uuid.UUID, name string) (*Sob, error) {
-	if sobUUID == uuid.Nil {
-		return nil, errors.New("empty sob uuid")
+func NewSob(id, name, description string) (*Sob, error) {
+	if id == "" {
+		return nil, errors.New("empty sob id")
 	}
 	if name == "" {
 		return nil, errors.New("empty sob name")
 	}
 
 	return &Sob{
-		uuid: sobUUID,
-		name: name,
+		id:          id,
+		name:        name,
+		description: description,
 	}, nil
 }
 
-func (s Sob) UUID() uuid.UUID {
-	return s.uuid
+func (s Sob) Id() string {
+	return s.id
 }
 
 func (s Sob) Name() string {
 	return s.name
+}
+
+func (s Sob) Description() string {
+	return s.description
 }

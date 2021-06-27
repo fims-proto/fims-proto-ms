@@ -6,6 +6,7 @@ type Repository interface {
 	AddLedger(ctx context.Context, l *Ledger) error
 	UpdateLedgers(
 		ctx context.Context,
+		sob string,
 		ledgerNumbers []string,
 		updateFn func(ledgers []*Ledger) ([]*Ledger, error),
 	) error

@@ -9,6 +9,7 @@ import (
 )
 
 type UpdateVoucherCmd struct {
+	Sob         string
 	VoucherUUID uuid.UUID
 	LineItems   []LineItemCmd
 }
@@ -50,9 +51,10 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 
 	return h.repo.UpdateVoucher(
 		ctx,
+		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
-			if err := h.accountService.ValidateExistence(ctx, accNumbers); err != nil {
+			if err := h.accountService.ValidateExistence(ctx, cmd.Sob, accNumbers); err != nil {
 				return nil, errors.Wrap(err, "unable to validate account numbers")
 			}
 			if err := v.Update(lineItems); err != nil {

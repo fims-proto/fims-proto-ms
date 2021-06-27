@@ -72,6 +72,7 @@ func createVoucherCmd() *RecordVoucherCmd {
 		},
 	}
 	return &RecordVoucherCmd{
+		Sob:                "test_sob",
 		VoucherType:        "GENERAL_VOUCHER",
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
@@ -100,7 +101,7 @@ func (r voucherRepoMock) AddVoucher(ctx context.Context, v *domain.Voucher) (uui
 	return v.UUID(), nil
 }
 
-func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
+func (r voucherRepoMock) UpdateVoucher(ctx context.Context, sob string, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
 	v, ok := r.vouchers[voucherUUID]
 	if !ok {
 		return errors.Errorf("voucher %s not exists", voucherUUID)
@@ -118,7 +119,7 @@ type accountServiceMock struct {
 	invoked bool
 }
 
-func (s *accountServiceMock) ValidateExistence(ctx context.Context, accNumbers []string) error {
+func (s *accountServiceMock) ValidateExistence(ctx context.Context, sob string, accNumbers []string) error {
 	s.invoked = true
 	return nil
 }
@@ -127,7 +128,7 @@ type counterServiceMock struct {
 	invoked bool
 }
 
-func (c *counterServiceMock) GetNextIdentifier(ctx context.Context, bo string) (string, error) {
+func (c *counterServiceMock) GetNextIdentifier(ctx context.Context, bo ...string) (string, error) {
 	c.invoked = true
 	return "1", nil
 }

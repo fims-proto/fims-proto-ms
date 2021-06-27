@@ -53,7 +53,8 @@ func TestAdapter_MemoryRepository_Next(t *testing.T) {
 
 func prepareMemoryRepo(counterUUID uuid.UUID) *CounterMemoryRepository {
 	repo := NewCounterMemoryRepository()
-	counter, _ := counter.NewCounter(counterUUID, "DUMMY", "记", "")
+	m, _ := counter.NewMatcher("", "DUMMY")
+	counter, _ := counter.NewCounter(counterUUID, *m, "记", "")
 	_ = repo.CreateCounter(context.Background(), counter)
 	return &repo
 }
@@ -82,21 +83,23 @@ func TestAdapter_MemoryRepository_ReadByBusinessObject(t *testing.T) {
 
 	counterUUID1 := uuid.New()
 	counterUUID2 := uuid.New()
-	counter1, _ := counter.NewCounter(counterUUID1, "BO_1", "BO_1", "")
-	counter2, _ := counter.NewCounter(counterUUID2, "BO_2", "BO_2", "")
+	m1, _ := counter.NewMatcher("", "BO_1")
+	m2, _ := counter.NewMatcher("", "BO_2")
+	counter1, _ := counter.NewCounter(counterUUID1, *m1, "BO_1", "")
+	counter2, _ := counter.NewCounter(counterUUID2, *m2, "BO_2", "")
 
 	repo := NewCounterMemoryRepository()
 	_ = repo.CreateCounter(context.Background(), counter1)
 	_ = repo.CreateCounter(context.Background(), counter2)
 
-	counterQuery1, err := repo.CounterByBusinessObject(context.Background(), "BO_1")
+	counterQuery1, err := repo.CounterByBusinessObject(context.Background(), "", []string{"BO_1"})
 	require.NoError(t, err)
 	assert.Equal(t, counterUUID1, counterQuery1.CounterUUID)
 
-	counterQuery2, err := repo.CounterByBusinessObject(context.Background(), "BO_2")
+	counterQuery2, err := repo.CounterByBusinessObject(context.Background(), "", []string{"BO_2"})
 	require.NoError(t, err)
 	assert.Equal(t, counterUUID2, counterQuery2.CounterUUID)
 
-	_, err = repo.CounterByBusinessObject(context.Background(), "NOT_EXIST")
+	_, err = repo.CounterByBusinessObject(context.Background(), "", []string{"NOT_EXISTS"})
 	assert.Error(t, err)
 }

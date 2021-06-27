@@ -65,7 +65,7 @@ func TestNewAccount(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			account, err := NewAccount(test.number, test.title, test.superiorNumber, test.accType)
+			account, err := NewAccount("test_sob", test.number, test.title, test.superiorNumber, test.accType)
 			test.verify(t, account, err)
 		})
 	}

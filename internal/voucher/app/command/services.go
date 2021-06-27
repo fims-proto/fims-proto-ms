@@ -6,7 +6,7 @@ import (
 )
 
 type AccountService interface {
-	ValidateExistence(ctx context.Context, accNumbers []string) error
+	ValidateExistence(ctx context.Context, sob string, accNumbers []string) error
 }
 
 type LedgerService interface {
@@ -14,5 +14,5 @@ type LedgerService interface {
 }
 
 type CounterService interface {
-	GetNextIdentifier(ctx context.Context, businessObject string) (string, error)
+	GetNextIdentifier(ctx context.Context, businessObjects ...string) (string, error)
 }

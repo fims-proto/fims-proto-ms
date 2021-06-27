@@ -8,9 +8,9 @@ import (
 
 type AccountService interface {
 	// account number with all its superior number
-	ReadSuperiorNumbers(ctx context.Context, accountNumber string) ([]string, error)
+	ReadSuperiorNumbers(ctx context.Context, sob, accountNumber string) ([]string, error)
 }
 
 type VoucherService interface {
-	CheckVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error)
+	CheckVoucherPosted(ctx context.Context, sob string, voucherUUID uuid.UUID) (bool, error)
 }

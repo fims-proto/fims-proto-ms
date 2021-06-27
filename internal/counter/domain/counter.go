@@ -19,18 +19,18 @@ type Counter struct {
 	lastResetDate  time.Time
 }
 
-func NewCounter(counterUUID uuid.UUID, businessObject string, prefix string, sufix string) (*Counter, error) {
+func NewCounter(counterUUID uuid.UUID, matcher Matcher, prefix string, sufix string) (*Counter, error) {
 	if counterUUID == uuid.Nil {
 		return nil, errors.New("empty numbering service UUID provided")
 	}
-	if businessObject == "" {
+	if matcher.String() == "" {
 		return nil, errors.New("empty target business object")
 	}
 
 	return &Counter{
 		uuid:           counterUUID,
 		current:        0,
-		businessObject: businessObject,
+		businessObject: matcher.String(),
 		formatter:      NewFormatter(prefix, sufix),
 		lastResetDate:  time.Now(),
 	}, nil

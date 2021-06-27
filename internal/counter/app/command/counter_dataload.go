@@ -23,10 +23,15 @@ func NewCounterDataloadHandler(repo domain.Repository) CounterDataloadHandler {
 	return CounterDataloadHandler{repo: repo}
 }
 
-func (h CounterDataloadHandler) Handle(ctx context.Context) error {
-	counter, err := domain.NewCounter(uuid.New(), generalVoucher, "记", "号")
+func (h CounterDataloadHandler) Handle(ctx context.Context, sob string) error {
+	m, err := domain.NewMatcher("-", sob, generalVoucher)
 	if err != nil {
-		return errors.Wrap(err, "failed to load counter")
+		return errors.Wrapf(err, "create counter matcher failed: %s, %s", sob, generalVoucher)
+	}
+
+	counter, err := domain.NewCounter(uuid.New(), *m, "记", "号")
+	if err != nil {
+		return errors.Wrap(err, "create counter failed")
 	}
 	return h.repo.CreateCounter(ctx, counter)
 }

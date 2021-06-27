@@ -6,19 +6,18 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 	"sync"
 
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type SobMemoryRepository struct {
 	lock *sync.RWMutex
-	data map[uuid.UUID]domain.Sob
+	data map[string]domain.Sob
 }
 
 func NewSobMemoryRepository() SobMemoryRepository {
 	return SobMemoryRepository{
 		lock: &sync.RWMutex{},
-		data: make(map[uuid.UUID]domain.Sob),
+		data: make(map[string]domain.Sob),
 	}
 }
 
@@ -26,19 +25,17 @@ func (r SobMemoryRepository) CreateSob(ctx context.Context, sob *domain.Sob) err
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
-	for _, dbSob := range r.data {
-		if dbSob.Name() == sob.Name() {
-			return errors.Errorf("sob exists with name %s", sob.Name())
-		}
+	if _, ok := r.data[sob.Id()]; ok {
+		return errors.Errorf("sob exists with id %s", sob.Id())
 	}
 
-	r.data[sob.UUID()] = *sob
+	r.data[sob.Id()] = *sob
 	return nil
 }
 
 func (r SobMemoryRepository) UpdateSob(
 	ctx context.Context,
-	sobUUID uuid.UUID,
+	sobId string,
 	updateFn func(s *domain.Sob) (*domain.Sob, error),
 ) {
 	panic("not implemented")
@@ -56,9 +53,22 @@ func (r SobMemoryRepository) AllSobs(ctx context.Context) ([]query.Sob, error) {
 	return sobs, nil
 }
 
+func (r SobMemoryRepository) SobById(ctx context.Context, sobId string) (query.Sob, error) {
+	r.lock.RLock()
+	defer r.lock.RUnlock()
+
+	sob, ok := r.data[sobId]
+	if !ok {
+		return query.Sob{}, errors.Errorf("sob %s does not exist", sobId)
+	}
+
+	return mapFromDomainSob(sob), nil
+}
+
 func mapFromDomainSob(sob domain.Sob) query.Sob {
 	return query.Sob{
-		UUID: sob.UUID(),
-		Name: sob.Name(),
+		Id:          sob.Id(),
+		Name:        sob.Name(),
+		Description: sob.Description(),
 	}
 }

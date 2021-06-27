@@ -13,6 +13,6 @@ func NewIntraprocessAdapter(accountInterface accountport.AccountInterface) Intra
 	return IntraprocessAdapter{accountInterface: accountInterface}
 }
 
-func (s IntraprocessAdapter) ReadSuperiorNumbers(ctx context.Context, accountNumber string) ([]string, error) {
-	return s.accountInterface.ReadSuperiorNumbers(ctx, accountNumber)
+func (s IntraprocessAdapter) ReadSuperiorNumbers(ctx context.Context, sob, accountNumber string) ([]string, error) {
+	return s.accountInterface.ReadSuperiorNumbers(ctx, sob, accountNumber)
 }

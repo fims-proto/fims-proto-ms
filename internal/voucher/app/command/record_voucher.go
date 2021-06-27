@@ -11,6 +11,7 @@ import (
 )
 
 type RecordVoucherCmd struct {
+	Sob                string
 	VoucherType        string
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
@@ -41,7 +42,7 @@ func NewRecordVoucherHandler(repo domain.Repository, accountService AccountServi
 }
 
 func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (uuid.UUID, error) {
-	if err := user.VerifyAuth("current-user", "current-sob", "voucher", "create"); err != nil {
+	if err := user.VerifyAuth("current-user", cmd.Sob, "voucher", "create"); err != nil {
 		return uuid.Nil, errors.Wrap(err, "failed verifing permission")
 	}
 
@@ -66,12 +67,13 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		return uuid.Nil, errors.Wrap(err, "unable to use voucher type")
 	}
 
-	identifier, err := h.counterService.GetNextIdentifier(ctx, voucherType.String())
+	identifier, err := h.counterService.GetNextIdentifier(ctx, cmd.Sob, voucherType.String())
 	if err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to generate next number")
 	}
 
 	newVoucher, err := domain.NewVoucher(
+		cmd.Sob,
 		uuid.New(),
 		voucherType,
 		identifier,
@@ -84,7 +86,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		return uuid.Nil, err
 	}
 
-	if err = h.accountService.ValidateExistence(ctx, accNumbers); err != nil {
+	if err = h.accountService.ValidateExistence(ctx, cmd.Sob, accNumbers); err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
 	}
 

@@ -47,7 +47,8 @@ func TestDomain_NewCounter(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			counter, err := NewCounter(uuid.New(), "DUMMY", test.prefix, test.sufix)
+			m, _ := NewMatcher("", "DUMMY")
+			counter, err := NewCounter(uuid.New(), *m, test.prefix, test.sufix)
 			test.verify(t, counter, err)
 		})
 	}

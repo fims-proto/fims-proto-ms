@@ -8,6 +8,7 @@ func (r UpdateLedgerBalanceRequest) mapToCommand() command.UpdateLedgerBalanceCm
 		items = append(items, i.mapToCommand())
 	}
 	return command.UpdateLedgerBalanceCmd{
+		Sob:         r.Sob,
 		VoucherUUID: r.VoucherUUID,
 		LineItems:   items,
 	}

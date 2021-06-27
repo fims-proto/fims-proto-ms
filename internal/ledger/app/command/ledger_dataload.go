@@ -26,10 +26,10 @@ func NewLedgerDataloadHandler(repo domain.Repository) LedgerDataloadHandler {
 	return LedgerDataloadHandler{repo: repo}
 }
 
-func (h LedgerDataloadHandler) Handle(ctx context.Context, cmds []LedgerDataloadCmd) error {
+func (h LedgerDataloadHandler) Handle(ctx context.Context, sob string, cmds []LedgerDataloadCmd) error {
 	var ledgers []*domain.Ledger
 	for _, cmd := range cmds {
-		ledger, err := domain.NewLedger(cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
+		ledger, err := domain.NewLedger(sob, cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
 		if err != nil {
 			return errors.Wrapf(err, "dataload failed on ledger number %s", cmd.Number)
 		}

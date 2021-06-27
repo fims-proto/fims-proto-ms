@@ -14,10 +14,10 @@ func NewIntraprocessAdapter(ledgerInterface ledgerport.LedgerInterface) Intrapro
 	return IntraprocessAdapter{ledgerInterface: ledgerInterface}
 }
 
-func (s IntraprocessAdapter) LoadLedgers(ctx context.Context, accounts []domain.Account) error {
+func (s IntraprocessAdapter) LoadLedgers(ctx context.Context, sob string, accounts []domain.Account) error {
 	var reqs []ledgerport.LoadLedgersRequest
 	for _, account := range accounts {
 		reqs = append(reqs, mapFromDomainAccount(account))
 	}
-	return s.ledgerInterface.LoadLedgers(ctx, reqs)
+	return s.ledgerInterface.LoadLedgers(ctx, sob, reqs)
 }

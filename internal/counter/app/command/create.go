@@ -2,16 +2,18 @@ package command
 
 import (
 	"context"
-	counter "github/fims-proto/fims-proto-ms/internal/counter/domain"
+	"github/fims-proto/fims-proto-ms/internal/counter/domain"
+	"strings"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 )
 
 type CounterCreateHandler struct {
-	repo counter.Repository
+	repo domain.Repository
 }
 
-func NewCounterCreateHandler(repo counter.Repository) CounterCreateHandler {
+func NewCounterCreateHandler(repo domain.Repository) CounterCreateHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -19,9 +21,14 @@ func NewCounterCreateHandler(repo counter.Repository) CounterCreateHandler {
 }
 
 func (h CounterCreateHandler) Handle(ctx context.Context, cmd CounterCreateCmd) error {
-	counter, err := counter.NewCounter(uuid.New(), cmd.BusinessObject, cmd.Prefix, cmd.Sufix)
+	m, err := domain.NewMatcher("-", cmd.BusinessObjects...)
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "create counter matcher failed: %s", strings.Join(cmd.BusinessObjects, ","))
+	}
+
+	counter, err := domain.NewCounter(uuid.New(), *m, cmd.Prefix, cmd.Sufix)
+	if err != nil {
+		return errors.Wrap(err, "create counter failed")
 	}
 	return h.repo.CreateCounter(ctx, counter)
 }

@@ -21,15 +21,15 @@ func NewAccountMemoryRepository() AccountMemoryRepository {
 	}
 }
 
-func (r AccountMemoryRepository) AllAccounts(ctx context.Context) ([]query.Account, error) {
+func (r AccountMemoryRepository) AllAccounts(ctx context.Context, sob string) ([]query.Account, error) {
 	panic("not implemented")
 }
 
-func (r AccountMemoryRepository) AccountByNumber(ctx context.Context, accountNumber string) (query.Account, error) {
+func (r AccountMemoryRepository) AccountByNumber(ctx context.Context, sob, accountNumber string) (query.Account, error) {
 	r.lock.RLock()
 	defer r.lock.RUnlock()
 
-	result, err := r.readAccountWithSuperiorAccount(accountNumber)
+	result, err := r.readAccountWithSuperiorAccount(sob, accountNumber)
 	if err != nil {
 		return query.Account{}, errors.Wrapf(err, "failed to read account by number %s", accountNumber)
 	}
@@ -44,19 +44,25 @@ func (r AccountMemoryRepository) Dataload(ctx context.Context, accounts []*domai
 	r.lock.Lock()
 	defer r.lock.Unlock()
 
+	if len(accounts) == 0 {
+		return nil
+	}
+
 	// clear map
-	for i := range r.data {
-		delete(r.data, i)
+	for i, v := range r.data {
+		if v.Sob() == accounts[0].Sob() {
+			delete(r.data, i)
+		}
 	}
 
 	for _, account := range accounts {
-		r.data[account.Number()] = *account
+		r.data[account.Sob()+account.Number()] = *account
 	}
 	return nil
 }
 
-func (r AccountMemoryRepository) readAccountWithSuperiorAccount(accountNumber string) (query.Account, error) {
-	account, ok := r.data[accountNumber]
+func (r AccountMemoryRepository) readAccountWithSuperiorAccount(sob, accountNumber string) (query.Account, error) {
+	account, ok := r.data[sob+accountNumber]
 	if !ok {
 		return query.Account{}, errors.Errorf("account number %s does not exist", accountNumber)
 	}
@@ -64,7 +70,7 @@ func (r AccountMemoryRepository) readAccountWithSuperiorAccount(accountNumber st
 	if account.SuperiorNumber() == "" {
 		return result, nil
 	}
-	superiorAccount, err := r.readAccountWithSuperiorAccount(account.SuperiorNumber())
+	superiorAccount, err := r.readAccountWithSuperiorAccount(sob, account.SuperiorNumber())
 	if err != nil {
 		return query.Account{}, err
 	}
@@ -74,6 +80,7 @@ func (r AccountMemoryRepository) readAccountWithSuperiorAccount(accountNumber st
 
 func mapFromDomainAccount(account domain.Account) query.Account {
 	return query.Account{
+		Sob:             account.Sob(),
 		Number:          account.Number(),
 		Title:           account.Title(),
 		AccountType:     account.Type().String(),

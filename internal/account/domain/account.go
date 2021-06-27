@@ -8,13 +8,17 @@ import (
 )
 
 type Account struct {
+	sob            string
 	number         string
 	title          string
 	superiorNumber string
 	accountType    commonaccount.Type
 }
 
-func NewAccount(number string, title string, superiorNumber string, accType commonaccount.Type) (*Account, error) {
+func NewAccount(sob, number, title, superiorNumber string, accType commonaccount.Type) (*Account, error) {
+	if sob == "" {
+		return nil, errors.New("empty sob")
+	}
 	if number == "" {
 		return nil, errors.New("empty account number")
 	}
@@ -26,11 +30,16 @@ func NewAccount(number string, title string, superiorNumber string, accType comm
 	}
 
 	return &Account{
+		sob:            sob,
 		number:         number,
 		title:          title,
 		superiorNumber: superiorNumber,
 		accountType:    accType,
 	}, nil
+}
+
+func (acc Account) Sob() string {
+	return acc.sob
 }
 
 func (acc Account) Number() string {

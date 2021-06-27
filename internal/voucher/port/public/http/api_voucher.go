@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"net/http"
@@ -21,12 +22,12 @@ func NewHandler(app *app.Application) Handler {
 }
 
 func (h Handler) AllVouchers(c *gin.Context) {
-	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c.Request.Context())
+	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c.Request.Context(), c.Param("sob"))
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
-	res := []VoucherResponse{}
+	res := VouchersResponse{}
 	for _, voucher := range vouchers {
 		res = append(res, mapFromVoucherQuery(voucher))
 	}
@@ -34,7 +35,7 @@ func (h Handler) AllVouchers(c *gin.Context) {
 }
 
 func (h Handler) VoucherByUUID(c *gin.Context) {
-	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c.Request.Context(), uuid.MustParse(c.Param("uuid")))
+	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c.Request.Context(), c.Param("sob"), uuid.MustParse(c.Param("voucherId")))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -49,7 +50,8 @@ func (h Handler) Audit(c *gin.Context) {
 		return
 	}
 	cmd := command.AuditVoucherCmd{
-		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Sob:         c.Param("sob"),
+		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     req.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c.Request.Context(), cmd); err != nil {
@@ -66,7 +68,8 @@ func (h Handler) CancelAudit(c *gin.Context) {
 		return
 	}
 	cmd := command.AuditVoucherCmd{
-		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Sob:         c.Param("sob"),
+		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     req.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
@@ -83,7 +86,8 @@ func (h Handler) Review(c *gin.Context) {
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
-		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Sob:         c.Param("sob"),
+		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
@@ -100,7 +104,8 @@ func (h Handler) CancelReview(c *gin.Context) {
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
-		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Sob:         c.Param("sob"),
+		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
@@ -122,7 +127,8 @@ func (h Handler) Update(c *gin.Context) {
 		items = append(items, item)
 	}
 	cmd := command.UpdateVoucherCmd{
-		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Sob:         c.Param("sob"),
+		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		LineItems:   items,
 	}
 	if err := h.app.Commands.UpdateVoucher.Handle(c.Request.Context(), cmd); err != nil {
@@ -138,21 +144,24 @@ func (h Handler) Record(c *gin.Context) {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), req.mapToCommand())
+	cmd := req.mapToCommand()
+	cmd.Sob = c.Param("sob")
+	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	c.Status(http.StatusCreated)
 	// TODO figure out a way to avoid hard coded string of url
-	c.Writer.Header().Set("Content-Location", "/vouchers/"+newUUID.String())
+	c.Writer.Header().Set("Content-Location", fmt.Sprintf("/vouchers/%s/%s", c.Param("sob"), newUUID.String()))
 }
 
 func (h Handler) Post(c *gin.Context) {
 	cmd := command.PostVoucherCmd{
-		VoucherUUID: uuid.MustParse(c.Param("uuid")),
+		Sob:         c.Param("sob"),
+		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 	}
-	if err := h.app.Commands.PostVoucher.Handler(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.PostVoucher.Handle(c.Request.Context(), cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -160,16 +169,16 @@ func (h Handler) Post(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.Engine) {
-	g := r.Group("/vouchers")
+	g := r.Group("/vouchers/:sob")
 	{
 		g.GET("/", h.AllVouchers)
-		g.GET("/:uuid", h.VoucherByUUID)
+		g.GET("/:voucherId", h.VoucherByUUID)
 		g.POST("/", h.Record)
-		g.PATCH("/:uuid", h.Update)
-		g.POST("/:uuid/audit", h.Audit)
-		g.POST("/:uuid/cancel-audit", h.CancelAudit)
-		g.POST("/:uuid/review", h.Review)
-		g.POST("/:uuid/cancel-review", h.CancelReview)
-		g.POST("/:uuid/post", h.Post)
+		g.PATCH("/:voucherId", h.Update)
+		g.POST("/:voucherId/audit", h.Audit)
+		g.POST("/:voucherId/cancel-audit", h.CancelAudit)
+		g.POST("/:voucherId/review", h.Review)
+		g.POST("/:voucherId/cancel-review", h.CancelReview)
+		g.POST("/:voucherId/post", h.Post)
 	}
 }
