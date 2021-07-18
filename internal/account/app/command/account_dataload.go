@@ -69,7 +69,7 @@ func readFromCSV() ([]AccountDataloadCmd, error) {
 		return nil, errors.Wrap(err, "could not get working directory")
 	}
 
-	csvFile, err := os.Open(filepath.Join(workDir, "internal", "dataload", "account", "accounts.csv"))
+	csvFile, err := os.Open(filepath.Join(workDir, "dataload", "account", "accounts.csv"))
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open file")
 	}
