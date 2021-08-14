@@ -20,7 +20,7 @@ func NewHandler(repo adapter.LedgerMemoryRepository) Handler {
 }
 
 func (h Handler) allLedgers(c *gin.Context) {
-	ls, _ := h.repo.AllLedgers(c.Request.Context())
+	ls, _ := h.repo.AllLedgers(c)
 
 	res := []Ledger{}
 	for _, l := range ls {

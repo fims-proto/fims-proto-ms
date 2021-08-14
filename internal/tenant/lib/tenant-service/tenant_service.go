@@ -1,4 +1,4 @@
-package lib
+package tenantservice
 
 import (
 	"context"
@@ -7,10 +7,6 @@ import (
 
 	"github.com/google/uuid"
 )
-
-type tenantService interface {
-	ReadTenantByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error)
-}
 
 type TenantServiceImpl struct {
 	tenantInterface tenantport.TenantInterface
@@ -22,4 +18,8 @@ func NewTenantService(tenantInterface tenantport.TenantInterface) TenantServiceI
 
 func (s TenantServiceImpl) ReadTenantByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
 	return s.tenantInterface.ReadTenantByUUID(ctx, tenantId)
+}
+
+func (s TenantServiceImpl) ReadTenantIdBySubdomain(ctx context.Context, subdomain string) (uuid.UUID, error) {
+	return s.tenantInterface.ReadTenantIdBySubdomain(ctx, subdomain)
 }

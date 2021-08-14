@@ -1,7 +1,8 @@
-package lib
+package tenantmanager
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"sync"
 
 	"github.com/google/uuid"
@@ -11,6 +12,10 @@ import (
 
 type dbConnector interface {
 	Open(username, password string) (*sqlx.DB, error)
+}
+
+type tenantService interface {
+	ReadTenantByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error)
 }
 
 type tenant struct {

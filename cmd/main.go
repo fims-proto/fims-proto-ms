@@ -7,6 +7,7 @@ import (
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
 	accountprivatehttpport "github/fims-proto/fims-proto-ms/internal/account/port/private/http"
 	accountintraport "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
+	"github/fims-proto/fims-proto-ms/internal/common/db"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	counteradapter "github/fims-proto/fims-proto-ms/internal/counter/adapter"
 	counterapp "github/fims-proto/fims-proto-ms/internal/counter/app"
@@ -21,7 +22,13 @@ import (
 	sobadapter "github/fims-proto/fims-proto-ms/internal/sob/adapter"
 	sobapp "github/fims-proto/fims-proto-ms/internal/sob/app"
 	sobpublichttpport "github/fims-proto/fims-proto-ms/internal/sob/port/public/http"
-	"github/fims-proto/fims-proto-ms/internal/user"
+	tenantdb "github/fims-proto/fims-proto-ms/internal/tenant/adapter/db"
+	tenantapp "github/fims-proto/fims-proto-ms/internal/tenant/app"
+	ginmiddleware "github/fims-proto/fims-proto-ms/internal/tenant/lib/gin-middleware"
+	tenantmanager "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-manager"
+	tenantservice "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
+	tenantintraport "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
+	"github/fims-proto/fims-proto-ms/internal/user/lib/authentication"
 	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
 	vouchercounteradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
@@ -31,11 +38,27 @@ import (
 	voucherpublichttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
 func main() {
 	flag.Parse()
 	log.InitLoggers(log.NewStdLogEnablerAdapter(), log.NewStdLoggerAdapter())
+
+	dbConnector := db.NewDBConnector()
+
+	// >> TODO read from config file
+	db, err := dbConnector.Open("fims-tenant-manager", "fims-tenant-manager")
+	if err != nil {
+		panic(errors.Wrap(err, "open fims-tenant-manager db connection failed"))
+	}
+	// << TODO
+	tenantPostgresRepository := tenantdb.NewTenantPostgresRepository(db)
+	tenantApplication := tenantapp.NewApplication(tenantPostgresRepository)
+	tenantInterface := tenantintraport.NewTenantInterface(&tenantApplication)
+	tenantService := tenantservice.NewTenantService(tenantInterface)
+
+	_ = tenantmanager.NewTenantManager(tenantService, dbConnector)
 
 	// repositories
 	sobRepository := sobadapter.NewSobMemoryRepository()
@@ -86,7 +109,8 @@ func main() {
 	)
 
 	router := gin.Default()
-	router.Use(user.Authn())
+	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantService))
+	router.Use(authentication.Authn())
 	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), router)
 	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
 	// below 2 are for dataload, can be integrated into onboarding procedure

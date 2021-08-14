@@ -1,4 +1,4 @@
-package user
+package authorization
 
 func VerifyAuth(sub, dom, obj, act string) error {
 	// with casbin

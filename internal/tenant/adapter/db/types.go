@@ -1,4 +1,4 @@
-package adapter
+package db
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"

@@ -22,7 +22,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 func (h Handler) AllVouchers(c *gin.Context) {
-	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c.Request.Context(), c.Param("sob"))
+	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c, c.Param("sob"))
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -35,7 +35,7 @@ func (h Handler) AllVouchers(c *gin.Context) {
 }
 
 func (h Handler) VoucherByUUID(c *gin.Context) {
-	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c.Request.Context(), c.Param("sob"), uuid.MustParse(c.Param("voucherId")))
+	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c, c.Param("sob"), uuid.MustParse(c.Param("voucherId")))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -54,7 +54,7 @@ func (h Handler) Audit(c *gin.Context) {
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     req.Auditor,
 	}
-	if err := h.app.Commands.AuditVoucher.Handle(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.AuditVoucher.Handle(c, cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -72,7 +72,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     req.Auditor,
 	}
-	if err := h.app.Commands.AuditVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.AuditVoucher.HandleCancel(c, cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -90,7 +90,7 @@ func (h Handler) Review(c *gin.Context) {
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    req.Reviewer,
 	}
-	if err := h.app.Commands.ReviewVoucher.Handle(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.ReviewVoucher.Handle(c, cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -108,7 +108,7 @@ func (h Handler) CancelReview(c *gin.Context) {
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    req.Reviewer,
 	}
-	if err := h.app.Commands.ReviewVoucher.HandleCancel(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.ReviewVoucher.HandleCancel(c, cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -131,7 +131,7 @@ func (h Handler) Update(c *gin.Context) {
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		LineItems:   items,
 	}
-	if err := h.app.Commands.UpdateVoucher.Handle(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.UpdateVoucher.Handle(c, cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -146,7 +146,7 @@ func (h Handler) Record(c *gin.Context) {
 	}
 	cmd := req.mapToCommand()
 	cmd.Sob = c.Param("sob")
-	newUUID, err := h.app.Commands.RecordVoucher.Handle(c.Request.Context(), cmd)
+	newUUID, err := h.app.Commands.RecordVoucher.Handle(c, cmd)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -161,7 +161,7 @@ func (h Handler) Post(c *gin.Context) {
 		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 	}
-	if err := h.app.Commands.PostVoucher.Handle(c.Request.Context(), cmd); err != nil {
+	if err := h.app.Commands.PostVoucher.Handle(c, cmd); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

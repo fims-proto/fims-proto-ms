@@ -1,4 +1,4 @@
-package adapter
+package db
 
 import (
 	"context"
@@ -28,6 +28,18 @@ func (t TenantPostgresRepository) ReadByUUID(ctx context.Context, tenantId uuid.
 		return query.Tenant{}, errors.Wrapf(err, "tenant %s does not exist", tenantId)
 	} else if err != nil {
 		return query.Tenant{}, errors.Wrapf(err, "unknown error when get tenant %s", tenantId)
+	}
+
+	return tenant.mapToQuery(), nil
+}
+
+func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
+	tenant := Tenant{}
+	err := t.db.GetContext(ctx, &tenant, "SELECT * FROM tenant WHERE subdomain = $1", subdomain)
+	if err == sql.ErrNoRows {
+		return query.Tenant{}, errors.Wrapf(err, "tenant %s does not exist", subdomain)
+	} else if err != nil {
+		return query.Tenant{}, errors.Wrapf(err, "unknown error when get tenant %s", subdomain)
 	}
 
 	return tenant.mapToQuery(), nil

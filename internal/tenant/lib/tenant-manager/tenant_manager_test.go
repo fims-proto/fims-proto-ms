@@ -1,4 +1,4 @@
-package lib
+package tenantmanager
 
 import (
 	"context"

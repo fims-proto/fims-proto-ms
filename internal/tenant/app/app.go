@@ -10,12 +10,10 @@ type Application struct {
 	Queries Queries
 }
 
-func NewApplication() Application {
-	return Application{}
-}
-
-func (a *Application) Inject(readModel query.TenantsReadModel) {
-	a.Queries = Queries{
-		ReadTenants: query.NewReadTenantsHandler(readModel),
+func NewApplication(readModel query.TenantsReadModel) Application {
+	return Application{
+		Queries{
+			ReadTenants: query.NewReadTenantsHandler(readModel),
+		},
 	}
 }
