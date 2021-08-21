@@ -6,22 +6,22 @@ import (
 	"sync"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type dbConnector interface {
-	Open(username, password string) (*sqlx.DB, error)
+	Open(username, password string) (*gorm.DB, error)
 }
 
 type tenantService interface {
-	ReadTenantByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error)
+	ReadTenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error)
 }
 
 type tenant struct {
 	tenantId  uuid.UUID
 	subdomain string
-	dbConn    *sqlx.DB
+	dbConn    *gorm.DB
 }
 
 type TenantManagerImpl struct {
@@ -44,7 +44,7 @@ func NewTenantManager(tenantService tenantService, dbConnector dbConnector) *Ten
 	}
 }
 
-func (t *TenantManagerImpl) GetDBConn(ctx context.Context, tenantId uuid.UUID) (db *sqlx.DB, err error) {
+func (t *TenantManagerImpl) GetDBConnBySubdomain(ctx context.Context, subdomain string) (db *gorm.DB, err error) {
 	defer func() {
 		// change returing
 		if r := recover(); r != nil {
@@ -52,16 +52,21 @@ func (t *TenantManagerImpl) GetDBConn(ctx context.Context, tenantId uuid.UUID) (
 			err = r.(error)
 		}
 	}()
-	value, _ := t.tenants.LoadOrStore(tenantId, t.loadTenant(ctx, tenantId))
+
+	if subdomain == "" {
+		return nil, errors.New("empty subdomain")
+	}
+
+	value, _ := t.tenants.LoadOrStore(subdomain, t.loadTenant(ctx, subdomain))
 	return value.(*tenant).dbConn, nil
 }
 
-func (t *TenantManagerImpl) loadTenant(ctx context.Context, tenantId uuid.UUID) *tenant {
-	queriedTenant, err := t.tenantService.ReadTenantByUUID(ctx, tenantId)
+func (t *TenantManagerImpl) loadTenant(ctx context.Context, subdomain string) *tenant {
+	queriedTenant, err := t.tenantService.ReadTenantBySubdomain(ctx, subdomain)
 	if err != nil {
 		panic(errors.Wrap(err, "cannot load tenant"))
 	}
-	db, err := t.dbConnector.Open(tenantId.String(), queriedTenant.DBConnPassword)
+	db, err := t.dbConnector.Open(queriedTenant.TenantId.String(), queriedTenant.DBConnPassword)
 	if err != nil {
 		panic(errors.Wrap(err, "open db connection failed"))
 	}

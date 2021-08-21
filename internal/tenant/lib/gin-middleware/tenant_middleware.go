@@ -5,25 +5,25 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
-type tenantService interface {
-	ReadTenantIdBySubdomain(ctx context.Context, subdomain string) (uuid.UUID, error)
+type tenantManager interface {
+	GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error)
 }
 
-func ResolveTenantBySubdomain(tenantService tenantService) gin.HandlerFunc {
-	if tenantService == nil {
-		panic("nil tenant service")
+func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
+	if tenantManager == nil {
+		panic("nil tenant manager")
 	}
 	return func(c *gin.Context) {
 		hostParts := strings.Split(strings.Split(c.Request.URL.Host, ":")[0], ".")
-		tenantId, err := tenantService.ReadTenantIdBySubdomain(c, hostParts[0])
+		db, err := tenantManager.GetDBConnBySubdomain(c, hostParts[0])
 		if err != nil {
-			panic(errors.Wrapf(err, "failed to read tenant id by subdomanin %s", hostParts[0]))
+			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", hostParts[0]))
 		}
-		c.Set("tenant_id", tenantId)
+		c.Set("db", db.WithContext(c))
 
 		c.Next()
 	}

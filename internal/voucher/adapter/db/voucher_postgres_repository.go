@@ -6,22 +6,12 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 )
 
-type tenantManager interface {
-	GetDBConn(tenantId uuid.UUID) (*sqlx.DB, error)
-}
+type VoucherPostgresRepository struct{}
 
-type VoucherPostgresRepository struct {
-	tenantManager *tenantManager
-}
-
-func NewVoucherPostgresRepository(tenantManager *tenantManager) *VoucherPostgresRepository {
-	if tenantManager == nil {
-		panic("nil tenant manager")
-	}
-	return &VoucherPostgresRepository{tenantManager: tenantManager}
+func NewVoucherPostgresRepository() *VoucherPostgresRepository {
+	return &VoucherPostgresRepository{}
 }
 
 // implementation methods
@@ -45,4 +35,8 @@ func (r VoucherPostgresRepository) AllVouchers(ctx context.Context, sob string) 
 
 func (r VoucherPostgresRepository) VoucherByUUID(ctx context.Context, sob string, uuid uuid.UUID) (query.Voucher, error) {
 	panic("not implemented") // TODO: Implement
+}
+
+func readDBFromCtx(ctx context.Context) uuid.UUID {
+	return ctx.Value("db").(uuid.UUID)
 }

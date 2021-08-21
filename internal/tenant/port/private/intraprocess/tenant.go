@@ -20,10 +20,6 @@ func (i TenantInterface) ReadTenantByUUID(ctx context.Context, tenantId uuid.UUI
 	return i.app.Queries.ReadTenants.HandleReadByUUID(ctx, tenantId)
 }
 
-func (i TenantInterface) ReadTenantIdBySubdomain(ctx context.Context, subdomain string) (uuid.UUID, error) {
-	t, err := i.app.Queries.ReadTenants.HandleReadBySubdomain(ctx, subdomain)
-	if err != nil {
-		return uuid.Nil, err
-	}
-	return t.TenantId, nil
+func (i TenantInterface) ReadTenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
+	return i.app.Queries.ReadTenants.HandleReadBySubdomain(ctx, subdomain)
 }

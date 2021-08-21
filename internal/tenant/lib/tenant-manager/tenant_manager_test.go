@@ -6,20 +6,19 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
-var tenant1, tenant2, tenant3 uuid.UUID = uuid.New(), uuid.New(), uuid.New()
+var tenant1, tenant3 uuid.UUID = uuid.New(), uuid.New()
 
 func TestLib_TenantManager_GetDBConn(t *testing.T) {
 	t.Parallel()
 
 	tenantManager := NewTenantManager(mockTenantService{}, mockDBConnector{})
 
-	db, err := tenantManager.GetDBConn(context.Background(), tenant1)
+	db, err := tenantManager.GetDBConnBySubdomain(context.Background(), "subdomain1")
 	assert.NotNil(t, db)
 	assert.NoError(t, err)
 }
@@ -29,7 +28,7 @@ func TestLib_TenantManager_GetDBConn_noTenant(t *testing.T) {
 
 	tenantManager := NewTenantManager(mockTenantService{}, mockDBConnector{})
 
-	db, err := tenantManager.GetDBConn(context.Background(), tenant2)
+	db, err := tenantManager.GetDBConnBySubdomain(context.Background(), "subdomain2")
 	assert.Nil(t, db)
 	assert.Error(t, err)
 }
@@ -39,18 +38,25 @@ func TestLib_TenantManager_GetDBConn_openConnFailed(t *testing.T) {
 
 	tenantManager := NewTenantManager(mockTenantService{}, mockDBConnector{})
 
-	db, err := tenantManager.GetDBConn(context.Background(), tenant3)
+	db, err := tenantManager.GetDBConnBySubdomain(context.Background(), "subdomain3")
 	assert.Nil(t, db)
 	assert.Error(t, err)
 }
 
 type mockTenantService struct{}
 
-func (m mockTenantService) ReadTenantByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
-	if tenantId == tenant1 || tenantId == tenant3 {
+func (m mockTenantService) ReadTenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
+	if subdomain == "subdomain1" {
 		return query.Tenant{
-			TenantId:       tenantId,
-			Subdomain:      "tenant",
+			TenantId:       tenant1,
+			Subdomain:      subdomain,
+			DBConnPassword: "password",
+		}, nil
+	}
+	if subdomain == "subdomain3" {
+		return query.Tenant{
+			TenantId:       tenant3,
+			Subdomain:      subdomain,
 			DBConnPassword: "password",
 		}, nil
 	}
@@ -60,11 +66,9 @@ func (m mockTenantService) ReadTenantByUUID(ctx context.Context, tenantId uuid.U
 
 type mockDBConnector struct{}
 
-func (m mockDBConnector) Open(username, password string) (*sqlx.DB, error) {
+func (m mockDBConnector) Open(username, password string) (*gorm.DB, error) {
 	if username == tenant1.String() {
-		mockDB, _, _ := sqlmock.New()
-		defer mockDB.Close()
-		return sqlx.NewDb(mockDB, "sqlmock"), nil
+		return &gorm.DB{}, nil
 	}
 	// tenant3
 	return nil, errors.New("open connection failed")

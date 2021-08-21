@@ -9,34 +9,34 @@ import (
 )
 
 type voucher struct {
-	sob                string
-	uuid               uuid.UUID
-	voucherType        string
-	number             string
-	createdAt          time.Time
-	attachmentQuantity uint
-	debit              decimal.Decimal
-	credit             decimal.Decimal
-	creator            string
-	reviewer           string
-	isReviewed         bool
-	auditor            string
-	isAudited          bool
-	isPosted           bool
+	sobId              string          `db:"sob_id"`
+	uuid               uuid.UUID       `db:"voucher_id"`
+	voucherType        string          `db:"voucher_type"`
+	number             string          `db:"number"`
+	createdAt          time.Time       `db:"created_at"`
+	attachmentQuantity uint            `db:"attachment_quantity"`
+	debit              decimal.Decimal `db:"debit"`
+	credit             decimal.Decimal `db:"credit"`
+	creator            string          `db:"creator"`
+	reviewer           string          `db:"reviewer"`
+	isReviewed         bool            `db:"is_reviewed"`
+	auditor            string          `db:"auditor"`
+	isAudited          bool            `db:"is_audited"`
+	isPosted           bool            `db:"is_posted"`
 	// one to many lineitems
 }
 
 type lineItem struct {
-	voucherUUID   uuid.UUID
-	summary       string
-	accountNumber string
-	debit         decimal.Decimal
-	credit        decimal.Decimal
+	voucherUUID   uuid.UUID       `db:"voucher_id"`
+	summary       string          `db:"summary"`
+	accountNumber string          `db:"account_number"`
+	debit         decimal.Decimal `db:"debit"`
+	credit        decimal.Decimal `db:"credit"`
 }
 
 func marshallFromDomain(dv *domain.Voucher) (voucher, []lineItem) {
 	v := voucher{
-		sob:                dv.Sob(),
+		sobId:              dv.Sob(),
 		uuid:               dv.UUID(),
 		voucherType:        dv.Type().String(),
 		number:             dv.Number(),

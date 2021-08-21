@@ -7,14 +7,22 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 var (
-	uuid4Localhost = uuid.New()
-	uuid4Remote    = uuid.New()
+	db4Localhost = &gorm.DB{
+		Error:     errors.New("localhost"),
+		Config:    &gorm.Config{},
+		Statement: &gorm.Statement{},
+	}
+	db4Remote = &gorm.DB{
+		Error:     errors.New("remote"),
+		Config:    &gorm.Config{},
+		Statement: &gorm.Statement{},
+	}
 )
 
 func TestResolveTenantBySubdomain_localhost(t *testing.T) {
@@ -28,9 +36,9 @@ func TestResolveTenantBySubdomain_localhost(t *testing.T) {
 		},
 	}
 
-	ResolveTenantBySubdomain(mockTenantService{})(&c)
+	ResolveTenantBySubdomain(mockTenantManager{})(&c)
 
-	assert.Equal(t, uuid4Localhost, c.Value("tenant_id").(uuid.UUID))
+	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
 }
 
 func TestResolveTenantBySubdomain_remote(t *testing.T) {
@@ -44,19 +52,19 @@ func TestResolveTenantBySubdomain_remote(t *testing.T) {
 		},
 	}
 
-	ResolveTenantBySubdomain(mockTenantService{})(&c)
+	ResolveTenantBySubdomain(mockTenantManager{})(&c)
 
-	assert.Equal(t, uuid4Remote, c.Value("tenant_id").(uuid.UUID))
+	assert.Equal(t, "remote", c.Value("db").(*gorm.DB).Error.Error())
 }
 
-type mockTenantService struct{}
+type mockTenantManager struct{}
 
-func (m mockTenantService) ReadTenantIdBySubdomain(ctx context.Context, subdomain string) (uuid.UUID, error) {
+func (m mockTenantManager) GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error) {
 	if subdomain == "localhost" {
-		return uuid4Localhost, nil
+		return db4Localhost, nil
 	}
 	if subdomain == "some-domain" {
-		return uuid4Remote, nil
+		return db4Remote, nil
 	}
-	return uuid.Nil, errors.New("not found")
+	return nil, errors.New("not found")
 }

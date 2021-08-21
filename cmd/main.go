@@ -58,7 +58,7 @@ func main() {
 	tenantInterface := tenantintraport.NewTenantInterface(&tenantApplication)
 	tenantService := tenantservice.NewTenantService(tenantInterface)
 
-	_ = tenantmanager.NewTenantManager(tenantService, dbConnector)
+	tenantManager := tenantmanager.NewTenantManager(tenantService, dbConnector)
 
 	// repositories
 	sobRepository := sobadapter.NewSobMemoryRepository()
@@ -109,7 +109,7 @@ func main() {
 	)
 
 	router := gin.Default()
-	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantService))
+	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantManager))
 	router.Use(authentication.Authn())
 	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), router)
 	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
