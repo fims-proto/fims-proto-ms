@@ -2,7 +2,6 @@ package domain
 
 import (
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -49,17 +48,17 @@ func TestDomain_NewVoucher(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			voucher, err := NewVoucher("test_sob", test.uuid, test.voucherType, test.number, time.Now(), 0, test.items, "")
+			voucher, err := NewVoucher("test_sob", test.uuid, test.voucherType, test.number, 0, test.items, "")
 			test.verify(t, voucher, err)
 		})
 	}
 }
 
 func prepareBalancedItems() []LineItem {
-	item1, _ := NewLineItem("test", "1000", "100", "")
-	item2, _ := NewLineItem("test", "1001", "100", "")
-	item3, _ := NewLineItem("test", "2000", "", "150")
-	item4, _ := NewLineItem("test", "2001", "", "50")
+	item1, _ := NewLineItem(uuid.New(), "test", "1000", "100", "")
+	item2, _ := NewLineItem(uuid.New(), "test", "1001", "100", "")
+	item3, _ := NewLineItem(uuid.New(), "test", "2000", "", "150")
+	item4, _ := NewLineItem(uuid.New(), "test", "2001", "", "50")
 	return []LineItem{
 		*item1,
 		*item2,
@@ -69,10 +68,10 @@ func prepareBalancedItems() []LineItem {
 }
 
 func prepareImbalancedItems() []LineItem {
-	item1, _ := NewLineItem("test", "1000", "100", "")
-	item2, _ := NewLineItem("test", "1001", "200", "")
-	item3, _ := NewLineItem("test", "2000", "", "150")
-	item4, _ := NewLineItem("test", "2001", "", "50")
+	item1, _ := NewLineItem(uuid.New(), "test", "1000", "100", "")
+	item2, _ := NewLineItem(uuid.New(), "test", "1001", "200", "")
+	item3, _ := NewLineItem(uuid.New(), "test", "2000", "", "150")
+	item4, _ := NewLineItem(uuid.New(), "test", "2001", "", "50")
 	return []LineItem{
 		*item1,
 		*item2,

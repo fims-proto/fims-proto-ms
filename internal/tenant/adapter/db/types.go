@@ -8,8 +8,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type Tenant struct {
-	ID             uuid.UUID `gorm:"type:uuid"`
+type tenant struct {
+	Id             uuid.UUID `gorm:"type:uuid"`
 	Subdomain      string
 	DBConnPassword string
 	CreatedAt      time.Time
@@ -17,9 +17,9 @@ type Tenant struct {
 	DeletedAt      gorm.DeletedAt `gorm:"index"`
 }
 
-func (t Tenant) mapToQuery() query.Tenant {
+func (t tenant) mapToQuery() query.Tenant {
 	return query.Tenant{
-		TenantId:       t.ID,
+		TenantId:       t.Id,
 		Subdomain:      t.Subdomain,
 		DBConnPassword: t.DBConnPassword,
 	}

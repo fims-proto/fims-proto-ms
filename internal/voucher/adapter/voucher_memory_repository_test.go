@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -48,7 +47,7 @@ func TestAdapter_MemoryRepository_Add(t *testing.T) {
 	repo := NewVoucherMemoryRepository()
 
 	scheduleRaceTest(30, func(i int) {
-		v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, strconv.Itoa(i), time.Now(), 0, prepareBalancedItems(), "0000")
+		v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, strconv.Itoa(i), 0, prepareBalancedItems(), "0000")
 		require.NoError(t, err)
 		_, err = repo.AddVoucher(context.Background(), v)
 		require.NoError(t, err)
@@ -80,7 +79,7 @@ func TestAdapter_MemoryRepository_Update(t *testing.T) {
 
 func prepareMemoryRepo(t *testing.T, sob string, voucherUUID uuid.UUID) VoucherMemoryRepository {
 	repo := NewVoucherMemoryRepository()
-	v, err := domain.NewVoucher(sob, voucherUUID, domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "0000")
+	v, err := domain.NewVoucher(sob, voucherUUID, domain.GeneralVoucher, "1", 0, prepareBalancedItems(), "0000")
 	require.NoError(t, err)
 	repo.data[sob+v.UUID().String()] = *v
 	return repo
@@ -106,10 +105,10 @@ func scheduleRaceTest(workers int, startToDo func(i int)) {
 }
 
 func prepareBalancedItems() []domain.LineItem {
-	item1, _ := domain.NewLineItem("test", "1000", "100", "")
-	item2, _ := domain.NewLineItem("test", "1001", "100", "")
-	item3, _ := domain.NewLineItem("test", "2000", "", "150")
-	item4, _ := domain.NewLineItem("test", "2001", "", "50")
+	item1, _ := domain.NewLineItem(uuid.New(), "test", "1000", "100", "")
+	item2, _ := domain.NewLineItem(uuid.New(), "test", "1001", "100", "")
+	item3, _ := domain.NewLineItem(uuid.New(), "test", "2000", "", "150")
+	item4, _ := domain.NewLineItem(uuid.New(), "test", "2001", "", "50")
 	return []domain.LineItem{
 		*item1,
 		*item2,

@@ -37,6 +37,7 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 	var lineItems []domain.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := domain.NewLineItem(
+			item.Id,
 			item.Summary,
 			item.AccountNumber,
 			item.Debit,

@@ -31,7 +31,7 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 
 	row := sqlmock.NewRows([]string{"tenant_id", "subdomain", "db_conn_password"}).
 		AddRow(tenandId.String(), "local_test", "password")
-	mock.ExpectQuery("SELECT *").WithArgs(tenandId).WillReturnRows(row)
+	mock.ExpectQuery("SELECT (.+?) FROM *").WithArgs(tenandId).WillReturnRows(row)
 
 	// WHEN
 	repo := NewTenantPostgresRepository(db)

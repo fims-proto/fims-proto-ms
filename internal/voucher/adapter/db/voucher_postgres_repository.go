@@ -6,6 +6,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
+	"gorm.io/gorm"
 )
 
 type VoucherPostgresRepository struct{}
@@ -17,7 +19,20 @@ func NewVoucherPostgresRepository() *VoucherPostgresRepository {
 // implementation methods
 
 func (r VoucherPostgresRepository) AddVoucher(ctx context.Context, v *domain.Voucher) (createdUUID uuid.UUID, err error) {
-	panic("not implemented") // TODO: Implement
+	db := readDBFromCtx(ctx)
+
+	dbVoucher := marshallFromDomain(v)
+
+	if err = db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&dbVoucher).Error; err != nil {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return uuid.Nil, errors.Wrap(err, "create voucher failed")
+	}
+
+	return v.UUID(), nil
 }
 
 func (r VoucherPostgresRepository) UpdateVoucher(
@@ -37,6 +52,6 @@ func (r VoucherPostgresRepository) VoucherByUUID(ctx context.Context, sob string
 	panic("not implemented") // TODO: Implement
 }
 
-func readDBFromCtx(ctx context.Context) uuid.UUID {
-	return ctx.Value("db").(uuid.UUID)
+func readDBFromCtx(ctx context.Context) *gorm.DB {
+	return ctx.Value("db").(*gorm.DB)
 }

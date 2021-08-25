@@ -6,60 +6,67 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"gorm.io/gorm"
 )
 
 type voucher struct {
-	sobId              string          `db:"sob_id"`
-	uuid               uuid.UUID       `db:"voucher_id"`
-	voucherType        string          `db:"voucher_type"`
-	number             string          `db:"number"`
-	createdAt          time.Time       `db:"created_at"`
-	attachmentQuantity uint            `db:"attachment_quantity"`
-	debit              decimal.Decimal `db:"debit"`
-	credit             decimal.Decimal `db:"credit"`
-	creator            string          `db:"creator"`
-	reviewer           string          `db:"reviewer"`
-	isReviewed         bool            `db:"is_reviewed"`
-	auditor            string          `db:"auditor"`
-	isAudited          bool            `db:"is_audited"`
-	isPosted           bool            `db:"is_posted"`
-	// one to many lineitems
+	Id                 uuid.UUID `gorm:"type:uuid"`
+	SobId              string    `gorm:"uniqueIndex:uni_sobid_number"`
+	Number             string    `gorm:"uniqueIndex:uni_sobid_number"`
+	VoucherType        string
+	AttachmentQuantity uint
+	Debit              decimal.Decimal
+	Credit             decimal.Decimal
+	Creator            string
+	Reviewer           string
+	IsReviewed         bool
+	Auditor            string
+	IsAudited          bool
+	IsPosted           bool
+	LineItems          []lineItem
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
+	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }
 
 type lineItem struct {
-	voucherUUID   uuid.UUID       `db:"voucher_id"`
-	summary       string          `db:"summary"`
-	accountNumber string          `db:"account_number"`
-	debit         decimal.Decimal `db:"debit"`
-	credit        decimal.Decimal `db:"credit"`
+	Id            uuid.UUID `gorm:"type:uuid"`
+	VoucherId     uuid.UUID `gorm:"type:uuid"`
+	Summary       string
+	AccountNumber string
+	Debit         decimal.Decimal
+	Credit        decimal.Decimal
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
+	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
 
-func marshallFromDomain(dv *domain.Voucher) (voucher, []lineItem) {
+func marshallFromDomain(dv *domain.Voucher) voucher {
 	v := voucher{
-		sobId:              dv.Sob(),
-		uuid:               dv.UUID(),
-		voucherType:        dv.Type().String(),
-		number:             dv.Number(),
-		createdAt:          dv.CreatedAt(),
-		attachmentQuantity: dv.AttachmentQuantity(),
-		debit:              dv.Debit(),
-		credit:             dv.Credit(),
-		creator:            dv.Creator(),
-		reviewer:           dv.Reviewer(),
-		isReviewed:         dv.IsReviewed(),
-		auditor:            dv.Auditor(),
-		isAudited:          dv.IsAudited(),
-		isPosted:           dv.IsPosted(),
+		Id:                 dv.UUID(),
+		SobId:              dv.Sob(),
+		Number:             dv.Number(),
+		VoucherType:        dv.Type().String(),
+		AttachmentQuantity: dv.AttachmentQuantity(),
+		Debit:              dv.Debit(),
+		Credit:             dv.Credit(),
+		Creator:            dv.Creator(),
+		Reviewer:           dv.Reviewer(),
+		IsReviewed:         dv.IsReviewed(),
+		Auditor:            dv.Auditor(),
+		IsAudited:          dv.IsAudited(),
+		IsPosted:           dv.IsPosted(),
+		LineItems:          []lineItem{},
 	}
-	items := []lineItem{}
 	for _, item := range dv.LineItems() {
-		items = append(items, lineItem{
-			voucherUUID:   dv.UUID(),
-			summary:       item.Summary(),
-			accountNumber: item.AccountNumber(),
-			debit:         item.Debit(),
-			credit:        item.Credit(),
+		v.LineItems = append(v.LineItems, lineItem{
+			Id:            item.Id(),
+			VoucherId:     dv.UUID(),
+			Summary:       item.Summary(),
+			AccountNumber: item.AccountNumber(),
+			Debit:         item.Debit(),
+			Credit:        item.Credit(),
 		})
 	}
-	return v, items
+	return v
 }

@@ -4,7 +4,6 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"testing"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -69,7 +68,7 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewer string) *domain.Voucher {
-	v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, "1", time.Now(), 0, prepareBalancedItems(), "")
+	v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, "1", 0, prepareBalancedItems(), "")
 	require.NoError(t, err)
 	if reviewer != "" {
 		err := v.Review(reviewer)

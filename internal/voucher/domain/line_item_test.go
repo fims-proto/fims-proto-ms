@@ -3,6 +3,7 @@ package domain
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -88,7 +89,7 @@ func TestDomain_NewLineItem(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			item, err := NewLineItem(test.summary, test.accountNumber, test.debit, test.credit)
+			item, err := NewLineItem(uuid.New(), test.summary, test.accountNumber, test.debit, test.credit)
 			test.verify(t, item, err)
 		})
 	}

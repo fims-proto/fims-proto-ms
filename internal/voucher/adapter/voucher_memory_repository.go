@@ -82,7 +82,6 @@ func mapFromDomainVoucher(v domain.Voucher) query.Voucher {
 		UUID:               v.UUID(),
 		VoucherType:        v.Type().String(),
 		Number:             v.Number(),
-		CreatedAt:          v.CreatedAt(),
 		AttachmentQuantity: v.AttachmentQuantity(),
 		LineItems:          mapFromDomainLineItem(v.LineItems()),
 		Debit:              v.Debit().String(),

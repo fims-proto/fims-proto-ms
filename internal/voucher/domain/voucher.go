@@ -1,8 +1,6 @@
 package domain
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -13,7 +11,6 @@ type Voucher struct {
 	uuid               uuid.UUID
 	voucherType        VoucherType
 	number             string
-	createdAt          time.Time
 	attachmentQuantity uint
 	lineItems          []LineItem
 	debit              decimal.Decimal
@@ -44,7 +41,7 @@ func sumItems(items []LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(sob string, voucherUUID uuid.UUID, voucherType VoucherType, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
+func NewVoucher(sob string, voucherUUID uuid.UUID, voucherType VoucherType, number string, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
 	if sob == "" {
 		return nil, errors.New("empty sob")
 	}
@@ -65,7 +62,6 @@ func NewVoucher(sob string, voucherUUID uuid.UUID, voucherType VoucherType, numb
 		uuid:               voucherUUID,
 		voucherType:        voucherType,
 		number:             number,
-		createdAt:          createdAt,
 		attachmentQuantity: attachmentQuantity,
 		lineItems:          items,
 		debit:              totalVal,
@@ -93,10 +89,6 @@ func (v Voucher) Type() VoucherType {
 
 func (v Voucher) Number() string {
 	return v.number
-}
-
-func (v Voucher) CreatedAt() time.Time {
-	return v.createdAt
 }
 
 func (v Voucher) AttachmentQuantity() uint {

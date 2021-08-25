@@ -21,7 +21,7 @@ func NewTenantPostgresRepository(db *gorm.DB) *TenantPostgresRepository {
 }
 
 func (t TenantPostgresRepository) ReadByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
-	dbTenant := Tenant{}
+	dbTenant := tenant{}
 
 	if err := t.db.WithContext(ctx).First(&dbTenant, "id = ?", tenantId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -35,7 +35,7 @@ func (t TenantPostgresRepository) ReadByUUID(ctx context.Context, tenantId uuid.
 }
 
 func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
-	dbTenant := Tenant{}
+	dbTenant := tenant{}
 
 	if err := t.db.WithContext(ctx).Where("subdomain = ?", subdomain).First(&dbTenant).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

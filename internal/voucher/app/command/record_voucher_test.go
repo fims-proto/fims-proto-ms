@@ -134,10 +134,10 @@ func (c *counterServiceMock) GetNextIdentifier(ctx context.Context, bo ...string
 }
 
 func prepareBalancedItems() []domain.LineItem {
-	item1, _ := domain.NewLineItem("test", "1000", "100", "")
-	item2, _ := domain.NewLineItem("test", "1001", "100", "")
-	item3, _ := domain.NewLineItem("test", "2000", "", "150")
-	item4, _ := domain.NewLineItem("test", "2001", "", "50")
+	item1, _ := domain.NewLineItem(uuid.New(), "test", "1000", "100", "")
+	item2, _ := domain.NewLineItem(uuid.New(), "test", "1001", "100", "")
+	item3, _ := domain.NewLineItem(uuid.New(), "test", "2000", "", "150")
+	item4, _ := domain.NewLineItem(uuid.New(), "test", "2001", "", "50")
 	return []domain.LineItem{
 		*item1,
 		*item2,

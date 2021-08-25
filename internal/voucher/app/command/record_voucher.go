@@ -4,7 +4,6 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/user/lib/authorization"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -50,6 +49,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 	var lineItems []domain.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := domain.NewLineItem(
+			uuid.New(),
 			item.Summary,
 			item.AccountNumber,
 			item.Debit,
@@ -77,7 +77,6 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		uuid.New(),
 		voucherType,
 		identifier,
-		time.Now(),
 		cmd.AttachmentQuantity,
 		lineItems,
 		cmd.Creator,
