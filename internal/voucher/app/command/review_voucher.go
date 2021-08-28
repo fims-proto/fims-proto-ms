@@ -8,7 +8,6 @@ import (
 )
 
 type ReviewVoucherCmd struct {
-	Sob         string
 	VoucherUUID uuid.UUID
 	Reviewer    string
 }
@@ -27,7 +26,6 @@ func NewReviewVoucherHandler(repo domain.Repository) ReviewVoucherHandler {
 func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.Review(cmd.Reviewer)
@@ -39,7 +37,6 @@ func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) 
 func (h ReviewVoucherHandler) HandleCancel(ctx context.Context, cmd ReviewVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.CancelReview(cmd.Reviewer)

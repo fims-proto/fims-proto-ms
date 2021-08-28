@@ -46,7 +46,7 @@ func NewUpdateLedgerBalanceHandler(repo domain.Repository, accountService Accoun
 
 func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedgerBalanceCmd) error {
 	// 1. check again if voucher already posted
-	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.Sob, cmd.VoucherUUID)
+	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.VoucherUUID)
 	if err != nil {
 		return errors.Wrap(err, "check voucher posted failed")
 	}

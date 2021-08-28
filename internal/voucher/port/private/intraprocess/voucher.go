@@ -16,8 +16,8 @@ func NewVoucherInterface(app *app.Application) VoucherInterface {
 	return VoucherInterface{app: app}
 }
 
-func (i VoucherInterface) CheckVoucherPosted(ctx context.Context, sob string, voucherUUID uuid.UUID) (bool, error) {
-	v, err := i.app.Queries.ReadVouchers.HandleReadByUUID(ctx, sob, voucherUUID)
+func (i VoucherInterface) CheckVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error) {
+	v, err := i.app.Queries.ReadVouchers.HandleReadByUUID(ctx, voucherUUID)
 	if err != nil {
 		return false, errors.Wrapf(err, "failed to read voucher %s", voucherUUID)
 	}

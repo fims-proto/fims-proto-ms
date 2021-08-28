@@ -9,7 +9,6 @@ import (
 )
 
 type UpdateVoucherCmd struct {
-	Sob         string
 	VoucherUUID uuid.UUID
 	LineItems   []LineItemCmd
 }
@@ -34,7 +33,7 @@ func NewUpdateVoucherHandler(repo domain.Repository, accountService AccountServi
 
 func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) error {
 	var accNumbers []string
-	var lineItems []domain.LineItem
+	var lineItems []*domain.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := domain.NewLineItem(
 			item.Id,
@@ -46,16 +45,15 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 		if err != nil {
 			return err
 		}
-		lineItems = append(lineItems, *lineItem)
+		lineItems = append(lineItems, lineItem)
 		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
 	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
-			if err := h.accountService.ValidateExistence(ctx, cmd.Sob, accNumbers); err != nil {
+			if err := h.accountService.ValidateExistence(ctx, v.Sob(), accNumbers); err != nil {
 				return nil, errors.Wrap(err, "unable to validate account numbers")
 			}
 			if err := v.Update(lineItems); err != nil {

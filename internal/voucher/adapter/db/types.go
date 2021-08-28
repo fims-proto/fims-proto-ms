@@ -1,10 +1,12 @@
 package db
 
 import (
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 )
@@ -41,9 +43,10 @@ type lineItem struct {
 	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
 
-func marshallFromDomain(dv *domain.Voucher) voucher {
+// from domain to db
+func marshall(dv *domain.Voucher) *voucher {
 	v := voucher{
-		Id:                 dv.UUID(),
+		Id:                 dv.Id(),
 		SobId:              dv.Sob(),
 		Number:             dv.Number(),
 		VoucherType:        dv.Type().String(),
@@ -61,12 +64,81 @@ func marshallFromDomain(dv *domain.Voucher) voucher {
 	for _, item := range dv.LineItems() {
 		v.LineItems = append(v.LineItems, lineItem{
 			Id:            item.Id(),
-			VoucherId:     dv.UUID(),
+			VoucherId:     dv.Id(),
 			Summary:       item.Summary(),
 			AccountNumber: item.AccountNumber(),
 			Debit:         item.Debit(),
 			Credit:        item.Credit(),
 		})
 	}
-	return v
+	return &v
+}
+
+// from db to domain
+func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
+	items := []*domain.LineItem{}
+
+	for _, dbItem := range dbv.LineItems {
+		item, err := domain.NewLineItem(
+			dbItem.Id,
+			dbItem.Summary,
+			dbItem.AccountNumber,
+			dbItem.Debit.String(),
+			dbItem.Credit.String(),
+		)
+		if err != nil {
+			return nil, errors.Wrap(err, "unmarshall lineItem failed")
+		}
+		items = append(items, item)
+	}
+
+	v, err := domain.NewVoucher(
+		dbv.Id,
+		dbv.SobId,
+		dbv.VoucherType,
+		dbv.Number,
+		dbv.AttachmentQuantity,
+		items,
+		dbv.Creator,
+		dbv.Reviewer,
+		dbv.Auditor,
+		dbv.IsReviewed,
+		dbv.IsAudited,
+		dbv.IsPosted,
+	)
+	if err != nil {
+		return nil, errors.Wrap(err, "unmarshall voucher failed")
+	}
+
+	return v, nil
+}
+
+func unmarshallToQuery(dbv *voucher) query.Voucher {
+	items := []query.LineItem{}
+
+	for _, dbItem := range dbv.LineItems {
+		items = append(items, query.LineItem{
+			Summary:       dbItem.Summary,
+			AccountNumber: dbItem.AccountNumber,
+			Debit:         dbItem.Debit.String(),
+			Credit:        dbItem.Credit.String(),
+		})
+	}
+
+	return query.Voucher{
+		Sob:                dbv.SobId,
+		UUID:               dbv.Id,
+		VoucherType:        dbv.VoucherType,
+		Number:             dbv.Number,
+		AttachmentQuantity: dbv.AttachmentQuantity,
+		LineItems:          items,
+		Debit:              dbv.Debit.String(),
+		Credit:             dbv.Credit.String(),
+		Creator:            dbv.Creator,
+		Reviewer:           dbv.Reviewer,
+		IsReviewed:         dbv.IsReviewed,
+		Auditor:            dbv.Auditor,
+		IsAudited:          dbv.IsAudited,
+		IsPosted:           dbv.IsPosted,
+	}
 }

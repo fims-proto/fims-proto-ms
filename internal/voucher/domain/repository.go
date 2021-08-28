@@ -10,7 +10,6 @@ type Repository interface {
 	AddVoucher(ctx context.Context, v *Voucher) (uuid.UUID, error)
 	UpdateVoucher(
 		ctx context.Context,
-		sob string,
 		voucherUUID uuid.UUID,
 		updateFn func(v *Voucher) (*Voucher, error),
 	) error

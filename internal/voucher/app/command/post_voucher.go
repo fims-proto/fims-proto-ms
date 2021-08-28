@@ -10,7 +10,6 @@ import (
 )
 
 type PostVoucherCmd struct {
-	Sob         string
 	VoucherUUID uuid.UUID
 }
 
@@ -32,7 +31,7 @@ func NewPostVoucherHandler(readModel query.VouchersReadModel, repo domain.Reposi
 }
 
 func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) error {
-	voucher, err := h.readModel.VoucherByUUID(ctx, cmd.Sob, cmd.VoucherUUID)
+	voucher, err := h.readModel.ReadByUUID(ctx, cmd.VoucherUUID)
 	if err != nil {
 		return errors.Wrap(err, "failed to read voucher while posting")
 	}
@@ -55,7 +54,6 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) erro
 
 	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
 			if err := v.Post(); err != nil {

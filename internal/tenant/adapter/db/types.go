@@ -17,7 +17,7 @@ type tenant struct {
 	DeletedAt      gorm.DeletedAt `gorm:"index"`
 }
 
-func (t tenant) mapToQuery() query.Tenant {
+func unmarshallToQuery(t *tenant) query.Tenant {
 	return query.Tenant{
 		TenantId:       t.Id,
 		Subdomain:      t.Subdomain,

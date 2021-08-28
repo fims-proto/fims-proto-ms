@@ -14,7 +14,7 @@ type LineItem struct {
 	credit        decimal.Decimal
 }
 
-func NewLineItem(id uuid.UUID, summary string, accountNumber string, debit string, credit string) (*LineItem, error) {
+func NewLineItem(id uuid.UUID, summary, accountNumber, debit, credit string) (*LineItem, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil id")
 	}

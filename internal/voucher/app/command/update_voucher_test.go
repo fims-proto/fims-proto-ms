@@ -80,15 +80,20 @@ func createUpdateVoucherCmd() *UpdateVoucherCmd {
 func (r voucherRepoMock) initTestData() {
 	item0, _ := domain.NewLineItem(uuid.New(), "test_item0", "1000", "10", "")
 	item1, _ := domain.NewLineItem(uuid.New(), "test_item1", "1000", "", "10")
-	items := []domain.LineItem{*item0, *item1}
+	items := []*domain.LineItem{item0, item1}
 	v, _ := domain.NewVoucher(
-		"test_sob",
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),
-		domain.GeneralVoucher,
+		"test_sob",
+		"GENERAL_VOUCHER",
 		"1",
 		0,
 		items,
 		"0000",
+		"",
+		"",
+		false,
+		false,
+		false,
 	)
-	r.vouchers[v.UUID()] = *v
+	r.vouchers[v.Id()] = *v
 }

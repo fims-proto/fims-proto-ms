@@ -1,6 +1,6 @@
 package domain
 
-func (v *Voucher) Update(items []LineItem) error {
+func (v *Voucher) Update(items []*LineItem) error {
 	totalVal, err := sumItems(items)
 	if err != nil {
 		return err

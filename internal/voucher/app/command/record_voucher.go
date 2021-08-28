@@ -46,7 +46,7 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 	}
 
 	var accNumbers []string
-	var lineItems []domain.LineItem
+	var lineItems []*domain.LineItem
 	for _, item := range cmd.LineItems {
 		lineItem, err := domain.NewLineItem(
 			uuid.New(),
@@ -58,35 +58,35 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		if err != nil {
 			return uuid.Nil, err
 		}
-		lineItems = append(lineItems, *lineItem)
+		lineItems = append(lineItems, lineItem)
 		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
-	voucherType, err := domain.NewVoucherTypeFromString(cmd.VoucherType)
-	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "unable to use voucher type")
+	if err := h.accountService.ValidateExistence(ctx, cmd.Sob, accNumbers); err != nil {
+		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
 	}
 
-	identifier, err := h.counterService.GetNextIdentifier(ctx, cmd.Sob, voucherType.String())
+	identifier, err := h.counterService.GetNextIdentifier(ctx, cmd.Sob, cmd.VoucherType)
 	if err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to generate next number")
 	}
 
 	newVoucher, err := domain.NewVoucher(
-		cmd.Sob,
 		uuid.New(),
-		voucherType,
+		cmd.Sob,
+		cmd.VoucherType,
 		identifier,
 		cmd.AttachmentQuantity,
 		lineItems,
 		cmd.Creator,
+		"",    // no reviewer
+		"",    // no auditor
+		false, // not reviewed yet
+		false, // not audited yet
+		false, // not posted yet
 	)
 	if err != nil {
 		return uuid.Nil, err
-	}
-
-	if err = h.accountService.ValidateExistence(ctx, cmd.Sob, accNumbers); err != nil {
-		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
 	}
 
 	return h.repo.AddVoucher(ctx, newVoucher)

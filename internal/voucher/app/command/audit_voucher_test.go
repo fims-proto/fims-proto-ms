@@ -43,32 +43,32 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 			v := test.constructor(t)
 			repoMock := newVoucherRepoMock()
 			repoMock.vouchers = map[uuid.UUID]domain.Voucher{
-				v.UUID(): *v,
+				v.Id(): *v,
 			}
 
 			handler := NewAuditVoucherHandler(repoMock)
 
 			if test.cancel {
 				err := handler.HandleCancel(context.Background(), AuditVoucherCmd{
-					VoucherUUID: v.UUID(),
+					VoucherUUID: v.Id(),
 					Auditor:     test.auditor,
 				})
 				assert.NoError(t, err)
-				assert.False(t, repoMock.vouchers[v.UUID()].IsAudited())
+				assert.False(t, repoMock.vouchers[v.Id()].IsAudited())
 			} else {
 				err := handler.Handle(context.Background(), AuditVoucherCmd{
-					VoucherUUID: v.UUID(),
+					VoucherUUID: v.Id(),
 					Auditor:     test.auditor,
 				})
 				assert.NoError(t, err)
-				assert.True(t, repoMock.vouchers[v.UUID()].IsAudited())
+				assert.True(t, repoMock.vouchers[v.Id()].IsAudited())
 			}
 		})
 	}
 }
 
 func createVoucherForAuditTest(t *testing.T, auditor string) *domain.Voucher {
-	v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, "1", 0, prepareBalancedItems(), "")
+	v, err := domain.NewVoucher(uuid.New(), "test_sob", "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false)
 	require.NoError(t, err)
 	if auditor != "" {
 		err := v.Audit(auditor)

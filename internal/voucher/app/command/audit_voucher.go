@@ -8,7 +8,6 @@ import (
 )
 
 type AuditVoucherCmd struct {
-	Sob         string
 	VoucherUUID uuid.UUID
 	Auditor     string
 }
@@ -27,7 +26,6 @@ func NewAuditVoucherHandler(repo domain.Repository) AuditVoucherHandler {
 func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.Audit(cmd.Auditor)
@@ -39,7 +37,6 @@ func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) er
 func (h AuditVoucherHandler) HandleCancel(ctx context.Context, cmd AuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
-		cmd.Sob,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
 			err := v.CancelAudit(cmd.Auditor)

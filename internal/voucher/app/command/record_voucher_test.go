@@ -97,11 +97,11 @@ type voucherRepoMock struct {
 }
 
 func (r voucherRepoMock) AddVoucher(ctx context.Context, v *domain.Voucher) (uuid.UUID, error) {
-	r.vouchers[v.UUID()] = *v
-	return v.UUID(), nil
+	r.vouchers[v.Id()] = *v
+	return v.Id(), nil
 }
 
-func (r voucherRepoMock) UpdateVoucher(ctx context.Context, sob string, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
+func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
 	v, ok := r.vouchers[voucherUUID]
 	if !ok {
 		return errors.Errorf("voucher %s not exists", voucherUUID)
@@ -133,15 +133,15 @@ func (c *counterServiceMock) GetNextIdentifier(ctx context.Context, bo ...string
 	return "1", nil
 }
 
-func prepareBalancedItems() []domain.LineItem {
+func prepareBalancedItems() []*domain.LineItem {
 	item1, _ := domain.NewLineItem(uuid.New(), "test", "1000", "100", "")
 	item2, _ := domain.NewLineItem(uuid.New(), "test", "1001", "100", "")
 	item3, _ := domain.NewLineItem(uuid.New(), "test", "2000", "", "150")
 	item4, _ := domain.NewLineItem(uuid.New(), "test", "2001", "", "50")
-	return []domain.LineItem{
-		*item1,
-		*item2,
-		*item3,
-		*item4,
+	return []*domain.LineItem{
+		item1,
+		item2,
+		item3,
+		item4,
 	}
 }

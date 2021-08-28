@@ -93,7 +93,7 @@ func TestDomain_VoucherAudit(t *testing.T) {
 }
 
 func createVoucherForAuditTest(t *testing.T, auditor string) *Voucher {
-	voucher, err := NewVoucher("test_sob", uuid.New(), GeneralVoucher, "1", 0, prepareBalancedItems(), "")
+	voucher, err := NewVoucher(uuid.New(), "test_sob", "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false)
 	require.NoError(t, err)
 	if auditor != "" {
 		err := voucher.Audit(auditor)

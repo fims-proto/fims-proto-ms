@@ -29,9 +29,9 @@ import (
 	tenantservice "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
 	tenantintraport "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
 	"github/fims-proto/fims-proto-ms/internal/user/lib/authentication"
-	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
 	vouchercounteradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
+	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
 	voucherledgeradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/ledger"
 	voucherapp "github/fims-proto/fims-proto-ms/internal/voucher/app"
 	voucherintraport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/intraprocess"
@@ -63,7 +63,7 @@ func main() {
 	// repositories
 	sobRepository := sobadapter.NewSobMemoryRepository()
 	accountRepository := accountadapter.NewAccountMemoryRepository()
-	voucherRepository := voucheradapter.NewVoucherMemoryRepository()
+	voucherRepository := voucheradapter.NewVoucherPostgresRepository()
 	ledgerRepository := ledgeradapter.NewLedgerMemoryRepository()
 	counterRepository := counteradapter.NewCounterMemoryRepository()
 

@@ -93,7 +93,7 @@ func TestDomain_VoucherReview(t *testing.T) {
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewer string) *Voucher {
-	voucher, err := NewVoucher("test_sob", uuid.New(), GeneralVoucher, "1", 0, prepareBalancedItems(), "")
+	voucher, err := NewVoucher(uuid.New(), "test_sob", "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false)
 	require.NoError(t, err)
 	if reviewer != "" {
 		err := voucher.Review(reviewer)

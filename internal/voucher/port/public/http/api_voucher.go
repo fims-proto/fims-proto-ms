@@ -35,7 +35,7 @@ func (h Handler) AllVouchers(c *gin.Context) {
 }
 
 func (h Handler) VoucherByUUID(c *gin.Context) {
-	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c, c.Param("sob"), uuid.MustParse(c.Param("voucherId")))
+	voucher, err := h.app.Queries.ReadVouchers.HandleReadByUUID(c, uuid.MustParse(c.Param("voucherId")))
 	if err != nil {
 		c.Status(http.StatusNotFound)
 		return
@@ -50,7 +50,6 @@ func (h Handler) Audit(c *gin.Context) {
 		return
 	}
 	cmd := command.AuditVoucherCmd{
-		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     req.Auditor,
 	}
@@ -68,7 +67,6 @@ func (h Handler) CancelAudit(c *gin.Context) {
 		return
 	}
 	cmd := command.AuditVoucherCmd{
-		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     req.Auditor,
 	}
@@ -86,7 +84,6 @@ func (h Handler) Review(c *gin.Context) {
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
-		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    req.Reviewer,
 	}
@@ -104,7 +101,6 @@ func (h Handler) CancelReview(c *gin.Context) {
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
-		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    req.Reviewer,
 	}
@@ -127,7 +123,6 @@ func (h Handler) Update(c *gin.Context) {
 		items = append(items, item)
 	}
 	cmd := command.UpdateVoucherCmd{
-		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		LineItems:   items,
 	}
@@ -158,7 +153,6 @@ func (h Handler) Record(c *gin.Context) {
 
 func (h Handler) Post(c *gin.Context) {
 	cmd := command.PostVoucherCmd{
-		Sob:         c.Param("sob"),
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 	}
 	if err := h.app.Commands.PostVoucher.Handle(c, cmd); err != nil {

@@ -57,7 +57,7 @@ func TestDomain_VoucherUpdate(t *testing.T) {
 }
 
 func createVoucherForUpdateTest(t *testing.T, reviewed bool, audited bool) *Voucher {
-	v, err := NewVoucher("test_sob", uuid.New(), GeneralVoucher, "1", 0, prepareBalancedItems(), "")
+	v, err := NewVoucher(uuid.New(), "test_sob", "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false)
 	require.NoError(t, err)
 	if reviewed {
 		require.NoError(t, v.Review("r"))

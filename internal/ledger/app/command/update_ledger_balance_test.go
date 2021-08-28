@@ -186,7 +186,7 @@ func newAccountServiceMock() accountServiceMock {
 
 type voucherServiceMock struct{}
 
-func (s voucherServiceMock) CheckVoucherPosted(ctx context.Context, sob string, voucherUUID uuid.UUID) (bool, error) {
+func (s voucherServiceMock) CheckVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error) {
 	return false, nil
 }
 

@@ -31,7 +31,7 @@ func (t TenantPostgresRepository) ReadByUUID(ctx context.Context, tenantId uuid.
 		}
 	}
 
-	return dbTenant.mapToQuery(), nil
+	return unmarshallToQuery(&dbTenant), nil
 }
 
 func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
@@ -45,5 +45,5 @@ func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain
 		}
 	}
 
-	return dbTenant.mapToQuery(), nil
+	return unmarshallToQuery(&dbTenant), nil
 }

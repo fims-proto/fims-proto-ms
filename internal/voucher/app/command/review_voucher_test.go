@@ -43,32 +43,32 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 			v := test.constructor(t)
 			repoMock := newVoucherRepoMock()
 			repoMock.vouchers = map[uuid.UUID]domain.Voucher{
-				v.UUID(): *v,
+				v.Id(): *v,
 			}
 
 			handler := NewReviewVoucherHandler(repoMock)
 
 			if test.cancel {
 				err := handler.HandleCancel(context.Background(), ReviewVoucherCmd{
-					VoucherUUID: v.UUID(),
+					VoucherUUID: v.Id(),
 					Reviewer:    test.reviewer,
 				})
 				assert.NoError(t, err)
-				assert.False(t, repoMock.vouchers[v.UUID()].IsReviewed())
+				assert.False(t, repoMock.vouchers[v.Id()].IsReviewed())
 			} else {
 				err := handler.Handle(context.Background(), ReviewVoucherCmd{
-					VoucherUUID: v.UUID(),
+					VoucherUUID: v.Id(),
 					Reviewer:    test.reviewer,
 				})
 				assert.NoError(t, err)
-				assert.True(t, repoMock.vouchers[v.UUID()].IsReviewed())
+				assert.True(t, repoMock.vouchers[v.Id()].IsReviewed())
 			}
 		})
 	}
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewer string) *domain.Voucher {
-	v, err := domain.NewVoucher("test_sob", uuid.New(), domain.GeneralVoucher, "1", 0, prepareBalancedItems(), "")
+	v, err := domain.NewVoucher(uuid.New(), "test_sob", "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false)
 	require.NoError(t, err)
 	if reviewer != "" {
 		err := v.Review(reviewer)
