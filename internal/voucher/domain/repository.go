@@ -8,10 +8,6 @@ import (
 
 type Repository interface {
 	AddVoucher(ctx context.Context, v *Voucher) (uuid.UUID, error)
-	UpdateVoucher(
-		ctx context.Context,
-		sob string,
-		voucherUUID uuid.UUID,
-		updateFn func(v *Voucher) (*Voucher, error),
-	) error
+	UpdateVoucher(ctx context.Context, id uuid.UUID, updateFn func(v *Voucher) (*Voucher, error)) error
+	Migrate(ctx context.Context) error
 }

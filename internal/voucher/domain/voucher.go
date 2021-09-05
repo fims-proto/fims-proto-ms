@@ -1,21 +1,18 @@
 package domain
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
 type Voucher struct {
+	id                 uuid.UUID
 	sob                string
-	uuid               uuid.UUID
 	voucherType        VoucherType
 	number             string
-	createdAt          time.Time
 	attachmentQuantity uint
-	lineItems          []LineItem
+	lineItems          []*LineItem
 	debit              decimal.Decimal
 	credit             decimal.Decimal
 	creator            string
@@ -26,7 +23,64 @@ type Voucher struct {
 	isPosted           bool
 }
 
-func sumItems(items []LineItem) (decimal.Decimal, error) {
+func NewVoucher(id uuid.UUID, sob, voucherType, number string, attachmentQuantity uint, items []*LineItem,
+	creator, reviewer, auditor string, isReviewed, isAudited, isPosted bool,
+) (*Voucher, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("empty voucher uuid")
+	}
+	if sob == "" {
+		return nil, errors.New("empty sob")
+	}
+	if number == "" {
+		return nil, errors.New("empty voucher number")
+	}
+
+	vt, err := NewVoucherTypeFromString(voucherType)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid voucher type")
+	}
+
+	if creator == "" {
+		return nil, errors.New("empty creator")
+	}
+
+	if isReviewed && reviewer == "" {
+		return nil, errors.New("empty reviewer")
+	}
+
+	if isAudited && auditor == "" {
+		return nil, errors.New("empty auditor")
+	}
+
+	if isPosted && (!isReviewed || !isAudited) {
+		return nil, errors.New("invalid posted status")
+	}
+
+	totalVal, err := sumItems(items)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Voucher{
+		sob:                sob,
+		id:                 id,
+		voucherType:        vt,
+		number:             number,
+		attachmentQuantity: attachmentQuantity,
+		lineItems:          items,
+		debit:              totalVal,
+		credit:             totalVal,
+		creator:            creator,
+		reviewer:           reviewer,
+		isReviewed:         isReviewed,
+		auditor:            auditor,
+		isAudited:          isAudited,
+		isPosted:           isPosted,
+	}, nil
+}
+
+func sumItems(items []*LineItem) (decimal.Decimal, error) {
 	if len(items) == 0 {
 		return decimal.Decimal{}, errors.New("lineitem cannot be empty")
 	}
@@ -44,47 +98,12 @@ func sumItems(items []LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func NewVoucher(sob string, voucherUUID uuid.UUID, voucherType VoucherType, number string, createdAt time.Time, attachmentQuantity uint, items []LineItem, creator string) (*Voucher, error) {
-	if sob == "" {
-		return nil, errors.New("empty sob")
-	}
-	if voucherUUID == uuid.Nil {
-		return nil, errors.New("empty voucher uuid")
-	}
-	if number == "" {
-		return nil, errors.New("empty voucher number")
-	}
-
-	totalVal, err := sumItems(items)
-	if err != nil {
-		return nil, err
-	}
-
-	return &Voucher{
-		sob:                sob,
-		uuid:               voucherUUID,
-		voucherType:        voucherType,
-		number:             number,
-		createdAt:          createdAt,
-		attachmentQuantity: attachmentQuantity,
-		lineItems:          items,
-		debit:              totalVal,
-		credit:             totalVal,
-		creator:            creator,
-		reviewer:           "",
-		isReviewed:         false,
-		auditor:            "",
-		isAudited:          false,
-		isPosted:           false,
-	}, nil
-}
-
 func (v Voucher) Sob() string {
 	return v.sob
 }
 
-func (v Voucher) UUID() uuid.UUID {
-	return v.uuid
+func (v Voucher) Id() uuid.UUID {
+	return v.id
 }
 
 func (v Voucher) Type() VoucherType {
@@ -95,15 +114,11 @@ func (v Voucher) Number() string {
 	return v.number
 }
 
-func (v Voucher) CreatedAt() time.Time {
-	return v.createdAt
-}
-
 func (v Voucher) AttachmentQuantity() uint {
 	return v.attachmentQuantity
 }
 
-func (v Voucher) LineItems() []LineItem {
+func (v Voucher) LineItems() []*LineItem {
 	return v.lineItems
 }
 

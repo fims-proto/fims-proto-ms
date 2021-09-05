@@ -27,18 +27,18 @@ paths:
           required: true
           description: sob
       responses:
-        '200':
+        "200":
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VouchersResponse'
+                $ref: "#/components/schemas/VouchersResponse"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     post:
       tags:
@@ -57,22 +57,22 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RecordVoucherRequest'
+              $ref: "#/components/schemas/RecordVoucherRequest"
       responses:
-        '201':
+        "201":
           description: created
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /{sob}/{voucherId}:
     get:
       tags:
         - Voucher
-      operationId: VoucherByUUID
+      operationId: VoucherById
       parameters:
         - in: path
           name: sob
@@ -86,20 +86,20 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       responses:
-        '200':
+        "200":
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/VoucherResponse'
+                $ref: "#/components/schemas/VoucherResponse"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
     patch:
       tags:
         - Voucher
@@ -117,23 +117,23 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       requestBody:
         description: Update voucher payload
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UpdateVoucherRequest'
+              $ref: "#/components/schemas/UpdateVoucherRequest"
       responses:
-        '204':
+        "204":
           description: no content
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /{sob}/{voucherId}/audit:
     post:
@@ -146,7 +146,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuditVoucherRequest'
+              $ref: "#/components/schemas/AuditVoucherRequest"
       parameters:
         - in: path
           name: sob
@@ -160,17 +160,17 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       responses:
-        '204':
+        "204":
           description: no content
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  
+                $ref: "#/components/schemas/Error"
+
   /{sob}/{voucherId}/cancel-audit:
     post:
       tags:
@@ -182,7 +182,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AuditVoucherRequest'
+              $ref: "#/components/schemas/AuditVoucherRequest"
       parameters:
         - in: path
           name: sob
@@ -196,16 +196,16 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       responses:
-        '204':
+        "204":
           description: no content
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /{sob}/{voucherId}/review:
     post:
@@ -218,7 +218,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewVoucherRequest'
+              $ref: "#/components/schemas/ReviewVoucherRequest"
       parameters:
         - in: path
           name: sob
@@ -232,17 +232,17 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       responses:
-        '204':
+        "204":
           description: no content
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-  
+                $ref: "#/components/schemas/Error"
+
   /{sob}/{voucherId}/cancel-review:
     post:
       tags:
@@ -254,7 +254,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ReviewVoucherRequest'
+              $ref: "#/components/schemas/ReviewVoucherRequest"
       parameters:
         - in: path
           name: sob
@@ -268,16 +268,16 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       responses:
-        '204':
+        "204":
           description: no content
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /{sob}/{voucherId}/post:
     post:
@@ -297,16 +297,16 @@ paths:
             type: string
             format: uuid
           required: true
-          description: UUID of voucher
+          description: ID of voucher
       responses:
-        '204':
+        "204":
           description: no content
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
 components:
   securitySchemes:
@@ -326,14 +326,14 @@ components:
           type: string
         message:
           type: string
-    
+
     AuditVoucherRequest:
       type: object
       required: [Auditor]
       properties:
         Auditor:
           type: string
-    
+
     RecordVoucherRequest:
       type: object
       required: [VoucherType, AttachmentQuantity, LineItems, Creator]
@@ -346,14 +346,17 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemRequest'
+            $ref: "#/components/schemas/LineItemRequest"
         Creator:
           type: string
 
     LineItemRequest:
       type: object
-      required: [Summary, AccountNumber, Debit, Credit]
+      required: [Id, Summary, AccountNumber, Debit, Credit]
       properties:
+        Id:
+          type: string
+          format: uuid
         Summary:
           type: string
         AccountNumber:
@@ -369,7 +372,7 @@ components:
       properties:
         Reviewer:
           type: string
-    
+
     UpdateVoucherRequest:
       type: object
       required: [LineItems]
@@ -377,12 +380,15 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemRequest'
+            $ref: "#/components/schemas/LineItemRequest"
 
     LineItemResponse:
       type: object
-      required: [Summary, AccountNumber, Debit, Credit]
+      required: [Id, Summary, AccountNumber, Debit, Credit]
       properties:
+        Id:
+          type: string
+          format: uuid
         Summary:
           type: string
         AccountNumber:
@@ -394,11 +400,28 @@ components:
 
     VoucherResponse:
       type: object
-      required: [Sob, UUID, Type, Number, CreatedAt, AttachmentQuantity, LineItems, Debit, Credit, Creator, Reviewer, IsReviewed, Auditor, IsAudited, IsPosted]
+      required:
+        [
+          Sob,
+          Id,
+          Type,
+          Number,
+          CreatedAt,
+          AttachmentQuantity,
+          LineItems,
+          Debit,
+          Credit,
+          Creator,
+          Reviewer,
+          IsReviewed,
+          Auditor,
+          IsAudited,
+          IsPosted,
+        ]
       properties:
         Sob:
           type: string
-        UUID:
+        Id:
           type: string
           format: uuid
         Type:
@@ -414,7 +437,7 @@ components:
         LineItems:
           type: array
           items:
-            $ref: '#/components/schemas/LineItemResponse'
+            $ref: "#/components/schemas/LineItemResponse"
         Debit:
           type: string
         Credit:
@@ -431,9 +454,8 @@ components:
           type: boolean
         IsPosted:
           type: boolean
-    
+
     VouchersResponse:
       type: array
       items:
-        $ref: '#/components/schemas/VoucherResponse'
-    
+        $ref: "#/components/schemas/VoucherResponse"

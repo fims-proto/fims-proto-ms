@@ -1,8 +1,6 @@
 package intraprocess
 
 import (
-	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -14,14 +12,14 @@ type VoucherLineItemRequest struct {
 }
 
 type UpdateLedgerBalanceRequest struct {
-	Sob         string
-	VoucherUUID uuid.UUID
-	LineItems   []VoucherLineItemRequest
+	Sob       string
+	VoucherId uuid.UUID
+	LineItems []VoucherLineItemRequest
 }
 
 type LoadLedgersRequest struct {
 	Number         string
 	Title          string
 	SuperiorNumber string
-	AccountType    commonaccount.Type
+	AccountType    string
 }

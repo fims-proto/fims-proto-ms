@@ -7,6 +7,7 @@ import (
 )
 
 type LineItem struct {
+	Id            uuid.UUID
 	Summary       string
 	AccountNumber string
 	Debit         string
@@ -14,8 +15,8 @@ type LineItem struct {
 }
 
 type Voucher struct {
+	Id                 uuid.UUID
 	Sob                string
-	UUID               uuid.UUID
 	VoucherType        string
 	Number             string
 	CreatedAt          time.Time

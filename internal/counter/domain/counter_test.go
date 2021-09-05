@@ -2,6 +2,7 @@ package domain
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -47,8 +48,7 @@ func TestDomain_NewCounter(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			m, _ := NewMatcher("", "DUMMY")
-			counter, err := NewCounter(uuid.New(), *m, test.prefix, test.sufix)
+			counter, err := NewCounter(uuid.New(), 0, test.prefix, test.sufix, time.Time{}, "", "DUMMY")
 			test.verify(t, counter, err)
 		})
 	}

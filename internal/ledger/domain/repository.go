@@ -11,4 +11,5 @@ type Repository interface {
 		updateFn func(ledgers []*Ledger) ([]*Ledger, error),
 	) error
 	Dataload(ctx context.Context, ledgers []*Ledger) error
+	Migrate(ctx context.Context) error
 }

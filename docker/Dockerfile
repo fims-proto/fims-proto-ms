@@ -7,6 +7,7 @@ RUN mkdir -p /go/bin/app
 RUN go get -d -v ./...
 RUN go build -o /go/bin/app -v ./...
 # static files
+COPY ./config /go/bin/app/config
 COPY ./dataload /go/bin/app/dataload
 
 # final stage

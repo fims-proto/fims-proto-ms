@@ -20,7 +20,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 func (h Handler) AllSobs(c *gin.Context) {
-	sobs, err := h.app.Queries.ReadSobs.HandleReadAll(c.Request.Context())
+	sobs, err := h.app.Queries.ReadSobs.HandleReadAll(c)
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -33,7 +33,7 @@ func (h Handler) AllSobs(c *gin.Context) {
 }
 
 func (h Handler) SobById(c *gin.Context) {
-	sob, err := h.app.Queries.ReadSobs.HandleReadById(c.Request.Context(), c.Param("sob"))
+	sob, err := h.app.Queries.ReadSobs.HandleReadById(c, c.Param("sob"))
 	if err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
@@ -47,7 +47,7 @@ func (h Handler) Create(c *gin.Context) {
 		c.String(http.StatusBadRequest, err.Error())
 		return
 	}
-	if err := h.app.Commands.CreateSob.Handle(c.Request.Context(), req.mapToCommand()); err != nil {
+	if err := h.app.Commands.CreateSob.Handle(c, req.mapToCommand()); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}

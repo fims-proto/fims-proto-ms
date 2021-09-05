@@ -7,32 +7,48 @@ import (
 	"github.com/pkg/errors"
 )
 
-/*
- * currently we only use business object field to match counter.
- * in the future we may introduce another object - counter configuration to match business object to counter object
- */
 type Counter struct {
-	uuid           uuid.UUID
+	id             uuid.UUID
 	businessObject string
 	current        uint
 	formatter      Formatter
-	lastResetDate  time.Time
+	lastResetAt    time.Time
 }
 
-func NewCounter(counterUUID uuid.UUID, matcher Matcher, prefix string, sufix string) (*Counter, error) {
+func NewCounter(counterUUID uuid.UUID, current uint, prefix, sufix string, lastResetAt time.Time, matcherSeq string, objs ...string) (*Counter, error) {
 	if counterUUID == uuid.Nil {
-		return nil, errors.New("empty numbering service UUID provided")
+		return nil, errors.New("nil uuid")
 	}
-	if matcher.String() == "" {
-		return nil, errors.New("empty target business object")
+
+	m, err := NewMatcher(matcherSeq, objs...)
+	if err != nil {
+		return nil, errors.Wrap(err, "counter business match create failed")
 	}
 
 	return &Counter{
-		uuid:           counterUUID,
-		current:        0,
-		businessObject: matcher.String(),
+		id:             counterUUID,
+		current:        current,
+		businessObject: m.String(),
 		formatter:      NewFormatter(prefix, sufix),
-		lastResetDate:  time.Now(),
+		lastResetAt:    lastResetAt,
+	}, nil
+}
+
+func NewCounterFromDB(counterUUID uuid.UUID, current uint, busiObj, prefix, sufix string, lastResetAt time.Time) (*Counter, error) {
+	if counterUUID == uuid.Nil {
+		return nil, errors.New("nil uuid")
+	}
+
+	if busiObj == "" {
+		return nil, errors.New("empty business object")
+	}
+
+	return &Counter{
+		id:             counterUUID,
+		current:        current,
+		businessObject: busiObj,
+		formatter:      NewFormatter(prefix, sufix),
+		lastResetAt:    lastResetAt,
 	}, nil
 }
 
@@ -46,14 +62,30 @@ func (c *Counter) Identifier() string {
 
 func (c *Counter) Reset() error {
 	c.current = 0
-	c.lastResetDate = time.Now()
+	c.lastResetAt = time.Now()
 	return nil
 }
 
-func (c *Counter) UUID() uuid.UUID {
-	return c.uuid
+func (c Counter) Id() uuid.UUID {
+	return c.id
+}
+
+func (c Counter) CurrentIndex() uint {
+	return c.current
+}
+
+func (c Counter) Prefix() string {
+	return c.formatter.prefix
+}
+
+func (c Counter) Suffix() string {
+	return c.formatter.sufix
 }
 
 func (c Counter) BusinessObject() string {
 	return c.businessObject
+}
+
+func (c Counter) LastResetAt() time.Time {
+	return c.lastResetAt
 }

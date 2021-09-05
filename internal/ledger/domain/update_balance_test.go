@@ -1,9 +1,9 @@
 package domain
 
 import (
-	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -17,13 +17,13 @@ func TestDomain_LedgerUpdateBalance(t *testing.T) {
 	}
 	tests := []struct {
 		name    string
-		accType commonaccount.Type
+		accType string
 		args    args
 		verify  func(t *testing.T, l Ledger, err error)
 	}{
 		{
 			name:    "update assets account ledger",
-			accType: commonaccount.Assets,
+			accType: "Assets",
 			args: args{
 				debit:  decimal.RequireFromString("100"),
 				credit: decimal.RequireFromString("50"),
@@ -35,7 +35,7 @@ func TestDomain_LedgerUpdateBalance(t *testing.T) {
 		},
 		{
 			name:    "update liabilities account ledger",
-			accType: commonaccount.Liabilities,
+			accType: "Liabilities",
 			args: args{
 				debit:  decimal.RequireFromString("100"),
 				credit: decimal.RequireFromString("50"),
@@ -57,7 +57,8 @@ func TestDomain_LedgerUpdateBalance(t *testing.T) {
 	}
 }
 
-func prepareLedger(accType commonaccount.Type) Ledger {
-	l, _ := NewLedger("test_sob", "0000", "test", "", accType)
+func prepareLedger(accType string) Ledger {
+	zero := decimal.RequireFromString("0")
+	l, _ := NewLedger(uuid.New(), "test_sob", "0000", "test", "", accType, zero, zero, zero)
 	return *l
 }

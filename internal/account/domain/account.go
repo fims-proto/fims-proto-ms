@@ -4,10 +4,12 @@ import (
 	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type Account struct {
+	id             uuid.UUID
 	sob            string
 	number         string
 	title          string
@@ -15,7 +17,10 @@ type Account struct {
 	accountType    commonaccount.Type
 }
 
-func NewAccount(sob, number, title, superiorNumber string, accType commonaccount.Type) (*Account, error) {
+func NewAccount(id uuid.UUID, sob, number, title, superiorNumber, accType string) (*Account, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("nil uuid")
+	}
 	if sob == "" {
 		return nil, errors.New("empty sob")
 	}
@@ -28,14 +33,23 @@ func NewAccount(sob, number, title, superiorNumber string, accType commonaccount
 	if superiorNumber != "" && !strings.HasPrefix(number, superiorNumber) {
 		return nil, errors.New("invalid superior account number")
 	}
+	at, err := commonaccount.NewAccountTypeFromString(accType)
+	if err != nil {
+		return nil, errors.Wrap(err, "invalid account type")
+	}
 
 	return &Account{
+		id:             id,
 		sob:            sob,
 		number:         number,
 		title:          title,
 		superiorNumber: superiorNumber,
-		accountType:    accType,
+		accountType:    at,
 	}, nil
+}
+
+func (acc Account) Id() uuid.UUID {
+	return acc.id
 }
 
 func (acc Account) Sob() string {

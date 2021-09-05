@@ -1,58 +1,49 @@
 package http
 
-// TODO remove: test purpose
-// TODO remove: this class cannot be used in production as it's not following our design pattern
-
 import (
-	"github/fims-proto/fims-proto-ms/internal/ledger/adapter"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/shopspring/decimal"
 )
 
 type Handler struct {
-	repo adapter.LedgerMemoryRepository
+	app *app.Application
 }
 
-func NewHandler(repo adapter.LedgerMemoryRepository) Handler {
-	return Handler{repo: repo}
+func NewHandler(app *app.Application) Handler {
+	if app == nil {
+		panic("nil application")
+	}
+	return Handler{app: app}
 }
 
-func (h Handler) allLedgers(c *gin.Context) {
-	ls, _ := h.repo.AllLedgers(c.Request.Context())
-
-	res := []Ledger{}
-	for _, l := range ls {
-		res = append(res, Ledger{
-			Sob:            l.Sob(),
-			Number:         l.Number(),
-			Title:          l.Title(),
-			SuperiorNumber: l.SuperiorNumber(),
-			AccountType:    l.AccountType().String(),
-			Debit:          l.Debit(),
-			Credit:         l.Credit(),
-			Balance:        l.Balance(),
-		})
+func (h Handler) AllLedgers(c *gin.Context) {
+	ls, err := h.app.Queries.ReadLedgers.HandleReadAll(c, c.Param("sob"))
+	if err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
 	}
 
-	c.JSON(http.StatusOK, res)
+	c.JSON(http.StatusOK, ls)
+}
+
+func (h Handler) Migrate(c *gin.Context) {
+	if err := h.app.Commands.Migrate.Handle(c); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusNoContent)
 }
 
 func InitRouter(h Handler, r *gin.Engine) {
-	g := r.Group("/ledgers-test")
+	g1 := r.Group("/private/ledgers")
 	{
-		g.GET("/", h.allLedgers)
+		g1.POST("/migrate", h.Migrate)
 	}
-}
 
-type Ledger struct {
-	Sob            string
-	Number         string
-	Title          string
-	SuperiorNumber string
-	AccountType    string
-	Debit          decimal.Decimal
-	Credit         decimal.Decimal
-	Balance        decimal.Decimal
+	g2 := r.Group("/private/ledgers/:sob")
+	{
+		g2.GET("/", h.AllLedgers)
+	}
 }

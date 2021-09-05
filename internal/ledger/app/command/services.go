@@ -12,5 +12,5 @@ type AccountService interface {
 }
 
 type VoucherService interface {
-	CheckVoucherPosted(ctx context.Context, sob string, voucherUUID uuid.UUID) (bool, error)
+	CheckVoucherPosted(ctx context.Context, voucherUUID uuid.UUID) (bool, error)
 }

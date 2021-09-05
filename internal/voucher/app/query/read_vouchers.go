@@ -7,8 +7,8 @@ import (
 )
 
 type VouchersReadModel interface {
-	AllVouchers(ctx context.Context, sob string) ([]Voucher, error)
-	VoucherByUUID(ctx context.Context, sob string, uuid uuid.UUID) (Voucher, error)
+	ReadAllVouchers(ctx context.Context, sob string) ([]Voucher, error)
+	ReadByUUID(ctx context.Context, uuid uuid.UUID) (Voucher, error)
 }
 
 type ReadVouchersHandler struct {
@@ -23,9 +23,9 @@ func NewReadVouchersHandler(readModel VouchersReadModel) ReadVouchersHandler {
 }
 
 func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sob string) ([]Voucher, error) {
-	return h.readModel.AllVouchers(ctx, sob)
+	return h.readModel.ReadAllVouchers(ctx, sob)
 }
 
-func (h ReadVouchersHandler) HandleReadByUUID(ctx context.Context, sob string, uuid uuid.UUID) (Voucher, error) {
-	return h.readModel.VoucherByUUID(ctx, sob, uuid)
+func (h ReadVouchersHandler) HandleReadByUUID(ctx context.Context, uuid uuid.UUID) (Voucher, error) {
+	return h.readModel.ReadByUUID(ctx, uuid)
 }

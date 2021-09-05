@@ -1,4 +1,4 @@
-package user
+package authentication
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/log"

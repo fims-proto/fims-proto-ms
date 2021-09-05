@@ -4,11 +4,13 @@ import (
 	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
 type Ledger struct {
+	id             uuid.UUID
 	sob            string
 	number         string
 	title          string
@@ -19,7 +21,7 @@ type Ledger struct {
 	balance        decimal.Decimal
 }
 
-func NewLedger(sob, number, title, superiorNumber string, accountType commonaccount.Type) (*Ledger, error) {
+func NewLedger(id uuid.UUID, sob, number, title, superiorNumber, accountType string, debit, credit, balance decimal.Decimal) (*Ledger, error) {
 	if sob == "" {
 		return nil, errors.New("empty sob")
 	}
@@ -33,21 +35,26 @@ func NewLedger(sob, number, title, superiorNumber string, accountType commonacco
 		return nil, errors.New("invalid superior ledger number")
 	}
 
-	accType, err := commonaccount.NewAccountType(accountType)
+	accType, err := commonaccount.NewAccountTypeFromString(accountType)
 	if err != nil {
 		return nil, errors.Wrap(err, "invalid account type")
 	}
 
 	return &Ledger{
+		id:             id,
 		sob:            sob,
 		number:         number,
 		title:          title,
 		superiorNumber: superiorNumber,
 		accountType:    accType,
-		debit:          decimal.RequireFromString("0"),
-		credit:         decimal.RequireFromString("0"),
-		balance:        decimal.RequireFromString("0"),
+		debit:          debit,
+		credit:         credit,
+		balance:        balance,
 	}, nil
+}
+
+func (l Ledger) Id() uuid.UUID {
+	return l.id
 }
 
 func (l Ledger) Sob() string {

@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/counter/domain"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -24,12 +25,7 @@ func NewCounterDataloadHandler(repo domain.Repository) CounterDataloadHandler {
 }
 
 func (h CounterDataloadHandler) Handle(ctx context.Context, sob string) error {
-	m, err := domain.NewMatcher("-", sob, generalVoucher)
-	if err != nil {
-		return errors.Wrapf(err, "create counter matcher failed: %s, %s", sob, generalVoucher)
-	}
-
-	counter, err := domain.NewCounter(uuid.New(), *m, "记", "号")
+	counter, err := domain.NewCounter(uuid.New(), 0, "记", "号", time.Time{}, "-", sob, generalVoucher)
 	if err != nil {
 		return errors.Wrap(err, "create counter failed")
 	}

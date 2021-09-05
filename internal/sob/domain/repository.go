@@ -10,5 +10,6 @@ type Repository interface {
 		ctx context.Context,
 		sobId string,
 		updateFn func(s *Sob) (*Sob, error),
-	)
+	) error
+	Migrate(ctx context.Context) error
 }
