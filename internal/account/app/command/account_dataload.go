@@ -4,11 +4,11 @@ import (
 	"context"
 	"encoding/csv"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
-	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"io"
 	"os"
 	"path/filepath"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
@@ -16,7 +16,7 @@ type AccountDataloadCmd struct {
 	Number         string
 	Title          string
 	SuperiorNumber string
-	AccountType    commonaccount.Type
+	AccountType    string
 }
 
 type AccountDataloadHandler struct {
@@ -45,7 +45,7 @@ func (h AccountDataloadHandler) Handle(ctx context.Context, sob string) error {
 
 	var accounts []*domain.Account
 	for _, cmd := range accountCmds {
-		account, err := domain.NewAccount(sob, cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
+		account, err := domain.NewAccount(uuid.New(), sob, cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
 		if err != nil {
 			return errors.Wrapf(err, "dataload failed on account %s", cmd.Number)
 		}
@@ -91,15 +91,11 @@ func readFromCSV() ([]AccountDataloadCmd, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read file")
 		}
-		accountType, err := commonaccount.NewAccountTypeFromString(line[0])
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to convert account type")
-		}
 		cmds = append(cmds, AccountDataloadCmd{
 			Number:         line[1],
 			Title:          line[2],
 			SuperiorNumber: line[3],
-			AccountType:    accountType,
+			AccountType:    line[0],
 		})
 	}
 

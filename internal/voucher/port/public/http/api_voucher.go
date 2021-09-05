@@ -120,6 +120,7 @@ func (h Handler) Update(c *gin.Context) {
 	items := []command.LineItemCmd{}
 	for _, itemReq := range req.LineItems {
 		item := itemReq.mapToCommand()
+		item.Id = uuid.MustParse(itemReq.Id)
 		items = append(items, item)
 	}
 	cmd := command.UpdateVoucherCmd{

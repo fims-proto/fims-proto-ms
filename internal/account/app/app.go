@@ -12,6 +12,7 @@ type Queries struct {
 
 type Commands struct {
 	LoadAccounts command.AccountDataloadHandler
+	Migrate      command.MigrationHanlder
 }
 
 type Application struct {
@@ -29,5 +30,6 @@ func (a *Application) Inject(readModel query.AccountsReadModel, repo domain.Repo
 	}
 	a.Commands = Commands{
 		LoadAccounts: command.NewAccountDataloadHandler(repo, ledgerService),
+		Migrate:      command.NewMigrationHanlder(repo),
 	}
 }

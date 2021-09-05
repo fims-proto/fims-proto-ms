@@ -27,9 +27,7 @@ func NewLineItem(id uuid.UUID, summary, accountNumber, debit, credit string) (*L
 	if debit == "" && credit == "" {
 		return nil, errors.New("empty debit and credit amount")
 	}
-	if debit != "" && credit != "" {
-		return nil, errors.New("both debit and credit amount provided")
-	}
+
 	debitDecimal, err := decimal.NewFromString(debit)
 	if debit != "" && err != nil {
 		return nil, errors.New("invalid debit amount")
@@ -37,6 +35,14 @@ func NewLineItem(id uuid.UUID, summary, accountNumber, debit, credit string) (*L
 	creditDecimal, err := decimal.NewFromString(credit)
 	if credit != "" && err != nil {
 		return nil, errors.New("invalid credit amount")
+	}
+
+	if decimal.Zero.Cmp(debitDecimal) == 0 && decimal.Zero.Cmp(creditDecimal) == 0 {
+		return nil, errors.New("credit and debit cannot both be zero")
+	}
+
+	if decimal.Zero.Cmp(debitDecimal) != 0 && decimal.Zero.Cmp(creditDecimal) != 0 {
+		return nil, errors.New("credit and debit cannot both be non zero")
 	}
 
 	return &LineItem{

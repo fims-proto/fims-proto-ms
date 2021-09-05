@@ -4,6 +4,7 @@ import (
 	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,11 +16,11 @@ func TestNewAccount(t *testing.T) {
 		number         string
 		title          string
 		superiorNumber string
-		accType        commonaccount.Type
+		accType        string
 		verify         func(t *testing.T, account *Account, err error)
 	}{
 		{
-			"general_account_success", "1001", "库存现金", "", commonaccount.Assets,
+			"general_account_success", "1001", "库存现金", "", "Assets",
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, "1001", account.Number())
@@ -29,7 +30,7 @@ func TestNewAccount(t *testing.T) {
 			},
 		},
 		{
-			"subsidiary_account_success", "1001001", "库存现金某子项", "1001", commonaccount.Assets,
+			"subsidiary_account_success", "1001001", "库存现金某子项", "1001", "Assets",
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, "1001001", account.Number())
@@ -39,21 +40,21 @@ func TestNewAccount(t *testing.T) {
 			},
 		},
 		{
-			"empty_number_error", "", "库存现金", "", commonaccount.Assets,
+			"empty_number_error", "", "库存现金", "", "Assets",
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_title_error", "1001", "", "", commonaccount.Assets,
+			"empty_title_error", "1001", "", "", "Assets",
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"invalid_superior_account_number_error", "1001001", "库存现金某子项", "1002", commonaccount.Assets,
+			"invalid_superior_account_number_error", "1001001", "库存现金某子项", "1002", "Assets",
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
@@ -65,7 +66,7 @@ func TestNewAccount(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			account, err := NewAccount("test_sob", test.number, test.title, test.superiorNumber, test.accType)
+			account, err := NewAccount(uuid.New(), "test_sob", test.number, test.title, test.superiorNumber, test.accType)
 			test.verify(t, account, err)
 		})
 	}

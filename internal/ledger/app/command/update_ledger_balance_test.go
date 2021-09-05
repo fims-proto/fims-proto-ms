@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	commonaccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 	"testing"
 
@@ -25,7 +24,7 @@ func TestApp_UpdateLedgerBalance(t *testing.T) {
 			name: "update_success",
 			cmdConstructor: func() UpdateLedgerBalanceCmd {
 				return UpdateLedgerBalanceCmd{
-					VoucherUUID: uuid.New(),
+					VoucherId: uuid.New(),
 					LineItems: []LineItemCmd{
 						{
 							AccountNumber: "10000101",
@@ -63,7 +62,7 @@ func TestApp_UpdateLedgerBalance(t *testing.T) {
 			name: "update_success_2",
 			cmdConstructor: func() UpdateLedgerBalanceCmd {
 				return UpdateLedgerBalanceCmd{
-					VoucherUUID: uuid.New(),
+					VoucherId: uuid.New(),
 					LineItems: []LineItemCmd{
 						{
 							AccountNumber: "10000101",
@@ -123,6 +122,10 @@ func (r ledgerRepoMock) Dataload(ctx context.Context, ls []*domain.Ledger) error
 	panic("not implemented")
 }
 
+func (r ledgerRepoMock) Migrate(ctx context.Context) error {
+	panic("not implemented")
+}
+
 func (r ledgerRepoMock) UpdateLedgers(
 	ctx context.Context,
 	sob string,
@@ -154,17 +157,17 @@ func (r ledgerRepoMock) UpdateLedgers(
 func (r ledgerRepoMock) initData() {
 	sob := "test_sob"
 
-	r.ledgers["1000"], _ = domain.NewLedger(sob, "1000", "1000 ledger", "", commonaccount.Assets)
-	r.ledgers["100001"], _ = domain.NewLedger(sob, "100001", "100001 ledger", "1000", commonaccount.Assets)
-	r.ledgers["10000101"], _ = domain.NewLedger(sob, "10000101", "10000101 ledger", "100001", commonaccount.Assets)
+	zero := decimal.RequireFromString("0")
 
-	r.ledgers["2000"], _ = domain.NewLedger(sob, "2000", "2000 ledger", "", commonaccount.Liabilities)
-	r.ledgers["200002"], _ = domain.NewLedger(sob, "200002", "200002 ledger", "2000", commonaccount.Liabilities)
-	r.ledgers["20000202"], _ = domain.NewLedger(sob, "20000202", "20000202 ledger", "200002", commonaccount.Liabilities)
-
-	r.ledgers["3000"], _ = domain.NewLedger(sob, "3000", "3000 ledger", "", commonaccount.Assets)
-	r.ledgers["300001"], _ = domain.NewLedger(sob, "300001", "300001 ledger", "3000", commonaccount.Assets)
-	r.ledgers["30000101"], _ = domain.NewLedger(sob, "30000101", "30000101 ledger", "300001", commonaccount.Assets)
+	r.ledgers["1000"], _ = domain.NewLedger(uuid.New(), sob, "1000", "1000 ledger", "", "Assets", zero, zero, zero)
+	r.ledgers["100001"], _ = domain.NewLedger(uuid.New(), sob, "100001", "100001 ledger", "1000", "Assets", zero, zero, zero)
+	r.ledgers["10000101"], _ = domain.NewLedger(uuid.New(), sob, "10000101", "10000101 ledger", "100001", "Assets", zero, zero, zero)
+	r.ledgers["2000"], _ = domain.NewLedger(uuid.New(), sob, "2000", "2000 ledger", "", "Liabilities", zero, zero, zero)
+	r.ledgers["200002"], _ = domain.NewLedger(uuid.New(), sob, "200002", "200002 ledger", "2000", "Liabilities", zero, zero, zero)
+	r.ledgers["20000202"], _ = domain.NewLedger(uuid.New(), sob, "20000202", "20000202 ledger", "200002", "Liabilities", zero, zero, zero)
+	r.ledgers["3000"], _ = domain.NewLedger(uuid.New(), sob, "3000", "3000 ledger", "", "Assets", zero, zero, zero)
+	r.ledgers["300001"], _ = domain.NewLedger(uuid.New(), sob, "300001", "300001 ledger", "3000", "Assets", zero, zero, zero)
+	r.ledgers["30000101"], _ = domain.NewLedger(uuid.New(), sob, "30000101", "30000101 ledger", "300001", "Assets", zero, zero, zero)
 }
 
 func newLedgerRepoMock() ledgerRepoMock {

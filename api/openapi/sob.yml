@@ -20,18 +20,18 @@ paths:
         - Set of books
       operationId: AllSobs
       responses:
-        '200':
+        "200":
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SobsResponse'
+                $ref: "#/components/schemas/SobsResponse"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
     post:
       tags:
@@ -43,16 +43,16 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CreateSobRequest'
+              $ref: "#/components/schemas/CreateSobRequest"
       responses:
-        '201':
+        "201":
           description: created
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: "#/components/schemas/Error"
 
   /{sob}:
     get:
@@ -67,19 +67,19 @@ paths:
           required: true
           description: sob
       responses:
-        '200':
+        "200":
           description: success
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SobResponse'
+                $ref: "#/components/schemas/SobResponse"
         default:
           description: unexpected error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Error'
-    
+                $ref: "#/components/schemas/Error"
+
 components:
   securitySchemes:
     bearerAuth:
@@ -98,7 +98,7 @@ components:
           type: string
         message:
           type: string
-    
+
     CreateSobRequest:
       type: object
       required: [Id, Name, Description]
@@ -109,7 +109,7 @@ components:
           type: string
         Description:
           type: string
-    
+
     SobResponse:
       type: object
       required: [Id, Name, Description]
@@ -120,9 +120,8 @@ components:
           type: string
         Description:
           type: string
-    
+
     SobsResponse:
       type: array
       items:
-        $ref: '#/components/schemas/SobResponse'
-    
+        $ref: "#/components/schemas/SobResponse"

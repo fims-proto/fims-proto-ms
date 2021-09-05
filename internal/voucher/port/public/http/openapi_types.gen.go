@@ -27,6 +27,7 @@ type LineItemRequest struct {
 	AccountNumber string `json:"AccountNumber"`
 	Credit        string `json:"Credit"`
 	Debit         string `json:"Debit"`
+	Id            string `json:"Id"`
 	Summary       string `json:"Summary"`
 }
 
@@ -35,6 +36,7 @@ type LineItemResponse struct {
 	AccountNumber string `json:"AccountNumber"`
 	Credit        string `json:"Credit"`
 	Debit         string `json:"Debit"`
+	Id            string `json:"Id"`
 	Summary       string `json:"Summary"`
 }
 
@@ -64,6 +66,7 @@ type VoucherResponse struct {
 	Creator            string             `json:"Creator"`
 	Credit             string             `json:"Credit"`
 	Debit              string             `json:"Debit"`
+	Id                 string             `json:"Id"`
 	IsAudited          bool               `json:"IsAudited"`
 	IsPosted           bool               `json:"IsPosted"`
 	IsReviewed         bool               `json:"IsReviewed"`
@@ -72,7 +75,6 @@ type VoucherResponse struct {
 	Reviewer           string             `json:"Reviewer"`
 	Sob                string             `json:"Sob"`
 	Type               string             `json:"Type"`
-	UUID               string             `json:"UUID"`
 }
 
 // VouchersResponse defines model for VouchersResponse.

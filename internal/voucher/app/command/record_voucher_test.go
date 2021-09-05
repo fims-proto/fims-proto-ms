@@ -115,6 +115,10 @@ func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUI
 	return nil
 }
 
+func (r voucherRepoMock) Migrate(ctx context.Context) error {
+	panic("not implemented")
+}
+
 type accountServiceMock struct {
 	invoked bool
 }

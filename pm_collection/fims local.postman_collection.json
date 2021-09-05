@@ -6,6 +6,176 @@
 	},
 	"item": [
 		{
+			"name": "db migrate",
+			"item": [
+				{
+					"name": "sobs migration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}:{{port}}/private/sobs/migrate",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"private",
+								"sobs",
+								"migrate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "counters migration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}:{{port}}/private/counters/migrate",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"private",
+								"counters",
+								"migrate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "account migration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}:{{port}}/private/accounts/migrate",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"private",
+								"accounts",
+								"migrate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ledgers migration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}:{{port}}/private/ledgers/migrate",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"private",
+								"ledgers",
+								"migrate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "voucher migration",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 204\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{host}}:{{port}}/private/vouchers/migrate",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"private",
+								"vouchers",
+								"migrate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "create sob 1",
 			"event": [
 				{
@@ -290,37 +460,6 @@
 			"response": []
 		},
 		{
-			"name": "[test] all ledgers",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Ledgers exists (count more than 0)\", function () {",
-							"    pm.expect(pm.response.json().length).to.gt(0);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{host}}:{{port}}/ledgers-test",
-					"host": [
-						"{{host}}"
-					],
-					"port": "{{port}}",
-					"path": [
-						"ledgers-test"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "sob 1 > record voucher 1",
 			"event": [
 				{
@@ -331,7 +470,8 @@
 							"    pm.response.to.have.status(201);",
 							"});",
 							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"voucherUUID_1\", newVoucherLocation.split(\"/\")[3]);"
+							"pm.collectionVariables.set(\"voucherUUID_1\", newVoucherLocation.split(\"/\")[3]);",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -342,7 +482,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"Creator\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -385,7 +525,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"Creator\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -420,7 +560,11 @@
 							"pm.test(\"Number check\", function () {",
 							"    var jsonData = pm.response.json();",
 							"    pm.expect(jsonData.Number).to.eql(\"记1号\");",
-							"});"
+							"});",
+							"",
+							"var jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"voucher_1_item_1\", jsonData.LineItems[0].Id);",
+							"pm.collectionVariables.set(\"voucher_1_item_2\", jsonData.LineItems[1].Id);"
 						],
 						"type": "text/javascript"
 					}
@@ -706,7 +850,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"LineItems\": [\n        {\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1001\",\n            \"Debit\": \"101\"\n        },\n        {\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1002001\",\n            \"Credit\": \"101\"\n        }\n    ]\n}",
+					"raw": "{\n    \"LineItems\": [\n        {\n            \"Id\": \"{{voucher_1_item_1}}\",\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1001\",\n            \"Debit\": \"101\"\n        },\n        {\n            \"Id\": \"{{voucher_1_item_2}}\",\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1002001\",\n            \"Credit\": \"101\"\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -904,7 +1048,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"Creator\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1105,7 +1249,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"Creator\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1306,7 +1450,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"CreatorUUID\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"Creator\": \"oliver\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1484,6 +1628,100 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "[test] sob 1 > all ledgers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ledgers exists (count more than 0)\", function () {",
+							"    pm.expect(pm.response.json().length).to.gt(0);",
+							"});",
+							"",
+							"pm.test(\"Ledgers have right balance\", function () {",
+							"    tobeTested = {",
+							"        \"1001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"101\",",
+							"            expectedCredit: \"200\",",
+							"            expectedBalance: \"-99\"",
+							"        },",
+							"        \"1002\": {",
+							"            tested: false,",
+							"            expectedDebit: \"400\",",
+							"            expectedCredit: \"401\",",
+							"            expectedBalance: \"-1\"",
+							"        },",
+							"        \"1002001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"400\",",
+							"            expectedCredit: \"401\",",
+							"            expectedBalance: \"-1\"",
+							"        },",
+							"        \"6602\": {",
+							"            tested: false,",
+							"            expectedDebit: \"500\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"6602001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"500\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"1122\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"400\",",
+							"            expectedBalance: \"-400\"",
+							"        }",
+							"    }",
+							"",
+							"    ls = pm.response.json();",
+							"",
+							"    for(var i = 0; i < ls.length ; i++) {",
+							"        if (tobeTested.hasOwnProperty(ls[i].Number)) {",
+							"            tobeTested[ls[i].Number].tested = true;",
+							"            tobeTested[ls[i].Number].debit = ls[i].Debit;",
+							"            tobeTested[ls[i].Number].credit = ls[i].Credit;",
+							"            tobeTested[ls[i].Number].balance = ls[i].Balance;",
+							"        }",
+							"    }",
+							"",
+							"    for (var key in tobeTested) {",
+							"        pm.expect(tobeTested[key].tested).to.be.true;",
+							"        pm.expect(tobeTested[key].expectedDebit).to.be.eq(tobeTested[key].debit);",
+							"        pm.expect(tobeTested[key].expectedCredit).to.be.eq(tobeTested[key].credit);",
+							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].balance);",
+							"    }",
+							"",
+							"    console.log(tobeTested);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}:{{port}}/private/ledgers/{{sob_1}}",
+					"host": [
+						"{{host}}"
+					],
+					"port": "{{port}}",
+					"path": [
+						"private",
+						"ledgers",
+						"{{sob_1}}"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -1516,6 +1754,14 @@
 			"value": ""
 		},
 		{
+			"key": "voucher_1_item_1",
+			"value": ""
+		},
+		{
+			"key": "voucher_1_item_2",
+			"value": ""
+		},
+		{
 			"key": "voucherUUID_2",
 			"value": ""
 		},
@@ -1541,7 +1787,7 @@
 		},
 		{
 			"key": "port",
-			"value": "8080"
+			"value": "3000"
 		}
 	]
 }

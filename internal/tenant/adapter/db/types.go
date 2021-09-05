@@ -5,16 +5,14 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type tenant struct {
 	Id             uuid.UUID `gorm:"type:uuid"`
 	Subdomain      string
 	DBConnPassword string
-	CreatedAt      time.Time
+	CreatedAt      time.Time `gorm:"<-:create"`
 	UpdatedAt      time.Time
-	DeletedAt      gorm.DeletedAt `gorm:"index"`
 }
 
 func unmarshallToQuery(t *tenant) query.Tenant {

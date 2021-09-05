@@ -42,19 +42,19 @@ func NewVoucher(id uuid.UUID, sob, voucherType, number string, attachmentQuantit
 	}
 
 	if creator == "" {
-		return nil, errors.Wrap(err, "empty creator")
+		return nil, errors.New("empty creator")
 	}
 
 	if isReviewed && reviewer == "" {
-		return nil, errors.Wrap(err, "empty reviewer")
+		return nil, errors.New("empty reviewer")
 	}
 
 	if isAudited && auditor == "" {
-		return nil, errors.Wrap(err, "empty auditor")
+		return nil, errors.New("empty auditor")
 	}
 
 	if isPosted && (!isReviewed || !isAudited) {
-		return nil, errors.Wrap(err, "invalid posted status")
+		return nil, errors.New("invalid posted status")
 	}
 
 	totalVal, err := sumItems(items)

@@ -29,6 +29,7 @@ func (r RecordVoucherRequest) mapToCommand() command.RecordVoucherCmd {
 
 func mapFromLineItemQuery(q query.LineItem) LineItemResponse {
 	return LineItemResponse{
+		Id:            q.Id.String(),
 		Summary:       q.Summary,
 		AccountNumber: q.AccountNumber,
 		Debit:         q.Debit,
@@ -43,7 +44,7 @@ func mapFromVoucherQuery(q query.Voucher) VoucherResponse {
 	}
 	return VoucherResponse{
 		Sob:                q.Sob,
-		UUID:               q.UUID.String(),
+		Id:                 q.Id.String(),
 		Type:               q.VoucherType,
 		Number:             string(q.Number),
 		CreatedAt:          q.CreatedAt,

@@ -16,6 +16,7 @@ type Commands struct {
 	ReviewVoucher command.ReviewVoucherHandler
 	UpdateVoucher command.UpdateVoucherHandler
 	PostVoucher   command.PostVoucherHandler
+	Migrate       command.MigrationHanlder
 }
 
 type Application struct {
@@ -43,5 +44,6 @@ func (a *Application) Inject(
 		ReviewVoucher: command.NewReviewVoucherHandler(repo),
 		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService),
 		PostVoucher:   command.NewPostVoucherHandler(readModel, repo, ledgerService),
+		Migrate:       command.NewMigrationHanlder(repo),
 	}
 }

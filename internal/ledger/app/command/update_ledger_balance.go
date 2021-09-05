@@ -16,9 +16,9 @@ type LineItemCmd struct {
 }
 
 type UpdateLedgerBalanceCmd struct {
-	Sob         string
-	VoucherUUID uuid.UUID
-	LineItems   []LineItemCmd
+	Sob       string
+	VoucherId uuid.UUID
+	LineItems []LineItemCmd
 }
 
 type UpdateLedgerBalanceHandler struct {
@@ -46,7 +46,7 @@ func NewUpdateLedgerBalanceHandler(repo domain.Repository, accountService Accoun
 
 func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedgerBalanceCmd) error {
 	// 1. check again if voucher already posted
-	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.VoucherUUID)
+	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.VoucherId)
 	if err != nil {
 		return errors.Wrap(err, "check voucher posted failed")
 	}

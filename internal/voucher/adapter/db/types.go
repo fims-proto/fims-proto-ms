@@ -8,13 +8,12 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"gorm.io/gorm"
 )
 
 type voucher struct {
 	Id                 uuid.UUID `gorm:"type:uuid"`
-	SobId              string    `gorm:"uniqueIndex:uni_sobid_number"`
-	Number             string    `gorm:"uniqueIndex:uni_sobid_number"`
+	SobId              string    `gorm:"uniqueIndex:vouchers_sobid_number_key"`
+	Number             string    `gorm:"uniqueIndex:vouchers_sobid_number_key"`
 	VoucherType        string
 	AttachmentQuantity uint
 	Debit              decimal.Decimal
@@ -26,9 +25,8 @@ type voucher struct {
 	IsAudited          bool
 	IsPosted           bool
 	LineItems          []lineItem
-	CreatedAt          time.Time
+	CreatedAt          time.Time `gorm:"<-:create"`
 	UpdatedAt          time.Time
-	DeletedAt          gorm.DeletedAt `gorm:"index"`
 }
 
 type lineItem struct {
@@ -38,9 +36,8 @@ type lineItem struct {
 	AccountNumber string
 	Debit         decimal.Decimal
 	Credit        decimal.Decimal
-	CreatedAt     time.Time
+	CreatedAt     time.Time `gorm:"<-:create"`
 	UpdatedAt     time.Time
-	DeletedAt     gorm.DeletedAt `gorm:"index"`
 }
 
 // from domain to db
@@ -92,7 +89,7 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 		items = append(items, item)
 	}
 
-	v, err := domain.NewVoucher(
+	return domain.NewVoucher(
 		dbv.Id,
 		dbv.SobId,
 		dbv.VoucherType,
@@ -106,11 +103,6 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 		dbv.IsAudited,
 		dbv.IsPosted,
 	)
-	if err != nil {
-		return nil, errors.Wrap(err, "unmarshall voucher failed")
-	}
-
-	return v, nil
 }
 
 func unmarshallToQuery(dbv *voucher) query.Voucher {
@@ -118,6 +110,7 @@ func unmarshallToQuery(dbv *voucher) query.Voucher {
 
 	for _, dbItem := range dbv.LineItems {
 		items = append(items, query.LineItem{
+			Id:            dbItem.Id,
 			Summary:       dbItem.Summary,
 			AccountNumber: dbItem.AccountNumber,
 			Debit:         dbItem.Debit.String(),
@@ -126,8 +119,8 @@ func unmarshallToQuery(dbv *voucher) query.Voucher {
 	}
 
 	return query.Voucher{
+		Id:                 dbv.Id,
 		Sob:                dbv.SobId,
-		UUID:               dbv.Id,
 		VoucherType:        dbv.VoucherType,
 		Number:             dbv.Number,
 		AttachmentQuantity: dbv.AttachmentQuantity,

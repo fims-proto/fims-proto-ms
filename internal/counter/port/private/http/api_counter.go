@@ -26,9 +26,21 @@ func (h Handler) Dataload(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
+func (h Handler) Migrate(c *gin.Context) {
+	if err := h.app.Commands.Migrate.Handle(c); err != nil {
+		c.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
 func InitRouter(h Handler, r *gin.Engine) {
-	g := r.Group("/private/counters/:sob")
+	g1 := r.Group("/private/counters")
 	{
-		g.POST("/dataload", h.Dataload)
+		g1.POST("/migrate", h.Migrate)
+	}
+	g2 := r.Group("/private/counters/:sob")
+	{
+		g2.POST("/dataload", h.Dataload)
 	}
 }

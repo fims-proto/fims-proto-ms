@@ -66,5 +66,5 @@ func (i CounterInterface) queryThenProceed(
 	if err != nil {
 		return "", errors.Wrapf(err, "read counter failed with business object: separator %s, objects %s", sep, businessObjects)
 	}
-	return proceed(ctx, counter.CounterUUID)
+	return proceed(ctx, counter.Id)
 }

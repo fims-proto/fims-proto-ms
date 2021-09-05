@@ -10,6 +10,6 @@ func mapFromDomainAccount(a domain.Account) ledgerport.LoadLedgersRequest {
 		Number:         a.Number(),
 		Title:          a.Title(),
 		SuperiorNumber: a.SuperiorNumber(),
-		AccountType:    a.Type(),
+		AccountType:    a.Type().String(),
 	}
 }

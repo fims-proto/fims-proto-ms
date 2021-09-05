@@ -32,7 +32,8 @@ func TestResolveTenantBySubdomain_localhost(t *testing.T) {
 
 	c := gin.Context{
 		Request: &http.Request{
-			URL: localhost,
+			Host: "localhost:3000",
+			URL:  localhost,
 		},
 	}
 
@@ -48,7 +49,8 @@ func TestResolveTenantBySubdomain_remote(t *testing.T) {
 
 	c := gin.Context{
 		Request: &http.Request{
-			URL: remote,
+			Host: "some-domain.fims.com",
+			URL:  remote,
 		},
 	}
 

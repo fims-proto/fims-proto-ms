@@ -1,11 +1,12 @@
 package log
 
 import (
-	"flag"
 	"fmt"
 	"io"
 	"log"
 	"os"
+
+	"github.com/spf13/viper"
 )
 
 const (
@@ -21,7 +22,7 @@ var (
 
 	logEnabler func(lvl int, v ...interface{}) bool
 
-	flagDebug = flag.Bool("debug", false, "output debugging information")
+	flagDebug = viper.GetBool("debug")
 )
 
 func NewStdLoggerAdapter() io.Writer {
@@ -30,7 +31,7 @@ func NewStdLoggerAdapter() io.Writer {
 
 func NewStdLogEnablerAdapter() func(lvl int, v ...interface{}) bool {
 	return func(lvl int, _ ...interface{}) bool {
-		return lvl > 0 || *flagDebug
+		return lvl > 0 || flagDebug
 	}
 }
 
@@ -51,7 +52,7 @@ func InitLoggers(logEnablerAdapter func(lvl int, v ...interface{}) bool, loggerA
 
 	Infoln("logger initiated")
 
-	if *flagDebug {
+	if flagDebug {
 		Debugln("debug mode enabled")
 	}
 }
