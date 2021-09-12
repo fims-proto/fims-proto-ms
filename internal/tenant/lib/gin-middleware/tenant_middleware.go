@@ -2,6 +2,7 @@ package ginmiddleware
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -22,6 +23,9 @@ func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
 	}
 	return func(c *gin.Context) {
 		hostParts := strings.Split(strings.Split(c.Request.Host, ":")[0], ".")
+
+		log.Debug(c, "resolved subdoamin: %s", hostParts[0])
+
 		db, err := tenantManager.GetDBConnBySubdomain(c, hostParts[0])
 		if err != nil {
 			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", hostParts[0]))

@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
@@ -30,7 +31,15 @@ func NewPostVoucherHandler(readModel query.VouchersReadModel, repo domain.Reposi
 	}
 }
 
-func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) error {
+func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) (err error) {
+	log.Info(ctx, "handle posting voucher")
+	log.Debug(ctx, "handle posting voucher, cmd: %+v", cmd)
+	defer func() {
+		if err != nil {
+			log.Err(ctx, err, "handle posting failed")
+		}
+	}()
+
 	voucher, err := h.readModel.ReadByUUID(ctx, cmd.VoucherUUID)
 	if err != nil {
 		return errors.Wrap(err, "failed to read voucher while posting")
@@ -56,6 +65,7 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) erro
 		ctx,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
+			log.Info(ctx, "posting voucher")
 			if err := v.Post(); err != nil {
 				return nil, err
 			}

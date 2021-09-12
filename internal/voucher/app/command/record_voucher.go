@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/user/lib/authorization"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
@@ -40,7 +41,15 @@ func NewRecordVoucherHandler(repo domain.Repository, accountService AccountServi
 	}
 }
 
-func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (uuid.UUID, error) {
+func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (createdId uuid.UUID, err error) {
+	log.Info(ctx, "handle recording voucher")
+	log.Debug(ctx, "handle recording voucher, cmd: %+v", cmd)
+	defer func() {
+		if err != nil {
+			log.Err(ctx, err, "handle recording failed")
+		}
+	}()
+
 	if err := authorization.VerifyAuth("current-user", cmd.Sob, "voucher", "create"); err != nil {
 		return uuid.Nil, errors.Wrap(err, "failed verifing permission")
 	}

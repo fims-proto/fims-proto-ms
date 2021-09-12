@@ -133,5 +133,6 @@ func unmarshallToQuery(dbv *voucher) query.Voucher {
 		Auditor:            dbv.Auditor,
 		IsAudited:          dbv.IsAudited,
 		IsPosted:           dbv.IsPosted,
+		CreatedAt:          dbv.CreatedAt,
 	}
 }
