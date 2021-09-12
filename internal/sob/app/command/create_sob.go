@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/pkg/errors"
@@ -26,7 +27,15 @@ func NewCreateSobHandler(repo domain.Repository) CreateSobHandler {
 	}
 }
 
-func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
+func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (err error) {
+	log.Info(ctx, "handle creating sob")
+	log.Debug(ctx, "handle creating sob, cmd: %+v", cmd)
+	defer func() {
+		if err != nil {
+			log.Err(ctx, err, "handle creating sob failed")
+		}
+	}()
+
 	sob, err := domain.NewSob(cmd.Id, cmd.Name, cmd.Description)
 	if err != nil {
 		return errors.Wrapf(err, "create sob failed")

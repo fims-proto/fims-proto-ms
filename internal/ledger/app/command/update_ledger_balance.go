@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
@@ -44,7 +45,15 @@ func NewUpdateLedgerBalanceHandler(repo domain.Repository, accountService Accoun
 	}
 }
 
-func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedgerBalanceCmd) error {
+func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedgerBalanceCmd) (err error) {
+	log.Info(ctx, "handle updating ledger balance")
+	log.Debug(ctx, "handle updating ledger balance, cmd: %+v", cmd)
+	defer func() {
+		if err != nil {
+			log.Err(ctx, err, "handle updating ledger balance failed")
+		}
+	}()
+
 	// 1. check again if voucher already posted
 	voucherPosted, err := h.voucherService.CheckVoucherPosted(ctx, cmd.VoucherId)
 	if err != nil {
@@ -82,6 +91,8 @@ func (h UpdateLedgerBalanceHandler) Handle(ctx context.Context, cmd UpdateLedger
 			if len(ledgers) <= 0 {
 				return nil, errors.New("no ledgers found")
 			}
+
+			log.Info(ctx, "updating ledger balance")
 
 			// use sequencial process for now, as the data volumne should not be so large
 			// say 5 line items in one voucher, each line item should update 4 ledgers

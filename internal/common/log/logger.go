@@ -1,96 +1,103 @@
 package log
 
 import (
+	"context"
 	"fmt"
-	"io"
-	"log"
-	"os"
 
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
-const (
-	debugLv = iota
-	infoLv
-	errLv
-)
+var logger *zap.Logger
 
-var (
-	debug *log.Logger
-	info  *log.Logger
-	err   *log.Logger
+func InitLogger() {
+	config := zap.NewProductionConfig()
+	encoderConfig := zap.NewProductionEncoderConfig()
+	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	config.EncoderConfig = encoderConfig
 
-	logEnabler func(lvl int, v ...interface{}) bool
+	if viper.GetBool("logger.debug") {
+		config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	}
+	if !viper.GetBool("logger.jsonEncoding") {
+		config.Encoding = "console"
+	}
 
-	flagDebug = viper.GetBool("debug")
-)
-
-func NewStdLoggerAdapter() io.Writer {
-	return os.Stderr
-}
-
-func NewStdLogEnablerAdapter() func(lvl int, v ...interface{}) bool {
-	return func(lvl int, _ ...interface{}) bool {
-		return lvl > 0 || flagDebug
+	var err error
+	logger, err = config.Build(zap.AddCallerSkip(2))
+	if err != nil {
+		panic(err)
 	}
 }
 
-func InitLoggers(logEnablerAdapter func(lvl int, v ...interface{}) bool, loggerAdapters ...io.Writer) {
-	out := io.MultiWriter(loggerAdapters...)
+func SyncLogger() {
+	_ = logger.Sync()
+}
 
-	const (
-		sd = "[ debug ]: "
-		si = "[ info ] : "
-		se = "[ error ]: "
-	)
+func InfoWithoutCxt(template string, fmtArgs ...interface{}) {
+	info(context.Background(), template, fmtArgs...)
+}
 
-	debug = log.New(out, sd, log.LstdFlags|log.Lshortfile)
-	info = log.New(out, si, log.LstdFlags)
-	err = log.New(out, se, log.LstdFlags)
+func DebugWithoutCxt(template string, fmtArgs ...interface{}) {
+	debug(context.Background(), template, fmtArgs...)
+}
 
-	logEnabler = logEnablerAdapter
+func ErrWithoutCxt(err error, template string, fmtArgs ...interface{}) {
+	errLog(context.Background(), err, template, fmtArgs...)
+}
 
-	Infoln("logger initiated")
+func Info(ctx context.Context, template string, fmtArgs ...interface{}) {
+	info(ctx, template, fmtArgs...)
+}
 
-	if flagDebug {
-		Debugln("debug mode enabled")
+func Debug(ctx context.Context, template string, fmtArgs ...interface{}) {
+	debug(ctx, template, fmtArgs...)
+}
+
+func Err(ctx context.Context, err error, template string, fmtArgs ...interface{}) {
+	errLog(ctx, err, template, fmtArgs...)
+}
+
+func info(ctx context.Context, template string, fmtArgs ...interface{}) {
+	if logger != nil && logger.Core().Enabled(zap.InfoLevel) {
+		logger.Info(
+			getMessage(template, fmtArgs),
+		)
 	}
 }
 
-func Debugln(v ...interface{}) {
-	logln(debug, debugLv, v...)
-}
-
-func Debugf(format string, v ...interface{}) {
-	logf(debug, debugLv, format, v...)
-}
-
-func Infoln(v ...interface{}) {
-	logln(info, infoLv, v...)
-}
-
-func Infof(format string, v ...interface{}) {
-	logf(info, infoLv, format, v...)
-}
-
-func Errorln(v ...interface{}) {
-	logln(err, errLv, v...)
-}
-
-func Errorf(format string, v ...interface{}) {
-	logf(err, errLv, format, v...)
-}
-
-func logln(logger *log.Logger, lvl int, args ...interface{}) {
-	if !logEnabler(lvl) {
-		return
+func debug(ctx context.Context, template string, fmtArgs ...interface{}) {
+	if logger != nil && logger.Core().Enabled(zap.DebugLevel) {
+		logger.Debug(
+			getMessage(template, fmtArgs),
+		)
 	}
-	_ = logger.Output(3, fmt.Sprintln(args...))
 }
 
-func logf(logger *log.Logger, lvl int, format string, args ...interface{}) {
-	if !logEnabler(lvl) {
-		return
+func errLog(ctx context.Context, err error, template string, fmtArgs ...interface{}) {
+	if logger != nil && logger.Core().Enabled(zap.ErrorLevel) {
+		logger.Error(
+			getMessage(template, fmtArgs),
+			zap.Error(err),
+		)
 	}
-	_ = logger.Output(3, fmt.Sprintf(format, args...))
+}
+
+// getMessage format with Sprint, Sprintf, or neither.
+func getMessage(template string, fmtArgs []interface{}) string {
+	if len(fmtArgs) == 0 {
+		return template
+	}
+
+	if template != "" {
+		return fmt.Sprintf(template, fmtArgs...)
+	}
+
+	if len(fmtArgs) == 1 {
+		if str, ok := fmtArgs[0].(string); ok {
+			return str
+		}
+	}
+	return fmt.Sprint(fmtArgs...)
 }

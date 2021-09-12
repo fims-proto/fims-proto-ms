@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/csv"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"io"
 	"os"
 	"path/filepath"
@@ -37,11 +38,20 @@ func NewAccountDataloadHandler(repo domain.Repository, ledgerService LedgerServi
 	}
 }
 
-func (h AccountDataloadHandler) Handle(ctx context.Context, sob string) error {
+func (h AccountDataloadHandler) Handle(ctx context.Context, sob string) (err error) {
+	log.Info(ctx, "handle accounts dataload for sob %s", sob)
+	defer func() {
+		if err != nil {
+			log.Err(ctx, err, "handle accounts dataload for sob %s failed", sob)
+		}
+	}()
+
 	accountCmds, err := readFromCSV()
 	if err != nil {
 		return err
 	}
+
+	log.Info(ctx, "loaded csv file, size: %d", len(accountCmds))
 
 	var accounts []*domain.Account
 	for _, cmd := range accountCmds {

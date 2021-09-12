@@ -9,7 +9,7 @@ import (
 func Authn() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// before request
-		log.Debugf("check authentication against URL: %s", c.Request.RequestURI)
+		log.Debug(c, "check authentication against URL: %s", c.Request.RequestURI)
 
 		c.Next()
 

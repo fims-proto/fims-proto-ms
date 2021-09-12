@@ -6,3 +6,6 @@ postgres:
   dbName: "postgres"
   username: "fims_tenant_manager"
   password: "Welcome1!"
+logger:
+  debug: true
+  jsonEncoding: false

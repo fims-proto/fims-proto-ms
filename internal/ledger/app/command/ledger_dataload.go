@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
@@ -27,7 +28,14 @@ func NewLedgerDataloadHandler(repo domain.Repository) LedgerDataloadHandler {
 	return LedgerDataloadHandler{repo: repo}
 }
 
-func (h LedgerDataloadHandler) Handle(ctx context.Context, sob string, cmds []LedgerDataloadCmd) error {
+func (h LedgerDataloadHandler) Handle(ctx context.Context, sob string, cmds []LedgerDataloadCmd) (err error) {
+	log.Info(ctx, "handle ledger dataload for sob %s", sob)
+	defer func() {
+		if err != nil {
+			log.Err(ctx, err, "handle ledger dataload for sob %s failed", sob)
+		}
+	}()
+
 	decimalZero := decimal.RequireFromString("0")
 
 	var ledgers []*domain.Ledger

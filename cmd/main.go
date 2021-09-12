@@ -51,7 +51,8 @@ func main() {
 
 	loadConfig()
 
-	log.InitLoggers(log.NewStdLogEnablerAdapter(), log.NewStdLoggerAdapter())
+	log.InitLogger()
+	defer cleanup()
 
 	dbConnector := db.NewDBConnector(
 		viper.GetString("postgres.host"),
@@ -123,6 +124,8 @@ func main() {
 		counterRepository,
 	)
 
+	log.InfoWithoutCxt("All module applications initiated")
+
 	router := gin.Default()
 	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantManager))
 	router.Use(authentication.Authn())
@@ -138,6 +141,9 @@ func main() {
 	ledgerprivatehttpport.InitRouter(ledgerprivatehttpport.NewHandler(&ledgerApplication), router)
 	voucherprivatehttpport.InitRouter(voucherprivatehttpport.NewHandler(&voucherApplication), router)
 
+	log.InfoWithoutCxt("All module routers initiated")
+
+	log.InfoWithoutCxt("Starting gin engine...")
 	if err := router.Run(":" + viper.GetString("app.port")); err != nil {
 		panic(err.Error())
 	}
@@ -161,7 +167,6 @@ func loadConfig() {
 	// check mandatory and set defaults:
 	checkResult := bytes.Buffer{}
 	// app
-	viper.SetDefault("app.debug", false)
 	viper.SetDefault("app.port", "3000")
 	// postgres
 	if !viper.IsSet("postgres.host") {
@@ -180,8 +185,16 @@ func loadConfig() {
 	if !viper.IsSet("postgres.password") {
 		checkResult.WriteString("postgres.password; ")
 	}
+	// logger
+	viper.SetDefault("logger.debug", false)
+	viper.SetDefault("logger.jsonEncoding", true)
 
 	if checkResult.Len() > 0 {
 		panic("config missing: " + checkResult.String())
 	}
+}
+
+func cleanup() {
+	log.InfoWithoutCxt("fims terminating...")
+	log.SyncLogger()
 }
