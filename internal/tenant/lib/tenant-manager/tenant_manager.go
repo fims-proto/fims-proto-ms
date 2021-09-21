@@ -2,11 +2,13 @@ package tenantmanager
 
 import (
 	"context"
+	"fmt"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"sync"
 
 	"github.com/google/uuid"
+	kratos "github.com/ory/kratos-client-go"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -20,9 +22,10 @@ type tenantService interface {
 }
 
 type tenant struct {
-	tenantId  uuid.UUID
-	subdomain string
-	dbConn    *gorm.DB
+	tenantId     uuid.UUID
+	subdomain    string
+	dbConn       *gorm.DB
+	kratosClient *kratos.APIClient
 }
 
 type syncData struct {
@@ -50,13 +53,20 @@ func NewTenantManager(tenantService tenantService, dbConnector dbConnector) *Ten
 	}
 }
 
-func (t *TenantManagerImpl) GetDBConnBySubdomain(ctx context.Context, subdomain string) (db *gorm.DB, err error) {
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "get DB connection by subdomain %s failed", subdomain)
-		}
-	}()
+func (t *TenantManagerImpl) GetKratosClientBySubdomain(ctx context.Context, subdomain string) (*kratos.APIClient, error) {
+	if subdomain == "" {
+		return nil, errors.New("empty subdomain")
+	}
 
+	value, err := t.loadOrStore(ctx, subdomain)
+	if err != nil {
+		return nil, err
+	}
+
+	return value.kratosClient, nil
+}
+
+func (t *TenantManagerImpl) GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error) {
 	if subdomain == "" {
 		return nil, errors.New("empty subdomain")
 	}
@@ -79,7 +89,7 @@ func (t *TenantManagerImpl) loadOrStore(ctx context.Context, subdoamin string) (
 	d := actual.(*syncData)
 	if d.data == nil {
 		d.once.Do(func() {
-			d.data, err = t.loadTenant(ctx, subdoamin)
+			d.data, err = t.initiateTenant(ctx, subdoamin)
 			if err != nil {
 				// if failed, reset once
 				d.once = &sync.Once{}
@@ -90,7 +100,7 @@ func (t *TenantManagerImpl) loadOrStore(ctx context.Context, subdoamin string) (
 	return d.data, err
 }
 
-func (t *TenantManagerImpl) loadTenant(ctx context.Context, subdomain string) (*tenant, error) {
+func (t *TenantManagerImpl) initiateTenant(ctx context.Context, subdomain string) (*tenant, error) {
 	queriedTenant, err := t.tenantService.ReadTenantBySubdomain(ctx, subdomain)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot load tenant")
@@ -98,13 +108,22 @@ func (t *TenantManagerImpl) loadTenant(ctx context.Context, subdomain string) (*
 
 	log.Debug(ctx, "trying to open connection for schema %s", queriedTenant.TenantId.String())
 
+	// DB connection
 	db, err := t.dbConnector.Open(queriedTenant.TenantId.String(), queriedTenant.DBConnPassword)
 	if err != nil {
 		return nil, errors.Wrap(err, "open db connection failed")
 	}
+
+	// Kratos client
+	kratosConfig := kratos.NewConfiguration()
+	kratosConfig.Servers[0].URL = queriedTenant.KratosServerUrl
+	kratosConfig.Servers[0].Description = fmt.Sprintf("Kratos instance for tenant %s", queriedTenant.Subdomain)
+	kratosApiClient := kratos.NewAPIClient(kratosConfig)
+
 	return &tenant{
-		tenantId:  queriedTenant.TenantId,
-		subdomain: queriedTenant.Subdomain,
-		dbConn:    db,
+		tenantId:     queriedTenant.TenantId,
+		subdomain:    queriedTenant.Subdomain,
+		dbConn:       db,
+		kratosClient: kratosApiClient,
 	}, nil
 }

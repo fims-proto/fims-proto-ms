@@ -128,7 +128,7 @@ func main() {
 
 	router := gin.Default()
 	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantManager))
-	router.Use(authentication.Authn())
+	router.Use(authentication.Authn(tenantManager))
 
 	// public http API
 	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), router)
@@ -140,6 +140,11 @@ func main() {
 	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), router)
 	ledgerprivatehttpport.InitRouter(ledgerprivatehttpport.NewHandler(&ledgerApplication), router)
 	voucherprivatehttpport.InitRouter(voucherprivatehttpport.NewHandler(&voucherApplication), router)
+
+	// session validation endpoint
+	router.HEAD("/ping", func(c *gin.Context) {
+		c.Status(200)
+	})
 
 	log.InfoWithoutCxt("All module routers initiated")
 
