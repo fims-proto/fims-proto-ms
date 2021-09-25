@@ -36,7 +36,7 @@ INSERT INTO "fims_tenant_manager"."tenants" (
     '93fe5029-1886-4b63-94ca-35c503a52eff',
     'localhost',
     'hePrAqafu&5Ep49V8th9',
-    'http://127.0.0.1:4433',
+    'http://kratos:4433',
     '2021-08-29 15:16:58.159',
     '2021-08-29 15:16:58.159'
 );
