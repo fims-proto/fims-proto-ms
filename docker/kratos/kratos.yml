@@ -31,8 +31,21 @@ selfservice:
     - http://127.0.0.1:4455
 
   methods:
+    link:
+      enabled: true
     password:
       enabled: true
+    profile:
+      enabled: true
+
+  flows:
+    recovery:
+      enabled: true
+    settings:
+      ui_url: http://127.0.0.1:4455/user/settings
+    logout:
+      after:
+        default_browser_return_url: http://127.0.0.1:4455/user/loggedOut
 
 log:
   level: debug
