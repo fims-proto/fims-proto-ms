@@ -31,6 +31,7 @@ func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
 			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", hostParts[0]))
 		}
 		c.Set("db", db.WithContext(c))
+		c.Set("subdomain", hostParts[0])
 
 		c.Next()
 	}
