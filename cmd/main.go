@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	_ "github/fims-proto/fims-proto-ms/docs"
 	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter/db"
 	accountledgeradapter "github/fims-proto/fims-proto-ms/internal/account/adapter/ledger"
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
@@ -40,6 +41,9 @@ import (
 	voucherprivatehttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
 	voucherintraport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/intraprocess"
 	voucherpublichttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginswagger "github.com/swaggo/gin-swagger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -128,23 +132,26 @@ func main() {
 
 	router := gin.Default()
 	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantManager))
-	router.Use(authentication.Authn(tenantManager))
 
 	// public http API
-	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), router)
-	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
+	publicApiRouter := router.Group("/api/v1")
+	publicApiRouter.Use(authentication.Authn(tenantManager))
+	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), publicApiRouter)
+	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), publicApiRouter)
 
-	// private http API
-	sobprivatehttpport.InitRouter(sobprivatehttpport.NewHandler(&sobApplication), router)
-	counterprivatehttpport.InitRouter(counterprivatehttpport.NewHandler(&counterApplication), router)
-	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), router)
-	ledgerprivatehttpport.InitRouter(ledgerprivatehttpport.NewHandler(&ledgerApplication), router)
-	voucherprivatehttpport.InitRouter(voucherprivatehttpport.NewHandler(&voucherApplication), router)
+	// private http API, should have different authentication method then public API
+	privateApiRouter := router.Group("/internal")
+	privateApiRouter.Use(authentication.Authn(tenantManager))
+	sobprivatehttpport.InitRouter(sobprivatehttpport.NewHandler(&sobApplication), privateApiRouter)
+	counterprivatehttpport.InitRouter(counterprivatehttpport.NewHandler(&counterApplication), privateApiRouter)
+	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), privateApiRouter)
+	ledgerprivatehttpport.InitRouter(ledgerprivatehttpport.NewHandler(&ledgerApplication), privateApiRouter)
+	voucherprivatehttpport.InitRouter(voucherprivatehttpport.NewHandler(&voucherApplication), privateApiRouter)
 
-	// session validation endpoint
-	router.HEAD("/ping", func(c *gin.Context) {
-		c.Status(200)
-	})
+	// gin-swagger
+	if viper.GetString("profile") == "dev" {
+		router.GET("/swagger/*any", ginswagger.WrapHandler(swaggerfiles.Handler))
+	}
 
 	log.InfoWithoutCxt("All module routers initiated")
 

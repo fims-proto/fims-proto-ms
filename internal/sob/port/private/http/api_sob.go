@@ -26,8 +26,8 @@ func (h Handler) Migrate(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func InitRouter(h Handler, r *gin.Engine) {
-	g := r.Group("/private/sobs")
+func InitRouter(h Handler, r *gin.RouterGroup) {
+	g := r.Group("/sobs")
 	{
 		g.POST("/migrate", h.Migrate)
 	}

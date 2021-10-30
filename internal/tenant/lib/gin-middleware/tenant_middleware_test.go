@@ -42,6 +42,23 @@ func TestResolveTenantBySubdomain_localhost(t *testing.T) {
 	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
 }
 
+func TestResolveTenantBySubdomain_127_0_0_1(t *testing.T) {
+	t.Parallel()
+
+	localhost, _ := url.Parse("http://127.0.0.1:3000/test")
+
+	c := gin.Context{
+		Request: &http.Request{
+			Host: "127.0.0.1:3000",
+			URL:  localhost,
+		},
+	}
+
+	ResolveTenantBySubdomain(mockTenantManager{})(&c)
+
+	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
+}
+
 func TestResolveTenantBySubdomain_remote(t *testing.T) {
 	t.Parallel()
 

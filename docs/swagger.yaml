@@ -1,0 +1,519 @@
+basePath: /api/v1
+definitions:
+  http.AuditVoucherRequest:
+    properties:
+      auditor:
+        type: string
+    type: object
+  http.CreateSobRequest:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.LineItemRequest:
+    properties:
+      accountNumber:
+        type: string
+      credit:
+        type: string
+      debit:
+        type: string
+      id:
+        type: string
+      summary:
+        type: string
+    type: object
+  http.LineItemResponse:
+    properties:
+      accountNumber:
+        type: string
+      credit:
+        type: string
+      debit:
+        type: string
+      id:
+        type: string
+      summary:
+        type: string
+    type: object
+  http.RecordVoucherRequest:
+    properties:
+      attachmentQuantity:
+        type: integer
+      creator:
+        type: string
+      lineItems:
+        items:
+          $ref: '#/definitions/http.LineItemRequest'
+        type: array
+      voucherType:
+        type: string
+    type: object
+  http.ReviewVoucherRequest:
+    properties:
+      reviewer:
+        type: string
+    type: object
+  http.SobResponse:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.UpdateVoucherRequest:
+    properties:
+      lineItems:
+        items:
+          $ref: '#/definitions/http.LineItemRequest'
+        type: array
+    type: object
+  http.VoucherResponse:
+    properties:
+      attachmentQuantity:
+        type: integer
+      auditor:
+        type: string
+      createdAt:
+        type: string
+      creator:
+        type: string
+      credit:
+        type: string
+      debit:
+        type: string
+      id:
+        type: string
+      isAudited:
+        type: boolean
+      isPosted:
+        type: boolean
+      isReviewed:
+        type: boolean
+      lineItems:
+        items:
+          $ref: '#/definitions/http.LineItemResponse'
+        type: array
+      number:
+        type: string
+      reviewer:
+        type: string
+      sob:
+        type: string
+      type:
+        type: string
+    type: object
+  internal_sob_port_public_http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
+  internal_voucher_port_public_http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
+host: localhost:3000
+info:
+  contact: {}
+  description: Prototype of FIMS
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: FIMS prototype
+  version: "0.1"
+paths:
+  /sobs:
+    get:
+      consumes:
+      - application/json
+      description: List all sobs
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.SobResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
+      summary: List all sobs
+      tags:
+      - sobs
+    post:
+      consumes:
+      - application/json
+      description: Create sob
+      parameters:
+      - description: Create Sob
+        in: body
+        name: sob
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateSobRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
+      summary: Create sob
+      tags:
+      - sobs
+  /sobs/{sob}:
+    get:
+      consumes:
+      - application/json
+      description: Show sob by id
+      parameters:
+      - description: Id of a Sob
+        in: path
+        name: sob
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.SobResponse'
+        "404":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
+      summary: Show sob by id
+      tags:
+      - sobs
+  /vouchers/{sob}:
+    get:
+      consumes:
+      - application/json
+      description: List all vouchers by sob with paginagion
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.VoucherResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: List all vouchers by sob
+      tags:
+      - vouchers
+    post:
+      consumes:
+      - application/json
+      description: Create voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Create voucher request
+        in: body
+        name: RecordVoucherRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.RecordVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Create voucher
+      tags:
+      - vouchers
+  /vouchers/{sob}/{voucherId}:
+    get:
+      consumes:
+      - application/json
+      description: Show voucher by sob and voucher id
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.VoucherResponse'
+        "404":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Show voucher by sob and voucher id
+      tags:
+      - vouchers
+    patch:
+      consumes:
+      - application/json
+      description: Update voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      - description: Update voucher request
+        in: body
+        name: UpdateVoucherRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Update voucher
+      tags:
+      - vouchers
+  /vouchers/{sob}/{voucherId}/audit:
+    post:
+      consumes:
+      - application/json
+      description: Audit voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      - description: Audit voucher request, auditor user Id
+        in: body
+        name: AuditVoucherRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.AuditVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Audit voucher
+      tags:
+      - vouchers
+  /vouchers/{sob}/{voucherId}/cancel-audit:
+    post:
+      consumes:
+      - application/json
+      description: Cancel audit voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      - description: Cancel audit voucher request, , auditor user Id
+        in: body
+        name: AuditVoucherRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.AuditVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Cancel audit voucher
+      tags:
+      - vouchers
+  /vouchers/{sob}/{voucherId}/cancel-review:
+    post:
+      consumes:
+      - application/json
+      description: Cancel review voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      - description: Cancel review voucher request, reviewer user Id
+        in: body
+        name: ReviewVoucherRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReviewVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Cancel review voucher
+      tags:
+      - vouchers
+  /vouchers/{sob}/{voucherId}/post:
+    post:
+      consumes:
+      - application/json
+      description: Post voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Post voucher
+      tags:
+      - vouchers
+  /vouchers/{sob}/{voucherId}/review:
+    post:
+      consumes:
+      - application/json
+      description: Review voucher
+      parameters:
+      - description: Sob Id
+        in: path
+        name: sob
+        required: true
+        type: string
+      - description: Voucher Id
+        in: path
+        name: voucherId
+        required: true
+        type: string
+      - description: Review voucher request, reviewer user Id
+        in: body
+        name: ReviewVoucherRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReviewVoucherRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+      summary: Review voucher
+      tags:
+      - vouchers
+swagger: "2.0"

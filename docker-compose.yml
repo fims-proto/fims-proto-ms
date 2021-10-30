@@ -1,18 +1,18 @@
 version: "3.4"
 
 services:
-  fimsprotoms:
-    image: fimsprotoms
-    build:
-      context: .
-      dockerfile: ./docker/app/Dockerfile
-    ports:
-      - 3000:3000
-    environment:
-      - GIN_MODE=debug
-      - PROFILE=dev-docker
-    depends_on: 
-      - db
+  # fimsprotoms:
+  #   image: fimsprotoms
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/app/Dockerfile
+  #   ports:
+  #     - 3000:3000
+  #   environment:
+  #     - GIN_MODE=debug
+  #     - PROFILE=dev-docker
+  #   depends_on: 
+  #     - db
 
   db:
     build:
