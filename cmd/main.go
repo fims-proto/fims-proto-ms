@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	_ "github/fims-proto/fims-proto-ms/docs"
 	accountadapter "github/fims-proto/fims-proto-ms/internal/account/adapter/db"
 	accountledgeradapter "github/fims-proto/fims-proto-ms/internal/account/adapter/ledger"
 	accountapp "github/fims-proto/fims-proto-ms/internal/account/app"
@@ -15,6 +16,7 @@ import (
 	counterapp "github/fims-proto/fims-proto-ms/internal/counter/app"
 	counterprivatehttpport "github/fims-proto/fims-proto-ms/internal/counter/port/private/http"
 	counterintraport "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
+	"github/fims-proto/fims-proto-ms/internal/devops"
 	ledgeraccountadapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
 	ledgeradapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/db"
 	ledgervoucheradapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/voucher"
@@ -31,7 +33,6 @@ import (
 	tenantmanager "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-manager"
 	tenantservice "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
 	tenantintraport "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
-	"github/fims-proto/fims-proto-ms/internal/user/lib/authentication"
 	voucheraccountadapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
 	vouchercounteradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
 	voucheradapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
@@ -40,6 +41,10 @@ import (
 	voucherprivatehttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
 	voucherintraport "github/fims-proto/fims-proto-ms/internal/voucher/port/private/intraprocess"
 	voucherpublichttpport "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+	"strings"
+
+	swaggerfiles "github.com/swaggo/files"
+	ginswagger "github.com/swaggo/gin-swagger"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -128,23 +133,27 @@ func main() {
 
 	router := gin.Default()
 	router.Use(ginmiddleware.ResolveTenantBySubdomain(tenantManager))
-	router.Use(authentication.Authn(tenantManager))
 
 	// public http API
-	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), router)
-	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), router)
+	publicApiRouter := router.Group("/api/v1")
+	sobpublichttpport.InitRouter(sobpublichttpport.NewHandler(&sobApplication), publicApiRouter)
+	voucherpublichttpport.InitRouter(voucherpublichttpport.NewHandler(&voucherApplication), publicApiRouter)
 
-	// private http API
-	sobprivatehttpport.InitRouter(sobprivatehttpport.NewHandler(&sobApplication), router)
-	counterprivatehttpport.InitRouter(counterprivatehttpport.NewHandler(&counterApplication), router)
-	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), router)
-	ledgerprivatehttpport.InitRouter(ledgerprivatehttpport.NewHandler(&ledgerApplication), router)
-	voucherprivatehttpport.InitRouter(voucherprivatehttpport.NewHandler(&voucherApplication), router)
+	// private http API, should have different authentication method then public API
+	privateApiRouter := router.Group("/internal")
+	sobprivatehttpport.InitRouter(sobprivatehttpport.NewHandler(&sobApplication), privateApiRouter)
+	counterprivatehttpport.InitRouter(counterprivatehttpport.NewHandler(&counterApplication), privateApiRouter)
+	accountprivatehttpport.InitRouter(accountprivatehttpport.NewHandler(&accountApplication), privateApiRouter)
+	ledgerprivatehttpport.InitRouter(ledgerprivatehttpport.NewHandler(&ledgerApplication), privateApiRouter)
+	voucherprivatehttpport.InitRouter(voucherprivatehttpport.NewHandler(&voucherApplication), privateApiRouter)
 
-	// session validation endpoint
-	router.HEAD("/ping", func(c *gin.Context) {
-		c.Status(200)
-	})
+	if strings.HasPrefix(viper.GetString("profile"), "dev") {
+		// gin-swagger
+		router.GET("/swagger/*any", ginswagger.WrapHandler(swaggerfiles.Handler))
+		// devops
+		devopsApiRouter := router.Group("/devops")
+		devops.InitJwtHandler(devopsApiRouter)
+	}
 
 	log.InfoWithoutCxt("All module routers initiated")
 

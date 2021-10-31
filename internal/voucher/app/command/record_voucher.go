@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
-	"github/fims-proto/fims-proto-ms/internal/user/lib/authorization"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
@@ -49,10 +48,6 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 			log.Err(ctx, err, "handle recording failed")
 		}
 	}()
-
-	if err := authorization.VerifyAuth("current-user", cmd.Sob, "voucher", "create"); err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed verifing permission")
-	}
 
 	var accNumbers []string
 	var lineItems []*domain.LineItem

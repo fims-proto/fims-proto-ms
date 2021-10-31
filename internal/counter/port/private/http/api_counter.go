@@ -34,12 +34,12 @@ func (h Handler) Migrate(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-func InitRouter(h Handler, r *gin.Engine) {
-	g1 := r.Group("/private/counters")
+func InitRouter(h Handler, r *gin.RouterGroup) {
+	g1 := r.Group("/counters")
 	{
 		g1.POST("/migrate", h.Migrate)
 	}
-	g2 := r.Group("/private/counters/:sob")
+	g2 := r.Group("/counters/:sob")
 	{
 		g2.POST("/dataload", h.Dataload)
 	}

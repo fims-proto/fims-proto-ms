@@ -17,21 +17,26 @@ type tenantManager interface {
 // subdomain:
 // https://random-domain.xxxhost.com -> random-domain
 // http://localhost -> localhost
+// http://127.0.0.1 -> localhost
 func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
 	if tenantManager == nil {
 		panic("nil tenant manager")
 	}
 	return func(c *gin.Context) {
-		hostParts := strings.Split(strings.Split(c.Request.Host, ":")[0], ".")
+		host := strings.Split(c.Request.Host, ":")[0]
+		subdomain := strings.Split(host, ".")[0]
+		if host == "127.0.0.1" {
+			subdomain = "localhost"
+		}
 
-		log.Debug(c, "resolved subdoamin: %s", hostParts[0])
+		log.Debug(c, "resolved subdoamin: %s", subdomain)
 
-		db, err := tenantManager.GetDBConnBySubdomain(c, hostParts[0])
+		db, err := tenantManager.GetDBConnBySubdomain(c, subdomain)
 		if err != nil {
-			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", hostParts[0]))
+			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", subdomain))
 		}
 		c.Set("db", db.WithContext(c))
-		c.Set("subdomain", hostParts[0])
+		c.Set("subdomain", subdomain)
 
 		c.Next()
 	}

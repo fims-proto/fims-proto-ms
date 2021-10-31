@@ -2,13 +2,11 @@ package tenantmanager
 
 import (
 	"context"
-	"fmt"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"sync"
 
 	"github.com/google/uuid"
-	kratos "github.com/ory/kratos-client-go"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
@@ -22,10 +20,9 @@ type tenantService interface {
 }
 
 type tenant struct {
-	tenantId     uuid.UUID
-	subdomain    string
-	dbConn       *gorm.DB
-	kratosClient *kratos.APIClient
+	tenantId  uuid.UUID
+	subdomain string
+	dbConn    *gorm.DB
 }
 
 type syncData struct {
@@ -51,19 +48,6 @@ func NewTenantManager(tenantService tenantService, dbConnector dbConnector) *Ten
 		tenantService: tenantService,
 		dbConnector:   dbConnector,
 	}
-}
-
-func (t *TenantManagerImpl) GetKratosClientBySubdomain(ctx context.Context, subdomain string) (*kratos.APIClient, error) {
-	if subdomain == "" {
-		return nil, errors.New("empty subdomain")
-	}
-
-	value, err := t.loadOrStore(ctx, subdomain)
-	if err != nil {
-		return nil, err
-	}
-
-	return value.kratosClient, nil
 }
 
 func (t *TenantManagerImpl) GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error) {
@@ -114,16 +98,9 @@ func (t *TenantManagerImpl) initiateTenant(ctx context.Context, subdomain string
 		return nil, errors.Wrap(err, "open db connection failed")
 	}
 
-	// Kratos client
-	kratosConfig := kratos.NewConfiguration()
-	kratosConfig.Servers[0].URL = queriedTenant.KratosServerUrl
-	kratosConfig.Servers[0].Description = fmt.Sprintf("Kratos instance for tenant %s", queriedTenant.Subdomain)
-	kratosApiClient := kratos.NewAPIClient(kratosConfig)
-
 	return &tenant{
-		tenantId:     queriedTenant.TenantId,
-		subdomain:    queriedTenant.Subdomain,
-		dbConn:       db,
-		kratosClient: kratosApiClient,
+		tenantId:  queriedTenant.TenantId,
+		subdomain: queriedTenant.Subdomain,
+		dbConn:    db,
 	}, nil
 }

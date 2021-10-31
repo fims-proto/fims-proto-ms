@@ -3,8 +3,7 @@ package query
 import "github.com/google/uuid"
 
 type Tenant struct {
-	TenantId        uuid.UUID
-	Subdomain       string
-	DBConnPassword  string
-	KratosServerUrl string
+	TenantId       uuid.UUID
+	Subdomain      string
+	DBConnPassword string
 }
