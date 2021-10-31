@@ -12,8 +12,16 @@ In production mode, frontend should also be wrapped into fims-iap, to avoid comm
 ## Backend
 Port `4455` is exposed by ory/oathkeeper as reverse proxy, acting as single entry point.  
 To access:
-- kratos, use `http://127.0.0.1:4455/kratos/public/<any path>`
-- fims, use `http://127.0.0.1:4455/fims/s/<any path>`
+- kratos public API, use `http://127.0.0.1:4455/kratos/public/<any path>`
+- fims public API, use `http://127.0.0.1:4455/fims/s/<any path>`
 
 ## Create user
 In [fims-iap](https://github.com/fims-proto/fims-iap) folder, run shell `./scripts/user_creation.sh`, then `./scripts/user_invitation.sh`
+
+## Swagger UI
+After starting fims-proto-ms + fims-iap + fims-proto-ui, login fims-proto-ui, then visit `http://127.0.0.1:4455/fims/public/swagger.index`.  
+
+## Postman test
+1. Import [postman collection](https://github.com/fims-proto/fims-proto-ms/tree/master/pm_collection) into Postman app
+2. Get jwt token by visit `http://127.0.0.1:5000/devops/jwt`, login if necessary, copy all in the page
+3. In postman collection, choose Authorization type as `Bearer Token`, put the jwt token into token field.
