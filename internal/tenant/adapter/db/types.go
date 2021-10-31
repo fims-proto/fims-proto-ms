@@ -8,19 +8,17 @@ import (
 )
 
 type tenant struct {
-	Id              uuid.UUID `gorm:"type:uuid"`
-	Subdomain       string
-	DBConnPassword  string
-	KratosServerUrl string
-	CreatedAt       time.Time `gorm:"<-:create"`
-	UpdatedAt       time.Time
+	Id             uuid.UUID `gorm:"type:uuid"`
+	Subdomain      string
+	DBConnPassword string
+	CreatedAt      time.Time `gorm:"<-:create"`
+	UpdatedAt      time.Time
 }
 
 func unmarshallToQuery(t *tenant) query.Tenant {
 	return query.Tenant{
-		TenantId:        t.Id,
-		Subdomain:       t.Subdomain,
-		DBConnPassword:  t.DBConnPassword,
-		KratosServerUrl: t.KratosServerUrl,
+		TenantId:       t.Id,
+		Subdomain:      t.Subdomain,
+		DBConnPassword: t.DBConnPassword,
 	}
 }

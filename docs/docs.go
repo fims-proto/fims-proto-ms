@@ -810,8 +810,8 @@ type swaggerInfo struct {
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
 	Version:     "0.1",
-	Host:        "localhost:3000",
-	BasePath:    "/api/v1",
+	Host:        "127.0.0.1:4455",
+	BasePath:    "/fims/s/api/v1",
 	Schemes:     []string{},
 	Title:       "FIMS prototype",
 	Description: "Prototype of FIMS",

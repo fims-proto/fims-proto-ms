@@ -1,4 +1,4 @@
-basePath: /api/v1
+basePath: /fims/s/api/v1
 definitions:
   http.AuditVoucherRequest:
     properties:
@@ -123,7 +123,7 @@ definitions:
       slug:
         type: string
     type: object
-host: localhost:3000
+host: 127.0.0.1:4455
 info:
   contact: {}
   description: Prototype of FIMS

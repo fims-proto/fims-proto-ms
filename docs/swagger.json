@@ -10,8 +10,8 @@
         },
         "version": "0.1"
     },
-    "host": "localhost:3000",
-    "basePath": "/api/v1",
+    "host": "127.0.0.1:4455",
+    "basePath": "/fims/s/api/v1",
     "paths": {
         "/sobs": {
             "get": {

@@ -109,8 +109,8 @@ func wrapErr(e error) Error {
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	g := r.Group("/sobs")
 	{
-		g.GET("/", h.AllSobs)
+		g.GET("", h.AllSobs)
 		g.GET("/:sob", h.SobById)
-		g.POST("/", h.Create)
+		g.POST("", h.Create)
 	}
 }

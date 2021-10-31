@@ -44,6 +44,6 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 
 	g2 := r.Group("/ledgers/:sob")
 	{
-		g2.GET("/", h.AllLedgers)
+		g2.GET("", h.AllLedgers)
 	}
 }

@@ -294,9 +294,9 @@ func wrapErr(e error) Error {
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	g := r.Group("/vouchers/:sob")
 	{
-		g.GET("/", h.AllVouchers)
+		g.GET("", h.AllVouchers)
 		g.GET("/:voucherId", h.VoucherByUUID)
-		g.POST("/", h.Record)
+		g.POST("", h.Record)
 		g.PATCH("/:voucherId", h.Update)
 		g.POST("/:voucherId/audit", h.Audit)
 		g.POST("/:voucherId/cancel-audit", h.CancelAudit)
