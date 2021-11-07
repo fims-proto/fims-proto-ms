@@ -28,7 +28,7 @@ func NewHandler(app *app.Application) Handler {
 // @Produce application/json
 // @Success 200 {array} SobResponse
 // @Failure 500 {object} Error
-// @Router /sobs [get]
+// @Router /sobs/ [get]
 func (h Handler) AllSobs(c *gin.Context) {
 	sobs, err := h.app.Queries.ReadSobs.HandleReadAll(c)
 	if err != nil {
@@ -76,7 +76,7 @@ func (h Handler) SobById(c *gin.Context) {
 // @Success 201
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /sobs [post]
+// @Router /sobs/ [post]
 func (h Handler) Create(c *gin.Context) {
 	var req CreateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -107,10 +107,10 @@ func wrapErr(e error) Error {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g := r.Group("/sobs")
+	g := r.Group("/sobs/")
 	{
 		g.GET("", h.AllSobs)
-		g.GET("/:sob", h.SobById)
+		g.GET(":sob", h.SobById)
 		g.POST("", h.Create)
 	}
 }

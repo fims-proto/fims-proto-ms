@@ -27,7 +27,7 @@ var doc = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sobs": {
+        "/sobs/": {
             "get": {
                 "description": "List all sobs",
                 "consumes": [
@@ -141,7 +141,7 @@ var doc = `{
                 }
             }
         },
-        "/vouchers/{sob}": {
+        "/vouchers/{sob}/": {
             "get": {
                 "description": "List all vouchers by sob with paginagion",
                 "consumes": [
@@ -811,7 +811,7 @@ type swaggerInfo struct {
 var SwaggerInfo = swaggerInfo{
 	Version:     "0.1",
 	Host:        "127.0.0.1:4455",
-	BasePath:    "/fims/s/api/v1",
+	BasePath:    "/fims/api/v1",
 	Schemes:     []string{},
 	Title:       "FIMS prototype",
 	Description: "Prototype of FIMS",

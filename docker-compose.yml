@@ -1,17 +1,17 @@
 version: "3"
 
 services:
-  #  our app
-  fimsprotoms:
-    image: fimsprotoms
-    build:
-      context: .
-      dockerfile: ./docker/app/Dockerfile
-    environment:
-      - GIN_MODE=debug
-      - PROFILE=dev-docker
-    depends_on: 
-      - db
+  # #  our app
+  # fimsprotoms:
+  #   image: fimsprotoms
+  #   build:
+  #     context: .
+  #     dockerfile: ./docker/app/Dockerfile
+  #   environment:
+  #     - GIN_MODE=debug
+  #     - PROFILE=dev-docker
+  #   depends_on: 
+  #     - db
 
   # postgresql database
   db:
@@ -23,6 +23,8 @@ services:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: test
+    ports:
+      - 5432:5432
 
   # test purpose tools:
   # database admin
@@ -31,8 +33,3 @@ services:
     restart: always
     ports:
       - 8080:8080
-
-networks:
-  default:
-    external: true
-    name: fims-intranet

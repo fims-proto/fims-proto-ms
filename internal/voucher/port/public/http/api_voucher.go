@@ -30,7 +30,7 @@ func NewHandler(app *app.Application) Handler {
 // @Param sob path string true "Sob Id"
 // @Success 200 {array} VoucherResponse
 // @Failure 500 {object} Error
-// @Router /vouchers/{sob} [get]
+// @Router /vouchers/{sob}/ [get]
 func (h Handler) AllVouchers(c *gin.Context) {
 	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c, c.Param("sob"))
 	if err != nil {
@@ -236,7 +236,7 @@ func (h Handler) Update(c *gin.Context) {
 // @Success 201
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sob} [post]
+// @Router /vouchers/{sob}/ [post]
 func (h Handler) Record(c *gin.Context) {
 	var req RecordVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -292,16 +292,16 @@ func wrapErr(e error) Error {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g := r.Group("/vouchers/:sob")
+	g := r.Group("/vouchers/:sob/")
 	{
 		g.GET("", h.AllVouchers)
-		g.GET("/:voucherId", h.VoucherByUUID)
+		g.GET(":voucherId", h.VoucherByUUID)
 		g.POST("", h.Record)
-		g.PATCH("/:voucherId", h.Update)
-		g.POST("/:voucherId/audit", h.Audit)
-		g.POST("/:voucherId/cancel-audit", h.CancelAudit)
-		g.POST("/:voucherId/review", h.Review)
-		g.POST("/:voucherId/cancel-review", h.CancelReview)
-		g.POST("/:voucherId/post", h.Post)
+		g.PATCH(":voucherId", h.Update)
+		g.POST(":voucherId/audit", h.Audit)
+		g.POST(":voucherId/cancel-audit", h.CancelAudit)
+		g.POST(":voucherId/review", h.Review)
+		g.POST(":voucherId/cancel-review", h.CancelReview)
+		g.POST(":voucherId/post", h.Post)
 	}
 }

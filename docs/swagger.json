@@ -11,9 +11,9 @@
         "version": "0.1"
     },
     "host": "127.0.0.1:4455",
-    "basePath": "/fims/s/api/v1",
+    "basePath": "/fims/api/v1",
     "paths": {
-        "/sobs": {
+        "/sobs/": {
             "get": {
                 "description": "List all sobs",
                 "consumes": [
@@ -127,7 +127,7 @@
                 }
             }
         },
-        "/vouchers/{sob}": {
+        "/vouchers/{sob}/": {
             "get": {
                 "description": "List all vouchers by sob with paginagion",
                 "consumes": [

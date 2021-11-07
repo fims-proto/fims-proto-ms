@@ -27,8 +27,8 @@ func (h Handler) Migrate(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g := r.Group("/sobs")
+	g := r.Group("/sobs/")
 	{
-		g.POST("/migrate", h.Migrate)
+		g.POST("migrate", h.Migrate)
 	}
 }

@@ -8,4 +8,4 @@ package api
 // @license.url http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host 127.0.0.1:4455
-// @BasePath /fims/s/api/v1
+// @BasePath /fims/api/v1
