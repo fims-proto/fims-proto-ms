@@ -151,7 +151,7 @@ func main() {
 		// gin-swagger
 		router.GET("/swagger/*any", ginswagger.WrapHandler(swaggerfiles.Handler))
 		// devops
-		devopsApiRouter := router.Group("/devops")
+		devopsApiRouter := router.Group("/devops/")
 		devops.InitJwtHandler(devopsApiRouter)
 	}
 
@@ -181,7 +181,7 @@ func loadConfig() {
 	// check mandatory and set defaults:
 	checkResult := bytes.Buffer{}
 	// app
-	viper.SetDefault("app.port", "3000")
+	viper.SetDefault("app.port", "5002")
 	// postgres
 	if !viper.IsSet("postgres.host") {
 		checkResult.WriteString("postgres.host; ")

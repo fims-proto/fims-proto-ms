@@ -35,12 +35,12 @@ func (h Handler) Migrate(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g1 := r.Group("/counters")
+	g1 := r.Group("/counters/")
 	{
-		g1.POST("/migrate", h.Migrate)
+		g1.POST("migrate", h.Migrate)
 	}
-	g2 := r.Group("/counters/:sob")
+	g2 := r.Group("/counters/:sob/")
 	{
-		g2.POST("/dataload", h.Dataload)
+		g2.POST("dataload", h.Dataload)
 	}
 }

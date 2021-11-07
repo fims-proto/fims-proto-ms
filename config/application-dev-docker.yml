@@ -1,5 +1,5 @@
 app:
-  port: 3000
+  port: 5002
 postgres:
   host: "db"
   port: 5432

@@ -1,4 +1,4 @@
-basePath: /fims/s/api/v1
+basePath: /fims/api/v1
 definitions:
   http.AuditVoucherRequest:
     properties:
@@ -133,7 +133,7 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
-  /sobs:
+  /sobs/:
     get:
       consumes:
       - application/json
@@ -208,7 +208,7 @@ paths:
       summary: Show sob by id
       tags:
       - sobs
-  /vouchers/{sob}:
+  /vouchers/{sob}/:
     get:
       consumes:
       - application/json

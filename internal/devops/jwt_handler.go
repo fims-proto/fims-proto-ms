@@ -8,7 +8,7 @@ import (
 )
 
 func InitJwtHandler(r *gin.RouterGroup) {
-	r.GET("/jwt", func(c *gin.Context) {
+	r.GET("jwt", func(c *gin.Context) {
 		token := strings.TrimPrefix(c.GetHeader("Authorization"), "Bearer ")
 		c.String(http.StatusOK, token)
 	})
