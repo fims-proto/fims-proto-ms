@@ -18,7 +18,7 @@ services:
     build:
       context: ./docker/postgres
       dockerfile: ./Dockerfile
-    restart: always
+    restart: on-failure
     volumes:
       - ./postgres-data:/var/lib/postgresql/data
     environment:
@@ -30,6 +30,6 @@ services:
   # database admin
   adminer:
     image: adminer:latest
-    restart: always
+    restart: on-failure
     ports:
       - 8080:8080
