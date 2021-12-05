@@ -12,7 +12,7 @@ import (
 )
 
 type dbConnector interface {
-	Open(username, password string) (*gorm.DB, error)
+	Open(dsn string) (*gorm.DB, error)
 }
 
 type tenantService interface {
@@ -93,7 +93,7 @@ func (t *TenantManagerImpl) initiateTenant(ctx context.Context, subdomain string
 	log.Debug(ctx, "trying to open connection for schema %s", queriedTenant.TenantId.String())
 
 	// DB connection
-	db, err := t.dbConnector.Open(queriedTenant.TenantId.String(), queriedTenant.DBConnPassword)
+	db, err := t.dbConnector.Open(queriedTenant.DSN)
 	if err != nil {
 		return nil, errors.Wrap(err, "open db connection failed")
 	}

@@ -1,42 +1,42 @@
--- user: tenant admin
-CREATE USER "fims_tenant_manager" PASSWORD 'Welcome1!';
+-- user: fims admin
+CREATE USER "fims" PASSWORD 'DtrEmef4Q4avBmUK';
 -- user: local tenant
 CREATE USER "93fe5029-1886-4b63-94ca-35c503a52eff" PASSWORD 'hePrAqafu&5Ep49V8th9';
 
 -- create schema for tenant admin
-CREATE SCHEMA "fims_tenant_manager" AUTHORIZATION "fims_tenant_manager";
+CREATE SCHEMA "fims" AUTHORIZATION "fims";
 -- create schema for user local tenant
 CREATE SCHEMA "93fe5029-1886-4b63-94ca-35c503a52eff" AUTHORIZATION "93fe5029-1886-4b63-94ca-35c503a52eff";
 
 -- revoke authorization for tenant admin
-REVOKE ALL ON SCHEMA "fims_tenant_manager" FROM public;
+REVOKE ALL ON SCHEMA "fims" FROM public;
 -- revoke authorization for local tenant
 REVOKE ALL ON SCHEMA "93fe5029-1886-4b63-94ca-35c503a52eff" FROM public;
 
 
 -- create tenants table
-CREATE TABLE "fims_tenant_manager"."tenants" (
+CREATE TABLE "fims"."tenants" (
     "id" uuid,
     "subdomain" text,
-    "db_conn_password" text,
+    "dsn" text,
     "created_at" timestamptz,
     "updated_at" timestamptz,
     PRIMARY KEY ("id")
 );
 -- init data for local tenant
-INSERT INTO "fims_tenant_manager"."tenants" (
+INSERT INTO "fims"."tenants" (
     "id",
     "subdomain",
-    "db_conn_password",
+    "dsn",
     "created_at",
     "updated_at"
 ) VALUES (
     '93fe5029-1886-4b63-94ca-35c503a52eff',
     'localhost',
-    'hePrAqafu&5Ep49V8th9',
+    'host=localhost port=5432 user=93fe5029-1886-4b63-94ca-35c503a52eff password=hePrAqafu&5Ep49V8th9 dbname=postgres sslmode=disable TimeZone=UTC',
     '2021-08-29 15:16:58.159',
     '2021-08-29 15:16:58.159'
 );
 
 -- change owner
-ALTER TABLE "fims_tenant_manager"."tenants" OWNER TO "fims_tenant_manager";
+ALTER TABLE "fims"."tenants" OWNER TO "fims";

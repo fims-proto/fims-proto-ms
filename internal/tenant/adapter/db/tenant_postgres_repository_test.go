@@ -29,8 +29,8 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 
 	tenandId := uuid.New()
 
-	row := sqlmock.NewRows([]string{"tenant_id", "subdomain", "db_conn_password"}).
-		AddRow(tenandId.String(), "local_test", "password")
+	row := sqlmock.NewRows([]string{"tenant_id", "subdomain", "dsn"}).
+		AddRow(tenandId.String(), "local_test", "psql_dsn")
 	mock.ExpectQuery("SELECT (.+?) FROM *").WithArgs(tenandId).WillReturnRows(row)
 
 	// WHEN
@@ -40,7 +40,7 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 	// THEN
 	assert.NoError(t, err)
 	assert.Equal(t, "local_test", tenant.Subdomain)
-	assert.Equal(t, "password", tenant.DBConnPassword)
+	assert.Equal(t, "psql_dsn", tenant.DSN)
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
@@ -61,8 +61,8 @@ func TestAdapter_PostgresRepository_ReadBySubdomain(t *testing.T) {
 	db, err := gorm.Open(dialector, &gorm.Config{})
 	require.NoError(t, err)
 
-	row := sqlmock.NewRows([]string{"tenant_id", "subdomain", "db_conn_password"}).
-		AddRow(uuid.New().String(), "local_test", "password")
+	row := sqlmock.NewRows([]string{"tenant_id", "subdomain", "dsn"}).
+		AddRow(uuid.New().String(), "local_test", "psql_dsn")
 	mock.ExpectQuery("SELECT *").WithArgs("local_domain").WillReturnRows(row)
 
 	// WHEN
@@ -72,7 +72,7 @@ func TestAdapter_PostgresRepository_ReadBySubdomain(t *testing.T) {
 	// THEN
 	assert.NoError(t, err)
 	assert.Equal(t, "local_test", tenant.Subdomain)
-	assert.Equal(t, "password", tenant.DBConnPassword)
+	assert.Equal(t, "psql_dsn", tenant.DSN)
 	if err := mock.ExpectationsWereMet(); err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}

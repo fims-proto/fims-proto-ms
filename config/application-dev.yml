@@ -1,11 +1,7 @@
 app:
   port: 5002
 postgres:
-  host: "localhost"
-  port: 5432
-  dbName: "postgres"
-  username: "fims_tenant_manager"
-  password: "Welcome1!"
+  dsn: "host=localhost port=5432 user=fims password=DtrEmef4Q4avBmUK dbname=postgres sslmode=disable TimeZone=UTC"
 logger:
   debug: true
   jsonEncoding: false
