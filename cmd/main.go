@@ -59,18 +59,11 @@ func main() {
 	log.InitLogger()
 	defer cleanup()
 
-	dbConnector := db.NewDBConnector(
-		viper.GetString("postgres.host"),
-		viper.GetInt("postgres.port"),
-		viper.GetString("postgres.dbName"),
-		viper.GetString("postgres.timeZone"),
-	)
+	dbConnector := db.NewDBConnector()
 
-	username := viper.GetString("postgres.username")
-
-	db, err := dbConnector.Open(username, viper.GetString("postgres.password"))
+	db, err := dbConnector.Open(viper.GetString("postgres.dsn"))
 	if err != nil {
-		panic(errors.Wrapf(err, "open db connection for schema %s failed", username))
+		panic(errors.Wrapf(err, "failed to initialize db connection"))
 	}
 
 	tenantPostgresRepository := tenantdb.NewTenantPostgresRepository(db)
@@ -170,6 +163,8 @@ func loadConfig() {
 	}
 	viper.SetDefault("profile", "dev")
 
+	_ = viper.BindEnv("postgres.dsn", "DSN")
+
 	// read config
 	profile := viper.GetString("profile")
 	viper.SetConfigName(fmt.Sprintf("application-%s", profile))
@@ -183,21 +178,8 @@ func loadConfig() {
 	// app
 	viper.SetDefault("app.port", "5002")
 	// postgres
-	if !viper.IsSet("postgres.host") {
-		checkResult.WriteString("postgres.host; ")
-	}
-	if !viper.IsSet("postgres.port") {
-		checkResult.WriteString("postgres.port; ")
-	}
-	if !viper.IsSet("postgres.dbName") {
-		checkResult.WriteString("postgres.dbName; ")
-	}
-	viper.SetDefault("postgres.timeZone", "UTC")
-	if !viper.IsSet("postgres.username") {
-		checkResult.WriteString("postgres.username; ")
-	}
-	if !viper.IsSet("postgres.password") {
-		checkResult.WriteString("postgres.password; ")
+	if !viper.IsSet("postgres.dsn") {
+		checkResult.WriteString("postgres.dsn; ")
 	}
 	// logger
 	viper.SetDefault("logger.debug", false)

@@ -1,8 +1,0 @@
-app:
-  port: 5002
-postgres:
-  host: "db"
-  port: 5432
-  dbName: "postgres"
-  username: "fims_tenant_manager"
-  password: "Welcome1!"

@@ -48,16 +48,16 @@ type mockTenantService struct{}
 func (m mockTenantService) ReadTenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
 	if subdomain == "subdomain1" {
 		return query.Tenant{
-			TenantId:       tenant1,
-			Subdomain:      subdomain,
-			DBConnPassword: "password",
+			TenantId:  tenant1,
+			Subdomain: subdomain,
+			DSN:       tenant1.String(),
 		}, nil
 	}
 	if subdomain == "subdomain3" {
 		return query.Tenant{
-			TenantId:       tenant3,
-			Subdomain:      subdomain,
-			DBConnPassword: "password",
+			TenantId:  tenant3,
+			Subdomain: subdomain,
+			DSN:       tenant3.String(),
 		}, nil
 	}
 	// tenant2
@@ -66,8 +66,8 @@ func (m mockTenantService) ReadTenantBySubdomain(ctx context.Context, subdomain 
 
 type mockDBConnector struct{}
 
-func (m mockDBConnector) Open(username, password string) (*gorm.DB, error) {
-	if username == tenant1.String() {
+func (m mockDBConnector) Open(dsn string) (*gorm.DB, error) {
+	if dsn == tenant1.String() {
 		return &gorm.DB{}, nil
 	}
 	// tenant3

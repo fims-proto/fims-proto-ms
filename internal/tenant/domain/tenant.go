@@ -6,26 +6,26 @@ import (
 )
 
 type Tenant struct {
-	tenantId       uuid.UUID
-	subdomain      string
-	dbConnPassword string
+	tenantId  uuid.UUID
+	subdomain string
+	dsn       string
 }
 
-func NewTenant(tenantId uuid.UUID, subdomain, dbConnPassword string) (*Tenant, error) {
+func NewTenant(tenantId uuid.UUID, subdomain, dsn string) (*Tenant, error) {
 	if tenantId == uuid.Nil {
 		return nil, errors.New("nil tenantId")
 	}
 	if subdomain == "" {
 		return nil, errors.New("empty subdomain")
 	}
-	if dbConnPassword == "" {
-		return nil, errors.New("empty DB connection password")
+	if dsn == "" {
+		return nil, errors.New("empty dsn")
 	}
 
 	return &Tenant{
-		tenantId:       tenantId,
-		subdomain:      subdomain,
-		dbConnPassword: dbConnPassword,
+		tenantId:  tenantId,
+		subdomain: subdomain,
+		dsn:       dsn,
 	}, nil
 }
 
@@ -37,6 +37,6 @@ func (t Tenant) Subdomain() string {
 	return t.subdomain
 }
 
-func (t Tenant) DBConnPassword() string {
-	return t.dbConnPassword
+func (t Tenant) DSN() string {
+	return t.dsn
 }
