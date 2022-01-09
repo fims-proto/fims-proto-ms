@@ -40,7 +40,7 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) (err
 		}
 	}()
 
-	voucher, err := h.readModel.ReadByUUID(ctx, cmd.VoucherUUID)
+	voucher, err := h.readModel.ReadById(ctx, cmd.VoucherUUID)
 	if err != nil {
 		return errors.Wrap(err, "failed to read voucher while posting")
 	}
@@ -57,10 +57,6 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) (err
 		return errors.Errorf("voucher %s is already posted", cmd.VoucherUUID)
 	}
 
-	if err = h.ledgerService.PostVoucher(ctx, voucher); err != nil {
-		return errors.Wrap(err, "failed to post voucher to ledgers")
-	}
-
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
@@ -69,6 +65,11 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) (err
 			if err := v.Post(); err != nil {
 				return nil, err
 			}
+
+			if err = h.ledgerService.PostVoucher(ctx, voucher); err != nil {
+				return nil, errors.Wrap(err, "failed to post voucher to ledgers")
+			}
+
 			return v, err
 		},
 	)

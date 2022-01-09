@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var tenant1, tenant3 uuid.UUID = uuid.New(), uuid.New()
+var tenant1, tenant3 = uuid.New(), uuid.New()
 
 func TestLib_TenantManager_GetDBConn(t *testing.T) {
 	t.Parallel()
@@ -45,7 +45,7 @@ func TestLib_TenantManager_GetDBConn_openConnFailed(t *testing.T) {
 
 type mockTenantService struct{}
 
-func (m mockTenantService) ReadTenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
+func (m mockTenantService) ReadTenantBySubdomain(_ context.Context, subdomain string) (query.Tenant, error) {
 	if subdomain == "subdomain1" {
 		return query.Tenant{
 			TenantId:  tenant1,

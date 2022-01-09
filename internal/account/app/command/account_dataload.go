@@ -4,76 +4,73 @@ import (
 	"context"
 	"encoding/csv"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
-type AccountDataloadCmd struct {
-	Number         string
-	Title          string
-	SuperiorNumber string
-	AccountType    string
+type accountDataLoadEntry struct {
+	number           string
+	level            int
+	title            string
+	superiorNumber   string
+	accountType      string
+	balanceDirection string
 }
 
-type AccountDataloadHandler struct {
-	repo          domain.Repository
-	ledgerService LedgerService
+type AccountDataLoadHandler struct {
+	repo       domain.Repository
+	sobService SobService
 }
 
-func NewAccountDataloadHandler(repo domain.Repository, ledgerService LedgerService) AccountDataloadHandler {
+func NewAccountDataLoadHandler(repo domain.Repository, sobService SobService) AccountDataLoadHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	if ledgerService == nil {
-		panic("nil ledger service")
-	}
-	return AccountDataloadHandler{
-		repo:          repo,
-		ledgerService: ledgerService,
+	return AccountDataLoadHandler{
+		repo:       repo,
+		sobService: sobService,
 	}
 }
 
-func (h AccountDataloadHandler) Handle(ctx context.Context, sob string) (err error) {
-	log.Info(ctx, "handle accounts dataload for sob %s", sob)
+func (h AccountDataLoadHandler) Handle(ctx context.Context, sobId uuid.UUID) (err error) {
+	log.Info(ctx, "handle accounts data load for sob %s", sobId.String())
 	defer func() {
 		if err != nil {
-			log.Err(ctx, err, "handle accounts dataload for sob %s failed", sob)
+			log.Err(ctx, err, "handle accounts data load for sob %s failed", sobId.String())
 		}
 	}()
 
-	accountCmds, err := readFromCSV()
+	// 0. read sob
+	sob, err := h.sobService.ReadById(ctx, sobId)
+	if err != nil {
+		return errors.Wrap(err, "read sob failed")
+	}
+
+	// 1. read CSV
+	accountEntries, err := h.readFromCSV()
+	if err != nil {
+		return err
+	}
+	log.Info(ctx, "loaded csv file, size: %d", len(accountEntries))
+
+	// 2. prepare accounts
+	preparedAccounts, err := h.prepareAccounts(sobId, accountEntries, sob.AccountsCodeLength)
 	if err != nil {
 		return err
 	}
 
-	log.Info(ctx, "loaded csv file, size: %d", len(accountCmds))
-
-	var accounts []*domain.Account
-	for _, cmd := range accountCmds {
-		account, err := domain.NewAccount(uuid.New(), sob, cmd.Number, cmd.Title, cmd.SuperiorNumber, cmd.AccountType)
-		if err != nil {
-			return errors.Wrapf(err, "dataload failed on account %s", cmd.Number)
-		}
-		accounts = append(accounts, account)
-	}
-
-	var immutableAccounts []domain.Account
-	for _, account := range accounts {
-		immutableAccounts = append(immutableAccounts, *account)
-	}
-	if err := h.ledgerService.LoadLedgers(ctx, sob, immutableAccounts); err != nil {
-		return errors.Wrap(err, "ledger service failed to load data")
-	}
-
-	return h.repo.Dataload(ctx, accounts)
+	return h.repo.DataLoad(ctx, preparedAccounts)
 }
 
-func readFromCSV() ([]AccountDataloadCmd, error) {
+func (h AccountDataLoadHandler) readFromCSV() ([]accountDataLoadEntry, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get working directory")
@@ -92,7 +89,7 @@ func readFromCSV() ([]AccountDataloadCmd, error) {
 		return nil, errors.Wrap(err, "could not read file")
 	}
 
-	cmds := []AccountDataloadCmd{}
+	var entries []accountDataLoadEntry
 	for {
 		line, err := csvReader.Read()
 		if err == io.EOF {
@@ -101,13 +98,68 @@ func readFromCSV() ([]AccountDataloadCmd, error) {
 		if err != nil {
 			return nil, errors.Wrap(err, "could not read file")
 		}
-		cmds = append(cmds, AccountDataloadCmd{
-			Number:         line[1],
-			Title:          line[2],
-			SuperiorNumber: line[3],
-			AccountType:    line[0],
+		level, err := strconv.Atoi(line[2])
+		if err != nil {
+			return nil, errors.Wrap(err, "convert level to number failed")
+		}
+		balanceDirection := line[5]
+		if balanceDirection == "" {
+			balanceDirection = commonAccount.UndefinedDirection.String()
+		}
+		entries = append(entries, accountDataLoadEntry{
+			number:           line[1],
+			level:            level,
+			title:            line[3],
+			superiorNumber:   line[4],
+			accountType:      line[0],
+			balanceDirection: balanceDirection,
 		})
 	}
 
-	return cmds, nil
+	return entries, nil
+}
+
+func (h AccountDataLoadHandler) prepareAccounts(sobId uuid.UUID, accountEntries []accountDataLoadEntry, codeLengthLimits []int) ([]*domain.Account, error) {
+	preparedAccounts := make(map[string]*domain.Account)
+	for i := 0; i < len(codeLengthLimits); i++ {
+		for _, entry := range accountEntries {
+			if entry.level == i+1 {
+
+				var accountNumber int
+				var superiorAccountId uuid.UUID
+				var superiorNumbers []int
+				if entry.level == 1 {
+					accountNumber, _ = strconv.Atoi(entry.number)
+					superiorAccountId = uuid.Nil
+					superiorNumbers = []int{}
+				} else {
+					accountNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
+					superiorAccount, ok := preparedAccounts[entry.superiorNumber]
+					if !ok {
+						return nil, errors.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
+					}
+					superiorAccountId = superiorAccount.Id()
+					superiorNumbers = append(superiorAccount.SuperiorNumbers(), superiorAccount.LevelNumber())
+				}
+				account, err := domain.NewAccount(uuid.New(), sobId, superiorAccountId, superiorNumbers, entry.title, accountNumber, i+1, entry.accountType, entry.balanceDirection, codeLengthLimits[i])
+				if err != nil {
+					return nil, errors.Wrapf(err, "dataload failed on account %s", entry.number)
+				}
+				preparedAccounts[entry.number] = account
+
+			}
+		}
+	}
+
+	// to slice
+	accounts := make([]*domain.Account, len(preparedAccounts))
+	i := 0
+	for _, v := range preparedAccounts {
+		accounts[i] = v
+		i++
+	}
+	if len(accounts) != len(accountEntries) {
+		return nil, errors.Errorf("prepared accounts size (%d) doesn't equal to CSV entries size (%d)", len(accounts), len(accountEntries))
+	}
+	return accounts, nil
 }

@@ -2,9 +2,11 @@ package http
 
 import (
 	"time"
+
+	"github.com/shopspring/decimal"
 )
 
-type sluggableErr interface {
+type slugErr interface {
 	Slug() string
 }
 
@@ -18,26 +20,27 @@ type AuditVoucherRequest struct {
 }
 
 type LineItemRequest struct {
+	Id            string
 	AccountNumber string
+	Summary       string
 	Credit        string
 	Debit         string
-	Id            string
-	Summary       string
 }
 
 type LineItemResponse struct {
-	AccountNumber string
-	Credit        string
-	Debit         string
-	Id            string
-	Summary       string
+	Id        string
+	AccountId string
+	Summary   string
+	Credit    decimal.Decimal
+	Debit     decimal.Decimal
 }
 
-type RecordVoucherRequest struct {
+type CreateVoucherRequest struct {
 	AttachmentQuantity int
 	Creator            string
-	LineItems          []LineItemRequest
 	VoucherType        string
+	TransactionTime    time.Time
+	LineItems          []LineItemRequest
 }
 
 type ReviewVoucherRequest struct {
@@ -45,23 +48,26 @@ type ReviewVoucherRequest struct {
 }
 
 type UpdateVoucherRequest struct {
-	LineItems []LineItemRequest
+	TransactionTime time.Time
+	LineItems       []LineItemRequest
 }
 
 type VoucherResponse struct {
+	Id                 string
+	SobId              string
+	Number             string
+	Type               string
 	AttachmentQuantity int
 	Auditor            string
-	CreatedAt          time.Time
 	Creator            string
-	Credit             string
-	Debit              string
-	Id                 string
+	Credit             decimal.Decimal
+	Debit              decimal.Decimal
 	IsAudited          bool
 	IsPosted           bool
 	IsReviewed         bool
-	LineItems          []LineItemResponse
-	Number             string
 	Reviewer           string
-	Sob                string
-	Type               string
+	TransactionTime    time.Time
+	LineItems          []LineItemResponse
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }

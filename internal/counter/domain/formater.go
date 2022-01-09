@@ -4,16 +4,16 @@ import "strconv"
 
 type Formatter struct {
 	prefix string
-	sufix  string
+	suffix string
 }
 
-func NewFormatter(prefix string, sufix string) Formatter {
+func NewFormatter(prefix string, suffix string) Formatter {
 	return Formatter{
 		prefix: prefix,
-		sufix:  sufix,
+		suffix: suffix,
 	}
 }
 
 func (f Formatter) format(count uint) string {
-	return f.prefix + strconv.Itoa(int(count)) + f.sufix
+	return f.prefix + strconv.Itoa(int(count)) + f.suffix
 }

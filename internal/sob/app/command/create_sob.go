@@ -5,13 +5,17 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type CreateSobCmd struct {
-	Id          string
-	Name        string
-	Description string
+	Name                string
+	Description         string
+	BaseCurrency        string
+	StartingPeriodYear  int
+	StartingPeriodMonth int
+	AccountsCodeLength  []int
 }
 
 type CreateSobHandler struct {
@@ -27,7 +31,7 @@ func NewCreateSobHandler(repo domain.Repository) CreateSobHandler {
 	}
 }
 
-func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (err error) {
+func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (createdId uuid.UUID, err error) {
 	log.Info(ctx, "handle creating sob")
 	log.Debug(ctx, "handle creating sob, cmd: %+v", cmd)
 	defer func() {
@@ -36,9 +40,12 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (err err
 		}
 	}()
 
-	sob, err := domain.NewSob(cmd.Id, cmd.Name, cmd.Description)
+	sob, err := domain.NewSob(uuid.New(), cmd.Name, cmd.Description, cmd.BaseCurrency, cmd.StartingPeriodYear, cmd.StartingPeriodMonth, cmd.AccountsCodeLength)
 	if err != nil {
-		return errors.Wrapf(err, "create sob failed")
+		return uuid.Nil, errors.Wrapf(err, "create sob failed")
 	}
-	return h.repo.CreateSob(ctx, sob)
+	if err := h.repo.CreateSob(ctx, sob); err != nil {
+		return uuid.Nil, err
+	}
+	return sob.Id(), nil
 }

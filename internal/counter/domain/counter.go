@@ -15,12 +15,12 @@ type Counter struct {
 	lastResetAt    time.Time
 }
 
-func NewCounter(counterUUID uuid.UUID, current uint, prefix, sufix string, lastResetAt time.Time, matcherSeq string, objs ...string) (*Counter, error) {
+func NewCounter(counterUUID uuid.UUID, current uint, prefix, suffix string, lastResetAt time.Time, matcherSep string, objs ...string) (*Counter, error) {
 	if counterUUID == uuid.Nil {
 		return nil, errors.New("nil uuid")
 	}
 
-	m, err := NewMatcher(matcherSeq, objs...)
+	m, err := NewMatcher(matcherSep, objs...)
 	if err != nil {
 		return nil, errors.Wrap(err, "counter business match create failed")
 	}
@@ -29,25 +29,25 @@ func NewCounter(counterUUID uuid.UUID, current uint, prefix, sufix string, lastR
 		id:             counterUUID,
 		current:        current,
 		businessObject: m.String(),
-		formatter:      NewFormatter(prefix, sufix),
+		formatter:      NewFormatter(prefix, suffix),
 		lastResetAt:    lastResetAt,
 	}, nil
 }
 
-func NewCounterFromDB(counterUUID uuid.UUID, current uint, busiObj, prefix, sufix string, lastResetAt time.Time) (*Counter, error) {
+func NewCounterFromDB(counterUUID uuid.UUID, current uint, businessObject, prefix, suffix string, lastResetAt time.Time) (*Counter, error) {
 	if counterUUID == uuid.Nil {
 		return nil, errors.New("nil uuid")
 	}
 
-	if busiObj == "" {
+	if businessObject == "" {
 		return nil, errors.New("empty business object")
 	}
 
 	return &Counter{
 		id:             counterUUID,
 		current:        current,
-		businessObject: busiObj,
-		formatter:      NewFormatter(prefix, sufix),
+		businessObject: businessObject,
+		formatter:      NewFormatter(prefix, suffix),
 		lastResetAt:    lastResetAt,
 	}, nil
 }
@@ -79,7 +79,7 @@ func (c Counter) Prefix() string {
 }
 
 func (c Counter) Suffix() string {
-	return c.formatter.sufix
+	return c.formatter.suffix
 }
 
 func (c Counter) BusinessObject() string {

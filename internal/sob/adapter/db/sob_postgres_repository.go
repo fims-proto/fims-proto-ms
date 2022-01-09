@@ -5,6 +5,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -28,7 +29,10 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *domain.Sob) error {
 	db := readDBFromCtx(ctx)
 
-	dbSob := marshall(sob)
+	dbSob, err := marshall(sob)
+	if err != nil {
+		return errors.Wrap(err, "failed to marshal sob")
+	}
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(dbSob).Error
@@ -39,13 +43,13 @@ func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *domain.Sob) e
 	return nil
 }
 
-func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId string, updateFn func(s *domain.Sob) (*domain.Sob, error)) error {
+func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *domain.Sob) (*domain.Sob, error)) error {
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		dbSob := &sob{}
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(dbSob, "id = ?", sobId).Error; err != nil {
-			return errors.Wrap(err, "faield to find sob")
+			return errors.Wrap(err, "failed to find sob")
 		}
 
 		domainSob, err := unmarshallToDomain(dbSob)
@@ -58,7 +62,10 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId string, upda
 			return errors.Wrap(err, "failed to update sob in transaction")
 		}
 
-		dbSob = marshall(updatedDomainSob)
+		dbSob, err = marshall(updatedDomainSob)
+		if err != nil {
+			return errors.Wrap(err, "failed to marshal sob")
+		}
 		if err := tx.Save(dbSob).Error; err != nil {
 			return errors.Wrap(err, "failed to save sob")
 		}
@@ -72,19 +79,23 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId string, upda
 func (r SobPostgresRepository) AllSobs(ctx context.Context) ([]query.Sob, error) {
 	db := readDBFromCtx(ctx)
 
-	dbSobs := []sob{}
+	var dbSobs []sob
 	if err := db.Find(&dbSobs).Error; err != nil {
 		return []query.Sob{}, errors.Wrap(err, "failed to read all sob")
 	}
 
-	querySobs := []query.Sob{}
+	var querySobs []query.Sob
 	for _, dbSob := range dbSobs {
-		querySobs = append(querySobs, unmarshallToQuery(&dbSob))
+		querySob, err := unmarshallToQuery(&dbSob)
+		if err != nil {
+			return []query.Sob{}, errors.Wrap(err, "failed to unmarshall sob")
+		}
+		querySobs = append(querySobs, querySob)
 	}
 	return querySobs, nil
 }
 
-func (r SobPostgresRepository) SobById(ctx context.Context, sobId string) (query.Sob, error) {
+func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {
 	db := readDBFromCtx(ctx)
 
 	dbSob := sob{}
@@ -92,7 +103,11 @@ func (r SobPostgresRepository) SobById(ctx context.Context, sobId string) (query
 		return query.Sob{}, errors.Wrapf(err, "failed to read sob %s", sobId)
 	}
 
-	return unmarshallToQuery(&dbSob), nil
+	querySob, err := unmarshallToQuery(&dbSob)
+	if err != nil {
+		return query.Sob{}, errors.Wrap(err, "failed to unmarshall sob")
+	}
+	return querySob, nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

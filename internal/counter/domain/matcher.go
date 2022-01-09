@@ -7,13 +7,13 @@ import (
 )
 
 type Matcher struct {
-	busiObjects []string
-	sep         string
+	businessObjects []string
+	sep             string
 }
 
 func NewMatcher(sep string, objs ...string) (*Matcher, error) {
 	if sep == "" {
-		sep = "-"
+		sep = ":"
 	}
 	if len(objs) == 0 {
 		return nil, errors.New("empty business objects")
@@ -26,11 +26,11 @@ func NewMatcher(sep string, objs ...string) (*Matcher, error) {
 	}
 
 	return &Matcher{
-		busiObjects: objs,
-		sep:         sep,
+		businessObjects: objs,
+		sep:             sep,
 	}, nil
 }
 
 func (m Matcher) String() string {
-	return strings.Join(m.busiObjects, m.sep)
+	return strings.Join(m.businessObjects, m.sep)
 }

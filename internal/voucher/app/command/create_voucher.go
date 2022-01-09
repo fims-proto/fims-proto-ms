@@ -4,26 +4,28 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
-type RecordVoucherCmd struct {
-	Sob                string
+type CreateVoucherCmd struct {
+	SobId              uuid.UUID
 	VoucherType        string
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
 	Creator            string
+	TransactionTime    time.Time
 }
 
-type RecordVoucherHandler struct {
+type CreateVoucherHandler struct {
 	repo           domain.Repository
 	accountService AccountService
 	counterService CounterService
 }
 
-func NewRecordVoucherHandler(repo domain.Repository, accountService AccountService, counterService CounterService) RecordVoucherHandler {
+func NewCreateVoucherHandler(repo domain.Repository, accountService AccountService, counterService CounterService) CreateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -33,29 +35,43 @@ func NewRecordVoucherHandler(repo domain.Repository, accountService AccountServi
 	if counterService == nil {
 		panic("nil counter service")
 	}
-	return RecordVoucherHandler{
+	return CreateVoucherHandler{
 		repo:           repo,
 		accountService: accountService,
 		counterService: counterService,
 	}
 }
 
-func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) (createdId uuid.UUID, err error) {
-	log.Info(ctx, "handle recording voucher")
-	log.Debug(ctx, "handle recording voucher, cmd: %+v", cmd)
+func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) (createdId uuid.UUID, err error) {
+	log.Info(ctx, "handle creating voucher")
+	log.Debug(ctx, "handle creating voucher, cmd: %+v", cmd)
 	defer func() {
 		if err != nil {
-			log.Err(ctx, err, "handle recording failed")
+			log.Err(ctx, err, "handle creating failed")
 		}
 	}()
 
-	var accNumbers []string
+	// validate account numbers
+	var accountNumbers []string
+	for _, item := range cmd.LineItems {
+		accountNumbers = append(accountNumbers, item.AccountNumber)
+	}
+	accountIds, err := h.accountService.ValidateExistenceAndGetId(ctx, cmd.SobId, accountNumbers)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
+	}
+
+	// validate line items
 	var lineItems []*domain.LineItem
 	for _, item := range cmd.LineItems {
+		accountId, ok := accountIds[item.AccountNumber]
+		if !ok {
+			return uuid.Nil, errors.Wrapf(err, "unable to find account id by number %s", item.AccountNumber)
+		}
 		lineItem, err := domain.NewLineItem(
 			uuid.New(),
+			accountId,
 			item.Summary,
-			item.AccountNumber,
 			item.Debit,
 			item.Credit,
 		)
@@ -63,21 +79,17 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 			return uuid.Nil, err
 		}
 		lineItems = append(lineItems, lineItem)
-		accNumbers = append(accNumbers, item.AccountNumber)
 	}
 
-	if err := h.accountService.ValidateExistence(ctx, cmd.Sob, accNumbers); err != nil {
-		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
-	}
-
-	identifier, err := h.counterService.GetNextIdentifier(ctx, cmd.Sob, cmd.VoucherType)
+	// get voucher number
+	identifier, err := h.counterService.GetNextIdentifier(ctx, cmd.SobId.String(), cmd.VoucherType)
 	if err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to generate next number")
 	}
 
 	newVoucher, err := domain.NewVoucher(
 		uuid.New(),
-		cmd.Sob,
+		cmd.SobId,
 		cmd.VoucherType,
 		identifier,
 		cmd.AttachmentQuantity,
@@ -88,10 +100,11 @@ func (h RecordVoucherHandler) Handle(ctx context.Context, cmd RecordVoucherCmd) 
 		false, // not reviewed yet
 		false, // not audited yet
 		false, // not posted yet
+		cmd.TransactionTime,
 	)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
-	return h.repo.AddVoucher(ctx, newVoucher)
+	return h.repo.CreateVoucher(ctx, newVoucher)
 }

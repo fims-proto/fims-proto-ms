@@ -7,22 +7,22 @@ import (
 )
 
 type LineItem struct {
-	id            uuid.UUID
-	summary       string
-	accountNumber string
-	debit         decimal.Decimal
-	credit        decimal.Decimal
+	id        uuid.UUID
+	accountId uuid.UUID
+	summary   string
+	debit     decimal.Decimal
+	credit    decimal.Decimal
 }
 
-func NewLineItem(id uuid.UUID, summary, accountNumber, debit, credit string) (*LineItem, error) {
+func NewLineItem(id, accountId uuid.UUID, summary, debit, credit string) (*LineItem, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil id")
 	}
+	if accountId == uuid.Nil {
+		return nil, errors.New("nil account id")
+	}
 	if summary == "" {
 		return nil, errors.New("empty summary")
-	}
-	if accountNumber == "" {
-		return nil, errors.New("empty account number")
 	}
 	if debit == "" && credit == "" {
 		return nil, errors.New("empty debit and credit amount")
@@ -46,11 +46,11 @@ func NewLineItem(id uuid.UUID, summary, accountNumber, debit, credit string) (*L
 	}
 
 	return &LineItem{
-		id:            id,
-		summary:       summary,
-		accountNumber: accountNumber,
-		debit:         debitDecimal,
-		credit:        creditDecimal,
+		id:        id,
+		summary:   summary,
+		accountId: accountId,
+		debit:     debitDecimal,
+		credit:    creditDecimal,
 	}, nil
 }
 
@@ -62,8 +62,8 @@ func (l LineItem) Summary() string {
 	return l.summary
 }
 
-func (l LineItem) AccountNumber() string {
-	return l.accountNumber
+func (l LineItem) AccountId() uuid.UUID {
+	return l.accountId
 }
 
 func (l LineItem) Debit() decimal.Decimal {

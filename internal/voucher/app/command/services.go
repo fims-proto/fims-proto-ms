@@ -3,10 +3,12 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+
+	"github.com/google/uuid"
 )
 
 type AccountService interface {
-	ValidateExistence(ctx context.Context, sob string, accNumbers []string) error
+	ValidateExistenceAndGetId(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error)
 }
 
 type LedgerService interface {

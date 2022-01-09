@@ -78,7 +78,7 @@ func TestResolveTenantBySubdomain_remote(t *testing.T) {
 
 type mockTenantManager struct{}
 
-func (m mockTenantManager) GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error) {
+func (m mockTenantManager) GetDBConnBySubdomain(_ context.Context, subdomain string) (*gorm.DB, error) {
 	if subdomain == "localhost" {
 		return db4Localhost, nil
 	}

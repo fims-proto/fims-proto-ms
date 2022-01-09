@@ -2,6 +2,7 @@ package domain
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -49,7 +50,7 @@ func TestDomain_VoucherUpdate(t *testing.T) {
 			t.Parallel()
 			voucher := test.constructor(t)
 
-			err := voucher.Update(prepareBalancedItems())
+			err := voucher.UpdateLineItems(prepareBalancedItems())
 
 			test.verify(t, *voucher, err)
 		})
@@ -57,7 +58,7 @@ func TestDomain_VoucherUpdate(t *testing.T) {
 }
 
 func createVoucherForUpdateTest(t *testing.T, reviewed bool, audited bool) *Voucher {
-	v, err := NewVoucher(uuid.New(), "test_sob", "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false)
+	v, err := NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false, time.Now())
 	require.NoError(t, err)
 	if reviewed {
 		require.NoError(t, v.Review("r"))

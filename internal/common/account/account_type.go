@@ -2,11 +2,10 @@ package account
 
 import "github.com/pkg/errors"
 
-// enum
 type Type uint
 
 const (
-	Invalid       = Type(iota) // invalid accoun type
+	InvalidType   = Type(iota) // invalid account type
 	Assets                     // assets 资产类
 	Cost                       // cost 成本类
 	Liabilities                // liabilities 负债类
@@ -16,32 +15,22 @@ const (
 )
 
 var availableTypes = map[Type]string{
-	Assets:        "Assets",
-	Cost:          "Cost",
-	Liabilities:   "Liabilities",
-	Equity:        "Equity",
-	ProfitAndLoss: "ProfitAndLoss",
-	Common:        "Common",
+	Assets:        "ASSETS",
+	Cost:          "COST",
+	Liabilities:   "LIABILITIES",
+	Equity:        "EQUITY",
+	ProfitAndLoss: "PROFIT_AND_LOSS",
+	Common:        "COMMON",
 }
 
-func NewAccountType(t Type) (Type, error) {
-	for k := range availableTypes {
-		if k == t {
-			return k, nil
-		}
-	}
-
-	return Invalid, errors.Errorf("invalid account Type: '%d'", t)
-}
-
-func NewAccountTypeFromString(s string) (Type, error) {
+func NewAccountType(s string) (Type, error) {
 	for i, v := range availableTypes {
 		if v == s {
 			return i, nil
 		}
 	}
 
-	return Invalid, errors.Errorf("invalid account name: '%s'", s)
+	return InvalidType, errors.Errorf("invalid account name: '%s'", s)
 }
 
 func (t Type) String() string {

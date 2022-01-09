@@ -11,8 +11,8 @@ type Queries struct {
 }
 
 type Commands struct {
-	LoadAccounts command.AccountDataloadHandler
-	Migrate      command.MigrationHanlder
+	LoadAccounts command.AccountDataLoadHandler
+	Migrate      command.MigrationHandler
 }
 
 type Application struct {
@@ -24,12 +24,12 @@ func NewApplication() Application {
 	return Application{}
 }
 
-func (a *Application) Inject(readModel query.AccountsReadModel, repo domain.Repository, ledgerService command.LedgerService) {
+func (a *Application) Inject(readModel query.AccountsReadModel, repo domain.Repository, sobService command.SobService) {
 	a.Queries = Queries{
-		ReadAccounts: query.NewReadAccountsHandler(readModel),
+		ReadAccounts: query.NewReadAccountsHandler(readModel, sobService),
 	}
 	a.Commands = Commands{
-		LoadAccounts: command.NewAccountDataloadHandler(repo, ledgerService),
-		Migrate:      command.NewMigrationHanlder(repo),
+		LoadAccounts: command.NewAccountDataLoadHandler(repo, sobService),
+		Migrate:      command.NewMigrationHandler(repo),
 	}
 }

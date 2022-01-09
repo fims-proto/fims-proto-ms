@@ -4,6 +4,7 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -78,12 +79,12 @@ func createUpdateVoucherCmd() *UpdateVoucherCmd {
 }
 
 func (r voucherRepoMock) initTestData() {
-	item0, _ := domain.NewLineItem(uuid.New(), "test_item0", "1000", "10", "")
-	item1, _ := domain.NewLineItem(uuid.New(), "test_item1", "1000", "", "10")
+	item0, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test_item0", "10", "")
+	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test_item1", "", "10")
 	items := []*domain.LineItem{item0, item1}
 	v, _ := domain.NewVoucher(
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),
-		"test_sob",
+		uuid.New(),
 		"GENERAL_VOUCHER",
 		"1",
 		0,
@@ -94,6 +95,7 @@ func (r voucherRepoMock) initTestData() {
 		false,
 		false,
 		false,
+		time.Now(),
 	)
 	r.vouchers[v.Id()] = *v
 }

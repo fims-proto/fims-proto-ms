@@ -1,17 +1,104 @@
 basePath: /fims/api/v1
 definitions:
+  http.AccountingPeriodResponse:
+    properties:
+      createdAt:
+        type: string
+      endingTime:
+        type: string
+      financialYear:
+        type: integer
+      id:
+        type: string
+      isClosed:
+        type: boolean
+      number:
+        type: integer
+      openingTime:
+        type: string
+      previousPeriodId:
+        type: string
+      sobId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   http.AuditVoucherRequest:
     properties:
       auditor:
         type: string
     type: object
+  http.CreateAccountingPeriodRequest:
+    properties:
+      endingTime:
+        type: string
+      financialYear:
+        type: integer
+      number:
+        type: integer
+      openingTime:
+        type: string
+      previousPeriodId:
+        type: string
+    type: object
   http.CreateSobRequest:
     properties:
+      accountsCodeLength:
+        items:
+          type: integer
+        type: array
+      baseCurrency:
+        type: string
       description:
         type: string
+      name:
+        type: string
+      startingPeriodMonth:
+        type: integer
+      startingPeriodYear:
+        type: integer
+    type: object
+  http.CreateVoucherRequest:
+    properties:
+      attachmentQuantity:
+        type: integer
+      creator:
+        type: string
+      lineItems:
+        items:
+          $ref: '#/definitions/http.LineItemRequest'
+        type: array
+      transactionTime:
+        type: string
+      voucherType:
+        type: string
+    type: object
+  http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
+  http.LedgerResponse:
+    properties:
+      accountId:
+        type: string
+      createdAt:
+        type: string
+      credit:
+        type: number
+      debit:
+        type: number
+      endingBalance:
+        type: number
       id:
         type: string
-      name:
+      openingBalance:
+        type: number
+      periodId:
+        type: string
+      updatedAt:
         type: string
     type: object
   http.LineItemRequest:
@@ -29,28 +116,15 @@ definitions:
     type: object
   http.LineItemResponse:
     properties:
-      accountNumber:
+      accountId:
         type: string
       credit:
-        type: string
+        type: number
       debit:
-        type: string
+        type: number
       id:
         type: string
       summary:
-        type: string
-    type: object
-  http.RecordVoucherRequest:
-    properties:
-      attachmentQuantity:
-        type: integer
-      creator:
-        type: string
-      lineItems:
-        items:
-          $ref: '#/definitions/http.LineItemRequest'
-        type: array
-      voucherType:
         type: string
     type: object
   http.ReviewVoucherRequest:
@@ -60,10 +134,29 @@ definitions:
     type: object
   http.SobResponse:
     properties:
+      accountsCodeLength:
+        items:
+          type: integer
+        type: array
+      baseCurrency:
+        type: string
       description:
         type: string
       id:
         type: string
+      name:
+        type: string
+      startingPeriodMonth:
+        type: integer
+      startingPeriodYear:
+        type: integer
+    type: object
+  http.UpdateSobRequest:
+    properties:
+      accountsCodeLength:
+        items:
+          type: integer
+        type: array
       name:
         type: string
     type: object
@@ -73,6 +166,8 @@ definitions:
         items:
           $ref: '#/definitions/http.LineItemRequest'
         type: array
+      transactionTime:
+        type: string
     type: object
   http.VoucherResponse:
     properties:
@@ -85,9 +180,9 @@ definitions:
       creator:
         type: string
       credit:
-        type: string
+        type: number
       debit:
-        type: string
+        type: number
       id:
         type: string
       isAudited:
@@ -104,23 +199,13 @@ definitions:
         type: string
       reviewer:
         type: string
-      sob:
+      sobId:
+        type: string
+      transactionTime:
         type: string
       type:
         type: string
-    type: object
-  internal_sob_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
-  internal_voucher_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
+      updatedAt:
         type: string
     type: object
 host: 127.0.0.1:4455
@@ -133,6 +218,159 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
+  /periods/{sobId}/:
+    get:
+      consumes:
+      - application/json
+      description: All accounting periods
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.AccountingPeriodResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: All accounting periods
+      tags:
+      - ledgers
+    post:
+      consumes:
+      - application/json
+      description: Create accounting period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Create accounting period request
+        in: body
+        name: CreateAccountingPeriodRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateAccountingPeriodRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.AccountingPeriodResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: Create accounting period
+      tags:
+      - ledgers
+  /periods/{sobId}/{periodId}:
+    get:
+      consumes:
+      - application/json
+      description: Show accounting period by sob and id
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Accounting Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AccountingPeriodResponse'
+        "404":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: Show accounting period by sob and id
+      tags:
+      - ledgers
+  /periods/{sobId}/{periodId}/ledgers/:
+    get:
+      consumes:
+      - application/json
+      description: All ledgers in an accounting period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Accounting Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.LedgerResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: All ledgers in an accounting period
+      tags:
+      - ledgers
+  /periods/{sobId}/{periodId}/ledgers/calculate:
+    post:
+      consumes:
+      - application/json
+      description: Calculate ledger balance in accounting period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Accounting Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: Calculate ledger balance in accounting period
+      tags:
+      - ledgers
   /sobs/:
     get:
       consumes:
@@ -150,7 +388,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: List all sobs
       tags:
       - sobs
@@ -159,9 +397,9 @@ paths:
       - application/json
       description: Create sob
       parameters:
-      - description: Create Sob
+      - description: CreateSob SobId
         in: body
-        name: sob
+        name: CreateSobRequest
         required: true
         schema:
           $ref: '#/definitions/http.CreateSobRequest'
@@ -169,27 +407,29 @@ paths:
       - application/json
       responses:
         "201":
-          description: ""
+          description: Created
+          schema:
+            $ref: '#/definitions/http.SobResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Create sob
       tags:
       - sobs
-  /sobs/{sob}:
+  /sobs/{sobId}:
     get:
       consumes:
       - application/json
       description: Show sob by id
       parameters:
-      - description: Id of a Sob
+      - description: ID of a SobId
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
       produces:
@@ -204,19 +444,51 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Show sob by id
       tags:
       - sobs
-  /vouchers/{sob}/:
+    patch:
+      consumes:
+      - application/json
+      description: Update sob
+      parameters:
+      - description: SobId ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: UpdateLineItems sob request
+        in: body
+        name: UpdateSobRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateSobRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: Update sob
+      tags:
+      - sobs
+  /vouchers/{sobId}/:
     get:
       consumes:
       - application/json
-      description: List all vouchers by sob with paginagion
+      description: List all vouchers by sob with pagination
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
       produces:
@@ -231,7 +503,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: List all vouchers by sob
       tags:
       - vouchers
@@ -240,45 +512,47 @@ paths:
       - application/json
       description: Create voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
       - description: Create voucher request
         in: body
-        name: RecordVoucherRequest
+        name: CreateVoucherRequest
         required: true
         schema:
-          $ref: '#/definitions/http.RecordVoucherRequest'
+          $ref: '#/definitions/http.CreateVoucherRequest'
       produces:
       - application/json
       responses:
         "201":
-          description: ""
+          description: Created
+          schema:
+            $ref: '#/definitions/http.VoucherResponse'
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Create voucher
       tags:
       - vouchers
-  /vouchers/{sob}/{voucherId}:
+  /vouchers/{sobId}/{voucherId}:
     get:
       consumes:
       - application/json
       description: Show voucher by sob and voucher id
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
@@ -295,7 +569,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Show voucher by sob and voucher id
       tags:
       - vouchers
@@ -304,12 +578,12 @@ paths:
       - application/json
       description: Update voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
@@ -328,31 +602,31 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Update voucher
       tags:
       - vouchers
-  /vouchers/{sob}/{voucherId}/audit:
+  /vouchers/{sobId}/{voucherId}/audit:
     post:
       consumes:
       - application/json
       description: Audit voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
         type: string
-      - description: Audit voucher request, auditor user Id
+      - description: Audit voucher request, auditor user ID
         in: body
         name: AuditVoucherRequest
         required: true
@@ -366,31 +640,31 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Audit voucher
       tags:
       - vouchers
-  /vouchers/{sob}/{voucherId}/cancel-audit:
+  /vouchers/{sobId}/{voucherId}/cancel-audit:
     post:
       consumes:
       - application/json
       description: Cancel audit voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
         type: string
-      - description: Cancel audit voucher request, , auditor user Id
+      - description: Cancel audit voucher request, auditor user ID
         in: body
         name: AuditVoucherRequest
         required: true
@@ -404,31 +678,31 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Cancel audit voucher
       tags:
       - vouchers
-  /vouchers/{sob}/{voucherId}/cancel-review:
+  /vouchers/{sobId}/{voucherId}/cancel-review:
     post:
       consumes:
       - application/json
       description: Cancel review voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
         type: string
-      - description: Cancel review voucher request, reviewer user Id
+      - description: Cancel review voucher request, reviewer user ID
         in: body
         name: ReviewVoucherRequest
         required: true
@@ -442,26 +716,26 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Cancel review voucher
       tags:
       - vouchers
-  /vouchers/{sob}/{voucherId}/post:
+  /vouchers/{sobId}/{voucherId}/post:
     post:
       consumes:
       - application/json
       description: Post voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
@@ -474,27 +748,27 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Post voucher
       tags:
       - vouchers
-  /vouchers/{sob}/{voucherId}/review:
+  /vouchers/{sobId}/{voucherId}/review:
     post:
       consumes:
       - application/json
       description: Review voucher
       parameters:
-      - description: Sob Id
+      - description: Sob ID
         in: path
-        name: sob
+        name: sobId
         required: true
         type: string
-      - description: Voucher Id
+      - description: Voucher ID
         in: path
         name: voucherId
         required: true
         type: string
-      - description: Review voucher request, reviewer user Id
+      - description: Review voucher request, reviewer user ID
         in: body
         name: ReviewVoucherRequest
         required: true
@@ -508,11 +782,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Review voucher
       tags:
       - vouchers

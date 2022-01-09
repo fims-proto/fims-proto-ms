@@ -11,15 +11,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestApp_HandleRecordVoucherHandler(t *testing.T) {
+func TestApp_HandleCreateVoucherHandler(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
-		constructor func() *RecordVoucherCmd
+		constructor func() *CreateVoucherCmd
 	}{
 		{
 			name: "normal_success",
-			constructor: func() *RecordVoucherCmd {
+			constructor: func() *CreateVoucherCmd {
 				return createVoucherCmd()
 			},
 		},
@@ -36,7 +36,7 @@ func TestApp_HandleRecordVoucherHandler(t *testing.T) {
 			repoMock := newVoucherRepoMock()
 			accServiceMock := newAccountService()
 			cntServiceMock := newCounterService()
-			handler := NewRecordVoucherHandler(repoMock, &accServiceMock, &cntServiceMock)
+			handler := NewCreateVoucherHandler(repoMock, &accServiceMock, &cntServiceMock)
 			newUUID, err := handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
@@ -56,7 +56,7 @@ func TestApp_HandleRecordVoucherHandler(t *testing.T) {
 	}
 }
 
-func createVoucherCmd() *RecordVoucherCmd {
+func createVoucherCmd() *CreateVoucherCmd {
 	lineItems := []LineItemCmd{
 		{
 			Summary:       "test_item1",
@@ -71,8 +71,8 @@ func createVoucherCmd() *RecordVoucherCmd {
 			Credit:        "100",
 		},
 	}
-	return &RecordVoucherCmd{
-		Sob:                "test_sob",
+	return &CreateVoucherCmd{
+		SobId:              uuid.New(),
 		VoucherType:        "GENERAL_VOUCHER",
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
@@ -96,26 +96,26 @@ type voucherRepoMock struct {
 	vouchers map[uuid.UUID]domain.Voucher
 }
 
-func (r voucherRepoMock) AddVoucher(ctx context.Context, v *domain.Voucher) (uuid.UUID, error) {
+func (r voucherRepoMock) CreateVoucher(_ context.Context, v *domain.Voucher) (uuid.UUID, error) {
 	r.vouchers[v.Id()] = *v
 	return v.Id(), nil
 }
 
-func (r voucherRepoMock) UpdateVoucher(ctx context.Context, voucherUUID uuid.UUID, updateFn func(v *domain.Voucher) (*domain.Voucher, error)) error {
-	v, ok := r.vouchers[voucherUUID]
+func (r voucherRepoMock) UpdateVoucher(_ context.Context, id uuid.UUID, updateFn func(voucher *domain.Voucher) (*domain.Voucher, error)) error {
+	v, ok := r.vouchers[id]
 	if !ok {
-		return errors.Errorf("voucher %s not exists", voucherUUID)
+		return errors.Errorf("voucher %s not exists", id)
 	}
 
 	updatedVoucher, err := updateFn(&v)
 	if err != nil {
-		return errors.Wrapf(err, "voucher %s updated failed", voucherUUID)
+		return errors.Wrapf(err, "voucher %s updated failed", id)
 	}
-	r.vouchers[voucherUUID] = *updatedVoucher
+	r.vouchers[id] = *updatedVoucher
 	return nil
 }
 
-func (r voucherRepoMock) Migrate(ctx context.Context) error {
+func (r voucherRepoMock) Migrate(context.Context) error {
 	panic("not implemented")
 }
 
@@ -123,25 +123,29 @@ type accountServiceMock struct {
 	invoked bool
 }
 
-func (s *accountServiceMock) ValidateExistence(ctx context.Context, sob string, accNumbers []string) error {
+func (s *accountServiceMock) ValidateExistenceAndGetId(_ context.Context, _ uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error) {
 	s.invoked = true
-	return nil
+	accountIds := make(map[string]uuid.UUID)
+	for _, accountNumber := range accountNumbers {
+		accountIds[accountNumber] = uuid.New()
+	}
+	return accountIds, nil
 }
 
 type counterServiceMock struct {
 	invoked bool
 }
 
-func (c *counterServiceMock) GetNextIdentifier(ctx context.Context, bo ...string) (string, error) {
+func (c *counterServiceMock) GetNextIdentifier(context.Context, ...string) (string, error) {
 	c.invoked = true
 	return "1", nil
 }
 
 func prepareBalancedItems() []*domain.LineItem {
-	item1, _ := domain.NewLineItem(uuid.New(), "test", "1000", "100", "")
-	item2, _ := domain.NewLineItem(uuid.New(), "test", "1001", "100", "")
-	item3, _ := domain.NewLineItem(uuid.New(), "test", "2000", "", "150")
-	item4, _ := domain.NewLineItem(uuid.New(), "test", "2001", "", "50")
+	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "100", "")
+	item2, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "100", "")
+	item3, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "", "150")
+	item4, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "", "50")
 	return []*domain.LineItem{
 		item1,
 		item2,

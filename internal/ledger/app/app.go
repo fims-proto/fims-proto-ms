@@ -7,13 +7,16 @@ import (
 )
 
 type Queries struct {
-	ReadLedgers query.ReadLedgersHandler
+	ReadLedgers query.ReadLedgerHandler
 }
 
 type Commands struct {
-	UpdateLedgerBalance command.UpdateLedgerBalanceHandler
-	LoadLedgers         command.LedgerDataloadHandler
-	Migrate             command.MigrationHanlder
+	AppendLedgerLogs       command.AppendLedgerLogsHandler
+	CreatePeriodLedgers    command.CreatePeriodLedgersHandler
+	CalculateLedgerBalance command.CalculateLedgerBalanceHandler
+	CreateAccountingPeriod command.CreateAccountingPeriodHandler
+	CloseAccountingPeriod  command.CloseAccountingPeriodHandler
+	Migrate                command.MigrationHandler
 }
 
 type Application struct {
@@ -25,13 +28,16 @@ func NewApplication() Application {
 	return Application{}
 }
 
-func (a *Application) Inject(repo domain.Repository, readModel query.LedgersReadModel, accountService command.AccountService, voucherService command.VoucherService) {
+func (a *Application) Inject(repo domain.Repository, readModel query.LedgerReadModel, accountService command.AccountService) {
 	a.Queries = Queries{
-		ReadLedgers: query.NewReadLedgersHandler(readModel),
+		ReadLedgers: query.NewReadLedgerHandler(readModel),
 	}
 	a.Commands = Commands{
-		UpdateLedgerBalance: command.NewUpdateLedgerBalanceHandler(repo, accountService, voucherService),
-		LoadLedgers:         command.NewLedgerDataloadHandler(repo),
-		Migrate:             command.NewMigrationHanlder(repo),
+		AppendLedgerLogs:       command.NewAppendLedgerLogsHandler(repo, accountService),
+		CreatePeriodLedgers:    command.NewCreatePeriodLedgersHandler(repo, readModel, accountService),
+		CalculateLedgerBalance: command.NewCalculateLedgerBalanceHandler(repo, readModel, accountService),
+		CreateAccountingPeriod: command.NewCreateAccountingPeriodHandler(repo, readModel),
+		CloseAccountingPeriod:  command.NewCloseAccountingPeriodHandler(repo),
+		Migrate:                command.NewMigrationHandler(repo),
 	}
 }

@@ -5,3 +5,4 @@ postgres:
 logger:
   debug: true
   jsonEncoding: false
+  showSql: true

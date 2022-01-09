@@ -14,26 +14,26 @@ const (
 	generalVoucher = string("GENERAL_VOUCHER")
 )
 
-type CounterDataloadHandler struct {
+type CounterDataLoadHandler struct {
 	repo domain.Repository
 }
 
-func NewCounterDataloadHandler(repo domain.Repository) CounterDataloadHandler {
+func NewCounterDataLoadHandler(repo domain.Repository) CounterDataLoadHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return CounterDataloadHandler{repo: repo}
+	return CounterDataLoadHandler{repo: repo}
 }
 
-func (h CounterDataloadHandler) Handle(ctx context.Context, sob string) (err error) {
-	log.Info(ctx, "handle counter dataload for sob %s", sob)
+func (h CounterDataLoadHandler) Handle(ctx context.Context, sobId uuid.UUID) (err error) {
+	log.Info(ctx, "handle counter data load for sobId %s", sobId)
 	defer func() {
 		if err != nil {
-			log.Err(ctx, err, "handle counter dataload for sob %s failed", sob)
+			log.Err(ctx, err, "handle counter data load for sobId %s failed", sobId)
 		}
 	}()
 
-	counter, err := domain.NewCounter(uuid.New(), 0, "记", "号", time.Time{}, "-", sob, generalVoucher)
+	counter, err := domain.NewCounter(uuid.New(), 0, "记", "号", time.Time{}, ":", sobId.String(), generalVoucher)
 	if err != nil {
 		return errors.Wrap(err, "create counter failed")
 	}

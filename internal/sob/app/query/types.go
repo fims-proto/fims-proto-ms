@@ -1,7 +1,13 @@
 package query
 
+import "github.com/google/uuid"
+
 type Sob struct {
-	Id          string
-	Name        string
-	Description string
+	Id                  uuid.UUID
+	Name                string
+	Description         string
+	BaseCurrency        string
+	StartingPeriodYear  int
+	StartingPeriodMonth int
+	AccountsCodeLength  []int
 }

@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -17,9 +18,12 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 
 	// GIVEN
 	mockDB, mock, _ := sqlmock.New()
-	defer mockDB.Close()
+	defer func(mockDB *sql.DB) {
+		_ = mockDB.Close()
+	}(mockDB)
+
 	dialector := postgres.New(postgres.Config{
-		DSN:                  "sqlmock_db_0",
+		DSN:                  "sql_mock_db_0",
 		DriverName:           "postgres",
 		Conn:                 mockDB,
 		PreferSimpleProtocol: true,
@@ -27,15 +31,15 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 	db, err := gorm.Open(dialector, &gorm.Config{})
 	require.NoError(t, err)
 
-	tenandId := uuid.New()
+	tenantId := uuid.New()
 
 	row := sqlmock.NewRows([]string{"tenant_id", "subdomain", "dsn"}).
-		AddRow(tenandId.String(), "local_test", "psql_dsn")
-	mock.ExpectQuery("SELECT (.+?) FROM *").WithArgs(tenandId).WillReturnRows(row)
+		AddRow(tenantId.String(), "local_test", "psql_dsn")
+	mock.ExpectQuery("SELECT (.+?) FROM *").WithArgs(tenantId).WillReturnRows(row)
 
 	// WHEN
 	repo := NewTenantPostgresRepository(db)
-	tenant, err := repo.ReadByUUID(context.Background(), tenandId)
+	tenant, err := repo.ReadByUUID(context.Background(), tenantId)
 
 	// THEN
 	assert.NoError(t, err)
@@ -51,9 +55,12 @@ func TestAdapter_PostgresRepository_ReadBySubdomain(t *testing.T) {
 
 	// GIVEN
 	mockDB, mock, _ := sqlmock.New()
-	defer mockDB.Close()
+	defer func(mockDB *sql.DB) {
+		_ = mockDB.Close()
+	}(mockDB)
+
 	dialector := postgres.New(postgres.Config{
-		DSN:                  "sqlmock_db_0",
+		DSN:                  "sql_mock_db_0",
 		DriverName:           "postgres",
 		Conn:                 mockDB,
 		PreferSimpleProtocol: true,

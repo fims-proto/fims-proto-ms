@@ -1,6 +1,8 @@
 package domain
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -8,7 +10,7 @@ import (
 
 type Voucher struct {
 	id                 uuid.UUID
-	sob                string
+	sobId              uuid.UUID
 	voucherType        VoucherType
 	number             string
 	attachmentQuantity uint
@@ -21,16 +23,17 @@ type Voucher struct {
 	auditor            string
 	isAudited          bool
 	isPosted           bool
+	transactionTime    time.Time
 }
 
-func NewVoucher(id uuid.UUID, sob, voucherType, number string, attachmentQuantity uint, items []*LineItem,
-	creator, reviewer, auditor string, isReviewed, isAudited, isPosted bool,
+func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuantity uint, items []*LineItem,
+	creator, reviewer, auditor string, isReviewed, isAudited, isPosted bool, transactionTime time.Time,
 ) (*Voucher, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("empty voucher uuid")
+		return nil, errors.New("empty voucher id")
 	}
-	if sob == "" {
-		return nil, errors.New("empty sob")
+	if sobId == uuid.Nil {
+		return nil, errors.New("empty sobId")
 	}
 	if number == "" {
 		return nil, errors.New("empty voucher number")
@@ -62,8 +65,12 @@ func NewVoucher(id uuid.UUID, sob, voucherType, number string, attachmentQuantit
 		return nil, err
 	}
 
+	if transactionTime.IsZero() {
+		return nil, errors.New("zero transaction time")
+	}
+
 	return &Voucher{
-		sob:                sob,
+		sobId:              sobId,
 		id:                 id,
 		voucherType:        vt,
 		number:             number,
@@ -77,12 +84,13 @@ func NewVoucher(id uuid.UUID, sob, voucherType, number string, attachmentQuantit
 		auditor:            auditor,
 		isAudited:          isAudited,
 		isPosted:           isPosted,
+		transactionTime:    transactionTime,
 	}, nil
 }
 
 func sumItems(items []*LineItem) (decimal.Decimal, error) {
 	if len(items) == 0 {
-		return decimal.Decimal{}, errors.New("lineitem cannot be empty")
+		return decimal.Decimal{}, errors.New("line item cannot be empty")
 	}
 
 	var debitInTotal decimal.Decimal
@@ -98,8 +106,8 @@ func sumItems(items []*LineItem) (decimal.Decimal, error) {
 	return debitInTotal, nil
 }
 
-func (v Voucher) Sob() string {
-	return v.sob
+func (v Voucher) SobId() uuid.UUID {
+	return v.sobId
 }
 
 func (v Voucher) Id() uuid.UUID {
@@ -152,4 +160,8 @@ func (v Voucher) IsAudited() bool {
 
 func (v Voucher) IsPosted() bool {
 	return v.isPosted
+}
+
+func (v Voucher) TransactionTime() time.Time {
+	return v.transactionTime
 }

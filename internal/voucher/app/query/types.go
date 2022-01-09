@@ -3,31 +3,35 @@ package query
 import (
 	"time"
 
+	"github.com/shopspring/decimal"
+
 	"github.com/google/uuid"
 )
 
 type LineItem struct {
-	Id            uuid.UUID
-	Summary       string
-	AccountNumber string
-	Debit         string
-	Credit        string
+	Id        uuid.UUID
+	AccountId uuid.UUID
+	Summary   string
+	Debit     decimal.Decimal
+	Credit    decimal.Decimal
 }
 
 type Voucher struct {
 	Id                 uuid.UUID
-	Sob                string
+	SobId              uuid.UUID
 	VoucherType        string
 	Number             string
-	CreatedAt          time.Time
 	AttachmentQuantity uint
 	LineItems          []LineItem
-	Debit              string
-	Credit             string
+	Debit              decimal.Decimal
+	Credit             decimal.Decimal
 	Creator            string
 	Reviewer           string
 	IsReviewed         bool
 	Auditor            string
 	IsAudited          bool
 	IsPosted           bool
+	TransactionTime    time.Time
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }

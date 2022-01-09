@@ -2,24 +2,28 @@ package domain
 
 import (
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
+var sobId = uuid.New()
+
 func TestDomain_NewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
 		voucherType string
-		uuid        uuid.UUID
+		id          uuid.UUID
+		sobId       uuid.UUID
 		number      string
 		items       []*LineItem
 		verify      func(t *testing.T, voucher *Voucher, err error)
 	}{
 		{
-			"normal_success", "GENERAL_VOUCHER", uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), "1", prepareBalancedItems(),
+			"normal_success", "GENERAL_VOUCHER", uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), sobId, "1", prepareBalancedItems(),
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.NoError(t, err)
 				assert.Equal(t, uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), voucher.Id())
@@ -29,14 +33,14 @@ func TestDomain_NewVoucher(t *testing.T) {
 			},
 		},
 		{
-			"imbalanced_error", "GENERAL_VOUCHER", uuid.New(), "1", prepareImbalancedItems(),
+			"imbalanced_error", "GENERAL_VOUCHER", uuid.New(), sobId, "1", prepareImbalancedItems(),
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_lineitem_error", "GENERAL_VOUCHER", uuid.New(), "1",
+			"empty_line_item_error", "GENERAL_VOUCHER", uuid.New(), sobId, "1",
 			[]*LineItem{},
 			func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
@@ -48,17 +52,18 @@ func TestDomain_NewVoucher(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			voucher, err := NewVoucher(test.uuid, "test_sob", test.voucherType, test.number, 0, test.items, "creator", "", "", false, false, false)
+			voucher, err := NewVoucher(test.id, test.sobId, test.voucherType, test.number, 0, test.items, "creator", "", "", false, false, false, time.Now())
 			test.verify(t, voucher, err)
 		})
 	}
 }
 
 func prepareBalancedItems() []*LineItem {
-	item1, _ := NewLineItem(uuid.New(), "test", "1000", "100", "")
-	item2, _ := NewLineItem(uuid.New(), "test", "1001", "100", "")
-	item3, _ := NewLineItem(uuid.New(), "test", "2000", "", "150")
-	item4, _ := NewLineItem(uuid.New(), "test", "2001", "", "50")
+	accountId := uuid.New()
+	item1, _ := NewLineItem(uuid.New(), accountId, "1000", "100", "")
+	item2, _ := NewLineItem(uuid.New(), accountId, "1001", "100", "")
+	item3, _ := NewLineItem(uuid.New(), accountId, "2000", "", "150")
+	item4, _ := NewLineItem(uuid.New(), accountId, "2001", "", "50")
 	return []*LineItem{
 		item1,
 		item2,
@@ -68,10 +73,11 @@ func prepareBalancedItems() []*LineItem {
 }
 
 func prepareImbalancedItems() []*LineItem {
-	item1, _ := NewLineItem(uuid.New(), "test", "1000", "100", "")
-	item2, _ := NewLineItem(uuid.New(), "test", "1001", "200", "")
-	item3, _ := NewLineItem(uuid.New(), "test", "2000", "", "150")
-	item4, _ := NewLineItem(uuid.New(), "test", "2001", "", "50")
+	accountId := uuid.New()
+	item1, _ := NewLineItem(uuid.New(), accountId, "1000", "100", "")
+	item2, _ := NewLineItem(uuid.New(), accountId, "1001", "200", "")
+	item3, _ := NewLineItem(uuid.New(), accountId, "2000", "", "150")
+	item4, _ := NewLineItem(uuid.New(), accountId, "2001", "", "50")
 	return []*LineItem{
 		item1,
 		item2,

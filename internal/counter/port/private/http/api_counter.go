@@ -4,6 +4,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/counter/app"
 	"net/http"
 
+	"github.com/google/uuid"
+
 	"github.com/gin-gonic/gin"
 )
 
@@ -18,8 +20,8 @@ func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
-func (h Handler) Dataload(c *gin.Context) {
-	if err := h.app.Commands.LoadCounters.Handle(c, c.Param("sob")); err != nil {
+func (h Handler) DataLoad(c *gin.Context) {
+	if err := h.app.Commands.LoadCounters.Handle(c, uuid.MustParse(c.Param("sobId"))); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -39,8 +41,8 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	{
 		g1.POST("migrate", h.Migrate)
 	}
-	g2 := r.Group("/counters/:sob/")
+	g2 := r.Group("/counters/:sobId/")
 	{
-		g2.POST("dataload", h.Dataload)
+		g2.POST("dataload", h.DataLoad)
 	}
 }
