@@ -26,7 +26,7 @@ func (r VoucherPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
-func (r VoucherPostgresRepository) AddVoucher(ctx context.Context, v *domain.Voucher) (uuid.UUID, error) {
+func (r VoucherPostgresRepository) CreateVoucher(ctx context.Context, v *domain.Voucher) (uuid.UUID, error) {
 	db := readDBFromCtx(ctx)
 
 	dbVoucher := marshall(v)
@@ -40,32 +40,29 @@ func (r VoucherPostgresRepository) AddVoucher(ctx context.Context, v *domain.Vou
 	return v.Id(), nil
 }
 
-func (r VoucherPostgresRepository) UpdateVoucher(
-	ctx context.Context,
-	voucherId uuid.UUID,
-	updateFn func(v *domain.Voucher) (*domain.Voucher, error),
-) error {
+func (r VoucherPostgresRepository) UpdateVoucher(ctx context.Context, id uuid.UUID, updateFn func(voucher *domain.Voucher) (*domain.Voucher, error)) error {
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		dbVoucher := &voucher{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("LineItems").First(dbVoucher, "id = ?", voucherId).Error; err != nil {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("LineItems").First(dbVoucher, "id = ?", id).Error; err != nil {
 			return err
 		}
 
-		v, err := unmarshallToDomain(dbVoucher)
+		voucher, err := unmarshallToDomain(dbVoucher)
 		if err != nil {
 			return errors.Wrap(err, "unmarshall voucher failed")
 		}
 
-		uv, err := updateFn(v)
+		updatedVoucher, err := updateFn(voucher)
 		if err != nil {
 			return errors.Wrap(err, "update voucher in transaction failed")
 		}
 
-		dbVoucher = marshall(uv)
-		if err := tx.Save(dbVoucher.LineItems).Error; err != nil {
-			return errors.Wrap(err, "save voucher items failed")
+		dbVoucher = marshall(updatedVoucher)
+		// remove existing first
+		if err := tx.Where("voucher_id = ?", dbVoucher.Id).Delete(&lineItem{}).Error; err != nil {
+			return errors.Wrap(err, "delete voucher items failed")
 		}
 		if err := tx.Save(dbVoucher).Error; err != nil {
 			return errors.Wrap(err, "save voucher failed")
@@ -78,22 +75,22 @@ func (r VoucherPostgresRepository) UpdateVoucher(
 	return nil
 }
 
-func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sob string) ([]query.Voucher, error) {
+func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sobId uuid.UUID) ([]query.Voucher, error) {
 	db := readDBFromCtx(ctx)
 
-	dbVouchers := []voucher{}
-	if err := db.Where("sob_id = ?", sob).Preload("LineItems").Find(&dbVouchers).Error; err != nil {
+	var dbVouchers []voucher
+	if err := db.Where("sob_id = ?", sobId).Preload("LineItems").Find(&dbVouchers).Error; err != nil {
 		return []query.Voucher{}, errors.Wrap(err, "find vouchers by sob failed")
 	}
 
-	qvs := []query.Voucher{}
+	var qvs []query.Voucher
 	for _, dbVoucher := range dbVouchers {
 		qvs = append(qvs, unmarshallToQuery(&dbVoucher))
 	}
 	return qvs, nil
 }
 
-func (r VoucherPostgresRepository) ReadByUUID(ctx context.Context, uuid uuid.UUID) (query.Voucher, error) {
+func (r VoucherPostgresRepository) ReadById(ctx context.Context, uuid uuid.UUID) (query.Voucher, error) {
 	db := readDBFromCtx(ctx)
 
 	dbVoucher := voucher{}

@@ -3,18 +3,22 @@ package db
 import (
 	"time"
 
+	"github.com/spf13/viper"
+
+	"gorm.io/gorm/logger"
+
 	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
 
-type DBConnector struct{}
+type Connector struct{}
 
-func NewDBConnector() DBConnector {
-	return DBConnector{}
+func NewConnector() Connector {
+	return Connector{}
 }
 
-func (d DBConnector) Open(dsn string) (*gorm.DB, error) {
+func (d Connector) Open(dsn string) (*gorm.DB, error) {
 	db, err := retry(4, 5*time.Second, func() (interface{}, error) {
 		return d.open(dsn)
 	})
@@ -24,8 +28,14 @@ func (d DBConnector) Open(dsn string) (*gorm.DB, error) {
 	return db.(*gorm.DB), nil
 }
 
-func (d DBConnector) open(dsn string) (*gorm.DB, error) {
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+func (d Connector) open(dsn string) (*gorm.DB, error) {
+	logLevel := logger.Warn
+	if viper.GetBool("logger.showSql") {
+		logLevel = logger.Info
+	}
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logLevel),
+	})
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to open connection")
 	}

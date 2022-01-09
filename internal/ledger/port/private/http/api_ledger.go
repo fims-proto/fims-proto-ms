@@ -18,16 +18,6 @@ func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
-func (h Handler) AllLedgers(c *gin.Context) {
-	ls, err := h.app.Queries.ReadLedgers.HandleReadAll(c, c.Param("sob"))
-	if err != nil {
-		c.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	c.JSON(http.StatusOK, ls)
-}
-
 func (h Handler) Migrate(c *gin.Context) {
 	if err := h.app.Commands.Migrate.Handle(c); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())
@@ -37,13 +27,8 @@ func (h Handler) Migrate(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g1 := r.Group("/ledgers/")
+	g := r.Group("/ledgers/")
 	{
-		g1.POST("migrate", h.Migrate)
-	}
-
-	g2 := r.Group("/ledgers/:sob/")
-	{
-		g2.GET("", h.AllLedgers)
+		g.POST("migrate", h.Migrate)
 	}
 }

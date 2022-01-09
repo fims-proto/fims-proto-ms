@@ -14,14 +14,6 @@ func NewLedgerInterface(app *app.Application) LedgerInterface {
 	return LedgerInterface{app: app}
 }
 
-func (i LedgerInterface) PostVoucher(ctx context.Context, req UpdateLedgerBalanceRequest) error {
-	return i.app.Commands.UpdateLedgerBalance.Handle(ctx, req.mapToCommand())
-}
-
-func (i LedgerInterface) LoadLedgers(ctx context.Context, sob string, reqs []LoadLedgersRequest) error {
-	var cmds []command.LedgerDataloadCmd
-	for _, req := range reqs {
-		cmds = append(cmds, req.mapToCommand())
-	}
-	return i.app.Commands.LoadLedgers.Handle(ctx, sob, cmds)
+func (i LedgerInterface) AppendLedgerLogs(ctx context.Context, logs []command.AppendLedgerLogCmd) error {
+	return i.app.Commands.AppendLedgerLogs.Handle(ctx, logs)
 }

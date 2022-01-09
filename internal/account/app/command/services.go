@@ -2,9 +2,11 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/account/domain"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
+
+	"github.com/google/uuid"
 )
 
-type LedgerService interface {
-	LoadLedgers(ctx context.Context, sob string, accounts []domain.Account) error
+type SobService interface {
+	ReadById(ctx context.Context, sobId uuid.UUID) (query.Sob, error)
 }

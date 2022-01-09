@@ -12,7 +12,8 @@ type Queries struct {
 
 type Commands struct {
 	CreateSob command.CreateSobHandler
-	Migrate   command.MigrationHanlder
+	UpdateSob command.UpdateSobHandler
+	Migrate   command.MigrationHandler
 }
 
 type Application struct {
@@ -33,6 +34,7 @@ func (a *Application) Inject(
 	}
 	a.Commands = Commands{
 		CreateSob: command.NewCreateSobHandler(repo),
-		Migrate:   command.NewMigrationHanlder(repo),
+		UpdateSob: command.NewUpdateSobHandler(repo),
+		Migrate:   command.NewMigrationHandler(repo),
 	}
 }

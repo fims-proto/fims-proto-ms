@@ -2,18 +2,34 @@ package ledger
 
 import (
 	"context"
-	ledgerport "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
+	ledgerCommand "github/fims-proto/fims-proto-ms/internal/ledger/app/command"
+	ledgerPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+
+	"github.com/google/uuid"
 )
 
-type IntraprocessAdapter struct {
-	ledgerInterface ledgerport.LedgerInterface
+type IntraProcessAdapter struct {
+	ledgerInterface ledgerPort.LedgerInterface
 }
 
-func NewIntraprocessAdapter(ledgerInterface ledgerport.LedgerInterface) IntraprocessAdapter {
-	return IntraprocessAdapter{ledgerInterface: ledgerInterface}
+func NewIntraProcessAdapter(ledgerInterface ledgerPort.LedgerInterface) IntraProcessAdapter {
+	return IntraProcessAdapter{ledgerInterface: ledgerInterface}
 }
 
-func (s IntraprocessAdapter) PostVoucher(ctx context.Context, voucher query.Voucher) error {
-	return s.ledgerInterface.PostVoucher(ctx, mapFromVoucherQuery(voucher))
+func (s IntraProcessAdapter) PostVoucher(ctx context.Context, voucher query.Voucher) error {
+	// posting id is same in one post
+	postingId := uuid.New()
+	var commands []ledgerCommand.AppendLedgerLogCmd
+	for _, item := range voucher.LineItems {
+		commands = append(commands, ledgerCommand.AppendLedgerLogCmd{
+			PostingId:       postingId,
+			VoucherId:       voucher.Id,
+			AccountId:       item.AccountId,
+			TransactionTime: voucher.TransactionTime,
+			Debit:           item.Debit,
+			Credit:          item.Credit,
+		})
+	}
+	return s.ledgerInterface.AppendLedgerLogs(ctx, commands)
 }

@@ -11,12 +11,12 @@ type Queries struct {
 }
 
 type Commands struct {
-	RecordVoucher command.RecordVoucherHandler
+	CreateVoucher command.CreateVoucherHandler
 	AuditVoucher  command.AuditVoucherHandler
 	ReviewVoucher command.ReviewVoucherHandler
 	UpdateVoucher command.UpdateVoucherHandler
 	PostVoucher   command.PostVoucherHandler
-	Migrate       command.MigrationHanlder
+	Migrate       command.MigrationHandler
 }
 
 type Application struct {
@@ -39,11 +39,11 @@ func (a *Application) Inject(
 		ReadVouchers: query.NewReadVouchersHandler(readModel),
 	}
 	a.Commands = Commands{
-		RecordVoucher: command.NewRecordVoucherHandler(repo, accountService, counterService),
+		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, counterService),
 		AuditVoucher:  command.NewAuditVoucherHandler(repo),
 		ReviewVoucher: command.NewReviewVoucherHandler(repo),
 		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService),
 		PostVoucher:   command.NewPostVoucherHandler(readModel, repo, ledgerService),
-		Migrate:       command.NewMigrationHanlder(repo),
+		Migrate:       command.NewMigrationHandler(repo),
 	}
 }

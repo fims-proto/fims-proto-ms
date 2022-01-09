@@ -24,7 +24,7 @@ services:
     environment:
       POSTGRES_PASSWORD: test
     ports:
-      - 5432:5432
+      - "5432:5432"
 
   # test purpose tools:
   # database admin
@@ -32,4 +32,4 @@ services:
     image: adminer:latest
     restart: on-failure
     ports:
-      - 8080:8080
+      - "8080:8080"

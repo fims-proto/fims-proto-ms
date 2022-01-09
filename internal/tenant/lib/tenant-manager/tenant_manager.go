@@ -30,27 +30,27 @@ type syncData struct {
 	once *sync.Once
 }
 
-type TenantManagerImpl struct {
+type Impl struct {
 	tenants       *sync.Map
 	tenantService tenantService
 	dbConnector   dbConnector
 }
 
-func NewTenantManager(tenantService tenantService, dbConnector dbConnector) *TenantManagerImpl {
+func NewTenantManager(tenantService tenantService, dbConnector dbConnector) *Impl {
 	if tenantService == nil {
 		panic("nil tenant service")
 	}
 	if dbConnector == nil {
 		panic("nil dbConnector")
 	}
-	return &TenantManagerImpl{
+	return &Impl{
 		tenants:       &sync.Map{},
 		tenantService: tenantService,
 		dbConnector:   dbConnector,
 	}
 }
 
-func (t *TenantManagerImpl) GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error) {
+func (t *Impl) GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error) {
 	if subdomain == "" {
 		return nil, errors.New("empty subdomain")
 	}
@@ -63,9 +63,9 @@ func (t *TenantManagerImpl) GetDBConnBySubdomain(ctx context.Context, subdomain 
 	return value.dbConn, nil
 }
 
-// loadOrStore get tenant by subdomain if sync.Map has the value, other wise compute
-func (t *TenantManagerImpl) loadOrStore(ctx context.Context, subdoamin string) (value *tenant, err error) {
-	actual, _ := t.tenants.LoadOrStore(subdoamin, &syncData{
+// loadOrStore get tenant by subdomain if sync.Map has the value, otherwise compute
+func (t *Impl) loadOrStore(ctx context.Context, subdomain string) (value *tenant, err error) {
+	actual, _ := t.tenants.LoadOrStore(subdomain, &syncData{
 		data: nil,
 		once: &sync.Once{},
 	})
@@ -73,7 +73,7 @@ func (t *TenantManagerImpl) loadOrStore(ctx context.Context, subdoamin string) (
 	d := actual.(*syncData)
 	if d.data == nil {
 		d.once.Do(func() {
-			d.data, err = t.initiateTenant(ctx, subdoamin)
+			d.data, err = t.initiateTenant(ctx, subdomain)
 			if err != nil {
 				// if failed, reset once
 				d.once = &sync.Once{}
@@ -84,7 +84,7 @@ func (t *TenantManagerImpl) loadOrStore(ctx context.Context, subdoamin string) (
 	return d.data, err
 }
 
-func (t *TenantManagerImpl) initiateTenant(ctx context.Context, subdomain string) (*tenant, error) {
+func (t *Impl) initiateTenant(ctx context.Context, subdomain string) (*tenant, error) {
 	queriedTenant, err := t.tenantService.ReadTenantBySubdomain(ctx, subdomain)
 	if err != nil {
 		return nil, errors.Wrap(err, "cannot load tenant")

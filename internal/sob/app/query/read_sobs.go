@@ -3,12 +3,13 @@ package query
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type SobsReadModel interface {
 	AllSobs(ctx context.Context) ([]Sob, error)
-	SobById(ctx context.Context, sobId string) (Sob, error)
+	SobById(ctx context.Context, sobId uuid.UUID) (Sob, error)
 }
 
 type ReadSobsHandler struct {
@@ -32,7 +33,7 @@ func (r ReadSobsHandler) HandleReadAll(ctx context.Context) ([]Sob, error) {
 	return sobs, nil
 }
 
-func (r ReadSobsHandler) HandleReadById(ctx context.Context, sobId string) (Sob, error) {
+func (r ReadSobsHandler) HandleReadById(ctx context.Context, sobId uuid.UUID) (Sob, error) {
 	sob, err := r.readModel.SobById(ctx, sobId)
 	if err != nil {
 		return Sob{}, errors.Wrapf(err, "read sob failed")

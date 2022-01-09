@@ -3,8 +3,9 @@ package intraprocess
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/account/app"
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 
-	"github.com/pkg/errors"
+	"github.com/google/uuid"
 )
 
 type AccountInterface struct {
@@ -15,25 +16,18 @@ func NewAccountInterface(app *app.Application) AccountInterface {
 	return AccountInterface{app: app}
 }
 
-func (i AccountInterface) ValidateExistence(ctx context.Context, sob string, accNumbers []string) error {
-	return i.app.Queries.ReadAccounts.HandleValidateExistence(ctx, sob, accNumbers)
+func (i AccountInterface) ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]query.Account, error) {
+	return i.app.Queries.ReadAccounts.HandleReadByAccountNumber(ctx, sobId, accountNumbers)
 }
 
-func (i AccountInterface) ReadSuperiorNumbers(ctx context.Context, sob, accNumber string) ([]string, error) {
-	acc, err := i.app.Queries.ReadAccounts.HandleReadByNumber(ctx, sob, accNumber)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to read account by number %s", accNumber)
-	}
+func (i AccountInterface) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+	return i.app.Queries.ReadAccounts.HandleReadByIds(ctx, accountIds)
+}
 
-	// read only numbers
-	accNums := []string{}
-	account := &acc
-	for {
-		if account == nil {
-			break
-		}
-		accNums = append(accNums, account.Number)
-		account = account.SuperiorAccount
-	}
-	return accNums, nil
+func (i AccountInterface) ReadAccountById(ctx context.Context, accountId uuid.UUID) (query.Account, error) {
+	return i.app.Queries.ReadAccounts.HandleReadById(ctx, accountId)
+}
+
+func (i AccountInterface) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
+	return i.app.Queries.ReadAccounts.HandleReadAll(ctx, sobId)
 }

@@ -11,8 +11,8 @@ type Commands struct {
 	DeleteCounter command.CounterDeleteHandler
 	ResetCounter  command.CounterResetHandler
 	CreateCounter command.CounterCreateHandler
-	LoadCounters  command.CounterDataloadHandler
-	Migrate       command.MigrationHanlder
+	LoadCounters  command.CounterDataLoadHandler
+	Migrate       command.MigrationHandler
 }
 
 type Queries struct {
@@ -37,7 +37,7 @@ func (a *Application) Inject(readModel query.CountersReadModel, repo domain.Repo
 		DeleteCounter: command.NewCounterDeleteHandler(repo),
 		ResetCounter:  command.NewCounterResetHandler(repo),
 		CreateCounter: command.NewCounterCreateHandler(repo),
-		LoadCounters:  command.NewCounterDataloadHandler(repo),
-		Migrate:       command.NewMigrationHanlder(repo),
+		LoadCounters:  command.NewCounterDataLoadHandler(repo),
+		Migrate:       command.NewMigrationHandler(repo),
 	}
 }

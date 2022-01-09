@@ -14,13 +14,13 @@ func TestDomain_NewCounter(t *testing.T) {
 	tests := []struct {
 		name   string
 		prefix string
-		sufix  string
+		suffix string
 		verify func(t *testing.T, counter *Counter, err error)
 	}{
 		{
 			name:   "normal next",
 			prefix: "天字",
-			sufix:  "号",
+			suffix: "号",
 			verify: func(t *testing.T, counter *Counter, err error) {
 				require.NoError(t, err)
 				assert.Equal(t, "天字0号", counter.Identifier())
@@ -33,7 +33,7 @@ func TestDomain_NewCounter(t *testing.T) {
 		{
 			name:   "normal reset and next",
 			prefix: "地煞",
-			sufix:  "位",
+			suffix: "位",
 			verify: func(t *testing.T, counter *Counter, err error) {
 				require.NoError(t, err)
 				assert.Equal(t, "地煞0位", counter.Identifier())
@@ -48,7 +48,7 @@ func TestDomain_NewCounter(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			counter, err := NewCounter(uuid.New(), 0, test.prefix, test.sufix, time.Time{}, "", "DUMMY")
+			counter, err := NewCounter(uuid.New(), 0, test.prefix, test.suffix, time.Time{}, "", "DUMMY")
 			test.verify(t, counter, err)
 		})
 	}

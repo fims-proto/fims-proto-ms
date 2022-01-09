@@ -2,17 +2,17 @@ package counter
 
 import (
 	"context"
-	counterport "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
+	counterPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
 )
 
-type IntraprocessAdapter struct {
-	cntrInterface counterport.CounterInterface
+type IntraProcessAdapter struct {
+	counterInterface counterPort.CounterInterface
 }
 
-func NewIntraprocessAdapter(cntrInterface counterport.CounterInterface) IntraprocessAdapter {
-	return IntraprocessAdapter{cntrInterface: cntrInterface}
+func NewIntraProcessAdapter(counterInterface counterPort.CounterInterface) IntraProcessAdapter {
+	return IntraProcessAdapter{counterInterface: counterInterface}
 }
 
-func (s IntraprocessAdapter) GetNextIdentifier(ctx context.Context, businessObjects ...string) (string, error) {
-	return s.cntrInterface.Next(ctx, "", businessObjects)
+func (s IntraProcessAdapter) GetNextIdentifier(ctx context.Context, businessObjects ...string) (string, error) {
+	return s.counterInterface.Next(ctx, "", businessObjects)
 }

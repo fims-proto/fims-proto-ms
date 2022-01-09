@@ -4,14 +4,16 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type UpdateVoucherCmd struct {
-	VoucherUUID uuid.UUID
-	LineItems   []LineItemCmd
+	VoucherUUID     uuid.UUID
+	LineItems       []LineItemCmd
+	TransactionTime time.Time
 }
 
 type UpdateVoucherHandler struct {
@@ -41,35 +43,59 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 		}
 	}()
 
-	var accNumbers []string
-	var lineItems []*domain.LineItem
-	for _, item := range cmd.LineItems {
-		lineItem, err := domain.NewLineItem(
-			item.Id,
-			item.Summary,
-			item.AccountNumber,
-			item.Debit,
-			item.Credit,
-		)
-		if err != nil {
-			return err
-		}
-		lineItems = append(lineItems, lineItem)
-		accNumbers = append(accNumbers, item.AccountNumber)
-	}
-
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
-			log.Info(ctx, "validating account number")
-			if err := h.accountService.ValidateExistence(ctx, v.Sob(), accNumbers); err != nil {
-				return nil, errors.Wrap(err, "unable to validate account numbers")
+			if len(cmd.LineItems) > 0 {
+				// validate account numbers
+				log.Info(ctx, "validating line items")
+				var accountNumbers []string
+				for _, item := range cmd.LineItems {
+					accountNumbers = append(accountNumbers, item.AccountNumber)
+				}
+				accountIds, err := h.accountService.ValidateExistenceAndGetId(ctx, v.SobId(), accountNumbers)
+				if err != nil {
+					return nil, errors.Wrap(err, "unable to validate account numbers")
+				}
+
+				// prepare line items
+				var lineItems []*domain.LineItem
+				for _, item := range cmd.LineItems {
+					accountId, ok := accountIds[item.AccountNumber]
+					if !ok {
+						return nil, errors.Wrapf(err, "unable to find account id by number %s", item.AccountNumber)
+					}
+					itemId := item.Id
+					if itemId == uuid.Nil {
+						itemId = uuid.New()
+					}
+					lineItem, err := domain.NewLineItem(
+						itemId,
+						accountId,
+						item.Summary,
+						item.Debit,
+						item.Credit,
+					)
+					if err != nil {
+						return nil, err
+					}
+					lineItems = append(lineItems, lineItem)
+				}
+
+				log.Info(ctx, "updating voucher line items")
+				if err := v.UpdateLineItems(lineItems); err != nil {
+					return nil, err
+				}
 			}
-			log.Info(ctx, "updating voucher")
-			if err := v.Update(lineItems); err != nil {
-				return nil, err
+
+			if !cmd.TransactionTime.IsZero() {
+				log.Info(ctx, "updating voucher transaction time")
+				if err := v.UpdateTransactionTime(cmd.TransactionTime); err != nil {
+					return nil, err
+				}
 			}
+
 			return v, nil
 		},
 	)

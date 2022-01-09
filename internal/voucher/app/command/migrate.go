@@ -5,17 +5,17 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 )
 
-type MigrationHanlder struct {
+type MigrationHandler struct {
 	repo domain.Repository
 }
 
-func NewMigrationHanlder(repo domain.Repository) MigrationHanlder {
+func NewMigrationHandler(repo domain.Repository) MigrationHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return MigrationHanlder{repo: repo}
+	return MigrationHandler{repo: repo}
 }
 
-func (h MigrationHanlder) Handle(ctx context.Context) error {
+func (h MigrationHandler) Handle(ctx context.Context) error {
 	return h.repo.Migrate(ctx)
 }

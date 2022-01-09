@@ -37,7 +37,7 @@ func (h CounterNextHandler) Handle(ctx context.Context, cmd CounterNextCmd) (ide
 		},
 	)
 	if err != nil {
-		return "", errors.Wrap(err, "counter gernate next identifier failed")
+		return "", errors.Wrap(err, "counter generate next identifier failed")
 	}
 
 	identStr, ok := ident.(string)

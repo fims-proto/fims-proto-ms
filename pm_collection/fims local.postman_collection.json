@@ -180,8 +180,8 @@
 							"pm.test(\"Create test_sob_1 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newCreateLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"sob_1\", newCreateLocation.split(\"/\")[2]);"
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"sob_1\", createdId);"
 						],
 						"type": "text/javascript"
 					}
@@ -192,7 +192,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Id\": \"test_sob_1\",\n    \"Name\": \"My company 1\",\n    \"Description\": \"blablabla\"\n}",
+					"raw": "{\n    \"Name\": \"My Company 1\",\n    \"Description\": \"My Company 1\",\n    \"BaseCurrency\": \"CNY\",\n    \"StartingPeriodYear\": 2022,\n    \"StartingPeriodMonth\": 1,\n    \"AccountsCodeLength\": [\n        4,\n        3,\n        3\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -200,12 +200,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sobs",
+					"raw": "{{base_path}}/sobs/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
-						"sobs"
+						"sobs",
+						""
 					]
 				}
 			},
@@ -221,8 +222,8 @@
 							"pm.test(\"Create test_sob_2 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newCreateLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"sob_2\", newCreateLocation.split(\"/\")[2]);"
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"sob_2\", createdId);"
 						],
 						"type": "text/javascript"
 					}
@@ -233,7 +234,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"Id\": \"test_sob_2\",\n    \"Name\": \"My company 2\",\n    \"Description\": \"dubadubaduba\"\n}",
+					"raw": "{\n    \"Name\": \"My Company 2\",\n    \"Description\": \"My Company 2\",\n    \"BaseCurrency\": \"CNY\",\n    \"StartingPeriodYear\": 2022,\n    \"StartingPeriodMonth\": 1,\n    \"AccountsCodeLength\": [\n        4,\n        3,\n        3\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -241,12 +242,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sobs",
+					"raw": "{{base_path}}/sobs/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
-						"sobs"
+						"sobs",
+						""
 					]
 				}
 			},
@@ -309,6 +311,113 @@
 					"path": [
 						"sobs",
 						"{{sob_2}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sob 1 > create accounting period",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Create accounting period 201\", function () {",
+							"    pm.response.to.have.status(201);",
+							"});",
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"period_1_id\", createdId);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"endingTime\": \"2022-02-01T00:00:00Z\",\n    \"financialYear\": 2022,\n    \"number\": 1,\n    \"openingTime\": \"2022-01-01T00:00:00Z\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/periods/{{sob_1}}/",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"periods",
+						"{{sob_1}}",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sob 1 > read periods",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read accounting periods 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/periods/{{sob_1}}/",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"periods",
+						"{{sob_1}}",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sob 1 > read period",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read accounting periods 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/periods/{{sob_1}}/{{period_1_id}}",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"periods",
+						"{{sob_1}}",
+						"{{period_1_id}}"
 					]
 				}
 			},
@@ -456,9 +565,12 @@
 							"pm.test(\"Record voucher 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"voucherUUID_1\", newVoucherLocation.split(\"/\")[3]);",
-							""
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"voucherUUID_1\", createdId);",
+							"",
+							"let jsonData = pm.response.json();",
+							"pm.collectionVariables.set(\"voucher_1_item_1\", jsonData.LineItems[0].Id);",
+							"pm.collectionVariables.set(\"voucher_1_item_2\", jsonData.LineItems[1].Id);"
 						],
 						"type": "text/javascript"
 					}
@@ -469,7 +581,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"Creator\": \"oliver\"\n}",
+					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"Creator\": \"oliver\",\n    \"TransactionTime\": \"2022-01-08T00:00:00Z\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -477,13 +589,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/vouchers/{{sob_1}}",
+					"raw": "{{base_path}}/vouchers/{{sob_1}}/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"vouchers",
-						"{{sob_1}}"
+						"{{sob_1}}",
+						""
 					]
 				}
 			},
@@ -499,8 +612,8 @@
 							"pm.test(\"Record voucher 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"voucherUUID_sob2_1\", newVoucherLocation.split(\"/\")[3]);"
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"voucherUUID_sob2_1\", createdId);"
 						],
 						"type": "text/javascript"
 					}
@@ -511,7 +624,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"Creator\": \"oliver\"\n}",
+					"raw": "{\n    \"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1001\",\n        \"Debit\": \"100\"\n    },{\n        \"Summary\": \"取钱\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"100\"\n    }],\n\t\"Debit\": \"100\",\n\t\"Credit\":\"100\",\n\t\"Creator\": \"oliver\",\n    \"TransactionTime\": \"2022-01-08T00:00:00Z\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -519,13 +632,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/vouchers/{{sob_2}}",
+					"raw": "{{base_path}}/vouchers/{{sob_2}}/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"vouchers",
-						"{{sob_2}}"
+						"{{sob_2}}",
+						""
 					]
 				}
 			},
@@ -545,11 +659,7 @@
 							"pm.test(\"Number check\", function () {",
 							"    var jsonData = pm.response.json();",
 							"    pm.expect(jsonData.Number).to.eql(\"记1号\");",
-							"});",
-							"",
-							"var jsonData = pm.response.json();",
-							"pm.collectionVariables.set(\"voucher_1_item_1\", jsonData.LineItems[0].Id);",
-							"pm.collectionVariables.set(\"voucher_1_item_2\", jsonData.LineItems[1].Id);"
+							"});"
 						],
 						"type": "text/javascript"
 					}
@@ -628,13 +738,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/vouchers/{{sob_1}}",
+					"raw": "{{base_path}}/vouchers/{{sob_1}}/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"vouchers",
-						"{{sob_1}}"
+						"{{sob_1}}",
+						""
 					]
 				}
 			},
@@ -828,7 +939,48 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"LineItems\": [\n        {\n            \"Id\": \"{{voucher_1_item_1}}\",\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1001\",\n            \"Debit\": \"101\"\n        },\n        {\n            \"Id\": \"{{voucher_1_item_2}}\",\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1002001\",\n            \"Credit\": \"101\"\n        }\n    ]\n}",
+					"raw": "{\n    \"LineItems\": [\n        {\n            \"Id\": \"{{voucher_1_item_1}}\",\n            \"Summary\": \"从银行取现金\",\n            \"AccountNumber\": \"1001\",\n            \"Debit\": \"101\"\n        },\n        {\n            \"Summary\": \"从招商银行取现金\",\n            \"AccountNumber\": \"1002002\",\n            \"Credit\": \"101\"\n        }\n    ]\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/vouchers/{{sob_1}}/{{voucherUUID_1}}",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"vouchers",
+						"{{sob_1}}",
+						"{{voucherUUID_1}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sob 1 > update voucher 1 transaction time",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Update voucher 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"TransactionTime\": \"2022-01-05T00:00:00.000000+00:00\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1009,8 +1161,8 @@
 							"pm.test(\"Record voucher 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"voucherUUID_2\", newVoucherLocation.split(\"/\")[3]);"
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"voucherUUID_2\", createdId);"
 						],
 						"type": "text/javascript"
 					}
@@ -1021,7 +1173,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"Creator\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"1001\",\n        \"Credit\": \"200\"\n    },{\n        \"Summary\": \"用现金报销电话费\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"200\"\n    }],\n\t\"Debit\": \"200\",\n\t\"Credit\":\"200\",\n\t\"Creator\": \"oliver\",\n    \"TransactionTime\": \"2022-01-09T00:00:00Z\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1029,13 +1181,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/vouchers/{{sob_1}}",
+					"raw": "{{base_path}}/vouchers/{{sob_1}}/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"vouchers",
-						"{{sob_1}}"
+						"{{sob_1}}",
+						""
 					]
 				}
 			},
@@ -1205,8 +1358,8 @@
 							"pm.test(\"Record voucher 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"voucherUUID_3\", newVoucherLocation.split(\"/\")[3]);"
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"voucherUUID_3\", createdId);"
 						],
 						"type": "text/javascript"
 					}
@@ -1217,7 +1370,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"Creator\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1002001\",\n        \"Debit\": \"400\"\n    },{\n        \"Summary\": \"销售款存入银行\",\n        \"AccountNumber\": \"1122\",\n        \"Credit\": \"400\"\n    }],\n\t\"Debit\": \"400\",\n\t\"Credit\":\"400\",\n\t\"Creator\": \"oliver\",\n    \"TransactionTime\": \"2022-01-09T00:00:00Z\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1225,13 +1378,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/vouchers/{{sob_1}}",
+					"raw": "{{base_path}}/vouchers/{{sob_1}}/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"vouchers",
-						"{{sob_1}}"
+						"{{sob_1}}",
+						""
 					]
 				}
 			},
@@ -1401,8 +1555,8 @@
 							"pm.test(\"Record voucher 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let newVoucherLocation = pm.response.headers.get(\"Content-Location\");",
-							"pm.collectionVariables.set(\"voucherUUID_4\", newVoucherLocation.split(\"/\")[3]);"
+							"let createdId = pm.response.json()['Id']",
+							"pm.collectionVariables.set(\"voucherUUID_4\", createdId);"
 						],
 						"type": "text/javascript"
 					}
@@ -1413,7 +1567,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"Creator\": \"oliver\"\n}",
+					"raw": "{\n\t\"VoucherType\": \"GENERAL_VOUCHER\",\n\t\"AttachmentQuantity\": 0,\n\t\"LineItems\": [{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"6602001\",\n        \"Debit\": \"300\"\n    },{\n        \"Summary\": \"用支票支付办公用品\",\n        \"AccountNumber\": \"1002001\",\n        \"Credit\": \"300\"\n    }],\n\t\"Debit\": \"300\",\n\t\"Credit\":\"300\",\n\t\"Creator\": \"oliver\",\n    \"TransactionTime\": \"2022-01-09T00:00:00Z\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1421,13 +1575,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/vouchers/{{sob_1}}",
+					"raw": "{{base_path}}/vouchers/{{sob_1}}/",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"vouchers",
-						"{{sob_1}}"
+						"{{sob_1}}",
+						""
 					]
 				}
 			},
@@ -1588,7 +1743,41 @@
 			"response": []
 		},
 		{
-			"name": "[test] sob 1 > all ledgers",
+			"name": "sob 1 > calculate ledger",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Calculate accounting periods 204\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/periods/{{sob_1}}/{{period_1_id}}/ledgers/calculate",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"periods",
+						"{{sob_1}}",
+						"{{period_1_id}}",
+						"ledgers",
+						"calculate"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sob 1 > all ledgers",
 			"event": [
 				{
 					"listen": "test",
@@ -1667,14 +1856,16 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path_private}}/internal/ledgers/{{sob_1}}",
+					"raw": "{{base_path}}/periods/{{sob_1}}/{{period_1_id}}/ledgers/",
 					"host": [
-						"{{base_path_private}}"
+						"{{base_path}}"
 					],
 					"path": [
-						"internal",
+						"periods",
+						"{{sob_1}}",
+						"{{period_1_id}}",
 						"ledgers",
-						"{{sob_1}}"
+						""
 					]
 				}
 			},
@@ -1707,6 +1898,14 @@
 			"value": ""
 		},
 		{
+			"key": "sob_2",
+			"value": ""
+		},
+		{
+			"key": "period_1_id",
+			"value": ""
+		},
+		{
 			"key": "voucherUUID_1",
 			"value": ""
 		},
@@ -1731,20 +1930,16 @@
 			"value": ""
 		},
 		{
-			"key": "sob_2",
-			"value": ""
-		},
-		{
 			"key": "voucherUUID_sob2_1",
 			"value": ""
 		},
 		{
 			"key": "base_path",
-			"value": "127.0.0.1:4455/fims/api/v1"
+			"value": "127.0.0.1:5002/api/v1"
 		},
 		{
 			"key": "base_path_private",
-			"value": "127.0.0.1:4455/fims"
+			"value": "127.0.0.1:5002"
 		}
 	]
 }

@@ -12,7 +12,7 @@ import (
 
 type voucher struct {
 	Id                 uuid.UUID `gorm:"type:uuid"`
-	SobId              string    `gorm:"uniqueIndex:vouchers_sobid_number_key"`
+	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:vouchers_sobid_number_key"`
 	Number             string    `gorm:"uniqueIndex:vouchers_sobid_number_key"`
 	VoucherType        string
 	AttachmentQuantity uint
@@ -24,27 +24,26 @@ type voucher struct {
 	Auditor            string
 	IsAudited          bool
 	IsPosted           bool
+	TransactionTime    time.Time
 	LineItems          []lineItem
 	CreatedAt          time.Time `gorm:"<-:create"`
 	UpdatedAt          time.Time
 }
 
 type lineItem struct {
-	Id            uuid.UUID `gorm:"type:uuid"`
-	VoucherId     uuid.UUID `gorm:"type:uuid"`
-	Summary       string
-	AccountNumber string
-	Debit         decimal.Decimal
-	Credit        decimal.Decimal
-	CreatedAt     time.Time `gorm:"<-:create"`
-	UpdatedAt     time.Time
+	Id        uuid.UUID `gorm:"type:uuid"`
+	VoucherId uuid.UUID `gorm:"type:uuid"`
+	AccountId uuid.UUID `gorm:"type:uuid"`
+	Summary   string
+	Debit     decimal.Decimal
+	Credit    decimal.Decimal
 }
 
 // from domain to db
 func marshall(dv *domain.Voucher) *voucher {
 	v := voucher{
 		Id:                 dv.Id(),
-		SobId:              dv.Sob(),
+		SobId:              dv.SobId(),
 		Number:             dv.Number(),
 		VoucherType:        dv.Type().String(),
 		AttachmentQuantity: dv.AttachmentQuantity(),
@@ -56,16 +55,16 @@ func marshall(dv *domain.Voucher) *voucher {
 		Auditor:            dv.Auditor(),
 		IsAudited:          dv.IsAudited(),
 		IsPosted:           dv.IsPosted(),
-		LineItems:          []lineItem{},
+		TransactionTime:    dv.TransactionTime(),
 	}
 	for _, item := range dv.LineItems() {
 		v.LineItems = append(v.LineItems, lineItem{
-			Id:            item.Id(),
-			VoucherId:     dv.Id(),
-			Summary:       item.Summary(),
-			AccountNumber: item.AccountNumber(),
-			Debit:         item.Debit(),
-			Credit:        item.Credit(),
+			Id:        item.Id(),
+			VoucherId: dv.Id(),
+			Summary:   item.Summary(),
+			AccountId: item.AccountId(),
+			Debit:     item.Debit(),
+			Credit:    item.Credit(),
 		})
 	}
 	return &v
@@ -73,13 +72,13 @@ func marshall(dv *domain.Voucher) *voucher {
 
 // from db to domain
 func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
-	items := []*domain.LineItem{}
+	var items []*domain.LineItem
 
 	for _, dbItem := range dbv.LineItems {
 		item, err := domain.NewLineItem(
 			dbItem.Id,
+			dbItem.AccountId,
 			dbItem.Summary,
-			dbItem.AccountNumber,
 			dbItem.Debit.String(),
 			dbItem.Credit.String(),
 		)
@@ -102,37 +101,40 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 		dbv.IsReviewed,
 		dbv.IsAudited,
 		dbv.IsPosted,
+		dbv.TransactionTime,
 	)
 }
 
 func unmarshallToQuery(dbv *voucher) query.Voucher {
-	items := []query.LineItem{}
+	var items []query.LineItem
 
 	for _, dbItem := range dbv.LineItems {
 		items = append(items, query.LineItem{
-			Id:            dbItem.Id,
-			Summary:       dbItem.Summary,
-			AccountNumber: dbItem.AccountNumber,
-			Debit:         dbItem.Debit.String(),
-			Credit:        dbItem.Credit.String(),
+			Id:        dbItem.Id,
+			AccountId: dbItem.AccountId,
+			Summary:   dbItem.Summary,
+			Debit:     dbItem.Debit,
+			Credit:    dbItem.Credit,
 		})
 	}
 
 	return query.Voucher{
 		Id:                 dbv.Id,
-		Sob:                dbv.SobId,
+		SobId:              dbv.SobId,
 		VoucherType:        dbv.VoucherType,
 		Number:             dbv.Number,
 		AttachmentQuantity: dbv.AttachmentQuantity,
 		LineItems:          items,
-		Debit:              dbv.Debit.String(),
-		Credit:             dbv.Credit.String(),
+		Debit:              dbv.Debit,
+		Credit:             dbv.Credit,
 		Creator:            dbv.Creator,
 		Reviewer:           dbv.Reviewer,
 		IsReviewed:         dbv.IsReviewed,
 		Auditor:            dbv.Auditor,
 		IsAudited:          dbv.IsAudited,
 		IsPosted:           dbv.IsPosted,
+		TransactionTime:    dbv.TransactionTime,
 		CreatedAt:          dbv.CreatedAt,
+		UpdatedAt:          dbv.UpdatedAt,
 	}
 }

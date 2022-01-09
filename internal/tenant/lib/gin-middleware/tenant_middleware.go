@@ -14,7 +14,7 @@ type tenantManager interface {
 	GetDBConnBySubdomain(ctx context.Context, subdomain string) (*gorm.DB, error)
 }
 
-// subdomain:
+// ResolveTenantBySubdomain subdomain:
 // https://random-domain.xxxhost.com -> random-domain
 // http://localhost -> localhost
 // http://127.0.0.1 -> localhost
@@ -29,7 +29,7 @@ func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
 			subdomain = "localhost"
 		}
 
-		log.Debug(c, "resolved subdoamin: %s", subdomain)
+		log.Debug(c, "resolved subdomain: %s", subdomain)
 
 		db, err := tenantManager.GetDBConnBySubdomain(c, subdomain)
 		if err != nil {
