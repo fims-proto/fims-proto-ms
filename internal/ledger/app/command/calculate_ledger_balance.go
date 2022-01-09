@@ -64,6 +64,9 @@ func (h CalculateLedgerBalanceHandler) Handle(ctx context.Context, cmd Calculate
 			}
 		}
 		period, err := h.ledgerReadModel.ReadAccountingPeriodById(ctx, ledgers[0].PeriodId())
+		if err != nil {
+			return nil, errors.New("read accounting period failed")
+		}
 		if period.IsClosed {
 			return nil, errors.New("accounting period is closed, ledger update not possible")
 		}
