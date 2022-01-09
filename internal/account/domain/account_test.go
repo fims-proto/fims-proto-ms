@@ -43,7 +43,7 @@ func TestNewAccount(t *testing.T) {
 			2, 3, "ASSETS", "DEBIT",
 			func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
-				assert.Equal(t, "1001001", account.LevelNumber())
+				assert.Equal(t, 1, account.LevelNumber())
 				assert.Equal(t, "库存现金某子项", account.Title())
 				assert.NotNil(t, account.SuperiorAccountId())
 				assert.Equal(t, 1001, account.SuperiorNumbers()[0])

@@ -4,6 +4,7 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 	"testing"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -77,6 +78,7 @@ func createVoucherCmd() *CreateVoucherCmd {
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
 		Creator:            "0000",
+		TransactionTime:    time.Now(),
 	}
 }
 

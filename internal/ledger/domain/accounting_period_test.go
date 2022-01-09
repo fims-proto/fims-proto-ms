@@ -31,8 +31,8 @@ func TestNewAccountingPeriod(t *testing.T) {
 				id:            periodId,
 				financialYear: 2021,
 				number:        1,
-				openingTime:   mustParseTime("2021-01-01T00:00:00Z00:00"),
-				endingTime:    mustParseTime("2021-02-01T00:00:00Z00:00"),
+				openingTime:   mustParseTime("2021-01-01T00:00:00Z"),
+				endingTime:    mustParseTime("2021-02-01T00:00:00Z"),
 				isClosed:      false,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
@@ -46,13 +46,13 @@ func TestNewAccountingPeriod(t *testing.T) {
 				id:            periodId,
 				financialYear: 1900,
 				number:        1,
-				openingTime:   mustParseTime("2021-01-01T00:00:00Z00:00"),
-				endingTime:    mustParseTime("2021-02-01T00:00:00Z00:00"),
+				openingTime:   mustParseTime("2021-01-01T00:00:00Z"),
+				endingTime:    mustParseTime("2021-02-01T00:00:00Z"),
 				isClosed:      false,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Error(t, err)
-				return true
+				return false
 			},
 		},
 		{
@@ -61,29 +61,28 @@ func TestNewAccountingPeriod(t *testing.T) {
 				id:            periodId,
 				financialYear: 2021,
 				number:        18,
-				openingTime:   mustParseTime("2021-01-01T00:00:00Z00:00"),
-				endingTime:    mustParseTime("2021-02-01T00:00:00Z00:00"),
+				openingTime:   mustParseTime("2021-01-01T00:00:00Z"),
+				endingTime:    mustParseTime("2021-02-01T00:00:00Z"),
 				isClosed:      false,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Error(t, err)
-				return true
+				return false
 			},
 		},
-
 		{
 			name: "invalid_time",
 			args: args{
 				id:            periodId,
 				financialYear: 2021,
 				number:        1,
-				openingTime:   mustParseTime("2021-02-01T00:00:00Z00:00"),
-				endingTime:    mustParseTime("2021-01-01T00:00:00Z00:00"),
+				openingTime:   mustParseTime("2021-02-01T00:00:00Z"),
+				endingTime:    mustParseTime("2021-01-01T00:00:00Z"),
 				isClosed:      false,
 			},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Error(t, err)
-				return true
+				return false
 			},
 		},
 	}
