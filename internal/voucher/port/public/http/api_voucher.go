@@ -29,16 +29,16 @@ func NewHandler(app *app.Application) Handler {
 // @Param sobId path string true "Sob ID"
 // @Success 200 {array} VoucherResponse
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/ [get]
+// @Router /sob/{sobId}/vouchers/ [get]
 func (h Handler) ReadAllVouchers(c *gin.Context) {
 	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, wrapErr(err))
 		return
 	}
-	var res []VoucherResponse
-	for _, voucher := range vouchers {
-		res = append(res, mapFromVoucherQuery(voucher))
+	res := make([]VoucherResponse, len(vouchers))
+	for i, voucher := range vouchers {
+		res[i] = mapFromVoucherQuery(voucher)
 	}
 	c.JSON(http.StatusOK, res)
 }
@@ -54,7 +54,7 @@ func (h Handler) ReadAllVouchers(c *gin.Context) {
 // @Success 200 {object} VoucherResponse
 // @Failure 404
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId} [get]
+// @Router /sob/{sobId}/voucher/{voucherId} [get]
 func (h Handler) ReadVoucherById(c *gin.Context) {
 	voucher, err := h.app.Queries.ReadVouchers.HandleReadById(c, uuid.MustParse(c.Param("voucherId")))
 	if err != nil {
@@ -80,7 +80,7 @@ func (h Handler) ReadVoucherById(c *gin.Context) {
 // @Success 204
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId}/audit [post]
+// @Router /sob/{sobId}/voucher/{voucherId}/audit [post]
 func (h Handler) Audit(c *gin.Context) {
 	var req AuditVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -110,7 +110,7 @@ func (h Handler) Audit(c *gin.Context) {
 // @Success 204
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId}/cancel-audit [post]
+// @Router /sob/{sobId}/voucher/{voucherId}/cancel-audit [post]
 func (h Handler) CancelAudit(c *gin.Context) {
 	var req AuditVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -140,7 +140,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 // @Success 204
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId}/review [post]
+// @Router /sob/{sobId}/voucher/{voucherId}/review [post]
 func (h Handler) Review(c *gin.Context) {
 	var req ReviewVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -170,7 +170,7 @@ func (h Handler) Review(c *gin.Context) {
 // @Success 204
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId}/cancel-review [post]
+// @Router /sob/{sobId}/voucher/{voucherId}/cancel-review [post]
 func (h Handler) CancelReview(c *gin.Context) {
 	var req ReviewVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -200,7 +200,7 @@ func (h Handler) CancelReview(c *gin.Context) {
 // @Success 204
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId} [patch]
+// @Router /sob/{sobId}/voucher/{voucherId} [patch]
 func (h Handler) UpdateVoucher(c *gin.Context) {
 	var req UpdateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -235,7 +235,7 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 // @Success 201 {object} VoucherResponse
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/ [post]
+// @Router /sob/{sobId}/vouchers/ [post]
 func (h Handler) CreateVoucher(c *gin.Context) {
 	var req CreateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -267,7 +267,7 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 // @Param voucherId path string true "Voucher ID"
 // @Success 204
 // @Failure 500 {object} Error
-// @Router /vouchers/{sobId}/{voucherId}/post [post]
+// @Router /sob/{sobId}/voucher/{voucherId}/post [post]
 func (h Handler) Post(c *gin.Context) {
 	cmd := command.PostVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
@@ -294,16 +294,13 @@ func wrapErr(e error) Error {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g := r.Group("/vouchers/:sobId/")
-	{
-		g.GET("", h.ReadAllVouchers)
-		g.GET(":voucherId", h.ReadVoucherById)
-		g.POST("", h.CreateVoucher)
-		g.PATCH(":voucherId", h.UpdateVoucher)
-		g.POST(":voucherId/audit", h.Audit)
-		g.POST(":voucherId/cancel-audit", h.CancelAudit)
-		g.POST(":voucherId/review", h.Review)
-		g.POST(":voucherId/cancel-review", h.CancelReview)
-		g.POST(":voucherId/post", h.Post)
-	}
+	r.GET("/sob/:sobId/vouchers/", h.ReadAllVouchers)
+	r.GET("/sob/:sobId/voucher/:voucherId", h.ReadVoucherById)
+	r.POST("/sob/:sobId/vouchers/", h.CreateVoucher)
+	r.PATCH("/sob/:sobId/voucher/:voucherId", h.UpdateVoucher)
+	r.POST("/sob/:sobId/voucher/:voucherId/audit", h.Audit)
+	r.POST("/sob/:sobId/voucher/:voucherId/cancel-audit", h.CancelAudit)
+	r.POST("/sob/:sobId/voucher/:voucherId/review", h.Review)
+	r.POST("/sob/:sobId/voucher/:voucherId/cancel-review", h.CancelReview)
+	r.POST("/sob/:sobId/voucher/:voucherId/post", h.Post)
 }

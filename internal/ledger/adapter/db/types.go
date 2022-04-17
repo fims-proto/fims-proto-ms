@@ -127,7 +127,7 @@ func unmarshallLedgerToQuery(dbl *ledger) query.Ledger {
 	return query.Ledger{
 		Id:             dbl.Id,
 		PeriodId:       dbl.PeriodId,
-		AccountId:      dbl.AccountId,
+		Account:        query.Account{Id: dbl.AccountId},
 		OpeningBalance: dbl.OpeningBalance,
 		EndingBalance:  dbl.EndingBalance,
 		Debit:          dbl.Debit,

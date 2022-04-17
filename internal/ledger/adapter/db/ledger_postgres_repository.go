@@ -202,10 +202,25 @@ func (r LedgerPostgresRepository) ReadAllAccountingPeriods(ctx context.Context, 
 	}
 
 	var queryPeriods []query.AccountingPeriod
-	for _, dbLedger := range dbPeriods {
-		queryPeriods = append(queryPeriods, unmarshallPeriodToQuery(&dbLedger))
+	for _, dbPeriod := range dbPeriods {
+		queryPeriods = append(queryPeriods, unmarshallPeriodToQuery(&dbPeriod))
 	}
 	return queryPeriods, nil
+}
+
+func (r LedgerPostgresRepository) ReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (query.AccountingPeriod, error) {
+	db := readDBFromCtx(ctx)
+
+	var dbPeriods []accountingPeriod
+	if err := db.Where("sob_id = ? AND is_closed = false", sobId).Find(&dbPeriods).Error; err != nil {
+		return query.AccountingPeriod{}, errors.Wrapf(err, "find open accounting period by sob %s failed", sobId)
+	}
+
+	if len(dbPeriods) != 1 {
+		return query.AccountingPeriod{}, errors.Errorf("expects 1 open accounting period, but find %d", len(dbPeriods))
+	}
+
+	return unmarshallPeriodToQuery(&dbPeriods[0]), nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

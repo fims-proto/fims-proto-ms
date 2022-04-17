@@ -14,41 +14,51 @@ type slugErr interface {
 }
 
 type Error struct {
-	Message string
-	Slug    string
+	Message string `json:"message"`
+	Slug    string `json:"slug"`
 }
 
 type AccountingPeriodResponse struct {
-	Id               uuid.UUID
-	SobId            uuid.UUID
-	PreviousPeriodId uuid.UUID
-	FinancialYear    int
-	Number           int
-	OpeningTime      time.Time
-	EndingTime       time.Time
-	IsClosed         bool
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	Id               uuid.UUID `json:"id"`
+	SobId            uuid.UUID `json:"sobId"`
+	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
+	FinancialYear    int       `json:"financialYear"`
+	Number           int       `json:"number"`
+	OpeningTime      time.Time `json:"openingTime"`
+	EndingTime       time.Time `json:"endingTime"`
+	IsClosed         bool      `json:"isClosed"`
+	CreatedAt        time.Time `json:"createdAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
 }
 
 type CreateAccountingPeriodRequest struct {
-	PreviousPeriodId uuid.UUID
-	FinancialYear    int
-	Number           int
-	OpeningTime      time.Time
-	EndingTime       time.Time
+	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
+	FinancialYear    int       `json:"financialYear"`
+	Number           int       `json:"number"`
+	OpeningTime      time.Time `json:"openingTime"`
+	EndingTime       time.Time `json:"endingTime"`
 }
 
 type LedgerResponse struct {
-	Id             uuid.UUID
-	PeriodId       uuid.UUID
-	AccountId      uuid.UUID
-	OpeningBalance decimal.Decimal
-	EndingBalance  decimal.Decimal
-	Debit          decimal.Decimal
-	Credit         decimal.Decimal
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	Id             uuid.UUID       `json:"id"`
+	PeriodId       uuid.UUID       `json:"periodId"`
+	Account        AccountResponse `json:"account"`
+	OpeningBalance decimal.Decimal `json:"openingBalance"`
+	EndingBalance  decimal.Decimal `json:"endingBalance"`
+	Debit          decimal.Decimal `json:"debit"`
+	Credit         decimal.Decimal `json:"credit"`
+	CreatedAt      time.Time       `json:"createdAt"`
+	UpdatedAt      time.Time       `json:"updatedAt"`
+}
+
+type AccountResponse struct {
+	Id                string `json:"id"`
+	SuperiorAccountId string `json:"superiorAccountId"`
+	AccountNumber     string `json:"accountNumber"`
+	Title             string `json:"title"`
+	Level             int    `json:"level"`
+	AccountType       string `json:"accountType"`
+	BalanceDirection  string `json:"balanceDirection"`
 }
 
 func mapFromPeriodQuery(p query.AccountingPeriod) AccountingPeriodResponse {
@@ -68,9 +78,17 @@ func mapFromPeriodQuery(p query.AccountingPeriod) AccountingPeriodResponse {
 
 func mapFromLedgerQuery(l query.Ledger) LedgerResponse {
 	return LedgerResponse{
-		Id:             l.Id,
-		PeriodId:       l.PeriodId,
-		AccountId:      l.AccountId,
+		Id:       l.Id,
+		PeriodId: l.PeriodId,
+		Account: AccountResponse{
+			Id:                l.Account.Id.String(),
+			SuperiorAccountId: l.Account.SuperiorAccountId.String(),
+			AccountNumber:     l.Account.AccountNumber,
+			Title:             l.Account.Title,
+			Level:             l.Account.Level,
+			AccountType:       l.Account.AccountType.String(),
+			BalanceDirection:  l.Account.BalanceDirection.String(),
+		},
 		OpeningBalance: l.OpeningBalance,
 		EndingBalance:  l.EndingBalance,
 		Debit:          l.Debit,

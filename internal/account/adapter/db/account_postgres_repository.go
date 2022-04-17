@@ -78,7 +78,7 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to unmarshall account")
 		}
-		queryAccounts = append(queryAccounts, queryAccount)
+		queryAccounts = append(queryAccounts, *queryAccount)
 	}
 	return queryAccounts, nil
 }
@@ -93,15 +93,19 @@ func (r AccountPostgresRepository) ReadById(ctx context.Context, accountId uuid.
 	return qas, nil
 }
 
-func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]*query.Account, error) {
 	db := readDBFromCtx(ctx)
+
+	if len(accountIds) == 0 {
+		return nil, nil
+	}
 
 	var dbAccounts []account
 	if err := db.Where("id IN ?", accountIds).Find(&dbAccounts).Error; err != nil {
 		return nil, errors.Wrapf(err, "find accounts by IDs")
 	}
 
-	queryAccounts := make(map[uuid.UUID]query.Account)
+	queryAccounts := make(map[uuid.UUID]*query.Account)
 	for _, dbAccount := range dbAccounts {
 		queryAccount, err := unmarshallToQuery(&dbAccount)
 		if err != nil {
@@ -129,7 +133,7 @@ func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobI
 	if err != nil {
 		return query.Account{}, errors.Wrap(err, "failed to unmarshall account")
 	}
-	return result, nil
+	return *result, nil
 }
 
 func (r AccountPostgresRepository) readAccountWithSuperiorAccount(db *gorm.DB, accountId uuid.UUID) (query.Account, error) {
@@ -143,14 +147,14 @@ func (r AccountPostgresRepository) readAccountWithSuperiorAccount(db *gorm.DB, a
 		return query.Account{}, errors.Wrap(err, "failed to unmarshall account")
 	}
 	if dbAccount.SuperiorAccountId == uuid.Nil {
-		return result, nil
+		return *result, nil
 	}
 	superiorAccount, err := r.readAccountWithSuperiorAccount(db, dbAccount.SuperiorAccountId)
 	if err != nil {
 		return query.Account{}, err
 	}
 	result.SuperiorAccount = &superiorAccount
-	return result, nil
+	return *result, nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

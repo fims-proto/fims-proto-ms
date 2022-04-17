@@ -35,9 +35,9 @@ func (h Handler) ReadAllSobs(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, wrapErr(err))
 		return
 	}
-	var resp []SobResponse
-	for _, sob := range sobs {
-		resp = append(resp, mapFromSobQuery(sob))
+	resp := make([]SobResponse, len(sobs))
+	for i, sob := range sobs {
+		resp[i] = mapFromSobQuery(sob)
 	}
 	c.JSON(http.StatusOK, resp)
 }
@@ -93,7 +93,7 @@ func (h Handler) CreateSob(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, wrapErr(err))
 		return
 	}
-	c.JSON(http.StatusCreated, createdSob)
+	c.JSON(http.StatusCreated, mapFromSobQuery(createdSob))
 }
 
 // UpdateSob godoc

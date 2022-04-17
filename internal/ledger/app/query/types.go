@@ -1,6 +1,7 @@
 package query
 
 import (
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"time"
 
 	"github.com/google/uuid"
@@ -23,13 +24,23 @@ type AccountingPeriod struct {
 type Ledger struct {
 	Id             uuid.UUID
 	PeriodId       uuid.UUID
-	AccountId      uuid.UUID
+	Account        Account
 	OpeningBalance decimal.Decimal
 	EndingBalance  decimal.Decimal
 	Debit          decimal.Decimal
 	Credit         decimal.Decimal
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
+}
+
+type Account struct {
+	Id                uuid.UUID
+	SuperiorAccountId uuid.UUID
+	AccountNumber     string
+	Title             string
+	Level             int
+	AccountType       commonAccount.Type
+	BalanceDirection  commonAccount.Direction
 }
 
 type LedgerLog struct {

@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
@@ -19,15 +20,25 @@ type CreateSobCmd struct {
 }
 
 type CreateSobHandler struct {
-	repo domain.Repository
+	repo           domain.Repository
+	accountService service.AccountService
+	counterService service.CounterService
 }
 
-func NewCreateSobHandler(repo domain.Repository) CreateSobHandler {
+func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService, counterService service.CounterService) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
+	if accountService == nil {
+		panic("nil account service")
+	}
+	if counterService == nil {
+		panic("nil counter service")
+	}
 	return CreateSobHandler{
-		repo: repo,
+		repo:           repo,
+		accountService: accountService,
+		counterService: counterService,
 	}
 }
 
@@ -47,5 +58,14 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (created
 	if err := h.repo.CreateSob(ctx, sob); err != nil {
 		return uuid.Nil, err
 	}
+
+	// after sob creation, load counters and accounts
+	if err := h.counterService.InitializeCounters(ctx, sob.Id()); err != nil {
+		return uuid.Nil, errors.Wrapf(err, "failed to initialize counters")
+	}
+	if err := h.accountService.InitializeAccounts(ctx, sob.Id()); err != nil {
+		return uuid.Nil, errors.Wrapf(err, "failed to initialize accounts")
+	}
+
 	return sob.Id(), nil
 }

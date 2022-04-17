@@ -31,3 +31,7 @@ func (i AccountInterface) ReadAccountById(ctx context.Context, accountId uuid.UU
 func (i AccountInterface) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
 	return i.app.Queries.ReadAccounts.HandleReadAll(ctx, sobId)
 }
+
+func (i AccountInterface) InitializeAccounts(ctx context.Context, sobId uuid.UUID) error {
+	return i.app.Commands.LoadAccounts.Handle(ctx, sobId)
+}

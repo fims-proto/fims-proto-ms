@@ -3,14 +3,16 @@ package command
 import (
 	"context"
 	"encoding/csv"
+	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -27,10 +29,10 @@ type accountDataLoadEntry struct {
 
 type AccountDataLoadHandler struct {
 	repo       domain.Repository
-	sobService SobService
+	sobService service.SobService
 }
 
-func NewAccountDataLoadHandler(repo domain.Repository, sobService SobService) AccountDataLoadHandler {
+func NewAccountDataLoadHandler(repo domain.Repository, sobService service.SobService) AccountDataLoadHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

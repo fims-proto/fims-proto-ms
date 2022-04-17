@@ -17,6 +17,10 @@ func NewCounterInterface(app *app.Application) CounterInterface {
 	return CounterInterface{app: app}
 }
 
+func (i CounterInterface) InitializeCounters(ctx context.Context, sobId uuid.UUID) error {
+	return i.app.Commands.LoadCounters.Handle(ctx, sobId)
+}
+
 func (i CounterInterface) Create(ctx context.Context, req CreateCounterRequest) error {
 	return i.app.Commands.CreateCounter.Handle(ctx, req.mapToCommand())
 }

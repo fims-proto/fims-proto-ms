@@ -4,6 +4,7 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
@@ -21,10 +22,10 @@ type CreatePeriodLedgersCmd struct {
 type CreatePeriodLedgersHandler struct {
 	repo            domain.Repository
 	ledgerReadModel query.LedgerReadModel
-	accountService  AccountService
+	accountService  service.AccountService
 }
 
-func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService AccountService) CreatePeriodLedgersHandler {
+func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService service.AccountService) CreatePeriodLedgersHandler {
 	if repo == nil {
 		panic("nil ledger repository")
 	}
@@ -68,7 +69,7 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 			return errors.Wrap(err, "failed to read ledgers by account period")
 		}
 		for _, ledger := range ledgers {
-			previousLedgers[ledger.AccountId] = ledger
+			previousLedgers[ledger.Account.Id] = ledger
 		}
 	}
 

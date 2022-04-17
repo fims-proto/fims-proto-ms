@@ -1,4 +1,4 @@
-package command
+package service
 
 import (
 	"context"
@@ -7,14 +7,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccountService interface {
-	ValidateExistenceAndGetId(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error)
-}
-
 type LedgerService interface {
 	PostVoucher(ctx context.Context, voucher query.Voucher) error
 }
 
 type CounterService interface {
 	GetNextIdentifier(ctx context.Context, businessObjects ...string) (string, error)
+}
+
+type AccountService interface {
+	ValidateExistenceAndGetId(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error)
 }

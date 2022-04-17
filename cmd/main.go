@@ -4,25 +4,32 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"github/fims-proto/fims-proto-ms/internal/common/db"
+	"github/fims-proto/fims-proto-ms/internal/common/log"
+	"github/fims-proto/fims-proto-ms/internal/devops"
+	"strings"
+
 	_ "github/fims-proto/fims-proto-ms/docs"
 	accountAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/db"
 	accountSobAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/sob"
 	accountApp "github/fims-proto/fims-proto-ms/internal/account/app"
 	accountPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/account/port/private/http"
 	accountIntraPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
-	"github/fims-proto/fims-proto-ms/internal/common/db"
-	"github/fims-proto/fims-proto-ms/internal/common/log"
+	accountPublicHttpPort "github/fims-proto/fims-proto-ms/internal/account/port/public/http"
+
 	counterAdapter "github/fims-proto/fims-proto-ms/internal/counter/adapter/db"
 	counterApp "github/fims-proto/fims-proto-ms/internal/counter/app"
 	counterPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/http"
 	counterIntraPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
-	"github/fims-proto/fims-proto-ms/internal/devops"
+
 	ledgerAccountAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
 	ledgerAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/db"
 	ledgerApp "github/fims-proto/fims-proto-ms/internal/ledger/app"
 	ledgerPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
 	ledgerIntraPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
 	ledgerPublicHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/public/http"
+	sobAccountAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/account"
+	sobCounterAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/counter"
 	sobAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/db"
 	sobApp "github/fims-proto/fims-proto-ms/internal/sob/app"
 	sobPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/http"
@@ -41,7 +48,6 @@ import (
 	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
 	voucherPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
 	voucherPublicHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
-	"strings"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -94,7 +100,12 @@ func main() {
 	counterInterface := counterIntraPort.NewCounterInterface(&counterApplication)
 
 	// application dependencies injection
-	sobApplication.Inject(sobRepository, sobRepository)
+	sobApplication.Inject(
+		sobRepository,
+		sobRepository,
+		sobAccountAdapter.NewIntraProcessAdapter(accountInterface),
+		sobCounterAdapter.NewIntraProcessAdapter(counterInterface),
+	)
 
 	accountApplication.Inject(
 		accountRepository,
@@ -129,6 +140,7 @@ func main() {
 	// public http API
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
+	accountPublicHttpPort.InitRouter(accountPublicHttpPort.NewHandler(&accountApplication), publicApiRouter)
 	voucherPublicHttpPort.InitRouter(voucherPublicHttpPort.NewHandler(&voucherApplication), publicApiRouter)
 	ledgerPublicHttpPort.InitRouter(ledgerPublicHttpPort.NewHandler(&ledgerApplication), publicApiRouter)
 

@@ -31,10 +31,12 @@ func NewAccountingPeriod(id, sobId, previousPeriodId uuid.UUID, financialYear, n
 	if number < 1 || number > 12 {
 		return nil, errors.New("invalid period number")
 	}
-	if openingTime.IsZero() || endingTime.IsZero() {
-		return nil, errors.New("zero opening time or ending time")
+
+	// TODO: question here: should ending time be provided when creating period?
+	if openingTime.IsZero() {
+		return nil, errors.New("zero opening time")
 	}
-	if openingTime.After(endingTime) {
+	if !endingTime.IsZero() && openingTime.After(endingTime) {
 		return nil, errors.New("opening time is after ending time")
 	}
 

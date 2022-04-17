@@ -10,32 +10,32 @@ type slugErr interface {
 }
 
 type Error struct {
-	Message string
-	Slug    string
+	Message string `json:"message"`
+	Slug    string `json:"slug"`
 }
 
 type CreateSobRequest struct {
-	Name                string
-	Description         string
-	BaseCurrency        string
-	StartingPeriodYear  int
-	StartingPeriodMonth int
-	AccountsCodeLength  []int
+	Name                string `json:"name"`
+	Description         string `json:"description"`
+	BaseCurrency        string `json:"baseCurrency"`
+	StartingPeriodYear  int    `json:"startingPeriodYear"`
+	StartingPeriodMonth int    `json:"startingPeriodMonth"`
+	AccountsCodeLength  []int  `json:"accountsCodeLength"`
 }
 
 type UpdateSobRequest struct {
-	Name               string
-	AccountsCodeLength []int
+	Name               string `json:"name"`
+	AccountsCodeLength []int  `json:"accountsCodeLength"`
 }
 
 type SobResponse struct {
-	Id                  string
-	Name                string
-	Description         string
-	BaseCurrency        string
-	StartingPeriodYear  int
-	StartingPeriodMonth int
-	AccountsCodeLength  []int
+	Id                  string `json:"id"`
+	Name                string `json:"name"`
+	Description         string `json:"description"`
+	BaseCurrency        string `json:"baseCurrency"`
+	StartingPeriodYear  int    `json:"startingPeriodYear"`
+	StartingPeriodMonth int    `json:"startingPeriodMonth"`
+	AccountsCodeLength  []int  `json:"accountsCodeLength"`
 }
 
 func mapFromSobQuery(q query.Sob) SobResponse {

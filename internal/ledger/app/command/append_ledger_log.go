@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 	"time"
 
@@ -24,10 +25,10 @@ type AppendLedgerLogCmd struct {
 
 type AppendLedgerLogsHandler struct {
 	repo           domain.Repository
-	accountService AccountService
+	accountService service.AccountService
 }
 
-func NewAppendLedgerLogsHandler(repo domain.Repository, accountService AccountService) AppendLedgerLogsHandler {
+func NewAppendLedgerLogsHandler(repo domain.Repository, accountService service.AccountService) AppendLedgerLogsHandler {
 	if repo == nil {
 		panic("nil ledger repo")
 	}

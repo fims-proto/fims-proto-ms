@@ -12,9 +12,10 @@ type Account struct {
 	SuperiorAccountId uuid.UUID
 	SuperiorNumbers   []int
 	LevelNumber       int
+	AccountNumber     string
 	Title             string
-	Level             uint8
-	AccountType       string
+	Level             int
+	AccountType       commonAccount.Type
 	BalanceDirection  commonAccount.Direction
 	SuperiorAccount   *Account
 }

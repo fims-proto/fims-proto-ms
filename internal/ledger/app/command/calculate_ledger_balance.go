@@ -4,6 +4,7 @@ import (
 	"context"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
@@ -20,10 +21,10 @@ type CalculateLedgerBalanceCmd struct {
 type CalculateLedgerBalanceHandler struct {
 	repo            domain.Repository
 	ledgerReadModel query.LedgerReadModel
-	accountService  AccountService
+	accountService  service.AccountService
 }
 
-func NewCalculateLedgerBalanceHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService AccountService) CalculateLedgerBalanceHandler {
+func NewCalculateLedgerBalanceHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService service.AccountService) CalculateLedgerBalanceHandler {
 	if repo == nil {
 		panic("nil ledger repository")
 	}

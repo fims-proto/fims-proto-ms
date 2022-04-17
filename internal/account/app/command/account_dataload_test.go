@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	query2 "github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"testing"
@@ -16,7 +17,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 	t.Parallel()
 	type fields struct {
 		repo       domain.Repository
-		sobService SobService
+		sobService query2.SobService
 	}
 	type args struct {
 		sobId            uuid.UUID

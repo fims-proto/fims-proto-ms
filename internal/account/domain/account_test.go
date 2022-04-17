@@ -1,8 +1,9 @@
 package domain
 
 import (
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"testing"
+
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
