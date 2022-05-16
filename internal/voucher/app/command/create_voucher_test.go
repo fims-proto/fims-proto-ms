@@ -62,14 +62,14 @@ func createVoucherCmd() *CreateVoucherCmd {
 		{
 			Summary:       "test_item1",
 			AccountNumber: "1000",
-			Debit:         "100",
-			Credit:        "",
+			Debit:         decimal.RequireFromString("100"),
+			Credit:        decimal.Zero,
 		},
 		{
 			Summary:       "test_item2",
 			AccountNumber: "2000",
-			Debit:         "",
-			Credit:        "100",
+			Debit:         decimal.Zero,
+			Credit:        decimal.RequireFromString("100"),
 		},
 	}
 	return &CreateVoucherCmd{
@@ -144,10 +144,10 @@ func (c *counterServiceMock) GetNextIdentifier(context.Context, ...string) (stri
 }
 
 func prepareBalancedItems() []*domain.LineItem {
-	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "100", "")
-	item2, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "100", "")
-	item3, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "", "150")
-	item4, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", "", "50")
+	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.RequireFromString("100"), decimal.Zero)
+	item2, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.RequireFromString("100"), decimal.Zero)
+	item3, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.Zero, decimal.RequireFromString("150"))
+	item4, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.Zero, decimal.RequireFromString("50"))
 	return []*domain.LineItem{
 		item1,
 		item2,

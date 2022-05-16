@@ -1,6 +1,7 @@
 package domain
 
 import (
+	"github.com/shopspring/decimal"
 	"testing"
 	"time"
 
@@ -60,10 +61,10 @@ func TestDomain_NewVoucher(t *testing.T) {
 
 func prepareBalancedItems() []*LineItem {
 	accountId := uuid.New()
-	item1, _ := NewLineItem(uuid.New(), accountId, "1000", "100", "")
-	item2, _ := NewLineItem(uuid.New(), accountId, "1001", "100", "")
-	item3, _ := NewLineItem(uuid.New(), accountId, "2000", "", "150")
-	item4, _ := NewLineItem(uuid.New(), accountId, "2001", "", "50")
+	item1, _ := NewLineItem(uuid.New(), accountId, "1000", decimal.RequireFromString("100"), decimal.Zero)
+	item2, _ := NewLineItem(uuid.New(), accountId, "1001", decimal.RequireFromString("100"), decimal.Zero)
+	item3, _ := NewLineItem(uuid.New(), accountId, "2000", decimal.Zero, decimal.RequireFromString("150"))
+	item4, _ := NewLineItem(uuid.New(), accountId, "2001", decimal.Zero, decimal.RequireFromString("50"))
 	return []*LineItem{
 		item1,
 		item2,
@@ -74,10 +75,10 @@ func prepareBalancedItems() []*LineItem {
 
 func prepareImbalancedItems() []*LineItem {
 	accountId := uuid.New()
-	item1, _ := NewLineItem(uuid.New(), accountId, "1000", "100", "")
-	item2, _ := NewLineItem(uuid.New(), accountId, "1001", "200", "")
-	item3, _ := NewLineItem(uuid.New(), accountId, "2000", "", "150")
-	item4, _ := NewLineItem(uuid.New(), accountId, "2001", "", "50")
+	item1, _ := NewLineItem(uuid.New(), accountId, "1000", decimal.RequireFromString("100"), decimal.Zero)
+	item2, _ := NewLineItem(uuid.New(), accountId, "1001", decimal.RequireFromString("200"), decimal.Zero)
+	item3, _ := NewLineItem(uuid.New(), accountId, "2000", decimal.Zero, decimal.RequireFromString("150"))
+	item4, _ := NewLineItem(uuid.New(), accountId, "2001", decimal.Zero, decimal.RequireFromString("50"))
 	return []*LineItem{
 		item1,
 		item2,

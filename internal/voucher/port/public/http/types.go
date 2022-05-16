@@ -20,11 +20,11 @@ type AuditVoucherRequest struct {
 }
 
 type LineItemRequest struct {
-	Id            string `json:"id"`
-	AccountNumber string `json:"accountNumber"`
-	Summary       string `json:"summary"`
-	Credit        string `json:"credit"`
-	Debit         string `json:"debit"`
+	Id            string          `json:"id"`
+	AccountNumber string          `json:"accountNumber"`
+	Summary       string          `json:"summary"`
+	Credit        decimal.Decimal `json:"credit"`
+	Debit         decimal.Decimal `json:"debit"`
 }
 
 type LineItemResponse struct {

@@ -61,15 +61,15 @@ func createUpdateVoucherCmd() *UpdateVoucherCmd {
 			Id:            uuid.New(),
 			Summary:       "test_item1",
 			AccountNumber: "1000",
-			Debit:         "100",
-			Credit:        "",
+			Debit:         decimal.RequireFromString("100"),
+			Credit:        decimal.Zero,
 		},
 		{
 			Id:            uuid.New(),
 			Summary:       "test_item2",
 			AccountNumber: "1000",
-			Debit:         "",
-			Credit:        "100",
+			Debit:         decimal.Zero,
+			Credit:        decimal.RequireFromString("100"),
 		},
 	}
 	return &UpdateVoucherCmd{
@@ -79,8 +79,8 @@ func createUpdateVoucherCmd() *UpdateVoucherCmd {
 }
 
 func (r voucherRepoMock) initTestData() {
-	item0, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test_item0", "10", "")
-	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test_item1", "", "10")
+	item0, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test_item0", decimal.RequireFromString("10"), decimal.Zero)
+	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test_item1", decimal.Zero, decimal.RequireFromString("10"))
 	items := []*domain.LineItem{item0, item1}
 	v, _ := domain.NewVoucher(
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),

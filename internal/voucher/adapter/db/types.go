@@ -79,8 +79,8 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 			dbItem.Id,
 			dbItem.AccountId,
 			dbItem.Summary,
-			dbItem.Debit.String(),
-			dbItem.Credit.String(),
+			dbItem.Debit,
+			dbItem.Credit,
 		)
 		if err != nil {
 			return nil, errors.Wrap(err, "unmarshall lineItem failed")

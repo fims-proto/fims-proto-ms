@@ -14,7 +14,7 @@ type LineItem struct {
 	credit    decimal.Decimal
 }
 
-func NewLineItem(id, accountId uuid.UUID, summary, debit, credit string) (*LineItem, error) {
+func NewLineItem(id, accountId uuid.UUID, summary string, debit, credit decimal.Decimal) (*LineItem, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil id")
 	}
@@ -24,24 +24,11 @@ func NewLineItem(id, accountId uuid.UUID, summary, debit, credit string) (*LineI
 	if summary == "" {
 		return nil, errors.New("empty summary")
 	}
-	if debit == "" && credit == "" {
-		return nil, errors.New("empty debit and credit amount")
-	}
-
-	debitDecimal, err := decimal.NewFromString(debit)
-	if debit != "" && err != nil {
-		return nil, errors.New("invalid debit amount")
-	}
-	creditDecimal, err := decimal.NewFromString(credit)
-	if credit != "" && err != nil {
-		return nil, errors.New("invalid credit amount")
-	}
-
-	if decimal.Zero.Cmp(debitDecimal) == 0 && decimal.Zero.Cmp(creditDecimal) == 0 {
+	if debit.IsZero() && credit.IsZero() {
 		return nil, errors.New("credit and debit cannot both be zero")
 	}
 
-	if decimal.Zero.Cmp(debitDecimal) != 0 && decimal.Zero.Cmp(creditDecimal) != 0 {
+	if !debit.IsZero() && !credit.IsZero() {
 		return nil, errors.New("credit and debit cannot both be non zero")
 	}
 
@@ -49,8 +36,8 @@ func NewLineItem(id, accountId uuid.UUID, summary, debit, credit string) (*LineI
 		id:        id,
 		summary:   summary,
 		accountId: accountId,
-		debit:     debitDecimal,
-		credit:    creditDecimal,
+		debit:     debit,
+		credit:    credit,
 	}, nil
 }
 

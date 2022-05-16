@@ -1119,10 +1119,10 @@ var doc = `{
                     "type": "string"
                 },
                 "credit": {
-                    "type": "string"
+                    "type": "number"
                 },
                 "debit": {
-                    "type": "string"
+                    "type": "number"
                 },
                 "id": {
                     "type": "string"

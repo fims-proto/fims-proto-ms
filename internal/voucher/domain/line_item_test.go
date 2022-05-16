@@ -17,12 +17,12 @@ func TestDomain_NewLineItem(t *testing.T) {
 		name      string
 		summary   string
 		accountId uuid.UUID
-		debit     string
-		credit    string
+		debit     decimal.Decimal
+		credit    decimal.Decimal
 		verify    func(t *testing.T, lineItem *LineItem, err error)
 	}{
 		{
-			"debit_success", "Test Summary", accountId, "200.00", "",
+			"debit_success", "Test Summary", accountId, decimal.RequireFromString("200.00"), decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				debit, _ := decimal.NewFromString("200.00")
 				require.NoError(t, err)
@@ -33,7 +33,7 @@ func TestDomain_NewLineItem(t *testing.T) {
 			},
 		},
 		{
-			"credit_success", "Test Summary", accountId, "", "200.00",
+			"credit_success", "Test Summary", accountId, decimal.Zero, decimal.RequireFromString("200.00"),
 			func(t *testing.T, lineItem *LineItem, err error) {
 				credit, _ := decimal.NewFromString("200.00")
 				require.NoError(t, err)
@@ -44,42 +44,28 @@ func TestDomain_NewLineItem(t *testing.T) {
 			},
 		},
 		{
-			"debit_and_credit_error", "Test Summary", accountId, "200.00", "200.00",
+			"debit_and_credit_error", "Test Summary", accountId, decimal.RequireFromString("200.00"), decimal.RequireFromString("200.00"),
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_debit_credit_error", "Test Summary", accountId, "", "",
+			"empty_debit_credit_error", "Test Summary", accountId, decimal.Zero, decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_summary_error", "", accountId, "200.00", "",
+			"empty_summary_error", "", accountId, decimal.RequireFromString("200.00"), decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"nil_account_id_error", "Test Summary", uuid.Nil, "200.00", "",
-			func(t *testing.T, lineItem *LineItem, err error) {
-				require.Nil(t, lineItem)
-				assert.Error(t, err)
-			},
-		},
-		{
-			"invalid_debit_error", "Test Summary", accountId, "abc", "",
-			func(t *testing.T, lineItem *LineItem, err error) {
-				require.Nil(t, lineItem)
-				assert.Error(t, err)
-			},
-		},
-		{
-			"invalid_credit_error", "Test Summary", accountId, "", "abc",
+			"nil_account_id_error", "Test Summary", uuid.Nil, decimal.RequireFromString("200.00"), decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
 				assert.Error(t, err)
