@@ -28,11 +28,12 @@ type LineItemRequest struct {
 }
 
 type LineItemResponse struct {
-	Id        string          `json:"id"`
-	AccountId string          `json:"accountId"`
-	Summary   string          `json:"summary"`
-	Credit    decimal.Decimal `json:"credit"`
-	Debit     decimal.Decimal `json:"debit"`
+	Id            string          `json:"id"`
+	AccountId     string          `json:"accountId"`
+	AccountNumber string          `json:"accountNumber"`
+	Summary       string          `json:"summary"`
+	Credit        decimal.Decimal `json:"credit"`
+	Debit         decimal.Decimal `json:"debit"`
 }
 
 type CreateVoucherRequest struct {

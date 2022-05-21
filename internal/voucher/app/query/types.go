@@ -9,11 +9,12 @@ import (
 )
 
 type LineItem struct {
-	Id        uuid.UUID
-	AccountId uuid.UUID
-	Summary   string
-	Debit     decimal.Decimal
-	Credit    decimal.Decimal
+	Id            uuid.UUID
+	AccountId     uuid.UUID
+	AccountNumber string
+	Summary       string
+	Debit         decimal.Decimal
+	Credit        decimal.Decimal
 }
 
 type Voucher struct {

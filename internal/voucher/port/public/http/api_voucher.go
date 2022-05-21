@@ -254,7 +254,7 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, wrapErr(err))
 		return
 	}
-	c.JSON(http.StatusCreated, createdVoucher)
+	c.JSON(http.StatusCreated, mapFromVoucherQuery(createdVoucher))
 }
 
 // Post godoc

@@ -2,6 +2,7 @@ package account
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 
 	accountPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 
@@ -28,4 +29,8 @@ func (s IntraProcessAdapter) ValidateExistenceAndGetId(ctx context.Context, sobI
 		accountIds[accountNumber] = account.Id
 	}
 	return accountIds, nil
+}
+
+func (s IntraProcessAdapter) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+	return s.accountInterface.ReadAccountsByIds(ctx, accountIds)
 }

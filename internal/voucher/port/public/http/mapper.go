@@ -34,11 +34,12 @@ func (r CreateVoucherRequest) mapToCommand() command.CreateVoucherCmd {
 
 func mapFromLineItemQuery(q query.LineItem) LineItemResponse {
 	return LineItemResponse{
-		Id:        q.Id.String(),
-		AccountId: q.AccountId.String(),
-		Summary:   q.Summary,
-		Debit:     q.Debit,
-		Credit:    q.Credit,
+		Id:            q.Id.String(),
+		AccountId:     q.AccountId.String(),
+		AccountNumber: q.AccountNumber,
+		Summary:       q.Summary,
+		Debit:         q.Debit,
+		Credit:        q.Credit,
 	}
 }
 

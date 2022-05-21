@@ -113,10 +113,12 @@ func main() {
 		accountSobAdapter.NewIntraProcessAdapter(sobInterface),
 	)
 
+	accountService := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
 	voucherApplication.Inject(
 		voucherRepository,
 		voucherRepository,
-		voucherAccountAdapter.NewIntraProcessAdapter(accountInterface),
+		accountService,
+		accountService,
 		voucherLedgerAdapter.NewIntraProcessAdapter(ledgerInterface),
 		voucherCounterAdapter.NewIntraProcessAdapter(counterInterface),
 	)
