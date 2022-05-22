@@ -2,11 +2,12 @@ package query
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/account/app/query"
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"reflect"
 	"testing"
 	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"

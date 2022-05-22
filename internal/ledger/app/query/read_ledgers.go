@@ -2,8 +2,9 @@ package query
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 
 	"github.com/pkg/errors"
 

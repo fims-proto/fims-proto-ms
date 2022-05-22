@@ -3,9 +3,10 @@ package query
 import (
 	"context"
 	"fmt"
-	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"strconv"
 	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

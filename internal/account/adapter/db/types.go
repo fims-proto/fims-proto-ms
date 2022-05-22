@@ -1,9 +1,10 @@
 package db
 
 import (
+	"time"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
-	"time"
 
 	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 

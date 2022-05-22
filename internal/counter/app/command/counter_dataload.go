@@ -2,9 +2,10 @@ package command
 
 import (
 	"context"
+	"time"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/counter/domain"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

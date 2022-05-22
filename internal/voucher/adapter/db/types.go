@@ -1,9 +1,10 @@
 package db
 
 import (
+	"time"
+
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

@@ -73,6 +73,13 @@ definitions:
       voucherType:
         type: string
     type: object
+  http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
   http.LedgerResponse:
     properties:
       account:
@@ -110,6 +117,8 @@ definitions:
   http.LineItemResponse:
     properties:
       accountId:
+        type: string
+      accountNumber:
         type: string
       credit:
         type: number
@@ -153,6 +162,13 @@ definitions:
       name:
         type: string
     type: object
+  http.UpdateUserRequest:
+    properties:
+      traits:
+        items:
+          type: integer
+        type: array
+    type: object
   http.UpdateVoucherRequest:
     properties:
       lineItems:
@@ -160,6 +176,16 @@ definitions:
           $ref: '#/definitions/http.LineItemRequest'
         type: array
       transactionTime:
+        type: string
+    type: object
+  http.UserResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      traits: {}
+      updatedAt:
         type: string
     type: object
   http.VoucherResponse:
@@ -220,13 +246,6 @@ definitions:
       title:
         type: string
     type: object
-  internal_account_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
   internal_ledger_port_public_http.AccountResponse:
     properties:
       accountNumber:
@@ -242,27 +261,6 @@ definitions:
       superiorAccountId:
         type: string
       title:
-        type: string
-    type: object
-  internal_ledger_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
-  internal_sob_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
-  internal_voucher_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
         type: string
     type: object
 host: 127.0.0.1:4455
@@ -298,7 +296,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_account_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: List all accounts
       tags:
       - accounts
@@ -330,7 +328,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Show accounting period by sob and id
       tags:
       - ledgers
@@ -362,7 +360,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: All ledgers in an accounting period
       tags:
       - ledgers
@@ -390,7 +388,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Calculate ledger balance in accounting period
       tags:
       - ledgers
@@ -415,7 +413,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Current accounting period
       tags:
       - ledgers
@@ -442,7 +440,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: All accounting periods
       tags:
       - ledgers
@@ -472,11 +470,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_ledger_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Create accounting period
       tags:
       - ledgers
@@ -508,7 +506,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Show voucher by sob and voucher id
       tags:
       - vouchers
@@ -541,11 +539,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Update voucher
       tags:
       - vouchers
@@ -579,11 +577,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Audit voucher
       tags:
       - vouchers
@@ -617,11 +615,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Cancel audit voucher
       tags:
       - vouchers
@@ -655,11 +653,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Cancel review voucher
       tags:
       - vouchers
@@ -687,7 +685,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Post voucher
       tags:
       - vouchers
@@ -721,11 +719,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Review voucher
       tags:
       - vouchers
@@ -752,7 +750,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: List all vouchers by sob
       tags:
       - vouchers
@@ -782,11 +780,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Create voucher
       tags:
       - vouchers
@@ -807,7 +805,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: List all sobs
       tags:
       - sobs
@@ -832,11 +830,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Create sob
       tags:
       - sobs
@@ -863,7 +861,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Show sob by id
       tags:
       - sobs
@@ -891,12 +889,71 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       summary: Update sob
       tags:
       - sobs
+  /user/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Show user by id
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.UserResponse'
+        "404":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: Show user by id
+      tags:
+      - users
+    patch:
+      consumes:
+      - application/json
+      description: Update user
+      parameters:
+      - description: User ID
+        in: path
+        name: userId
+        required: true
+        type: string
+      - description: Update user request
+        in: body
+        name: UpdateUserRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      summary: Update user
+      tags:
+      - users
 swagger: "2.0"

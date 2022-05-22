@@ -4,10 +4,11 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"strings"
+
 	"github/fims-proto/fims-proto-ms/internal/common/db"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/devops"
-	"strings"
 
 	_ "github/fims-proto/fims-proto-ms/docs"
 	accountAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/db"
@@ -21,6 +22,11 @@ import (
 	counterApp "github/fims-proto/fims-proto-ms/internal/counter/app"
 	counterPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/http"
 	counterIntraPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
+
+	userAdapter "github/fims-proto/fims-proto-ms/internal/user/adapter/db"
+	userApp "github/fims-proto/fims-proto-ms/internal/user/app"
+	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
+	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
 
 	ledgerAccountAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
 	ledgerAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/db"
@@ -85,6 +91,7 @@ func main() {
 	voucherRepository := voucherAdapter.NewVoucherPostgresRepository()
 	ledgerRepository := ledgerAdapter.NewLedgerPostgresRepository()
 	counterRepository := counterAdapter.NewCounterPostgresRepository()
+	userRepository := userAdapter.NewUserPostgresRepository()
 
 	// application - will be passed by reference, in order to make injection work
 	sobApplication := sobApp.NewApplication()
@@ -92,6 +99,7 @@ func main() {
 	voucherApplication := voucherApp.NewApplication()
 	ledgerApplication := ledgerApp.NewApplication()
 	counterApplication := counterApp.NewApplication()
+	userApplication := userApp.NewApplication()
 
 	// intra process interfaces
 	sobInterface := sobIntraPort.NewSobInterface(&sobApplication)
@@ -134,6 +142,11 @@ func main() {
 		counterRepository,
 	)
 
+	userApplication.Inject(
+		userRepository,
+		userRepository,
+	)
+
 	log.InfoWithoutCxt("All module applications initiated")
 
 	router := gin.Default()
@@ -145,6 +158,7 @@ func main() {
 	accountPublicHttpPort.InitRouter(accountPublicHttpPort.NewHandler(&accountApplication), publicApiRouter)
 	voucherPublicHttpPort.InitRouter(voucherPublicHttpPort.NewHandler(&voucherApplication), publicApiRouter)
 	ledgerPublicHttpPort.InitRouter(ledgerPublicHttpPort.NewHandler(&ledgerApplication), publicApiRouter)
+	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
 
 	// private http API, should have different authentication method then public API
 	privateApiRouter := router.Group("/internal")
@@ -153,6 +167,7 @@ func main() {
 	accountPrivateHttpPort.InitRouter(accountPrivateHttpPort.NewHandler(&accountApplication), privateApiRouter)
 	ledgerPrivateHttpPort.InitRouter(ledgerPrivateHttpPort.NewHandler(&ledgerApplication), privateApiRouter)
 	voucherPrivateHttpPort.InitRouter(voucherPrivateHttpPort.NewHandler(&voucherApplication), privateApiRouter)
+	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
 	if strings.HasPrefix(viper.GetString("profile"), "dev") {
 		// gin-swagger

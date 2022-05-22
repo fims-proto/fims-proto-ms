@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/counter/app"
 	"net/http"
+
+	"github/fims-proto/fims-proto-ms/internal/counter/app"
 
 	"github.com/google/uuid"
 

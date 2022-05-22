@@ -2,6 +2,7 @@ package intraprocess
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 

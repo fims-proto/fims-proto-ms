@@ -2,6 +2,7 @@ package intraprocess
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/ledger/app"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/command"
 )

@@ -3,8 +3,9 @@ package tenantmanager
 import (
 	"context"
 	"errors"
-	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"testing"
+
+	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

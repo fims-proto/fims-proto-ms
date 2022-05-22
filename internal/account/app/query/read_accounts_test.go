@@ -2,10 +2,11 @@ package query
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/account/app/service"
-	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"reflect"
 	"testing"
+
+	"github/fims-proto/fims-proto-ms/internal/account/app/service"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
 	"github.com/google/uuid"
 )

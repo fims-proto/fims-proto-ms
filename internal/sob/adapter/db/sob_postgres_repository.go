@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
@@ -64,9 +65,9 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 
 		dbSob, err = marshall(updatedDomainSob)
 		if err != nil {
-			return errors.Wrap(err, "failed to marshal sob")
+			return errors.Wrap(err, "failed to marshall sob")
 		}
-		if err := tx.Save(dbSob).Error; err != nil {
+		if err = tx.Save(dbSob).Error; err != nil {
 			return errors.Wrap(err, "failed to save sob")
 		}
 		return nil

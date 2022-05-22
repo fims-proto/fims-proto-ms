@@ -2,6 +2,7 @@ package intraprocess
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/counter/app"
 	"github/fims-proto/fims-proto-ms/internal/counter/app/command"
 

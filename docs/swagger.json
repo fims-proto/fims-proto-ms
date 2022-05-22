@@ -48,7 +48,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -86,7 +86,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -134,7 +134,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -182,7 +182,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -224,7 +224,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -265,7 +265,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -310,13 +310,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -364,7 +364,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -413,13 +413,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -470,13 +470,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -527,13 +527,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -584,13 +584,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -632,7 +632,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -683,13 +683,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -730,7 +730,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -775,13 +775,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -813,7 +813,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -851,13 +851,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -898,7 +898,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -940,13 +940,102 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{userId}": {
+            "get": {
+                "description": "Show user by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Show user by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.UserResponse"
+                        }
+                    },
+                    "404": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "userId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update user request",
+                        "name": "UpdateUserRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -1066,6 +1155,17 @@
                 }
             }
         },
+        "http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "http.LedgerResponse": {
             "type": "object",
             "properties": {
@@ -1122,6 +1222,9 @@
             "type": "object",
             "properties": {
                 "accountId": {
+                    "type": "string"
+                },
+                "accountNumber": {
                     "type": "string"
                 },
                 "credit": {
@@ -1189,6 +1292,17 @@
                 }
             }
         },
+        "http.UpdateUserRequest": {
+            "type": "object",
+            "properties": {
+                "traits": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "http.UpdateVoucherRequest": {
             "type": "object",
             "properties": {
@@ -1199,6 +1313,21 @@
                     }
                 },
                 "transactionTime": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UserResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "traits": {},
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -1291,17 +1420,6 @@
                 }
             }
         },
-        "internal_account_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
         "internal_ledger_port_public_http.AccountResponse": {
             "type": "object",
             "properties": {
@@ -1324,39 +1442,6 @@
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_ledger_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_sob_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_voucher_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
                     "type": "string"
                 }
             }

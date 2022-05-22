@@ -1,8 +1,9 @@
 package db
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 	"github.com/google/uuid"
 )

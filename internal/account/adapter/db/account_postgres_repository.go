@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 

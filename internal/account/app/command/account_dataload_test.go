@@ -2,10 +2,11 @@ package command
 
 import (
 	"context"
+	"testing"
+
 	query2 "github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
-	"testing"
 
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"

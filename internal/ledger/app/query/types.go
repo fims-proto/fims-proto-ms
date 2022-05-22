@@ -1,8 +1,9 @@
 package query
 
 import (
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 	"time"
+
+	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"

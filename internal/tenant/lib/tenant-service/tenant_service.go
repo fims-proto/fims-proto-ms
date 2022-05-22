@@ -2,6 +2,7 @@ package tenantservice
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 	tenantPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
