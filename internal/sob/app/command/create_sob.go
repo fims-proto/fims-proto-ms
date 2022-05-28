@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/common/log"
-	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
@@ -22,11 +21,11 @@ type CreateSobCmd struct {
 
 type CreateSobHandler struct {
 	repo           domain.Repository
-	accountService service.AccountService
-	counterService service.CounterService
+	accountService AccountService
+	counterService CounterService
 }
 
-func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService, counterService service.CounterService) CreateSobHandler {
+func NewCreateSobHandler(repo domain.Repository, accountService AccountService, counterService CounterService) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

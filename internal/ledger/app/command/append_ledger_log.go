@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/common/log"
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
@@ -26,10 +25,10 @@ type AppendLedgerLogCmd struct {
 
 type AppendLedgerLogsHandler struct {
 	repo           domain.Repository
-	accountService service.AccountService
+	accountService AccountService
 }
 
-func NewAppendLedgerLogsHandler(repo domain.Repository, accountService service.AccountService) AppendLedgerLogsHandler {
+func NewAppendLedgerLogsHandler(repo domain.Repository, accountService AccountService) AppendLedgerLogsHandler {
 	if repo == nil {
 		panic("nil ledger repo")
 	}

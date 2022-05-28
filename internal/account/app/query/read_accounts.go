@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/account/app/service"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -21,10 +19,10 @@ type AccountsReadModel interface {
 
 type ReadAccountsHandler struct {
 	readModel  AccountsReadModel
-	sobService service.SobService
+	sobService SobService
 }
 
-func NewReadAccountsHandler(readModel AccountsReadModel, sobService service.SobService) ReadAccountsHandler {
+func NewReadAccountsHandler(readModel AccountsReadModel, sobService SobService) ReadAccountsHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}

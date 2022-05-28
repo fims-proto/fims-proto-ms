@@ -3,7 +3,6 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
-	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 )
 
@@ -27,10 +26,10 @@ func NewApplication() Application {
 }
 
 func (a *Application) Inject(
-	repo domain.Repository,
 	readModel query.SobsReadModel,
-	accountService service.AccountService,
-	counterService service.CounterService,
+	repo domain.Repository,
+	accountService command.AccountService,
+	counterService command.CounterService,
 ) {
 	a.Queries = Queries{
 		ReadSobs: query.NewReadSobsHandler(readModel),

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -112,7 +111,7 @@ func (m mockAccountService) ReadAllAccountIdsBySobId(ctx context.Context, sobId 
 func TestReadLedgerHandler_HandleReadAllLedgersByAccountingPeriod(t *testing.T) {
 	type fields struct {
 		readModel      LedgerReadModel
-		accountService service.AccountService
+		accountService AccountService
 	}
 	type args struct {
 		ctx      context.Context

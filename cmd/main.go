@@ -108,33 +108,41 @@ func main() {
 	counterInterface := counterIntraPort.NewCounterInterface(&counterApplication)
 
 	// application dependencies injection
+	accountServiceForSob := sobAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	counterServiceForSob := sobCounterAdapter.NewIntraProcessAdapter(counterInterface)
 	sobApplication.Inject(
 		sobRepository,
 		sobRepository,
-		sobAccountAdapter.NewIntraProcessAdapter(accountInterface),
-		sobCounterAdapter.NewIntraProcessAdapter(counterInterface),
+		accountServiceForSob,
+		counterServiceForSob,
 	)
 
+	sobServiceForAccount := accountSobAdapter.NewIntraProcessAdapter(sobInterface)
 	accountApplication.Inject(
 		accountRepository,
 		accountRepository,
-		accountSobAdapter.NewIntraProcessAdapter(sobInterface),
+		sobServiceForAccount,
+		sobServiceForAccount,
 	)
 
-	accountService := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	ledgerServiceForVoucher := voucherLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
+	counterServiceForVoucher := voucherCounterAdapter.NewIntraProcessAdapter(counterInterface)
 	voucherApplication.Inject(
 		voucherRepository,
 		voucherRepository,
-		accountService,
-		accountService,
-		voucherLedgerAdapter.NewIntraProcessAdapter(ledgerInterface),
-		voucherCounterAdapter.NewIntraProcessAdapter(counterInterface),
+		accountServiceForVoucher,
+		accountServiceForVoucher,
+		ledgerServiceForVoucher,
+		counterServiceForVoucher,
 	)
 
+	accountServiceForLedger := ledgerAccountAdapter.NewIntraProcessAdapter(accountInterface)
 	ledgerApplication.Inject(
 		ledgerRepository,
 		ledgerRepository,
-		ledgerAccountAdapter.NewIntraProcessAdapter(accountInterface),
+		accountServiceForLedger,
+		accountServiceForLedger,
 	)
 
 	counterApplication.Inject(

@@ -5,7 +5,6 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
 	"github.com/google/uuid"
@@ -23,10 +22,10 @@ type CreatePeriodLedgersCmd struct {
 type CreatePeriodLedgersHandler struct {
 	repo            domain.Repository
 	ledgerReadModel query.LedgerReadModel
-	accountService  service.AccountService
+	accountService  AccountService
 }
 
-func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService service.AccountService) CreatePeriodLedgersHandler {
+func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService AccountService) CreatePeriodLedgersHandler {
 	if repo == nil {
 		panic("nil ledger repository")
 	}

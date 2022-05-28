@@ -5,7 +5,6 @@ import (
 	"reflect"
 	"testing"
 
-	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
 	"github.com/google/uuid"
@@ -211,7 +210,7 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 func TestReadAccountsHandler_HandleReadAll(t *testing.T) {
 	type fields struct {
 		readModel  AccountsReadModel
-		sobService service.SobService
+		sobService SobService
 	}
 	type args struct {
 		ctx   context.Context
@@ -259,7 +258,7 @@ func TestReadAccountsHandler_HandleReadAll(t *testing.T) {
 func TestReadAccountsHandler_HandleReadById(t *testing.T) {
 	type fields struct {
 		readModel  AccountsReadModel
-		sobService service.SobService
+		sobService SobService
 	}
 	type args struct {
 		ctx       context.Context
@@ -307,7 +306,7 @@ func TestReadAccountsHandler_HandleReadById(t *testing.T) {
 func TestReadAccountsHandler_HandleReadByIds(t *testing.T) {
 	type fields struct {
 		readModel  AccountsReadModel
-		sobService service.SobService
+		sobService SobService
 	}
 	type args struct {
 		ctx        context.Context

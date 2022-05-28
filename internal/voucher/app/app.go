@@ -31,13 +31,13 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	readModel query.VouchersReadModel,
 	repo domain.Repository,
+	accountQueryService query.AccountService,
 	accountService command.AccountService,
-	accountReadService query.AccountService,
 	ledgerService command.LedgerService,
 	counterService command.CounterService,
 ) {
 	a.Queries = Queries{
-		ReadVouchers: query.NewReadVouchersHandler(readModel, accountReadService),
+		ReadVouchers: query.NewReadVouchersHandler(readModel, accountQueryService),
 	}
 	a.Commands = Commands{
 		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, counterService),

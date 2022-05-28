@@ -3,7 +3,6 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/account/app/command"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
-	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 )
 
@@ -25,9 +24,14 @@ func NewApplication() Application {
 	return Application{}
 }
 
-func (a *Application) Inject(readModel query.AccountsReadModel, repo domain.Repository, sobService service.SobService) {
+func (a *Application) Inject(
+	readModel query.AccountsReadModel,
+	repo domain.Repository,
+	sobQueryService query.SobService,
+	sobService command.SobService,
+) {
 	a.Queries = Queries{
-		ReadAccounts: query.NewReadAccountsHandler(readModel, sobService),
+		ReadAccounts: query.NewReadAccountsHandler(readModel, sobQueryService),
 	}
 	a.Commands = Commands{
 		LoadAccounts: command.NewAccountDataLoadHandler(repo, sobService),

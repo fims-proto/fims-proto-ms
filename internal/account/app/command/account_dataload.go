@@ -9,7 +9,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 
@@ -30,10 +29,10 @@ type accountDataLoadEntry struct {
 
 type AccountDataLoadHandler struct {
 	repo       domain.Repository
-	sobService service.SobService
+	sobService SobService
 }
 
-func NewAccountDataLoadHandler(repo domain.Repository, sobService service.SobService) AccountDataLoadHandler {
+func NewAccountDataLoadHandler(repo domain.Repository, sobService SobService) AccountDataLoadHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

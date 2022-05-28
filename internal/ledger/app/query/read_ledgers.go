@@ -4,8 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
-
 	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
@@ -22,10 +20,10 @@ type LedgerReadModel interface {
 
 type ReadLedgerHandler struct {
 	readModel      LedgerReadModel
-	accountService service.AccountService
+	accountService AccountService
 }
 
-func NewReadLedgerHandler(readModel LedgerReadModel, accountService service.AccountService) ReadLedgerHandler {
+func NewReadLedgerHandler(readModel LedgerReadModel, accountService AccountService) ReadLedgerHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}

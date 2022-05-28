@@ -3,9 +3,8 @@ package query
 import (
 	"context"
 
-	accountQuery "github/fims-proto/fims-proto-ms/internal/account/app/query"
-
 	"github.com/google/uuid"
+	accountQuery "github/fims-proto/fims-proto-ms/internal/account/app/query"
 )
 
 type AccountService interface {
