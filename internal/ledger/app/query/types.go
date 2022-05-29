@@ -39,7 +39,6 @@ type Account struct {
 	SuperiorAccountId uuid.UUID
 	AccountNumber     string
 	Title             string
-	Level             int
 	AccountType       commonAccount.Type
 	BalanceDirection  commonAccount.Direction
 }

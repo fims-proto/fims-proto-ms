@@ -117,16 +117,16 @@ func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []u
 	return queryAccounts, nil
 }
 
-func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, levelNumber int, superiorNumbers []int) (query.Account, error) {
-	var superiorNumbersDb pgtype.Int4Array
-	if err := superiorNumbersDb.Set(superiorNumbers); err != nil {
+func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, numberHierarchy []int) (query.Account, error) {
+	var dbNumberHierarchy pgtype.Int4Array
+	if err := dbNumberHierarchy.Set(numberHierarchy); err != nil {
 		return query.Account{}, errors.Wrap(err, "convert []int to Int4Array failed")
 	}
 
 	db := readDBFromCtx(ctx)
 
 	dbAccount := account{}
-	if err := db.Where("sob_id = ? AND level_number = ? AND superior_numbers = ?", sobId, levelNumber, superiorNumbersDb).
+	if err := db.Where("sob_id = ? AND number_hierarchy = ?", sobId, dbNumberHierarchy).
 		Find(&dbAccount).Error; err != nil {
 		return query.Account{}, errors.Wrap(err, "read account by number and superior number failed")
 	}

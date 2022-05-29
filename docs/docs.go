@@ -1413,8 +1413,11 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "level": {
-                    "type": "integer"
+                "numberHierarchy": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 },
                 "sobId": {
                     "type": "string"
@@ -1441,9 +1444,6 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
-                },
-                "level": {
-                    "type": "integer"
                 },
                 "superiorAccountId": {
                     "type": "string"

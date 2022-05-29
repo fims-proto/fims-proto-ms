@@ -69,7 +69,6 @@ func (h ReadLedgerHandler) HandleReadAllLedgersByAccountingPeriod(ctx context.Co
 		ledgers[i].Account.SuperiorAccountId = account.SuperiorAccountId
 		ledgers[i].Account.AccountNumber = account.AccountNumber
 		ledgers[i].Account.Title = account.Title
-		ledgers[i].Account.Level = account.Level
 		ledgers[i].Account.AccountType = account.AccountType
 		ledgers[i].Account.BalanceDirection = account.BalanceDirection
 	}

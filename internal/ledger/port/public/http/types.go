@@ -57,7 +57,6 @@ type AccountResponse struct {
 	SuperiorAccountId string `json:"superiorAccountId"`
 	AccountNumber     string `json:"accountNumber"`
 	Title             string `json:"title"`
-	Level             int    `json:"level"`
 	AccountType       string `json:"accountType"`
 	BalanceDirection  string `json:"balanceDirection"`
 }
@@ -86,7 +85,6 @@ func mapFromLedgerQuery(l query.Ledger) LedgerResponse {
 			SuperiorAccountId: l.Account.SuperiorAccountId.String(),
 			AccountNumber:     l.Account.AccountNumber,
 			Title:             l.Account.Title,
-			Level:             l.Account.Level,
 			AccountType:       l.Account.AccountType.String(),
 			BalanceDirection:  l.Account.BalanceDirection.String(),
 		},

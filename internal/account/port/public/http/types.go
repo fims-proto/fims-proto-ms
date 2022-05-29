@@ -16,8 +16,8 @@ type AccountResponse struct {
 	SobId             string `json:"sobId"`
 	SuperiorAccountId string `json:"superiorAccountId"`
 	AccountNumber     string `json:"accountNumber"`
+	NumberHierarchy   []int  `json:"numberHierarchy"`
 	Title             string `json:"title"`
-	Level             int    `json:"level"`
 	AccountType       string `json:"accountType"`
 	BalanceDirection  string `json:"balanceDirection"`
 }
@@ -28,8 +28,8 @@ func mapFromAccountQuery(q query.Account) AccountResponse {
 		SobId:             q.SobId.String(),
 		SuperiorAccountId: q.SuperiorAccountId.String(),
 		AccountNumber:     q.AccountNumber,
+		NumberHierarchy:   q.NumberHierarchy,
 		Title:             q.Title,
-		Level:             q.Level,
 		AccountType:       q.AccountType.String(),
 		BalanceDirection:  q.BalanceDirection.String(),
 	}

@@ -15,75 +15,95 @@ func TestNewAccount(t *testing.T) {
 	tests := []struct {
 		name              string
 		title             string
-		levelNumber       int
 		superiorAccountId uuid.UUID
-		superiorNumbers   []int
-		level             int
-		levelCodeLength   int
+		numberHierarchy   []int
+		codeLength        []int
 		accountType       string
 		balanceDirection  string
 		verify            func(t *testing.T, account *Account, err error)
 	}{
 		{
-			"general_account_success", "库存现金", 1001, uuid.Nil,
-			[]int{},
-			1, 4, "ASSETS", "DEBIT",
-			func(t *testing.T, account *Account, err error) {
+			name:              "general_account_success",
+			title:             "库存现金",
+			superiorAccountId: uuid.Nil,
+			numberHierarchy:   []int{1001},
+			codeLength:        []int{4, 3, 3},
+			accountType:       "ASSETS",
+			balanceDirection:  "DEBIT",
+			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
-				assert.Equal(t, 1001, account.LevelNumber())
+				assert.Equal(t, []int{1001}, account.NumberHierarchy())
 				assert.Equal(t, "库存现金", account.Title())
 				assert.Equal(t, uuid.Nil, account.SuperiorAccountId())
-				assert.Empty(t, account.SuperiorNumbers())
 				assert.Equal(t, commonAccount.Assets, account.Type())
 				assert.Equal(t, commonAccount.Debit, account.BalanceDirection())
 			},
 		},
 		{
-			"subsidiary_account_success", "库存现金某子项", 1, uuid.New(),
-			[]int{1001},
-			2, 3, "ASSETS", "DEBIT",
-			func(t *testing.T, account *Account, err error) {
+			name:              "subsidiary_account_success",
+			title:             "库存现金某子项",
+			superiorAccountId: uuid.New(),
+			numberHierarchy:   []int{1001, 1},
+			codeLength:        []int{4, 3, 3},
+			accountType:       "ASSETS",
+			balanceDirection:  "DEBIT",
+			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
-				assert.Equal(t, 1, account.LevelNumber())
+				assert.Equal(t, []int{1001, 1}, account.NumberHierarchy())
 				assert.Equal(t, "库存现金某子项", account.Title())
 				assert.NotNil(t, account.SuperiorAccountId())
-				assert.Equal(t, 1001, account.SuperiorNumbers()[0])
 				assert.Equal(t, commonAccount.Assets, account.Type())
 				assert.Equal(t, commonAccount.Debit, account.BalanceDirection())
 			},
 		},
 		{
-			"zero_number_error", "库存现金", 0, uuid.Nil,
-			[]int{},
-			1, 4, "ASSETS", "DEBIT",
-			func(t *testing.T, account *Account, err error) {
+			name:              "zero_number_error",
+			title:             "库存现金",
+			superiorAccountId: uuid.Nil,
+			numberHierarchy:   []int{0},
+			codeLength:        []int{4, 3, 3},
+			accountType:       "ASSETS",
+			balanceDirection:  "DEBIT",
+			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"zero_number_error", "", 1001, uuid.Nil,
-			[]int{},
-			1, 4, "ASSETS", "DEBIT",
-			func(t *testing.T, account *Account, err error) {
+			name:              "empty_superior_account",
+			title:             "库存现金",
+			superiorAccountId: uuid.Nil,
+			numberHierarchy:   []int{1001, 1},
+			codeLength:        []int{4, 3, 3},
+			accountType:       "ASSETS",
+			balanceDirection:  "DEBIT",
+			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"empty_superior_account", "库存现金某子项", 1, uuid.Nil,
-			[]int{},
-			2, 3, "ASSETS", "DEBIT",
-			func(t *testing.T, account *Account, err error) {
+			name:              "account_length_too_long",
+			title:             "库存现金",
+			superiorAccountId: uuid.Nil,
+			numberHierarchy:   []int{1001, 1111},
+			codeLength:        []int{4, 3, 3},
+			accountType:       "ASSETS",
+			balanceDirection:  "DEBIT",
+			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
 		},
 		{
-			"incorrect_superior_number", "库存现金某子项", 1, uuid.New(),
-			[]int{},
-			2, 3, "ASSETS", "DEBIT",
-			func(t *testing.T, account *Account, err error) {
+			name:              "account_depth_too_long",
+			title:             "库存现金",
+			superiorAccountId: uuid.Nil,
+			numberHierarchy:   []int{1001, 1, 1, 1},
+			codeLength:        []int{4, 3, 3},
+			accountType:       "ASSETS",
+			balanceDirection:  "DEBIT",
+			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
 			},
@@ -94,7 +114,7 @@ func TestNewAccount(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			account, err := NewAccount(uuid.New(), uuid.New(), test.superiorAccountId, test.superiorNumbers, test.title, test.levelNumber, test.level, test.accountType, test.balanceDirection, test.levelCodeLength)
+			account, err := NewAccount(uuid.New(), uuid.New(), test.superiorAccountId, test.numberHierarchy, test.title, test.accountType, test.balanceDirection, test.codeLength)
 			test.verify(t, account, err)
 		})
 	}

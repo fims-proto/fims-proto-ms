@@ -14,7 +14,7 @@ type AccountsReadModel interface {
 	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]Account, error)
 	ReadById(ctx context.Context, accountId uuid.UUID) (Account, error)
 	ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]*Account, error)
-	ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, levelNumber int, superiorNumbers []int) (Account, error)
+	ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, numberHierarchy []int) (Account, error)
 }
 
 type ReadAccountsHandler struct {
@@ -46,7 +46,7 @@ func (h ReadAccountsHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID)
 		return nil, errors.Wrap(err, "failed to read sob")
 	}
 	for i := range accounts {
-		accountNumber, err := concatenateAccountNumber(accounts[i].LevelNumber, accounts[i].SuperiorNumbers, sob.AccountsCodeLength)
+		accountNumber, err := concatenateAccountNumber(accounts[i].NumberHierarchy, sob.AccountsCodeLength)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed on concatenate account number")
 		}
@@ -65,7 +65,7 @@ func (h ReadAccountsHandler) HandleReadById(ctx context.Context, accountId uuid.
 	if err != nil {
 		return Account{}, errors.Wrap(err, "failed to read sob")
 	}
-	accountNumber, err := concatenateAccountNumber(account.LevelNumber, account.SuperiorNumbers, sob.AccountsCodeLength)
+	accountNumber, err := concatenateAccountNumber(account.NumberHierarchy, sob.AccountsCodeLength)
 	if err != nil {
 		return Account{}, errors.Wrap(err, "failed on concatenate account number")
 	}
@@ -99,7 +99,7 @@ func (h ReadAccountsHandler) HandleReadByIds(ctx context.Context, accountIds []u
 	}
 
 	for key, account := range accounts {
-		accountNumber, err := concatenateAccountNumber(account.LevelNumber, account.SuperiorNumbers, sob.AccountsCodeLength)
+		accountNumber, err := concatenateAccountNumber(account.NumberHierarchy, sob.AccountsCodeLength)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed on concatenate account number")
 		}
@@ -118,11 +118,11 @@ func (h ReadAccountsHandler) HandleReadByAccountNumber(ctx context.Context, sobI
 	accounts := make(map[string]Account)
 
 	for _, accountNumber := range accountNumbers {
-		levelNumber, superiorNumbers, err := cutAccountNumber(accountNumber, sob.AccountsCodeLength)
+		numberHierarchy, err := cutAccountNumber(accountNumber, sob.AccountsCodeLength)
 		if err != nil {
 			return nil, errors.Wrapf(err, "validate existence of account %s failed", accountNumber)
 		}
-		account, err := h.readModel.ReadByAccountNumber(ctx, sobId, levelNumber, superiorNumbers)
+		account, err := h.readModel.ReadByAccountNumber(ctx, sobId, numberHierarchy)
 		if err != nil {
 			return nil, errors.Wrapf(err, "validate existence of account %s failed", accountNumber)
 		}
@@ -132,32 +132,32 @@ func (h ReadAccountsHandler) HandleReadByAccountNumber(ctx context.Context, sobI
 	return accounts, nil
 }
 
-// cutAccountNumber cuts given account number in string format in to levelNumber and superiorNumbers as per Sob setting
-func cutAccountNumber(accountNumber string, accountCodeLengths []int) (int, []int, error) {
+// cutAccountNumber cuts given account number in string format in to levelNumber and numberHierarchy as per Sob setting
+func cutAccountNumber(accountNumber string, accountCodeLengths []int) ([]int, error) {
 	if accountNumber == "" {
-		return 0, nil, errors.New("empty account number")
+		return nil, errors.New("empty account number")
 	}
 	if len(accountCodeLengths) == 0 {
-		return 0, nil, errors.New("empty account code length array")
+		return nil, errors.New("empty account code length array")
 	}
 	if len(accountNumber) < accountCodeLengths[0] {
-		return 0, nil, errors.New("account number too short")
+		return nil, errors.New("account number too short")
 	}
 	var totalLen int
-	var levelNumbers []int
+	var numberHierarchy []int
 	for i := 0; i < len(accountCodeLengths); i++ {
 		totalLen += accountCodeLengths[i]
 
 		if len(accountNumber) < accountCodeLengths[i] {
-			return 0, nil, errors.Errorf("invalid account number %s", accountNumber)
+			return nil, errors.Errorf("invalid account number %s", accountNumber)
 		}
 
 		accountNumberString := accountNumber[0:accountCodeLengths[i]]
 		levelNumber, err := strconv.Atoi(accountNumberString)
 		if levelNumber == 0 || err != nil {
-			return 0, nil, errors.Errorf("invalid account number %s", accountNumber)
+			return nil, errors.Errorf("invalid account number %s", accountNumber)
 		}
-		levelNumbers = append(levelNumbers, levelNumber)
+		numberHierarchy = append(numberHierarchy, levelNumber)
 
 		accountNumber = strings.TrimPrefix(accountNumber, accountNumberString)
 		if len(accountNumber) <= 0 {
@@ -165,28 +165,25 @@ func cutAccountNumber(accountNumber string, accountCodeLengths []int) (int, []in
 		}
 	}
 	if len(accountNumber) > 0 {
-		return 0, nil, errors.New("account number too long")
+		return nil, errors.New("account number too long")
 	}
-	if len(levelNumbers) == 0 {
-		return 0, nil, errors.New("failed to cut account number array")
+	if len(numberHierarchy) == 0 {
+		return nil, errors.New("failed to cut account number array")
 	}
 
-	levelNumber := levelNumbers[len(levelNumbers)-1]
-
-	return levelNumber, levelNumbers[:len(levelNumbers)-1], nil
+	return numberHierarchy, nil
 }
 
-// concatenateAccountNumber concatenates levelNumber and superiorNumbers into one accountNumber string as per Sob setting
-func concatenateAccountNumber(levelNumber int, superiorNumbers, accountCodeLengths []int) (string, error) {
-	if len(accountCodeLengths) < len(superiorNumbers)+1 {
-		return "", errors.Errorf("accountCodeLengths too short: %d, len of superiorNumbers: %d", len(accountCodeLengths), len(superiorNumbers))
+// concatenateAccountNumber concatenates levelNumber and numberHierarchy into one accountNumber string as per Sob setting
+func concatenateAccountNumber(numberHierarchy, accountCodeLengths []int) (string, error) {
+	if len(numberHierarchy) > len(accountCodeLengths) {
+		return "", errors.Errorf("account depth %d exceeds max depth %d", len(numberHierarchy), len(accountCodeLengths))
 	}
 
 	var builder strings.Builder
-	for i, superiorNumber := range superiorNumbers {
-		builder.WriteString(fmt.Sprintf("%0*d", accountCodeLengths[i], superiorNumber))
+	for i, number := range numberHierarchy {
+		builder.WriteString(fmt.Sprintf("%0*d", accountCodeLengths[i], number))
 	}
-	builder.WriteString(fmt.Sprintf("%0*d", accountCodeLengths[len(superiorNumbers)], levelNumber))
 
 	return builder.String(), nil
 }

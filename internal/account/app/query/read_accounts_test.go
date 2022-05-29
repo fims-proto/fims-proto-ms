@@ -15,11 +15,9 @@ var (
 		Id:                uuid.UUID{},
 		SobId:             uuid.UUID{},
 		SuperiorAccountId: uuid.UUID{},
-		SuperiorNumbers:   []int{1},
-		LevelNumber:       1,
+		NumberHierarchy:   []int{1, 1},
 		AccountNumber:     "",
 		Title:             "",
-		Level:             0,
 		AccountType:       1,
 		BalanceDirection:  1,
 		SuperiorAccount:   nil,
@@ -28,11 +26,9 @@ var (
 		Id:                uuid.UUID{},
 		SobId:             uuid.UUID{},
 		SuperiorAccountId: uuid.UUID{},
-		SuperiorNumbers:   []int{1},
-		LevelNumber:       1,
+		NumberHierarchy:   []int{1, 1},
 		AccountNumber:     "0001001",
 		Title:             "",
-		Level:             0,
 		AccountType:       1,
 		BalanceDirection:  1,
 		SuperiorAccount:   nil,
@@ -69,7 +65,7 @@ func (r mockReadModel) ReadByIds(context.Context, []uuid.UUID) (map[uuid.UUID]*A
 	}, nil
 }
 
-func (r mockReadModel) ReadByAccountNumber(context.Context, uuid.UUID, int, []int) (Account, error) {
+func (r mockReadModel) ReadByAccountNumber(context.Context, uuid.UUID, []int) (Account, error) {
 	panic("implement me")
 }
 
@@ -82,8 +78,7 @@ func TestReadAccountsHandler_cutAccountNumber(t *testing.T) {
 	tests := []struct {
 		name                string
 		args                args
-		wantLevelNumber     int
-		wantSuperiorNumbers []int
+		wantNumberHierarchy []int
 		wantErr             bool
 	}{
 		{
@@ -92,8 +87,7 @@ func TestReadAccountsHandler_cutAccountNumber(t *testing.T) {
 				accountNumber:      "1000",
 				accountCodeLengths: []int{4, 3, 3},
 			},
-			wantLevelNumber:     1000,
-			wantSuperiorNumbers: []int{},
+			wantNumberHierarchy: []int{1000},
 			wantErr:             false,
 		},
 		{
@@ -102,8 +96,7 @@ func TestReadAccountsHandler_cutAccountNumber(t *testing.T) {
 				accountNumber:      "1000001",
 				accountCodeLengths: []int{4, 3, 3},
 			},
-			wantLevelNumber:     1,
-			wantSuperiorNumbers: []int{1000},
+			wantNumberHierarchy: []int{1000, 1},
 			wantErr:             false,
 		},
 		{
@@ -112,8 +105,7 @@ func TestReadAccountsHandler_cutAccountNumber(t *testing.T) {
 				accountNumber:      "1000001002",
 				accountCodeLengths: []int{4, 3, 3},
 			},
-			wantLevelNumber:     2,
-			wantSuperiorNumbers: []int{1000, 1},
+			wantNumberHierarchy: []int{1000, 1, 2},
 			wantErr:             false,
 		},
 		{
@@ -135,16 +127,13 @@ func TestReadAccountsHandler_cutAccountNumber(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			levelNumber, superiorNumbers, err := cutAccountNumber(tt.args.accountNumber, tt.args.accountCodeLengths)
+			numberHierarchy, err := cutAccountNumber(tt.args.accountNumber, tt.args.accountCodeLengths)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("cutAccountNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if levelNumber != tt.wantLevelNumber {
-				t.Errorf("cutAccountNumber() wantLevelNumber = %v, wantLevelNumber %v", levelNumber, tt.wantLevelNumber)
-			}
-			if !reflect.DeepEqual(superiorNumbers, tt.wantSuperiorNumbers) {
-				t.Errorf("cutAccountNumber() wantSuperiorNumbers = %v, wantLevelNumber %v", superiorNumbers, tt.wantSuperiorNumbers)
+			if !reflect.DeepEqual(numberHierarchy, tt.wantNumberHierarchy) {
+				t.Errorf("cutAccountNumber() wantNumberHierarchy = %v, wantLevelNumber %v", numberHierarchy, tt.wantNumberHierarchy)
 			}
 		})
 	}
@@ -152,8 +141,7 @@ func TestReadAccountsHandler_cutAccountNumber(t *testing.T) {
 
 func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 	type args struct {
-		levelNumber        int
-		superiorNumbers    []int
+		numberHierarchy    []int
 		accountCodeLengths []int
 	}
 	tests := []struct {
@@ -165,8 +153,7 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 		{
 			name: "normal_success",
 			args: args{
-				levelNumber:        1,
-				superiorNumbers:    []int{1001, 1},
+				numberHierarchy:    []int{1001, 1, 1},
 				accountCodeLengths: []int{4, 3, 2, 1},
 			},
 			want:    "100100101",
@@ -175,8 +162,7 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 		{
 			name: "noSuperior_success",
 			args: args{
-				levelNumber:        1,
-				superiorNumbers:    []int{},
+				numberHierarchy:    []int{1},
 				accountCodeLengths: []int{4, 3, 3, 3, 3},
 			},
 			want:    "0001",
@@ -185,8 +171,7 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 		{
 			name: "accountCodeLengthsTooShort_error",
 			args: args{
-				levelNumber:        1,
-				superiorNumbers:    []int{1001, 1},
+				numberHierarchy:    []int{1001, 1, 1},
 				accountCodeLengths: []int{4, 3},
 			},
 			want:    "",
@@ -195,7 +180,7 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := concatenateAccountNumber(tt.args.levelNumber, tt.args.superiorNumbers, tt.args.accountCodeLengths)
+			got, err := concatenateAccountNumber(tt.args.numberHierarchy, tt.args.accountCodeLengths)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("concatenateAccountNumber() error = %v, wantErr %v", err, tt.wantErr)
 				return

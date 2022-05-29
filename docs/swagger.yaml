@@ -237,8 +237,10 @@ definitions:
         type: string
       id:
         type: string
-      level:
-        type: integer
+      numberHierarchy:
+        items:
+          type: integer
+        type: array
       sobId:
         type: string
       superiorAccountId:
@@ -256,8 +258,6 @@ definitions:
         type: string
       id:
         type: string
-      level:
-        type: integer
       superiorAccountId:
         type: string
       title:
