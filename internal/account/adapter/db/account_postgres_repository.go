@@ -2,6 +2,9 @@ package db
 
 import (
 	"context"
+	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
@@ -65,23 +68,54 @@ func (r AccountPostgresRepository) DataLoad(ctx context.Context, domainAccounts 
 	return nil
 }
 
-func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
+func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
 	db := readDBFromCtx(ctx)
 
 	var dbAccounts []account
-	if err := db.Where("sob_id = ?", sobId).Find(&dbAccounts).Error; err != nil {
-		return nil, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
+
+	// pagination
+	tx := db.Offset(pageable.Offset()).Limit(pageable.Size())
+	// order
+	if pageable.Sorts() != nil {
+		var orderStr []string
+		for _, sort := range pageable.Sorts() {
+			orderStr = append(orderStr, strings.Join([]string{sort.Field(), sort.Order()}, " "))
+		}
+		tx = tx.Order(strings.Join(orderStr, ","))
+	}
+	// select
+	if pageable.Chooses() != nil {
+		var selectStr []string
+		for _, choose := range pageable.Chooses() {
+			selectStr = append(selectStr, choose.Field())
+		}
+		tx = tx.Select(strings.Join(selectStr, ","))
+	}
+
+	if err := tx.Where("sob_id = ?", sobId).Find(&dbAccounts).Error; err != nil {
+		return data.Page[query.Account]{}, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
+	}
+
+	var count int64
+	if err := tx.Count(&count).Error; err != nil {
+		return data.Page[query.Account]{}, errors.Wrap(err, "count accounts failed")
 	}
 
 	var queryAccounts []query.Account
 	for _, dbAccount := range dbAccounts {
 		queryAccount, err := unmarshallToQuery(&dbAccount)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshall account")
+			return data.Page[query.Account]{}, errors.Wrap(err, "failed to unmarshall account")
 		}
 		queryAccounts = append(queryAccounts, *queryAccount)
 	}
-	return queryAccounts, nil
+
+	accountsPage, err := data.NewPage(queryAccounts, pageable.Page(), pageable.Size(), int(count))
+	if err != nil {
+		return data.Page[query.Account]{}, errors.Wrap(err, "wrap to page failed")
+	}
+
+	return accountsPage, nil
 }
 
 func (r AccountPostgresRepository) ReadById(ctx context.Context, accountId uuid.UUID) (query.Account, error) {

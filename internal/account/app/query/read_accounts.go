@@ -6,12 +6,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 type AccountsReadModel interface {
-	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]Account, error)
+	ReadAllAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error)
 	ReadById(ctx context.Context, accountId uuid.UUID) (Account, error)
 	ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]*Account, error)
 	ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, numberHierarchy []int) (Account, error)
@@ -35,24 +37,24 @@ func NewReadAccountsHandler(readModel AccountsReadModel, sobService SobService) 
 	}
 }
 
-func (h ReadAccountsHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID) ([]Account, error) {
-	accounts, err := h.readModel.ReadAllAccounts(ctx, sobId)
+func (h ReadAccountsHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error) {
+	accountsPage, err := h.readModel.ReadAllAccounts(ctx, sobId, pageable)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read all accounts")
+		return data.Page[Account]{}, errors.Wrap(err, "failed to read all accounts")
 	}
 
 	sob, err := h.sobService.ReadById(ctx, sobId)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read sob")
+		return data.Page[Account]{}, errors.Wrap(err, "failed to read sob")
 	}
-	for i := range accounts {
-		accountNumber, err := concatenateAccountNumber(accounts[i].NumberHierarchy, sob.AccountsCodeLength)
+	for i := range accountsPage.Content {
+		accountNumber, err := concatenateAccountNumber(accountsPage.Content[i].NumberHierarchy, sob.AccountsCodeLength)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed on concatenate account number")
+			return data.Page[Account]{}, errors.Wrap(err, "failed on concatenate account number")
 		}
-		accounts[i].AccountNumber = accountNumber
+		accountsPage.Content[i].AccountNumber = accountNumber
 	}
-	return accounts, nil
+	return accountsPage, nil
 }
 
 func (h ReadAccountsHandler) HandleReadById(ctx context.Context, accountId uuid.UUID) (Account, error) {

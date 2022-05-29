@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
 	"github.com/google/uuid"
@@ -51,8 +53,9 @@ func (m mockSobService) ReadById(context.Context, uuid.UUID) (query.Sob, error) 
 
 type mockReadModel struct{}
 
-func (r mockReadModel) ReadAllAccounts(context.Context, uuid.UUID) ([]Account, error) {
-	return []Account{retrievedAccount}, nil
+func (r mockReadModel) ReadAllAccounts(_ context.Context, _ uuid.UUID, pageable data.Pageable) (data.Page[Account], error) {
+	page, _ := data.NewPage([]Account{retrievedAccount}, pageable.Page(), pageable.Size(), 1)
+	return page, nil
 }
 
 func (r mockReadModel) ReadById(context.Context, uuid.UUID) (Account, error) {
@@ -193,13 +196,15 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 }
 
 func TestReadAccountsHandler_HandleReadAll(t *testing.T) {
+	pageRequest, _ := data.NewPageRequest(1, 1, nil, nil)
 	type fields struct {
 		readModel  AccountsReadModel
 		sobService SobService
 	}
 	type args struct {
-		ctx   context.Context
-		sobId uuid.UUID
+		ctx      context.Context
+		sobId    uuid.UUID
+		pageable data.Pageable
 	}
 	tests := []struct {
 		name    string
@@ -215,8 +220,9 @@ func TestReadAccountsHandler_HandleReadAll(t *testing.T) {
 				sobService: mockSobService{},
 			},
 			args: args{
-				ctx:   context.Background(),
-				sobId: uuid.UUID{},
+				ctx:      context.Background(),
+				sobId:    uuid.UUID{},
+				pageable: pageRequest,
 			},
 			want:    []Account{wantAccount},
 			wantErr: false,
@@ -228,12 +234,12 @@ func TestReadAccountsHandler_HandleReadAll(t *testing.T) {
 				readModel:  tt.fields.readModel,
 				sobService: tt.fields.sobService,
 			}
-			got, err := h.HandleReadAll(tt.args.ctx, tt.args.sobId)
+			got, err := h.HandleReadAll(tt.args.ctx, tt.args.sobId, tt.args.pageable)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleReadAll() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(got.Content, tt.want) {
 				t.Errorf("HandleReadAll() got = %v, want %v", got, tt.want)
 			}
 		})

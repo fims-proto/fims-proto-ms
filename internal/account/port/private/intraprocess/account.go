@@ -3,6 +3,8 @@ package intraprocess
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 
@@ -30,7 +32,10 @@ func (i AccountInterface) ReadAccountById(ctx context.Context, accountId uuid.UU
 }
 
 func (i AccountInterface) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
-	return i.app.Queries.ReadAccounts.HandleReadAll(ctx, sobId)
+	// one page that is big enough
+	pageRequest, _ := data.NewPageRequest(1, 99999, nil, nil)
+	accountsPage, err := i.app.Queries.ReadAccounts.HandleReadAll(ctx, sobId, pageRequest)
+	return accountsPage.Content, err
 }
 
 func (i AccountInterface) InitializeAccounts(ctx context.Context, sobId uuid.UUID) error {

@@ -3,6 +3,8 @@ package http
 import (
 	"net/http"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app"
 
 	"github.com/gin-gonic/gin"
@@ -27,19 +29,29 @@ func NewHandler(app *app.Application) Handler {
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
+// @Param page query int false "page number" default(1)
+// @Param size query int false "page size" default(40)
+// @Param sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
+// @Param choose query string false "choose only field(s)" example(accountNumber,title)
 // @Success 200 {array} AccountResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/accounts/ [get]
 func (h Handler) ReadAllAccounts(c *gin.Context) {
-	accounts, err := h.app.Queries.ReadAccounts.HandleReadAll(c, uuid.MustParse(c.Param("sobId")))
+	pageable, err := data.NewPageable(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, wrapErr(err))
+		return
+	}
+	accountsPage, err := h.app.Queries.ReadAccounts.HandleReadAll(c, uuid.MustParse(c.Param("sobId")), pageable)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, wrapErr(err))
 		return
 	}
-	resp := make([]AccountResponse, len(accounts))
-	for i, account := range accounts {
-		resp[i] = mapFromAccountQuery(account)
+	accountResponses := make([]AccountResponse, len(accountsPage.Content))
+	for i, account := range accountsPage.Content {
+		accountResponses[i] = mapFromAccountQuery(account)
 	}
+	resp, _ := data.NewPage(accountResponses, accountsPage.Page, accountsPage.Size, accountsPage.NumberOfElements)
 	c.JSON(http.StatusOK, resp)
 }
 
