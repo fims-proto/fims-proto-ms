@@ -1,6 +1,10 @@
 package http
 
-import "github/fims-proto/fims-proto-ms/internal/account/app/query"
+import (
+	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
+)
 
 type slugErr interface {
 	Slug() string
@@ -12,14 +16,16 @@ type Error struct {
 }
 
 type AccountResponse struct {
-	Id                string `json:"id"`
-	SobId             string `json:"sobId"`
-	SuperiorAccountId string `json:"superiorAccountId"`
-	AccountNumber     string `json:"accountNumber"`
-	NumberHierarchy   []int  `json:"numberHierarchy"`
-	Title             string `json:"title"`
-	AccountType       string `json:"accountType"`
-	BalanceDirection  string `json:"balanceDirection"`
+	Id                string    `json:"id"`
+	SobId             string    `json:"sobId"`
+	SuperiorAccountId string    `json:"superiorAccountId"`
+	AccountNumber     string    `json:"accountNumber"`
+	NumberHierarchy   []int     `json:"numberHierarchy"`
+	Title             string    `json:"title"`
+	AccountType       string    `json:"accountType"`
+	BalanceDirection  string    `json:"balanceDirection"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
 }
 
 func mapFromAccountQuery(q query.Account) AccountResponse {
@@ -32,5 +38,7 @@ func mapFromAccountQuery(q query.Account) AccountResponse {
 		Title:             q.Title,
 		AccountType:       q.AccountType.String(),
 		BalanceDirection:  q.BalanceDirection.String(),
+		CreatedAt:         q.CreatedAt,
+		UpdatedAt:         q.UpdatedAt,
 	}
 }

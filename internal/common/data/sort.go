@@ -13,15 +13,16 @@ type sortRequest struct {
 }
 
 func newSort(field, order string) (Sort, error) {
-	if field == "" {
-		return nil, errors.New("empty field")
+	fieldSnakeCase, err := toSnakeCase(field)
+	if err != nil {
+		return nil, err
 	}
 	if order != "desc" && order != "asc" {
 		return nil, errors.Errorf("invalid order %s", order)
 	}
 
 	return sortRequest{
-		field: field,
+		field: fieldSnakeCase,
 		order: order,
 	}, nil
 }

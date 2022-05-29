@@ -63,5 +63,7 @@ func unmarshallToQuery(dba *account) (*query.Account, error) {
 		AccountType:       accountType,
 		SuperiorAccount:   nil,
 		BalanceDirection:  direction,
+		CreatedAt:         dba.CreatedAt,
+		UpdatedAt:         dba.UpdatedAt,
 	}, nil
 }

@@ -235,6 +235,8 @@ definitions:
         type: string
       balanceDirection:
         type: string
+      createdAt:
+        type: string
       id:
         type: string
       numberHierarchy:
@@ -246,6 +248,8 @@ definitions:
       superiorAccountId:
         type: string
       title:
+        type: string
+      updatedAt:
         type: string
     type: object
   internal_ledger_port_public_http.AccountResponse:
