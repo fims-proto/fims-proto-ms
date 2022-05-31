@@ -61,7 +61,7 @@ func EnrichDb(pageable Pageable, db *gorm.DB) *gorm.DB {
 		}
 		whereStr = whereStr[0 : len(whereStr)-1] // remove last AND
 
-		db = db.Where(strings.Join(whereStr, " "), args)
+		db = db.Where(strings.Join(whereStr, " "), args...)
 	}
 
 	return db

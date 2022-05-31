@@ -240,6 +240,8 @@ definitions:
         type: string
       id:
         type: string
+      level:
+        type: integer
       numberHierarchy:
         items:
           type: integer

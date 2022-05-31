@@ -11,12 +11,13 @@ import (
 type Account struct {
 	Id                uuid.UUID
 	SobId             uuid.UUID
-	SuperiorAccountId uuid.UUID
+	Title             string
 	AccountNumber     string
 	NumberHierarchy   []int
-	Title             string
+	SuperiorAccountId uuid.UUID
 	AccountType       commonAccount.Type
 	BalanceDirection  commonAccount.Direction
+	Level             int
 	SuperiorAccount   *Account
 	CreatedAt         time.Time
 	UpdatedAt         time.Time

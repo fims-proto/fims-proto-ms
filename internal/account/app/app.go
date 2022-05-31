@@ -27,11 +27,10 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	readModel query.AccountsReadModel,
 	repo domain.Repository,
-	sobQueryService query.SobService,
 	sobService command.SobService,
 ) {
 	a.Queries = Queries{
-		ReadAccounts: query.NewReadAccountsHandler(readModel, sobQueryService),
+		ReadAccounts: query.NewReadAccountsHandler(readModel),
 	}
 	a.Commands = Commands{
 		LoadAccounts: command.NewAccountDataLoadHandler(repo, sobService),

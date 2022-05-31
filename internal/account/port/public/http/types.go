@@ -18,12 +18,13 @@ type Error struct {
 type AccountResponse struct {
 	Id                string    `json:"id"`
 	SobId             string    `json:"sobId"`
-	SuperiorAccountId string    `json:"superiorAccountId"`
 	AccountNumber     string    `json:"accountNumber"`
-	NumberHierarchy   []int     `json:"numberHierarchy"`
 	Title             string    `json:"title"`
+	NumberHierarchy   []int     `json:"numberHierarchy"`
+	SuperiorAccountId string    `json:"superiorAccountId"`
 	AccountType       string    `json:"accountType"`
 	BalanceDirection  string    `json:"balanceDirection"`
+	Level             int       `json:"level"`
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
 }
@@ -32,12 +33,13 @@ func mapFromAccountQuery(q query.Account) AccountResponse {
 	return AccountResponse{
 		Id:                q.Id.String(),
 		SobId:             q.SobId.String(),
-		SuperiorAccountId: q.SuperiorAccountId.String(),
 		AccountNumber:     q.AccountNumber,
-		NumberHierarchy:   q.NumberHierarchy,
 		Title:             q.Title,
+		NumberHierarchy:   q.NumberHierarchy,
+		SuperiorAccountId: q.SuperiorAccountId.String(),
 		AccountType:       q.AccountType.String(),
 		BalanceDirection:  q.BalanceDirection.String(),
+		Level:             q.Level,
 		CreatedAt:         q.CreatedAt,
 		UpdatedAt:         q.UpdatedAt,
 	}

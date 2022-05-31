@@ -9,7 +9,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
 	"github.com/pkg/errors"
 
 	"gorm.io/gorm"
@@ -30,7 +29,7 @@ func (r AccountPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
-func (r AccountPostgresRepository) CreateAccount(ctx context.Context, a *domain.Account) error {
+func (r AccountPostgresRepository) CreateAccount(context.Context, *domain.Account) error {
 	panic("not implemented") // TODO: Implement
 }
 
@@ -85,11 +84,11 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 
 	var queryAccounts []query.Account
 	for _, dbAccount := range dbAccounts {
-		queryAccount, err := unmarshallToQuery(&dbAccount)
+		queryAccount, err := unmarshallToQuery(dbAccount)
 		if err != nil {
 			return data.Page[query.Account]{}, errors.Wrap(err, "failed to unmarshall account")
 		}
-		queryAccounts = append(queryAccounts, *queryAccount)
+		queryAccounts = append(queryAccounts, queryAccount)
 	}
 
 	accountsPage, err := data.NewPage(queryAccounts, pageable.Page(), pageable.Size(), int(count))
@@ -110,7 +109,7 @@ func (r AccountPostgresRepository) ReadById(ctx context.Context, accountId uuid.
 	return qas, nil
 }
 
-func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]*query.Account, error) {
+func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	db := readDBFromCtx(ctx)
 
 	if len(accountIds) == 0 {
@@ -122,9 +121,9 @@ func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []u
 		return nil, errors.Wrapf(err, "find accounts by IDs")
 	}
 
-	queryAccounts := make(map[uuid.UUID]*query.Account)
+	queryAccounts := make(map[uuid.UUID]query.Account)
 	for _, dbAccount := range dbAccounts {
-		queryAccount, err := unmarshallToQuery(&dbAccount)
+		queryAccount, err := unmarshallToQuery(dbAccount)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to unmarshall account")
 		}
@@ -133,24 +132,19 @@ func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []u
 	return queryAccounts, nil
 }
 
-func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, numberHierarchy []int) (query.Account, error) {
-	var dbNumberHierarchy pgtype.Int4Array
-	if err := dbNumberHierarchy.Set(numberHierarchy); err != nil {
-		return query.Account{}, errors.Wrap(err, "convert []int to Int4Array failed")
-	}
-
+func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (query.Account, error) {
 	db := readDBFromCtx(ctx)
 
 	dbAccount := account{}
-	if err := db.Where("sob_id = ? AND number_hierarchy = ?", sobId, dbNumberHierarchy).
+	if err := db.Where("sob_id = ? AND account_number = ?", sobId, accountNumber).
 		Find(&dbAccount).Error; err != nil {
 		return query.Account{}, errors.Wrap(err, "read account by number and superior number failed")
 	}
-	result, err := unmarshallToQuery(&dbAccount)
+	result, err := unmarshallToQuery(dbAccount)
 	if err != nil {
 		return query.Account{}, errors.Wrap(err, "failed to unmarshall account")
 	}
-	return *result, nil
+	return result, nil
 }
 
 func (r AccountPostgresRepository) readAccountWithSuperiorAccount(db *gorm.DB, accountId uuid.UUID) (query.Account, error) {
@@ -159,19 +153,19 @@ func (r AccountPostgresRepository) readAccountWithSuperiorAccount(db *gorm.DB, a
 		return query.Account{}, errors.Wrap(err, "read account by id failed")
 	}
 
-	result, err := unmarshallToQuery(&dbAccount)
+	result, err := unmarshallToQuery(dbAccount)
 	if err != nil {
 		return query.Account{}, errors.Wrap(err, "failed to unmarshall account")
 	}
 	if dbAccount.SuperiorAccountId == uuid.Nil {
-		return *result, nil
+		return result, nil
 	}
 	superiorAccount, err := r.readAccountWithSuperiorAccount(db, dbAccount.SuperiorAccountId)
 	if err != nil {
 		return query.Account{}, err
 	}
 	result.SuperiorAccount = &superiorAccount
-	return *result, nil
+	return result, nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

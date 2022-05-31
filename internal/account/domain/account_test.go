@@ -16,6 +16,8 @@ func TestNewAccount(t *testing.T) {
 		name              string
 		title             string
 		superiorAccountId uuid.UUID
+		accountNumber     string
+		level             int
 		numberHierarchy   []int
 		codeLength        []int
 		accountType       string
@@ -26,6 +28,8 @@ func TestNewAccount(t *testing.T) {
 			name:              "general_account_success",
 			title:             "库存现金",
 			superiorAccountId: uuid.Nil,
+			accountNumber:     "1001",
+			level:             1,
 			numberHierarchy:   []int{1001},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "ASSETS",
@@ -34,6 +38,8 @@ func TestNewAccount(t *testing.T) {
 				require.Nil(t, err)
 				assert.Equal(t, []int{1001}, account.NumberHierarchy())
 				assert.Equal(t, "库存现金", account.Title())
+				assert.Equal(t, "1001", account.AccountNumber())
+				assert.Equal(t, 1, account.Level())
 				assert.Equal(t, uuid.Nil, account.SuperiorAccountId())
 				assert.Equal(t, commonAccount.Assets, account.Type())
 				assert.Equal(t, commonAccount.Debit, account.BalanceDirection())
@@ -43,6 +49,8 @@ func TestNewAccount(t *testing.T) {
 			name:              "subsidiary_account_success",
 			title:             "库存现金某子项",
 			superiorAccountId: uuid.New(),
+			accountNumber:     "1001001",
+			level:             2,
 			numberHierarchy:   []int{1001, 1},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "ASSETS",
@@ -51,6 +59,8 @@ func TestNewAccount(t *testing.T) {
 				require.Nil(t, err)
 				assert.Equal(t, []int{1001, 1}, account.NumberHierarchy())
 				assert.Equal(t, "库存现金某子项", account.Title())
+				assert.Equal(t, "1001001", account.AccountNumber())
+				assert.Equal(t, 2, account.Level())
 				assert.NotNil(t, account.SuperiorAccountId())
 				assert.Equal(t, commonAccount.Assets, account.Type())
 				assert.Equal(t, commonAccount.Debit, account.BalanceDirection())
@@ -60,6 +70,8 @@ func TestNewAccount(t *testing.T) {
 			name:              "zero_number_error",
 			title:             "库存现金",
 			superiorAccountId: uuid.Nil,
+			accountNumber:     "0000",
+			level:             1,
 			numberHierarchy:   []int{0},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "ASSETS",
@@ -73,6 +85,8 @@ func TestNewAccount(t *testing.T) {
 			name:              "empty_superior_account",
 			title:             "库存现金",
 			superiorAccountId: uuid.Nil,
+			accountNumber:     "1001001",
+			level:             2,
 			numberHierarchy:   []int{1001, 1},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "ASSETS",
@@ -86,6 +100,8 @@ func TestNewAccount(t *testing.T) {
 			name:              "account_length_too_long",
 			title:             "库存现金",
 			superiorAccountId: uuid.Nil,
+			accountNumber:     "10011111",
+			level:             2,
 			numberHierarchy:   []int{1001, 1111},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "ASSETS",
@@ -98,7 +114,9 @@ func TestNewAccount(t *testing.T) {
 		{
 			name:              "account_depth_too_long",
 			title:             "库存现金",
-			superiorAccountId: uuid.Nil,
+			superiorAccountId: uuid.New(),
+			accountNumber:     "1001001001001",
+			level:             1,
 			numberHierarchy:   []int{1001, 1, 1, 1},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "ASSETS",
@@ -111,11 +129,11 @@ func TestNewAccount(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
+		tt := test
+		t.Run(tt.name, func(t *testing.T) {
 			t.Parallel()
-			account, err := NewAccount(uuid.New(), uuid.New(), test.superiorAccountId, test.numberHierarchy, test.title, test.accountType, test.balanceDirection, test.codeLength)
-			test.verify(t, account, err)
+			account, err := NewAccount(uuid.New(), uuid.New(), tt.superiorAccountId, tt.title, tt.accountNumber, tt.accountType, tt.balanceDirection, tt.level, tt.numberHierarchy, tt.codeLength)
+			tt.verify(t, account, err)
 		})
 	}
 }

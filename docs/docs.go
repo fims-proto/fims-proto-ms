@@ -1453,6 +1453,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "level": {
+                    "type": "integer"
+                },
                 "numberHierarchy": {
                     "type": "array",
                     "items": {

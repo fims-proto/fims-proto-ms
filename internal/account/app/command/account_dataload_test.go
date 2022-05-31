@@ -126,21 +126,37 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 			for _, account := range got {
 				switch account.Title() {
 				case "库存现金":
+					assert.Equal(t, "1001", account.AccountNumber())
 					assert.EqualValues(t, []int{1001}, account.NumberHierarchy())
+					assert.Equal(t, 1, account.Level())
 				case "银行存款":
+					assert.Equal(t, "1002", account.AccountNumber())
 					assert.EqualValues(t, []int{1002}, account.NumberHierarchy())
+					assert.Equal(t, 1, account.Level())
 				case "中国银行存款":
+					assert.Equal(t, "1002001", account.AccountNumber())
 					assert.EqualValues(t, []int{1002, 1}, account.NumberHierarchy())
+					assert.Equal(t, 2, account.Level())
 				case "招商银行存款":
+					assert.Equal(t, "1002002", account.AccountNumber())
 					assert.EqualValues(t, []int{1002, 2}, account.NumberHierarchy())
+					assert.Equal(t, 2, account.Level())
 				case "管理费用":
+					assert.Equal(t, "6602", account.AccountNumber())
 					assert.EqualValues(t, []int{6602}, account.NumberHierarchy())
+					assert.Equal(t, 1, account.Level())
 				case "办公费":
+					assert.Equal(t, "6602001", account.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1}, account.NumberHierarchy())
+					assert.Equal(t, 2, account.Level())
 				case "办公室租金":
+					assert.Equal(t, "6602001001", account.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 1}, account.NumberHierarchy())
+					assert.Equal(t, 3, account.Level())
 				case "文具费用":
+					assert.Equal(t, "6602001002", account.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 2}, account.NumberHierarchy())
+					assert.Equal(t, 3, account.Level())
 				}
 			}
 		})

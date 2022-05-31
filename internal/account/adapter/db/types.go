@@ -16,9 +16,11 @@ import (
 type account struct {
 	Id                uuid.UUID        `gorm:"type:uuid"`
 	SobId             uuid.UUID        `gorm:"type:uuid;uniqueIndex:accounts_sobid_number_key"`
-	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[];uniqueIndex:accounts_sobid_number_key"`
+	AccountNumber     string           `gorm:"uniqueIndex:accounts_sobid_number_key"`
 	SuperiorAccountId uuid.UUID        `gorm:"type:uuid"`
+	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[]"`
 	Title             string
+	Level             int
 	AccountType       string
 	BalanceDirection  string
 	CreatedAt         time.Time `gorm:"<-:create"`
@@ -33,36 +35,40 @@ func marshall(a *domain.Account) (*account, error) {
 	return &account{
 		Id:                a.Id(),
 		SobId:             a.SobId(),
-		NumberHierarchy:   int4array,
+		AccountNumber:     a.AccountNumber(),
 		SuperiorAccountId: a.SuperiorAccountId(),
+		NumberHierarchy:   int4array,
 		Title:             a.Title(),
+		Level:             a.Level(),
 		AccountType:       a.Type().String(),
 		BalanceDirection:  a.BalanceDirection().String(),
 	}, nil
 }
 
-func unmarshallToQuery(dba *account) (*query.Account, error) {
+func unmarshallToQuery(dba account) (query.Account, error) {
 	var numbers []int
 	if err := dba.NumberHierarchy.AssignTo(&numbers); err != nil {
-		return nil, errors.Wrap(err, "assign Int4Array to []int failed")
+		return query.Account{}, errors.Wrap(err, "assign Int4Array to []int failed")
 	}
 	accountType, err := commonAccount.NewAccountType(dba.AccountType)
 	if err != nil {
-		return nil, errors.Wrap(err, "should not happen: failed to parse account type")
+		return query.Account{}, errors.Wrap(err, "should not happen: failed to parse account type")
 	}
 	direction, err := commonAccount.NewDirection(dba.BalanceDirection)
 	if err != nil {
-		return nil, errors.Wrap(err, "should not happen: failed to parse balance direction")
+		return query.Account{}, errors.Wrap(err, "should not happen: failed to parse balance direction")
 	}
-	return &query.Account{
+	return query.Account{
 		Id:                dba.Id,
 		SobId:             dba.SobId,
-		SuperiorAccountId: dba.SuperiorAccountId,
-		NumberHierarchy:   numbers,
 		Title:             dba.Title,
+		AccountNumber:     dba.AccountNumber,
+		NumberHierarchy:   numbers,
+		SuperiorAccountId: dba.SuperiorAccountId,
 		AccountType:       accountType,
-		SuperiorAccount:   nil,
 		BalanceDirection:  direction,
+		Level:             dba.Level,
+		SuperiorAccount:   nil,
 		CreatedAt:         dba.CreatedAt,
 		UpdatedAt:         dba.UpdatedAt,
 	}, nil

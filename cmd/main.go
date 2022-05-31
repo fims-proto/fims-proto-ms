@@ -122,7 +122,6 @@ func main() {
 		accountRepository,
 		accountRepository,
 		sobServiceForAccount,
-		sobServiceForAccount,
 	)
 
 	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)

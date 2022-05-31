@@ -127,23 +127,23 @@ func (h AccountDataLoadHandler) prepareAccounts(sobId uuid.UUID, accountEntries 
 		for _, entry := range accountEntries {
 			if entry.level == i+1 {
 
-				var accountNumber int
+				var levelNumber int
 				var superiorAccountId uuid.UUID
 				var numberHierarchy []int
 				if entry.level == 1 {
 					superiorAccountId = uuid.Nil
-					accountNumber, _ = strconv.Atoi(entry.number)
-					numberHierarchy = []int{accountNumber}
+					levelNumber, _ = strconv.Atoi(entry.number)
+					numberHierarchy = []int{levelNumber}
 				} else {
-					accountNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
+					levelNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
 					superiorAccount, ok := preparedAccounts[entry.superiorNumber]
 					if !ok {
 						return nil, errors.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
 					}
 					superiorAccountId = superiorAccount.Id()
-					numberHierarchy = append(superiorAccount.NumberHierarchy(), accountNumber)
+					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
-				account, err := domain.NewAccount(uuid.New(), sobId, superiorAccountId, numberHierarchy, entry.title, entry.accountType, entry.balanceDirection, codeLengthLimits)
+				account, err := domain.NewAccount(uuid.New(), sobId, superiorAccountId, entry.title, entry.number, entry.accountType, entry.balanceDirection, entry.level, numberHierarchy, codeLengthLimits)
 				if err != nil {
 					return nil, errors.Wrapf(err, "dataload failed on account %s", entry.number)
 				}
