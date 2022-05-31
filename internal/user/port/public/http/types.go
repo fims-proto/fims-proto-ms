@@ -17,10 +17,10 @@ type Error struct {
 }
 
 type UserResponse struct {
-	Id        uuid.UUID   `json:"id"`
-	Traits    interface{} `json:"traits"`
-	CreatedAt time.Time   `json:"createdAt"`
-	UpdatedAt time.Time   `json:"updatedAt"`
+	Id        uuid.UUID `json:"id"`
+	Traits    any       `json:"traits"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type UpdateUserRequest struct {

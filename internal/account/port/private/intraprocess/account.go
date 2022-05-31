@@ -33,7 +33,7 @@ func (i AccountInterface) ReadAccountById(ctx context.Context, accountId uuid.UU
 
 func (i AccountInterface) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
 	// one page that is big enough
-	pageRequest, _ := data.NewPageRequest(1, 99999, nil, nil)
+	pageRequest, _ := data.NewPageRequest(1, 99999, nil, nil, nil)
 	accountsPage, err := i.app.Queries.ReadAccounts.HandleReadAll(ctx, sobId, pageRequest)
 	return accountsPage.Content, err
 }

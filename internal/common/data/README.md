@@ -1,6 +1,6 @@
 # Pagination
 
-`/?page=<int>&size=<int>`
+`/?$page=<int>&$size=<int>`
 
 ## Request
 ### interface `Pageable`
@@ -12,9 +12,9 @@ type Pageable interface {
 	getSort() []Sort
 }
 ```
-### Sort (not implemented)
+### Sort
 
-`/?sort=<field> [<order>],<field> [<order>]`
+`/?$sort=<field> [<order>],<field> [<order>]`
 ```
 [
     { <field>: DESC|ASC },
@@ -36,14 +36,25 @@ type Pageable interface {
 }
 ```
 
-# Selector
-## Choose
+# RHS Colon
+`/?date=$lt:10&date=$gte:2` will be: 
+```
+{
+    date: {
+        $lt: 10,
+        $gte: 2
+    }
+}
+```
 
-`/?choose=<field1>,<field2>`
-
-## Find (not implemented)
-
-`/?find=<field> <op> <value> and|or <field> <op> <value>`
+## Filter (not implemented)
+```
+/?filter=<field> <op> <value>
+/?filter=<field> <op> <value> and <field> <op> <value>
+/?filter=<field> <op> <value> or <field> <op> <value>
+/?filter=<field> <op> <value> or <field> <op> <value> and <field> <op> <value>
+/?filter=<field> <op> <value> or (<field> <op> <value> and <field> <op> <value>)
+```
 
 **equal:**
 ```

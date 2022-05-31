@@ -2,7 +2,6 @@ package db
 
 import (
 	"context"
-	"strings"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
@@ -73,31 +72,14 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 
 	var dbAccounts []account
 
-	// pagination
-	tx := db.Offset(pageable.Offset()).Limit(pageable.Size())
-	// order
-	if pageable.Sorts() != nil {
-		var orderStr []string
-		for _, sort := range pageable.Sorts() {
-			orderStr = append(orderStr, strings.Join([]string{sort.Field(), sort.Order()}, " "))
-		}
-		tx = tx.Order(strings.Join(orderStr, ","))
-	}
-	// select
-	if pageable.Chooses() != nil {
-		var selectStr []string
-		for _, choose := range pageable.Chooses() {
-			selectStr = append(selectStr, choose.Field())
-		}
-		tx = tx.Select(strings.Join(selectStr, ","))
-	}
+	db = data.EnrichDb(pageable, db)
 
-	if err := tx.Where("sob_id = ?", sobId).Find(&dbAccounts).Error; err != nil {
+	if err := db.Where("sob_id = ?", sobId).Find(&dbAccounts).Error; err != nil {
 		return data.Page[query.Account]{}, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
 	}
 
 	var count int64
-	if err := tx.Count(&count).Error; err != nil {
+	if err := db.Count(&count).Error; err != nil {
 		return data.Page[query.Account]{}, errors.Wrap(err, "count accounts failed")
 	}
 

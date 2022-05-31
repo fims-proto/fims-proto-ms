@@ -196,7 +196,7 @@ func TestReadAccountsHandler_concatenateAccountNumber(t *testing.T) {
 }
 
 func TestReadAccountsHandler_HandleReadAll(t *testing.T) {
-	pageRequest, _ := data.NewPageRequest(1, 1, nil, nil)
+	pageRequest, _ := data.NewPageRequest(1, 1, nil, nil, nil)
 	type fields struct {
 		readModel  AccountsReadModel
 		sobService SobService

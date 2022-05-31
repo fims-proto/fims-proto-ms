@@ -19,7 +19,7 @@ func NewConnector() Connector {
 }
 
 func (d Connector) Open(dsn string) (*gorm.DB, error) {
-	db, err := retry(4, 5*time.Second, func() (interface{}, error) {
+	db, err := retry(4, 5*time.Second, func() (any, error) {
 		return d.open(dsn)
 	})
 	if err != nil {

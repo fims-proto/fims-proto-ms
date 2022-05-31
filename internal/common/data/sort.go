@@ -1,6 +1,10 @@
 package data
 
-import "github.com/pkg/errors"
+import (
+	"strings"
+
+	"github.com/pkg/errors"
+)
 
 type Sort interface {
 	Field() string
@@ -33,4 +37,34 @@ func (s sortRequest) Field() string {
 
 func (s sortRequest) Order() string {
 	return s.order
+}
+
+func newSortsFromQuery(sort string) ([]Sort, error) {
+	if sort == "" {
+		return nil, nil
+	}
+
+	sortFields := make(map[string]string)
+	sortSegments := strings.Split(sort, ",")
+	for _, segment := range sortSegments {
+		elements := strings.Split(strings.TrimSpace(segment), " ")
+		if len(elements) == 1 {
+			sortFields[elements[0]] = "asc"
+		} else if len(elements) == 2 {
+			sortFields[elements[0]] = elements[1]
+		} else {
+			return nil, errors.Errorf("invalid sort query parameter %s", sort)
+		}
+	}
+
+	var sorts []Sort
+	for field, order := range sortFields {
+		sort, err := newSort(field, order)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to create sorts request")
+		}
+		sorts = append(sorts, sort)
+	}
+
+	return sorts, nil
 }

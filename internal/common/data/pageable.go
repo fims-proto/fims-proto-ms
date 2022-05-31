@@ -8,6 +8,7 @@ type Pageable interface {
 	Offset() int
 	Sorts() []Sort
 	Chooses() []Choose
+	Filters() []Filter
 }
 
 type pageRequest struct {
@@ -16,9 +17,10 @@ type pageRequest struct {
 	offset  int
 	sorts   []Sort
 	chooses []Choose
+	filters []Filter
 }
 
-func NewPageRequest(page, size int, sortFields map[string]string, chooseFields []string) (Pageable, error) {
+func NewPageRequest(page, size int, sorts []Sort, chooses []Choose, filters []Filter) (Pageable, error) {
 	if page < 1 {
 		return nil, errors.New("zero page number. page number starts with 1")
 	}
@@ -28,30 +30,13 @@ func NewPageRequest(page, size int, sortFields map[string]string, chooseFields [
 
 	offset := (page - 1) * size
 
-	var sorts []Sort
-	for field, order := range sortFields {
-		sort, err := newSort(field, order)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create sorts request")
-		}
-		sorts = append(sorts, sort)
-	}
-
-	var chooses []Choose
-	for _, field := range chooseFields {
-		choose, err := newChoose(field)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to create chooses request")
-		}
-		chooses = append(chooses, choose)
-	}
-
 	return pageRequest{
 		page:    page,
 		size:    size,
 		offset:  offset,
 		sorts:   sorts,
 		chooses: chooses,
+		filters: filters,
 	}, nil
 }
 
@@ -73,4 +58,8 @@ func (p pageRequest) Sorts() []Sort {
 
 func (p pageRequest) Chooses() []Choose {
 	return p.chooses
+}
+
+func (p pageRequest) Filters() []Filter {
+	return p.filters
 }

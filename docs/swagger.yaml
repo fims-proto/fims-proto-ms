@@ -184,7 +184,8 @@ definitions:
         type: string
       id:
         type: string
-      traits: {}
+      traits:
+        type: any
       updatedAt:
         type: string
     type: object
@@ -291,22 +292,27 @@ paths:
       - default: 1
         description: page number
         in: query
-        name: page
+        name: $page
         type: integer
       - default: 40
         description: page size
         in: query
-        name: size
+        name: $size
         type: integer
       - description: sort on field(s)
         example: updatedAt desc,createdAt
         in: query
-        name: sort
+        name: $sort
         type: string
       - description: choose only field(s)
         example: accountNumber,title
         in: query
-        name: choose
+        name: $choose
+        type: string
+      - description: filter on field(s)
+        example: title eq 'some thing' and amount lt 10
+        in: query
+        name: $filter
         type: string
       produces:
       - application/json
