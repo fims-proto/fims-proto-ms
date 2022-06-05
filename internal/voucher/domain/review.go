@@ -16,6 +16,12 @@ func (v *Voucher) Review(reviewer string) error {
 	if reviewer == "" {
 		return ErrEmptyReviewer
 	}
+	if reviewer == v.creator {
+		return errors.New("reviewer cannot be same as creator")
+	}
+	if v.auditor != "" && reviewer == v.auditor {
+		return errors.New("reviewer cannot be same as auditor")
+	}
 	v.isReviewed = true
 	v.reviewer = reviewer
 	return nil

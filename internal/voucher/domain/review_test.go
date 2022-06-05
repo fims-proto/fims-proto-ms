@@ -31,6 +31,32 @@ func TestDomain_VoucherReview(t *testing.T) {
 			},
 		},
 		{
+			"review_sameAsCreator_error",
+			true,
+			func(t *testing.T) *Voucher {
+				v := createVoucherForReviewTest(t, "")
+				v.creator = "aud1_uuid"
+				return v
+			},
+			"aud1_uuid",
+			func(t *testing.T, v Voucher, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			"review_sameAsAuditor_error",
+			true,
+			func(t *testing.T) *Voucher {
+				v := createVoucherForReviewTest(t, "")
+				v.auditor = "aud1_uuid"
+				return v
+			},
+			"aud1_uuid",
+			func(t *testing.T, v Voucher, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
 			"review_repeat_review_error",
 			true,
 			func(t *testing.T) *Voucher {

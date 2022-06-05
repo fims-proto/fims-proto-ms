@@ -16,6 +16,12 @@ func (v *Voucher) Audit(auditor string) error {
 	if auditor == "" {
 		return ErrEmptyAuditor
 	}
+	if auditor == v.creator {
+		return errors.New("auditor cannot be same as creator")
+	}
+	if v.reviewer != "" && auditor == v.reviewer {
+		return errors.New("auditor cannot be same as reviewer")
+	}
 	v.isAudited = true
 	v.auditor = auditor
 	return nil

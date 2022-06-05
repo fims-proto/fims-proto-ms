@@ -42,6 +42,32 @@ func TestDomain_VoucherAudit(t *testing.T) {
 			},
 		},
 		{
+			"audit_sameAsCreator_error",
+			true,
+			func(t *testing.T) *Voucher {
+				v := createVoucherForAuditTest(t, "")
+				v.creator = "aud1_uuid"
+				return v
+			},
+			"aud1_uuid",
+			func(t *testing.T, v Voucher, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
+			"audit_sameAsReviewer_error",
+			true,
+			func(t *testing.T) *Voucher {
+				v := createVoucherForAuditTest(t, "")
+				v.reviewer = "aud1_uuid"
+				return v
+			},
+			"aud1_uuid",
+			func(t *testing.T, v Voucher, err error) {
+				assert.Error(t, err)
+			},
+		},
+		{
 			"audit_cancel_audit_success",
 			false,
 			func(t *testing.T) *Voucher {
