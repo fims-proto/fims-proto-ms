@@ -24,7 +24,7 @@ type UserResponse struct {
 }
 
 type UpdateUserRequest struct {
-	Traits []byte `json:"traits"`
+	Traits string `json:"traits"`
 }
 
 func mapFromUserQuery(u query.User) UserResponse {

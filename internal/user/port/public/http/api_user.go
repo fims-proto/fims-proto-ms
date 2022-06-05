@@ -64,13 +64,13 @@ func (h Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 	var traits json.RawMessage
-	if err := traits.UnmarshalJSON(req.Traits); err != nil {
+	if err := traits.UnmarshalJSON([]byte(req.Traits)); err != nil {
 		c.JSON(http.StatusBadRequest, wrapErr(err))
 		return
 	}
 	cmd := command.UpdateUserCmd{
 		Id:     uuid.MustParse(c.Param("userId")),
-		Traits: req.Traits,
+		Traits: traits,
 	}
 	if err := h.app.Commands.UpdateUser.Handle(c, cmd); err != nil {
 		c.JSON(http.StatusInternalServerError, wrapErr(err))

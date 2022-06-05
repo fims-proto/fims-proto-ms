@@ -165,9 +165,7 @@ definitions:
   http.UpdateUserRequest:
     properties:
       traits:
-        items:
-          type: integer
-        type: array
+        type: string
     type: object
   http.UpdateVoucherRequest:
     properties:
