@@ -40,12 +40,12 @@ func NewHandler(app *app.Application) Handler {
 func (h Handler) ReadAllAccounts(c *gin.Context) {
 	pageable, err := data.NewPageable(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	accountsPage, err := h.app.Queries.ReadAccounts.HandleReadAll(c, uuid.MustParse(c.Param("sobId")), pageable)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	accountResponses := make([]AccountResponse, len(accountsPage.Content))
@@ -54,20 +54,6 @@ func (h Handler) ReadAllAccounts(c *gin.Context) {
 	}
 	resp, _ := data.NewPage(accountResponses, accountsPage.Page, accountsPage.Size, accountsPage.NumberOfElements)
 	c.JSON(http.StatusOK, resp)
-}
-
-func wrapErr(e error) Error {
-	var slug string
-	se, ok := e.(slugErr)
-	if ok {
-		slug = se.Slug()
-	} else {
-		slug = "unknown-error"
-	}
-	return Error{
-		Slug:    slug,
-		Message: e.Error(),
-	}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

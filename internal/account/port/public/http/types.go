@@ -6,10 +6,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 )
 
-type slugErr interface {
-	Slug() string
-}
-
 type Error struct {
 	Message string `json:"message"`
 	Slug    string `json:"slug"`

@@ -34,7 +34,7 @@ func NewHandler(app *app.Application) Handler {
 func (h Handler) ReadCurrentAccountingPeriod(c *gin.Context) {
 	period, err := h.app.Queries.ReadLedgers.HandleReadOpenAccountingPeriod(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	if period.Id == uuid.Nil {
@@ -57,7 +57,7 @@ func (h Handler) ReadCurrentAccountingPeriod(c *gin.Context) {
 func (h Handler) ReadAllAccountingPeriods(c *gin.Context) {
 	periods, err := h.app.Queries.ReadLedgers.HandleReadAllAccountingPeriods(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	res := make([]AccountingPeriodResponse, len(periods))
@@ -82,7 +82,7 @@ func (h Handler) ReadAllAccountingPeriods(c *gin.Context) {
 func (h Handler) ReadAccountingPeriodById(c *gin.Context) {
 	period, err := h.app.Queries.ReadLedgers.HandleReadAccountingPeriodById(c, uuid.MustParse(c.Param("periodId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	if period.Id == uuid.Nil {
@@ -107,14 +107,14 @@ func (h Handler) ReadAccountingPeriodById(c *gin.Context) {
 func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 	var req CreateAccountingPeriodRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := req.mapToCommand()
 	cmd.SobId = uuid.MustParse(c.Param("sobId"))
 	createdId, err := h.app.Commands.CreateAccountingPeriod.Handle(c, cmd)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 
@@ -123,13 +123,13 @@ func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 		PeriodId: createdId,
 	}
 	if err = h.app.Commands.CreatePeriodLedgers.Handle(c, createLedgersCmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 
 	createdPeriod, err := h.app.Queries.ReadLedgers.HandleReadAccountingPeriodById(c, createdId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusCreated, createdPeriod)
@@ -149,7 +149,7 @@ func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 func (h Handler) ReadAllLedgersByAccountingPeriod(c *gin.Context) {
 	ledgers, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByAccountingPeriod(c, uuid.MustParse(c.Param("periodId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	res := make([]LedgerResponse, len(ledgers))
@@ -173,7 +173,7 @@ func (h Handler) ReadAllLedgersByAccountingPeriod(c *gin.Context) {
 func (h Handler) CalculatePeriodLedgers(c *gin.Context) {
 	ledgers, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByAccountingPeriod(c, uuid.MustParse(c.Param("periodId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	cmd := command.CalculateLedgerBalanceCmd{
@@ -183,24 +183,10 @@ func (h Handler) CalculatePeriodLedgers(c *gin.Context) {
 		cmd.Ids[i] = ledger.Id
 	}
 	if err = h.app.Commands.CalculateLedgerBalance.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func wrapErr(e error) Error {
-	var slug string
-	se, ok := e.(slugErr)
-	if ok {
-		slug = se.Slug()
-	} else {
-		slug = "unknown-error"
-	}
-	return Error{
-		Slug:    slug,
-		Message: e.Error(),
-	}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

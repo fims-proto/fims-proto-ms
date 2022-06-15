@@ -1,70 +1,169 @@
 package domain
 
 import (
+	"fmt"
 	"testing"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestDomain_VoucherUpdate(t *testing.T) {
-	t.Parallel()
+func TestVoucher_UpdateLineItems(t *testing.T) {
+	type fields struct {
+		isReviewed bool
+		isAudited  bool
+	}
+	type args struct {
+		items []*LineItem
+	}
 	tests := []struct {
-		name        string
-		constructor func(t *testing.T) *Voucher
-		verify      func(t *testing.T, v Voucher, err error)
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"update_success",
-			func(t *testing.T) *Voucher {
-				return createVoucherForUpdateTest(t, false, false)
+			name: "normal_success",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  false,
 			},
-			func(t *testing.T, v Voucher, err error) {
-				require.NoError(t, err)
-			},
-		},
-		{
-			"update_reviewed",
-			func(t *testing.T) *Voucher {
-				return createVoucherForUpdateTest(t, true, false)
-			},
-			func(t *testing.T, v Voucher, err error) {
-				assert.EqualError(t, err, ErrVoucherAlreadyReviewed.Error())
+			args: args{items: prepareBalancedItems()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
 			},
 		},
 		{
-			"update_audited",
-			func(t *testing.T) *Voucher {
-				return createVoucherForUpdateTest(t, false, true)
+			name: "emptyLineItem_error",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  false,
 			},
-			func(t *testing.T, v Voucher, err error) {
-				assert.EqualError(t, err, ErrVoucherAlreadyAudited.Error())
+			args: args{items: nil},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errVoucherEmptyLineItem, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "notBalanced_error",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  false,
+			},
+			args: args{items: prepareImbalancedItems()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errVoucherNotBalanced, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "voucherReviewed_error",
+			fields: fields{
+				isReviewed: true,
+				isAudited:  false,
+			},
+			args: args{items: prepareBalancedItems()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errUpdateReviewed, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "voucherAudited_error",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  true,
+			},
+			args: args{items: prepareBalancedItems()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errUpdateAudited, err.(domainErr).Slug())
+				return true
 			},
 		},
 	}
-	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-			voucher := test.constructor(t)
-
-			err := voucher.UpdateLineItems(prepareBalancedItems())
-
-			test.verify(t, *voucher, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Voucher{
+				isReviewed: tt.fields.isReviewed,
+				isAudited:  tt.fields.isAudited,
+			}
+			tt.wantErr(t, v.UpdateLineItems(tt.args.items), fmt.Sprintf("UpdateLineItems(%v)", tt.args.items))
 		})
 	}
 }
 
-func createVoucherForUpdateTest(t *testing.T, reviewed bool, audited bool) *Voucher {
-	v, err := NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false, time.Now())
-	require.NoError(t, err)
-	if reviewed {
-		require.NoError(t, v.Review("r"))
+func TestVoucher_UpdateTransactionTime(t *testing.T) {
+	type fields struct {
+		isReviewed bool
+		isAudited  bool
 	}
-	if audited {
-		require.NoError(t, v.Audit("a"))
+	type args struct {
+		transactionTime time.Time
 	}
-	return v
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "normal_success",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  false,
+			},
+			args: args{transactionTime: time.Now()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
+			},
+		},
+		{
+			name: "emptyTransactionTime_success",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  false,
+			},
+			args: args{transactionTime: time.Time{}},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errUpdateZeroTransactionTime, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "voucherReviewed_success",
+			fields: fields{
+				isReviewed: true,
+				isAudited:  false,
+			},
+			args: args{transactionTime: time.Now()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errUpdateReviewed, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "voucherAudited_success",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  true,
+			},
+			args: args{transactionTime: time.Now()},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errUpdateAudited, err.(domainErr).Slug())
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Voucher{
+				isReviewed: tt.fields.isReviewed,
+				isAudited:  tt.fields.isAudited,
+			}
+			tt.wantErr(t, v.UpdateTransactionTime(tt.args.transactionTime), fmt.Sprintf("UpdateTransactionTime(%v)", tt.args.transactionTime))
+		})
+	}
 }

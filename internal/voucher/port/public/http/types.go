@@ -6,10 +6,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type slugErr interface {
-	Slug() string
-}
-
 type Error struct {
 	Message string `json:"message"`
 	Slug    string `json:"slug"`

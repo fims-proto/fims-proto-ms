@@ -1,26 +1,17 @@
 package domain
 
-import "github.com/pkg/errors"
-
-var (
-	ErrEmptyAuditor           = errors.New("auditor empty")
-	ErrVoucherAlreadyAudited  = errors.New("voucher already audited")
-	ErrVoucherNotAudited      = errors.New("voucher not audited")
-	ErrDifferentAuditorCancel = errors.New("cancel audit with different auditor")
-)
-
 func (v *Voucher) Audit(auditor string) error {
 	if v.IsAudited() {
-		return ErrVoucherAlreadyAudited
+		return newDomainErr(errAuditRepeatAudit)
 	}
 	if auditor == "" {
-		return ErrEmptyAuditor
+		return newDomainErr(errAuditEmptyAuditor)
 	}
 	if auditor == v.creator {
-		return errors.New("auditor cannot be same as creator")
+		return newDomainErr(errAuditAuditorSameAsCreator)
 	}
 	if v.reviewer != "" && auditor == v.reviewer {
-		return errors.New("auditor cannot be same as reviewer")
+		return newDomainErr(errAuditAuditorSameAsReviewer)
 	}
 	v.isAudited = true
 	v.auditor = auditor
@@ -29,10 +20,13 @@ func (v *Voucher) Audit(auditor string) error {
 
 func (v *Voucher) CancelAudit(auditor string) error {
 	if !v.IsAudited() {
-		return ErrVoucherNotAudited
+		return newDomainErr(errCancelAuditNotAudited)
 	}
 	if v.Auditor() != auditor {
-		return ErrDifferentAuditorCancel
+		return newDomainErr(errCancelAuditDifferentAuditor)
+	}
+	if v.IsPosted() {
+		return newDomainErr(errCancelAuditPosted)
 	}
 	v.isAudited = false
 	v.auditor = ""

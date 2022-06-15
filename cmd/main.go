@@ -2,9 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/common/exception"
+	"golang.org/x/text/language"
 
 	"github/fims-proto/fims-proto-ms/internal/common/db"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -59,6 +63,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/gin-gonic/gin"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -84,6 +89,11 @@ func main() {
 	tenantServiceImpl := tenantService.NewTenantService(tenantInterface)
 
 	tenantManagerImpl := tenantManager.NewTenantManager(tenantServiceImpl, dbConnector)
+
+	// i18n
+	bundle := i18n.NewBundle(language.SimplifiedChinese)
+	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
+	bundle.MustLoadMessageFile("./i18n/zh-CN.json")
 
 	// repositories
 	sobRepository := sobAdapter.NewSobPostgresRepository()
@@ -158,6 +168,7 @@ func main() {
 
 	router := gin.Default()
 	router.Use(ginMiddleware.ResolveTenantBySubdomain(tenantManagerImpl))
+	router.Use(exception.ErrorHandler(bundle))
 
 	// public http API
 	publicApiRouter := router.Group("/api/v1")

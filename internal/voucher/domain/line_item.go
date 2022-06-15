@@ -2,7 +2,6 @@ package domain
 
 import (
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 )
 
@@ -16,20 +15,20 @@ type LineItem struct {
 
 func NewLineItem(id, accountId uuid.UUID, summary string, debit, credit decimal.Decimal) (*LineItem, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("nil id")
+		return nil, newDomainErr(errLineItemEmptyId)
 	}
 	if accountId == uuid.Nil {
-		return nil, errors.New("nil account id")
+		return nil, newDomainErr(errLineItemEmptyAccountId)
 	}
 	if summary == "" {
-		return nil, errors.New("empty summary")
+		return nil, newDomainErr(errLineItemEmptySummary)
 	}
 	if debit.IsZero() && credit.IsZero() {
-		return nil, errors.New("credit and debit cannot both be zero")
+		return nil, newDomainErr(errLineItemEmptyDebitCredit)
 	}
 
 	if !debit.IsZero() && !credit.IsZero() {
-		return nil, errors.New("credit and debit cannot both be non zero")
+		return nil, newDomainErr(errLineItemDebitCreditCoExist)
 	}
 
 	return &LineItem{

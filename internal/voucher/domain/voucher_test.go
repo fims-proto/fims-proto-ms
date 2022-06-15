@@ -25,8 +25,13 @@ func TestDomain_NewVoucher(t *testing.T) {
 		verify      func(t *testing.T, voucher *Voucher, err error)
 	}{
 		{
-			"normal_success", "GENERAL_VOUCHER", uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), sobId, "1", prepareBalancedItems(),
-			func(t *testing.T, voucher *Voucher, err error) {
+			name:        "normal_success",
+			voucherType: "GENERAL_VOUCHER",
+			id:          uuid.NewSHA1(uuid.Nil, []byte("test_uuid")),
+			sobId:       sobId,
+			number:      "1",
+			items:       prepareBalancedItems(),
+			verify: func(t *testing.T, voucher *Voucher, err error) {
 				require.NoError(t, err)
 				assert.Equal(t, uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), voucher.Id())
 				assert.Equal(t, "1", voucher.Number())
@@ -35,18 +40,27 @@ func TestDomain_NewVoucher(t *testing.T) {
 			},
 		},
 		{
-			"imbalanced_error", "GENERAL_VOUCHER", uuid.New(), sobId, "1", prepareImbalancedItems(),
-			func(t *testing.T, voucher *Voucher, err error) {
+			name:        "imbalanced_error",
+			voucherType: "GENERAL_VOUCHER",
+			id:          uuid.New(),
+			sobId:       sobId,
+			number:      "1",
+			items:       prepareImbalancedItems(),
+			verify: func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
-				assert.Error(t, err)
+				assert.Equal(t, errVoucherNotBalanced, err.(domainErr).Slug())
 			},
 		},
 		{
-			"empty_line_item_error", "GENERAL_VOUCHER", uuid.New(), sobId, "1",
-			[]*LineItem{},
-			func(t *testing.T, voucher *Voucher, err error) {
+			name:        "empty_line_item_error",
+			voucherType: "GENERAL_VOUCHER",
+			id:          uuid.New(),
+			sobId:       sobId,
+			number:      "1",
+			items:       []*LineItem{},
+			verify: func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
-				assert.Error(t, err)
+				assert.Equal(t, errVoucherEmptyLineItem, err.(domainErr).Slug())
 			},
 		},
 	}

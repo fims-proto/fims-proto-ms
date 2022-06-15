@@ -1,130 +1,213 @@
 package domain
 
 import (
+	"fmt"
 	"testing"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestDomain_VoucherAudit(t *testing.T) {
-	t.Parallel()
+func TestVoucher_Audit(t *testing.T) {
+	type fields struct {
+		creator    string
+		reviewer   string
+		auditor    string
+		isAudited  bool
+		isReviewed bool
+	}
+	type args struct {
+		auditor string
+	}
 	tests := []struct {
-		name        string
-		doAudit     bool // true - audit, false - cancel audit
-		constructor func(t *testing.T) *Voucher
-		auditor     string
-		verify      func(t *testing.T, v Voucher, err error)
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"audit_success",
-			true,
-			func(t *testing.T) *Voucher {
-				return createVoucherForAuditTest(t, "")
+			name: "normal_success",
+			fields: fields{
+				creator:    "user-a",
+				reviewer:   "",
+				auditor:    "",
+				isAudited:  false,
+				isReviewed: false,
 			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				require.NoError(t, err)
-				assert.Equal(t, "aud1_uuid", v.Auditor())
-			},
-		},
-		{
-			"audit_repeat_audit_error",
-			true,
-			func(t *testing.T) *Voucher {
-				return createVoucherForAuditTest(t, "aud1_uuid")
-			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Equal(t, ErrVoucherAlreadyAudited, err)
+			args: args{auditor: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
 			},
 		},
 		{
-			"audit_sameAsCreator_error",
-			true,
-			func(t *testing.T) *Voucher {
-				v := createVoucherForAuditTest(t, "")
-				v.creator = "aud1_uuid"
-				return v
+			name: "noAuditor_error",
+			fields: fields{
+				creator:    "user-a",
+				reviewer:   "",
+				auditor:    "",
+				isAudited:  false,
+				isReviewed: false,
 			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Error(t, err)
-			},
-		},
-		{
-			"audit_sameAsReviewer_error",
-			true,
-			func(t *testing.T) *Voucher {
-				v := createVoucherForAuditTest(t, "")
-				v.reviewer = "aud1_uuid"
-				return v
-			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Error(t, err)
+			args: args{auditor: ""},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errAuditEmptyAuditor, err.(domainErr).Slug())
+				return true
 			},
 		},
 		{
-			"audit_cancel_audit_success",
-			false,
-			func(t *testing.T) *Voucher {
-				return createVoucherForAuditTest(t, "aud1_uuid")
+			name: "repeatAudit_error",
+			fields: fields{
+				creator:    "user-a",
+				reviewer:   "",
+				auditor:    "user-b",
+				isAudited:  true,
+				isReviewed: false,
 			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				require.NoError(t, err)
-				assert.Equal(t, "", v.Auditor())
-				assert.False(t, v.IsAudited())
-			},
-		},
-		{
-			"audit_cancel_audit_not_audited_error",
-			false,
-			func(t *testing.T) *Voucher {
-				return createVoucherForAuditTest(t, "")
-			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Equal(t, ErrVoucherNotAudited, err)
+			args: args{auditor: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errAuditRepeatAudit, err.(domainErr).Slug())
+				return true
 			},
 		},
 		{
-			"audit_cancel_audit_different_auditor_error",
-			false,
-			func(t *testing.T) *Voucher {
-				return createVoucherForAuditTest(t, "aud1_uuid")
+			name: "auditorSameAsCreator_error",
+			fields: fields{
+				creator:    "user-a",
+				reviewer:   "",
+				auditor:    "",
+				isAudited:  false,
+				isReviewed: false,
 			},
-			"aud2_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Equal(t, ErrDifferentAuditorCancel, err)
+			args: args{auditor: "user-a"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errAuditAuditorSameAsCreator, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "auditorSameAsReviewer_error",
+			fields: fields{
+				creator:    "user-a",
+				reviewer:   "user-b",
+				auditor:    "",
+				isAudited:  false,
+				isReviewed: true,
+			},
+			args: args{auditor: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errAuditAuditorSameAsReviewer, err.(domainErr).Slug())
+				return true
 			},
 		},
 	}
-	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-			voucher := test.constructor(t)
-			var err error
-			if test.doAudit {
-				err = voucher.Audit(test.auditor)
-			} else {
-				err = voucher.CancelAudit(test.auditor)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Voucher{
+				creator:    tt.fields.creator,
+				reviewer:   tt.fields.reviewer,
+				auditor:    tt.fields.auditor,
+				isAudited:  tt.fields.isAudited,
+				isReviewed: tt.fields.isReviewed,
 			}
-			test.verify(t, *voucher, err)
+			tt.wantErr(t, v.Audit(tt.args.auditor), fmt.Sprintf("Audit(%v)", tt.args.auditor))
 		})
 	}
 }
 
-func createVoucherForAuditTest(t *testing.T, auditor string) *Voucher {
-	voucher, err := NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false, time.Now())
-	require.NoError(t, err)
-	if auditor != "" {
-		err := voucher.Audit(auditor)
-		require.NoError(t, err)
+func TestVoucher_CancelAudit(t *testing.T) {
+	type fields struct {
+		creator    string
+		auditor    string
+		reviewer   string
+		isAudited  bool
+		isReviewed bool
+		isPosted   bool
 	}
-	return voucher
+	type args struct {
+		auditor string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "normal_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "user-b",
+				reviewer:   "",
+				isAudited:  true,
+				isReviewed: false,
+				isPosted:   false,
+			},
+			args: args{auditor: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
+			},
+		},
+		{
+			name: "notAudited_error",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "",
+				isAudited:  false,
+				isReviewed: false,
+				isPosted:   false,
+			},
+			args: args{auditor: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errCancelAuditNotAudited, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "differentAuditor_error",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "user-b",
+				reviewer:   "",
+				isAudited:  true,
+				isReviewed: false,
+				isPosted:   false,
+			},
+			args: args{auditor: "user-c"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errCancelAuditDifferentAuditor, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "alreadyPosted_error",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "user-b",
+				reviewer:   "user-c",
+				isAudited:  true,
+				isReviewed: true,
+				isPosted:   true,
+			},
+			args: args{auditor: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errCancelAuditPosted, err.(domainErr).Slug())
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Voucher{
+				creator:    tt.fields.creator,
+				auditor:    tt.fields.auditor,
+				reviewer:   tt.fields.reviewer,
+				isAudited:  tt.fields.isAudited,
+				isReviewed: tt.fields.isReviewed,
+				isPosted:   tt.fields.isPosted,
+			}
+			tt.wantErr(t, v.CancelAudit(tt.args.auditor), fmt.Sprintf("CancelAudit(%v)", tt.args.auditor))
+		})
+	}
 }

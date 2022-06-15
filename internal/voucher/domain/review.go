@@ -1,26 +1,17 @@
 package domain
 
-import "github.com/pkg/errors"
-
-var (
-	ErrEmptyReviewer           = errors.New("reviewer empty")
-	ErrVoucherAlreadyReviewed  = errors.New("voucher already reviewed")
-	ErrVoucherNotReviewed      = errors.New("voucher not reviewed")
-	ErrDifferentReviewerCancel = errors.New("cancel review with different reviewer")
-)
-
 func (v *Voucher) Review(reviewer string) error {
 	if v.IsReviewed() {
-		return ErrVoucherAlreadyReviewed
+		return newDomainErr(errReviewRepeatReview)
 	}
 	if reviewer == "" {
-		return ErrEmptyReviewer
+		return newDomainErr(errReviewEmptyReviewer)
 	}
 	if reviewer == v.creator {
-		return errors.New("reviewer cannot be same as creator")
+		return newDomainErr(errReviewReviewerSameAsCreator)
 	}
 	if v.auditor != "" && reviewer == v.auditor {
-		return errors.New("reviewer cannot be same as auditor")
+		return newDomainErr(errReviewReviewerSameAsAuditor)
 	}
 	v.isReviewed = true
 	v.reviewer = reviewer
@@ -29,10 +20,13 @@ func (v *Voucher) Review(reviewer string) error {
 
 func (v *Voucher) CancelReview(reviewer string) error {
 	if !v.IsReviewed() {
-		return ErrVoucherNotReviewed
+		return newDomainErr(errCancelReviewNotReviewed)
 	}
 	if v.Reviewer() != reviewer {
-		return ErrDifferentReviewerCancel
+		return newDomainErr(errCancelReviewDifferentReviewer)
+	}
+	if v.IsPosted() {
+		return newDomainErr(errCancelReviewPosted)
 	}
 	v.isReviewed = false
 	v.reviewer = ""

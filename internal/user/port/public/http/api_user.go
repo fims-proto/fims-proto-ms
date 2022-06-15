@@ -35,7 +35,7 @@ func NewHandler(app *app.Application) Handler {
 func (h Handler) ReadUserById(c *gin.Context) {
 	user, err := h.app.Queries.ReadUsers.HandleReadById(c, uuid.MustParse(c.Param("userId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	if user.Id == uuid.Nil {
@@ -60,12 +60,12 @@ func (h Handler) ReadUserById(c *gin.Context) {
 func (h Handler) UpdateUser(c *gin.Context) {
 	var req UpdateUserRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	var traits json.RawMessage
 	if err := traits.UnmarshalJSON([]byte(req.Traits)); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.UpdateUserCmd{
@@ -73,24 +73,10 @@ func (h Handler) UpdateUser(c *gin.Context) {
 		Traits: traits,
 	}
 	if err := h.app.Commands.UpdateUser.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func wrapErr(e error) Error {
-	var slug string
-	se, ok := e.(slugErr)
-	if ok {
-		slug = se.Slug()
-	} else {
-		slug = "unknown-error"
-	}
-	return Error{
-		Slug:    slug,
-		Message: e.Error(),
-	}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

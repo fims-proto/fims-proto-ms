@@ -33,7 +33,7 @@ func NewHandler(app *app.Application) Handler {
 func (h Handler) ReadAllSobs(c *gin.Context) {
 	sobs, err := h.app.Queries.ReadSobs.HandleReadAll(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	resp := make([]SobResponse, len(sobs))
@@ -57,7 +57,7 @@ func (h Handler) ReadAllSobs(c *gin.Context) {
 func (h Handler) ReadSobById(c *gin.Context) {
 	sob, err := h.app.Queries.ReadSobs.HandleReadById(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	if sob.Id == uuid.Nil {
@@ -81,17 +81,17 @@ func (h Handler) ReadSobById(c *gin.Context) {
 func (h Handler) CreateSob(c *gin.Context) {
 	var req CreateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	createdId, err := h.app.Commands.CreateSob.Handle(c, req.mapToCommand())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	createdSob, err := h.app.Queries.ReadSobs.HandleReadById(c, createdId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusCreated, mapFromSobQuery(createdSob))
@@ -112,7 +112,7 @@ func (h Handler) CreateSob(c *gin.Context) {
 func (h Handler) UpdateSob(c *gin.Context) {
 	var req UpdateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.UpdateSobCmd{
@@ -121,24 +121,10 @@ func (h Handler) UpdateSob(c *gin.Context) {
 		AccountsCodeLength: req.AccountsCodeLength,
 	}
 	if err := h.app.Commands.UpdateSob.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func wrapErr(e error) Error {
-	var slug string
-	se, ok := e.(slugErr)
-	if ok {
-		slug = se.Slug()
-	} else {
-		slug = "unknown-error"
-	}
-	return Error{
-		Slug:    slug,
-		Message: e.Error(),
-	}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

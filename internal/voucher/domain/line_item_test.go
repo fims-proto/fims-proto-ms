@@ -47,28 +47,28 @@ func TestDomain_NewLineItem(t *testing.T) {
 			"debit_and_credit_error", "Test Summary", accountId, decimal.RequireFromString("200.00"), decimal.RequireFromString("200.00"),
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
-				assert.Error(t, err)
+				assert.Equal(t, errLineItemDebitCreditCoExist, err.(domainErr).Slug())
 			},
 		},
 		{
 			"empty_debit_credit_error", "Test Summary", accountId, decimal.Zero, decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
-				assert.Error(t, err)
+				assert.Equal(t, errLineItemEmptyDebitCredit, err.(domainErr).Slug())
 			},
 		},
 		{
 			"empty_summary_error", "", accountId, decimal.RequireFromString("200.00"), decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
-				assert.Error(t, err)
+				assert.Equal(t, errLineItemEmptySummary, err.(domainErr).Slug())
 			},
 		},
 		{
 			"nil_account_id_error", "Test Summary", uuid.Nil, decimal.RequireFromString("200.00"), decimal.Zero,
 			func(t *testing.T, lineItem *LineItem, err error) {
 				require.Nil(t, lineItem)
-				assert.Error(t, err)
+				assert.Equal(t, errLineItemEmptyAccountId, err.(domainErr).Slug())
 			},
 		},
 	}

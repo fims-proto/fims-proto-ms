@@ -1,130 +1,220 @@
 package domain
 
 import (
+	"fmt"
 	"testing"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-func TestDomain_VoucherReview(t *testing.T) {
-	t.Parallel()
+func TestVoucher_Review(t *testing.T) {
+	type fields struct {
+		creator    string
+		auditor    string
+		reviewer   string
+		isAudited  bool
+		isReviewed bool
+		isPosted   bool
+	}
+	type args struct {
+		reviewer string
+	}
 	tests := []struct {
-		name        string
-		doReview    bool // true - review, false - cancel review
-		constructor func(t *testing.T) *Voucher
-		reviewer    string
-		verify      func(t *testing.T, v Voucher, err error)
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
-			"review_success",
-			true,
-			func(t *testing.T) *Voucher {
-				return createVoucherForReviewTest(t, "")
+			name: "normal_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "",
+				isAudited:  false,
+				isReviewed: false,
+				isPosted:   false,
 			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				require.NoError(t, err)
-				assert.Equal(t, "aud1_uuid", v.Reviewer())
-			},
-		},
-		{
-			"review_sameAsCreator_error",
-			true,
-			func(t *testing.T) *Voucher {
-				v := createVoucherForReviewTest(t, "")
-				v.creator = "aud1_uuid"
-				return v
-			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Error(t, err)
+			args: args{reviewer: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
 			},
 		},
 		{
-			"review_sameAsAuditor_error",
-			true,
-			func(t *testing.T) *Voucher {
-				v := createVoucherForReviewTest(t, "")
-				v.auditor = "aud1_uuid"
-				return v
+			name: "emptyReviewer_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "",
+				isAudited:  false,
+				isReviewed: false,
+				isPosted:   false,
 			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Error(t, err)
-			},
-		},
-		{
-			"review_repeat_review_error",
-			true,
-			func(t *testing.T) *Voucher {
-				return createVoucherForReviewTest(t, "aud1_uuid")
-			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Equal(t, ErrVoucherAlreadyReviewed, err)
+			args: args{reviewer: ""},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errReviewEmptyReviewer, err.(domainErr).Slug())
+				return true
 			},
 		},
 		{
-			"review_cancel_review_success",
-			false,
-			func(t *testing.T) *Voucher {
-				return createVoucherForReviewTest(t, "aud1_uuid")
+			name: "repeatReview_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "user-b",
+				isAudited:  false,
+				isReviewed: true,
+				isPosted:   false,
 			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				require.NoError(t, err)
-				assert.Equal(t, "", v.Reviewer())
-				assert.False(t, v.IsReviewed())
-			},
-		},
-		{
-			"review_cancel_review_not_reviewed_error",
-			false,
-			func(t *testing.T) *Voucher {
-				return createVoucherForReviewTest(t, "")
-			},
-			"aud1_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Equal(t, ErrVoucherNotReviewed, err)
+			args: args{reviewer: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errReviewRepeatReview, err.(domainErr).Slug())
+				return true
 			},
 		},
 		{
-			"review_cancel_review_different_reviewer_error",
-			false,
-			func(t *testing.T) *Voucher {
-				return createVoucherForReviewTest(t, "aud1_uuid")
+			name: "reviewerSameAsCreator_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "",
+				isAudited:  false,
+				isReviewed: false,
+				isPosted:   false,
 			},
-			"aud2_uuid",
-			func(t *testing.T, v Voucher, err error) {
-				assert.Equal(t, ErrDifferentReviewerCancel, err)
+			args: args{reviewer: "user-a"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errReviewReviewerSameAsCreator, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "reviewerSameAsCreator_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "user-b",
+				reviewer:   "",
+				isAudited:  true,
+				isReviewed: false,
+				isPosted:   false,
+			},
+			args: args{reviewer: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errReviewReviewerSameAsAuditor, err.(domainErr).Slug())
+				return true
 			},
 		},
 	}
-	for _, test := range tests {
-		test := test
-		t.Run(test.name, func(t *testing.T) {
-			t.Parallel()
-			voucher := test.constructor(t)
-			var err error
-			if test.doReview {
-				err = voucher.Review(test.reviewer)
-			} else {
-				err = voucher.CancelReview(test.reviewer)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Voucher{
+				creator:    tt.fields.creator,
+				reviewer:   tt.fields.reviewer,
+				isReviewed: tt.fields.isReviewed,
+				auditor:    tt.fields.auditor,
+				isAudited:  tt.fields.isAudited,
+				isPosted:   tt.fields.isPosted,
 			}
-			test.verify(t, *voucher, err)
+			tt.wantErr(t, v.Review(tt.args.reviewer), fmt.Sprintf("Review(%v)", tt.args.reviewer))
 		})
 	}
 }
 
-func createVoucherForReviewTest(t *testing.T, reviewer string) *Voucher {
-	voucher, err := NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false, time.Now())
-	require.NoError(t, err)
-	if reviewer != "" {
-		err := voucher.Review(reviewer)
-		require.NoError(t, err)
+func TestVoucher_CancelReview(t *testing.T) {
+	type fields struct {
+		creator    string
+		auditor    string
+		reviewer   string
+		isAudited  bool
+		isReviewed bool
+		isPosted   bool
 	}
-	return voucher
+	type args struct {
+		reviewer string
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr assert.ErrorAssertionFunc
+	}{
+		{
+			name: "normal_success",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "user-b",
+				isAudited:  false,
+				isReviewed: true,
+				isPosted:   false,
+			},
+			args: args{reviewer: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.NoError(t, err)
+				return false
+			},
+		},
+		{
+			name: "notReviewed_error",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "",
+				isAudited:  false,
+				isReviewed: false,
+				isPosted:   false,
+			},
+			args: args{reviewer: "user-b"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errCancelReviewNotReviewed, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "differentReviewer_error",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "",
+				reviewer:   "user-b",
+				isAudited:  false,
+				isReviewed: true,
+				isPosted:   false,
+			},
+			args: args{reviewer: "user-c"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errCancelReviewDifferentReviewer, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
+			name: "alreadyPosted_error",
+			fields: fields{
+				creator:    "user-a",
+				auditor:    "user-b",
+				reviewer:   "user-c",
+				isAudited:  true,
+				isReviewed: true,
+				isPosted:   true,
+			},
+			args: args{reviewer: "user-c"},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errCancelReviewPosted, err.(domainErr).Slug())
+				return true
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			v := &Voucher{
+				creator:    tt.fields.creator,
+				reviewer:   tt.fields.reviewer,
+				isReviewed: tt.fields.isReviewed,
+				auditor:    tt.fields.auditor,
+				isAudited:  tt.fields.isAudited,
+				isPosted:   tt.fields.isPosted,
+			}
+			tt.wantErr(t, v.CancelReview(tt.args.reviewer), fmt.Sprintf("CancelReview(%v)", tt.args.reviewer))
+		})
+	}
 }

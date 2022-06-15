@@ -30,13 +30,13 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 	creator, reviewer, auditor string, isReviewed, isAudited, isPosted bool, transactionTime time.Time,
 ) (*Voucher, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("empty voucher id")
+		return nil, newDomainErr(errVoucherEmptyId)
 	}
 	if sobId == uuid.Nil {
-		return nil, errors.New("empty sobId")
+		return nil, newDomainErr(errVoucherEmptySobId)
 	}
 	if number == "" {
-		return nil, errors.New("empty voucher number")
+		return nil, newDomainErr(errVoucherEmptyNumber)
 	}
 
 	vt, err := NewVoucherTypeFromString(voucherType)
@@ -45,19 +45,19 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 	}
 
 	if creator == "" {
-		return nil, errors.New("empty creator")
+		return nil, newDomainErr(errVoucherEmptyCreator)
 	}
 
 	if isReviewed && reviewer == "" {
-		return nil, errors.New("empty reviewer")
+		return nil, newDomainErr(errVoucherEmptyReviewer)
 	}
 
 	if isAudited && auditor == "" {
-		return nil, errors.New("empty auditor")
+		return nil, newDomainErr(errVoucherEmptyAuditor)
 	}
 
 	if isPosted && (!isReviewed || !isAudited) {
-		return nil, errors.New("invalid posted status")
+		return nil, newDomainErr(errVoucherInvalidPostStatus)
 	}
 
 	totalVal, err := sumItems(items)
@@ -66,7 +66,7 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 	}
 
 	if transactionTime.IsZero() {
-		return nil, errors.New("zero transaction time")
+		return nil, newDomainErr(errVoucherZeroTransactionTime)
 	}
 
 	return &Voucher{
@@ -90,7 +90,7 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 
 func sumItems(items []*LineItem) (decimal.Decimal, error) {
 	if len(items) == 0 {
-		return decimal.Decimal{}, errors.New("line item cannot be empty")
+		return decimal.Decimal{}, newDomainErr(errVoucherEmptyLineItem)
 	}
 
 	var debitInTotal decimal.Decimal
@@ -101,7 +101,7 @@ func sumItems(items []*LineItem) (decimal.Decimal, error) {
 	}
 
 	if !debitInTotal.Equal(creditInTotal) {
-		return decimal.Decimal{}, errors.New("debit and credit not equal")
+		return decimal.Decimal{}, newDomainErr(errVoucherNotBalanced)
 	}
 	return debitInTotal, nil
 }

@@ -34,7 +34,7 @@ func NewHandler(app *app.Application) Handler {
 func (h Handler) ReadAllVouchers(c *gin.Context) {
 	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	res := make([]VoucherResponse, len(vouchers))
@@ -59,7 +59,7 @@ func (h Handler) ReadAllVouchers(c *gin.Context) {
 func (h Handler) ReadVoucherById(c *gin.Context) {
 	voucher, err := h.app.Queries.ReadVouchers.HandleReadById(c, uuid.MustParse(c.Param("voucherId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	if voucher.Id == uuid.Nil {
@@ -85,7 +85,7 @@ func (h Handler) ReadVoucherById(c *gin.Context) {
 func (h Handler) Audit(c *gin.Context) {
 	var req AuditVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.AuditVoucherCmd{
@@ -93,7 +93,7 @@ func (h Handler) Audit(c *gin.Context) {
 		Auditor:     req.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -115,7 +115,7 @@ func (h Handler) Audit(c *gin.Context) {
 func (h Handler) CancelAudit(c *gin.Context) {
 	var req AuditVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.AuditVoucherCmd{
@@ -123,7 +123,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 		Auditor:     req.Auditor,
 	}
 	if err := h.app.Commands.AuditVoucher.HandleCancel(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -145,7 +145,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 func (h Handler) Review(c *gin.Context) {
 	var req ReviewVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
@@ -153,7 +153,7 @@ func (h Handler) Review(c *gin.Context) {
 		Reviewer:    req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -175,7 +175,7 @@ func (h Handler) Review(c *gin.Context) {
 func (h Handler) CancelReview(c *gin.Context) {
 	var req ReviewVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.ReviewVoucherCmd{
@@ -183,7 +183,7 @@ func (h Handler) CancelReview(c *gin.Context) {
 		Reviewer:    req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewVoucher.HandleCancel(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -205,7 +205,7 @@ func (h Handler) CancelReview(c *gin.Context) {
 func (h Handler) UpdateVoucher(c *gin.Context) {
 	var req UpdateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	var items []command.LineItemCmd
@@ -219,7 +219,7 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 		TransactionTime: req.TransactionTime,
 	}
 	if err := h.app.Commands.UpdateVoucher.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -240,19 +240,19 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 func (h Handler) CreateVoucher(c *gin.Context) {
 	var req CreateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := req.mapToCommand()
 	cmd.SobId = uuid.MustParse(c.Param("sobId"))
 	createdId, err := h.app.Commands.CreateVoucher.Handle(c, cmd)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	createdVoucher, err := h.app.Queries.ReadVouchers.HandleReadById(c, createdId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.JSON(http.StatusCreated, mapFromVoucherQuery(createdVoucher))
@@ -274,24 +274,10 @@ func (h Handler) Post(c *gin.Context) {
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 	}
 	if err := h.app.Commands.PostVoucher.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func wrapErr(e error) Error {
-	var slug string
-	se, ok := e.(slugErr)
-	if ok {
-		slug = se.Slug()
-	} else {
-		slug = "unknown-error"
-	}
-	return Error{
-		Slug:    slug,
-		Message: e.Error(),
-	}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

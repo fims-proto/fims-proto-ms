@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgtype v1.11.0
+	github.com/nicksnyder/go-i18n/v2 v2.2.0
 	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.11.0

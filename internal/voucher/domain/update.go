@@ -2,8 +2,6 @@ package domain
 
 import (
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 func (v *Voucher) UpdateLineItems(items []*LineItem) error {
@@ -12,14 +10,12 @@ func (v *Voucher) UpdateLineItems(items []*LineItem) error {
 		return err
 	}
 	if v.IsAudited() {
-		return ErrVoucherAlreadyAudited
+		return newDomainErr(errUpdateAudited)
 	}
 	if v.IsReviewed() {
-		return ErrVoucherAlreadyReviewed
+		return newDomainErr(errUpdateReviewed)
 	}
-	if v.IsPosted() {
-		return errors.New("voucher already posted")
-	}
+	// no need to check if voucher posted
 
 	v.credit = totalVal
 	v.debit = totalVal
@@ -29,17 +25,15 @@ func (v *Voucher) UpdateLineItems(items []*LineItem) error {
 
 func (v *Voucher) UpdateTransactionTime(transactionTime time.Time) error {
 	if transactionTime.IsZero() {
-		return errors.New("zero transaction time")
+		return newDomainErr(errUpdateZeroTransactionTime)
 	}
 	if v.IsAudited() {
-		return ErrVoucherAlreadyAudited
+		return newDomainErr(errUpdateAudited)
 	}
 	if v.IsReviewed() {
-		return ErrVoucherAlreadyReviewed
+		return newDomainErr(errUpdateReviewed)
 	}
-	if v.IsPosted() {
-		return errors.New("voucher already posted")
-	}
+	// no need to check if voucher posted
 
 	v.transactionTime = transactionTime
 	return nil
