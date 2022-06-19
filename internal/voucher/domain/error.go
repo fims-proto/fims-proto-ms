@@ -15,6 +15,10 @@ func (e domainErr) Slug() string {
 	return e.slug
 }
 
+func (e domainErr) Args() []any {
+	return e.args
+}
+
 func newDomainErr(slug string, args ...any) domainErr {
 	return domainErr{
 		slug: slug,
