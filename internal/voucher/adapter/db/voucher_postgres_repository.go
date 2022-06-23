@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
@@ -76,19 +78,27 @@ func (r VoucherPostgresRepository) UpdateVoucher(ctx context.Context, id uuid.UU
 	return nil
 }
 
-func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sobId uuid.UUID) ([]query.Voucher, error) {
+func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Voucher], error) {
 	db := readDBFromCtx(ctx)
 
 	var dbVouchers []voucher
-	if err := db.Where("sob_id = ?", sobId).Preload("LineItems").Find(&dbVouchers).Error; err != nil {
-		return []query.Voucher{}, errors.Wrap(err, "find vouchers by sob failed")
+
+	db = data.EnrichDb(pageable, db).Where("sob_id = ?", sobId)
+
+	if err := db.Preload("LineItems").Find(&dbVouchers).Error; err != nil {
+		return data.Page[query.Voucher]{}, errors.Wrap(err, "find vouchers by sob failed")
+	}
+
+	var count int64
+	if err := db.Count(&count).Error; err != nil {
+		return data.Page[query.Voucher]{}, errors.Wrap(err, "count vouchers failed")
 	}
 
 	var qvs []query.Voucher
 	for _, dbVoucher := range dbVouchers {
 		qvs = append(qvs, unmarshallToQuery(&dbVoucher))
 	}
-	return qvs, nil
+	return data.NewPage(qvs, pageable.Page(), pageable.Size(), int(count))
 }
 
 func (r VoucherPostgresRepository) ReadById(ctx context.Context, uuid uuid.UUID) (query.Voucher, error) {

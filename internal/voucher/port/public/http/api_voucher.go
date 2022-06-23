@@ -3,6 +3,8 @@ package http
 import (
 	"net/http"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/voucher/app"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 
@@ -28,19 +30,30 @@ func NewHandler(app *app.Application) Handler {
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
+// @Param $page query int false "page number" default(1)
+// @Param $size query int false "page size" default(40)
+// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
+// @Param $choose query string false "choose only field(s)"
+// @Param $filter query string false "filter on field(s)"
 // @Success 200 {array} VoucherResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/vouchers/ [get]
 func (h Handler) ReadAllVouchers(c *gin.Context) {
-	vouchers, err := h.app.Queries.ReadVouchers.HandleReadAll(c, uuid.MustParse(c.Param("sobId")))
+	pageable, err := data.NewPageable(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	page, err := h.app.Queries.ReadVouchers.HandleReadAll(c, uuid.MustParse(c.Param("sobId")), pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	res := make([]VoucherResponse, len(vouchers))
-	for i, voucher := range vouchers {
-		res[i] = mapFromVoucherQuery(voucher)
+	vouchers := make([]VoucherResponse, len(page.Content))
+	for i, voucher := range page.Content {
+		vouchers[i] = mapFromVoucherQuery(voucher)
 	}
+	res, _ := data.NewPage(vouchers, page.Page, page.Size, page.NumberOfElements)
 	c.JSON(http.StatusOK, res)
 }
 

@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -22,7 +24,7 @@ func toKeySlice[K comparable, V interface{}](set map[K]V) []K {
 }
 
 type VouchersReadModel interface {
-	ReadAllVouchers(ctx context.Context, sobId uuid.UUID) ([]Voucher, error)
+	ReadAllVouchers(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Voucher], error)
 	ReadById(ctx context.Context, id uuid.UUID) (Voucher, error)
 }
 
@@ -44,18 +46,18 @@ func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountS
 	}
 }
 
-func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID) ([]Voucher, error) {
-	vouchers, err := h.readModel.ReadAllVouchers(ctx, sobId)
+func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Voucher], error) {
+	vouchersPage, err := h.readModel.ReadAllVouchers(ctx, sobId, pageable)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read all vouchers")
+		return data.Page[Voucher]{}, errors.Wrap(err, "failed to read all vouchers")
 	}
 
-	vouchers, err = h.populateLineItemAccountNumber(ctx, vouchers)
+	vouchers, err := h.populateLineItemAccountNumber(ctx, vouchersPage.Content)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to populate account number in vouchers")
+		return data.Page[Voucher]{}, errors.Wrap(err, "failed to populate account number in vouchers")
 	}
 
-	return vouchers, nil
+	return data.NewPage(vouchers, vouchersPage.Page, vouchersPage.Size, vouchersPage.NumberOfElements)
 }
 
 func (h ReadVouchersHandler) HandleReadById(ctx context.Context, id uuid.UUID) (Voucher, error) {

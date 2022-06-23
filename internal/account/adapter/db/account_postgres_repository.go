@@ -71,9 +71,9 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 
 	var dbAccounts []account
 
-	db = data.EnrichDb(pageable, db)
+	db = data.EnrichDb(pageable, db).Where("sob_id = ?", sobId)
 
-	if err := db.Where("sob_id = ?", sobId).Find(&dbAccounts).Error; err != nil {
+	if err := db.Find(&dbAccounts).Error; err != nil {
 		return data.Page[query.Account]{}, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
 	}
 
