@@ -11,7 +11,7 @@ import (
 
 type AuditVoucherCmd struct {
 	VoucherUUID uuid.UUID
-	Auditor     string
+	Auditor     uuid.UUID
 }
 
 type AuditVoucherHandler struct {

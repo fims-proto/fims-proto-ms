@@ -1,6 +1,7 @@
 package query
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/shopspring/decimal"
@@ -17,6 +18,11 @@ type LineItem struct {
 	Credit        decimal.Decimal
 }
 
+type User struct {
+	Id     uuid.UUID
+	Traits json.RawMessage
+}
+
 type Voucher struct {
 	Id                 uuid.UUID
 	SobId              uuid.UUID
@@ -26,10 +32,10 @@ type Voucher struct {
 	LineItems          []LineItem
 	Debit              decimal.Decimal
 	Credit             decimal.Decimal
-	Creator            string
-	Reviewer           string
+	Creator            User
+	Reviewer           User
 	IsReviewed         bool
-	Auditor            string
+	Auditor            User
 	IsAudited          bool
 	IsPosted           bool
 	TransactionTime    time.Time

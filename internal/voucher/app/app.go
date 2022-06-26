@@ -32,12 +32,13 @@ func (a *Application) Inject(
 	readModel query.VouchersReadModel,
 	repo domain.Repository,
 	accountQueryService query.AccountService,
+	userQueryService query.UserService,
 	accountService command.AccountService,
 	ledgerService command.LedgerService,
 	counterService command.CounterService,
 ) {
 	a.Queries = Queries{
-		ReadVouchers: query.NewReadVouchersHandler(readModel, accountQueryService),
+		ReadVouchers: query.NewReadVouchersHandler(readModel, accountQueryService, userQueryService),
 	}
 	a.Commands = Commands{
 		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, counterService),

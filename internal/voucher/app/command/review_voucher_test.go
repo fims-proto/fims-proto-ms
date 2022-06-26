@@ -18,23 +18,23 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 		name        string
 		cancel      bool
 		constructor func(t *testing.T) *domain.Voucher
-		reviewer    string
+		reviewer    uuid.UUID
 	}{
 		{
 			name:   "review_success",
 			cancel: false,
 			constructor: func(t *testing.T) *domain.Voucher {
-				return createVoucherForReviewTest(t, "")
+				return createVoucherForReviewTest(t, uuid.Nil)
 			},
-			reviewer: "reviewer1",
+			reviewer: userA,
 		},
 		{
 			name:   "cancel_review_success",
 			cancel: true,
 			constructor: func(t *testing.T) *domain.Voucher {
-				return createVoucherForReviewTest(t, "reviewer1")
+				return createVoucherForReviewTest(t, userA)
 			},
-			reviewer: "reviewer1",
+			reviewer: userA,
 		},
 	}
 	for _, test := range tests {
@@ -69,10 +69,10 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 	}
 }
 
-func createVoucherForReviewTest(t *testing.T, reviewer string) *domain.Voucher {
-	v, err := domain.NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false, time.Now())
+func createVoucherForReviewTest(t *testing.T, reviewer uuid.UUID) *domain.Voucher {
+	v, err := domain.NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), uuid.New(), uuid.Nil, uuid.Nil, false, false, false, time.Now())
 	require.NoError(t, err)
-	if reviewer != "" {
+	if reviewer != uuid.Nil {
 		err := v.Review(reviewer)
 		require.NoError(t, err)
 	}

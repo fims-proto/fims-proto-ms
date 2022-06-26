@@ -27,7 +27,7 @@ func (r CreateVoucherRequest) mapToCommand() command.CreateVoucherCmd {
 		VoucherType:        r.VoucherType,
 		AttachmentQuantity: uint(r.AttachmentQuantity),
 		LineItems:          itemCmd,
-		Creator:            r.Creator,
+		Creator:            uuid.MustParse(r.Creator),
 		TransactionTime:    r.TransactionTime,
 	}
 }
@@ -57,14 +57,23 @@ func mapFromVoucherQuery(q query.Voucher) VoucherResponse {
 		LineItems:          itemRes,
 		Debit:              q.Debit,
 		Credit:             q.Credit,
-		Creator:            q.Creator,
-		Reviewer:           q.Reviewer,
-		Auditor:            q.Auditor,
-		IsReviewed:         q.IsReviewed,
-		IsAudited:          q.IsAudited,
-		IsPosted:           q.IsPosted,
-		TransactionTime:    q.TransactionTime,
-		CreatedAt:          q.CreatedAt,
-		UpdatedAt:          q.UpdatedAt,
+		Creator: UserResponse{
+			Id:     q.Creator.Id.String(),
+			Traits: q.Creator.Traits,
+		},
+		Reviewer: UserResponse{
+			Id:     q.Reviewer.Id.String(),
+			Traits: q.Reviewer.Traits,
+		},
+		Auditor: UserResponse{
+			Id:     q.Auditor.Id.String(),
+			Traits: q.Auditor.Traits,
+		},
+		IsReviewed:      q.IsReviewed,
+		IsAudited:       q.IsAudited,
+		IsPosted:        q.IsPosted,
+		TransactionTime: q.TransactionTime,
+		CreatedAt:       q.CreatedAt,
+		UpdatedAt:       q.UpdatedAt,
 	}
 }

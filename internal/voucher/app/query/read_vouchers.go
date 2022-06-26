@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 
+	userQuery "github/fims-proto/fims-proto-ms/internal/user/app/query"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github.com/google/uuid"
@@ -31,18 +33,23 @@ type VouchersReadModel interface {
 type ReadVouchersHandler struct {
 	readModel      VouchersReadModel
 	accountService AccountService
+	userService    UserService
 }
 
-func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountService) ReadVouchersHandler {
+func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountService, userService UserService) ReadVouchersHandler {
 	if readModel == nil {
 		panic("nil readModel")
 	}
 	if accountService == nil {
 		panic("nil account service")
 	}
+	if userService == nil {
+		panic("nil user service")
+	}
 	return ReadVouchersHandler{
 		readModel:      readModel,
 		accountService: accountService,
+		userService:    userService,
 	}
 }
 
@@ -52,9 +59,14 @@ func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID,
 		return data.Page[Voucher]{}, errors.Wrap(err, "failed to read all vouchers")
 	}
 
-	vouchers, err := h.populateLineItemAccountNumber(ctx, vouchersPage.Content)
+	vouchers, err := h.enrichLineItemAccountNumber(ctx, vouchersPage.Content)
 	if err != nil {
-		return data.Page[Voucher]{}, errors.Wrap(err, "failed to populate account number in vouchers")
+		return data.Page[Voucher]{}, errors.Wrap(err, "failed to enrich account number in vouchers")
+	}
+
+	vouchers, err = h.enrichUserName(ctx, vouchers)
+	if err != nil {
+		return data.Page[Voucher]{}, errors.Wrap(err, "failed to enrich user in vouchers")
 	}
 
 	return data.NewPage(vouchers, vouchersPage.Page, vouchersPage.Size, vouchersPage.NumberOfElements)
@@ -66,15 +78,20 @@ func (h ReadVouchersHandler) HandleReadById(ctx context.Context, id uuid.UUID) (
 		return Voucher{}, errors.Wrap(err, "failed to read voucher")
 	}
 
-	singletonList, err := h.populateLineItemAccountNumber(ctx, []Voucher{voucher})
+	singletonList, err := h.enrichLineItemAccountNumber(ctx, []Voucher{voucher})
 	if err != nil {
-		return Voucher{}, errors.Wrap(err, "failed to populate account number in voucher")
+		return Voucher{}, errors.Wrap(err, "failed to enrich account number in voucher")
+	}
+
+	singletonList, err = h.enrichUserName(ctx, singletonList)
+	if err != nil {
+		return Voucher{}, errors.Wrap(err, "failed to enrich user in voucher")
 	}
 
 	return singletonList[0], nil
 }
 
-func (h ReadVouchersHandler) populateLineItemAccountNumber(ctx context.Context, vouchers []Voucher) ([]Voucher, error) {
+func (h ReadVouchersHandler) enrichLineItemAccountNumber(ctx context.Context, vouchers []Voucher) ([]Voucher, error) {
 	accountSet := make(map[uuid.UUID]void)
 	for _, voucher := range vouchers {
 		for _, item := range voucher.LineItems {
@@ -98,4 +115,45 @@ func (h ReadVouchersHandler) populateLineItemAccountNumber(ctx context.Context, 
 	}
 
 	return vouchers, nil
+}
+
+func (h ReadVouchersHandler) enrichUserName(ctx context.Context, vouchers []Voucher) ([]Voucher, error) {
+	userSet := make(map[uuid.UUID]void)
+	for _, voucher := range vouchers {
+		if voucher.Creator.Id != uuid.Nil {
+			userSet[voucher.Creator.Id] = empty
+		}
+		if voucher.Reviewer.Id != uuid.Nil {
+			userSet[voucher.Reviewer.Id] = empty
+		}
+		if voucher.Auditor.Id != uuid.Nil {
+			userSet[voucher.Auditor.Id] = empty
+		}
+	}
+
+	users, err := h.userService.ReadUserByIds(ctx, toKeySlice[uuid.UUID, void](userSet))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read users by Ids")
+	}
+
+	for i := range vouchers {
+		if vouchers[i].Creator.Id != uuid.Nil {
+			vouchers[i].Creator = convertUser(vouchers[i].Creator, users)
+		}
+		if vouchers[i].Reviewer.Id != uuid.Nil {
+			vouchers[i].Reviewer = convertUser(vouchers[i].Reviewer, users)
+		}
+		if vouchers[i].Auditor.Id != uuid.Nil {
+			vouchers[i].Auditor = convertUser(vouchers[i].Auditor, users)
+		}
+	}
+
+	return vouchers, nil
+}
+
+func convertUser(user User, users map[uuid.UUID]userQuery.User) User {
+	return User{
+		Id:     user.Id,
+		Traits: users[user.Id].Traits,
+	}
 }

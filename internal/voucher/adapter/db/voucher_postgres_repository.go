@@ -83,15 +83,17 @@ func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sobId uu
 
 	var dbVouchers []voucher
 
-	db = data.EnrichDb(pageable, db).Where("sob_id = ?", sobId)
+	db = data.AddFilter(pageable, db).Where("sob_id = ?", sobId)
+
+	var count int64
+	if err := db.Model(&voucher{}).Count(&count).Error; err != nil {
+		return data.Page[query.Voucher]{}, errors.Wrap(err, "count vouchers failed")
+	}
+
+	db = data.AddPaging(pageable, db)
 
 	if err := db.Preload("LineItems").Find(&dbVouchers).Error; err != nil {
 		return data.Page[query.Voucher]{}, errors.Wrap(err, "find vouchers by sob failed")
-	}
-
-	var count int64
-	if err := db.Count(&count).Error; err != nil {
-		return data.Page[query.Voucher]{}, errors.Wrap(err, "count vouchers failed")
 	}
 
 	var qvs []query.Voucher

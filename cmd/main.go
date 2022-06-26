@@ -30,6 +30,7 @@ import (
 	userAdapter "github/fims-proto/fims-proto-ms/internal/user/adapter/db"
 	userApp "github/fims-proto/fims-proto-ms/internal/user/app"
 	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
+	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
 	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
 
 	ledgerAccountAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
@@ -55,6 +56,7 @@ import (
 	voucherCounterAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
 	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
 	voucherLedgerAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/ledger"
+	voucherUserAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/user"
 	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
 	voucherPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
 	voucherPublicHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
@@ -116,6 +118,7 @@ func main() {
 	accountInterface := accountIntraPort.NewAccountInterface(&accountApplication)
 	ledgerInterface := ledgerIntraPort.NewLedgerInterface(&ledgerApplication)
 	counterInterface := counterIntraPort.NewCounterInterface(&counterApplication)
+	userInterface := userIntraPort.NewUserInterface(&userApplication)
 
 	// application dependencies injection
 	accountServiceForSob := sobAccountAdapter.NewIntraProcessAdapter(accountInterface)
@@ -137,10 +140,12 @@ func main() {
 	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
 	ledgerServiceForVoucher := voucherLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
 	counterServiceForVoucher := voucherCounterAdapter.NewIntraProcessAdapter(counterInterface)
+	userServiceForVoucher := voucherUserAdapter.NewIntraProcessAdapter(userInterface)
 	voucherApplication.Inject(
 		voucherRepository,
 		voucherRepository,
 		accountServiceForVoucher,
+		userServiceForVoucher,
 		accountServiceForVoucher,
 		ledgerServiceForVoucher,
 		counterServiceForVoucher,

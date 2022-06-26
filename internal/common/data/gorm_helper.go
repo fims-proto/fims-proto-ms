@@ -7,10 +7,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func EnrichDb(pageable Pageable, db *gorm.DB) *gorm.DB {
-	// page
-	db = db.Offset(pageable.Offset()).Limit(pageable.Size())
-
+func AddFilter(pageable Pageable, db *gorm.DB) *gorm.DB {
 	// sort
 	if pageable.Sorts() != nil {
 		var orderStr []string
@@ -65,4 +62,9 @@ func EnrichDb(pageable Pageable, db *gorm.DB) *gorm.DB {
 	}
 
 	return db
+}
+
+func AddPaging(pageable Pageable, db *gorm.DB) *gorm.DB {
+	// page
+	return db.Offset(pageable.Offset()).Limit(pageable.Size())
 }

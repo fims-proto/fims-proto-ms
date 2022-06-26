@@ -41,6 +41,30 @@ func (r UserPostgresRepository) ReadById(ctx context.Context, id uuid.UUID) (que
 	return queryUser, nil
 }
 
+func (r UserPostgresRepository) ReadByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]query.User, error) {
+	db := readDBFromCtx(ctx)
+
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	var dbUsers []user
+	if err := db.Where("id IN ?", ids).Find(&dbUsers).Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to read ids")
+	}
+
+	queryUsers := make(map[uuid.UUID]query.User)
+	for _, dbUser := range dbUsers {
+		queryUser, err := unmarshallToQuery(&dbUser)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshall user")
+		}
+		queryUsers[dbUser.Id] = queryUser
+	}
+
+	return queryUsers, nil
+}
+
 func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, updateFn func(*domain.User) (*domain.User, error)) error {
 	db := readDBFromCtx(ctx)
 

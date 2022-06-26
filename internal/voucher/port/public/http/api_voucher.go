@@ -103,7 +103,7 @@ func (h Handler) Audit(c *gin.Context) {
 	}
 	cmd := command.AuditVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
-		Auditor:     req.Auditor,
+		Auditor:     uuid.MustParse(req.Auditor),
 	}
 	if err := h.app.Commands.AuditVoucher.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
@@ -133,7 +133,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 	}
 	cmd := command.AuditVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
-		Auditor:     req.Auditor,
+		Auditor:     uuid.MustParse(req.Auditor),
 	}
 	if err := h.app.Commands.AuditVoucher.HandleCancel(c, cmd); err != nil {
 		_ = c.Error(err)
@@ -163,7 +163,7 @@ func (h Handler) Review(c *gin.Context) {
 	}
 	cmd := command.ReviewVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
-		Reviewer:    req.Reviewer,
+		Reviewer:    uuid.MustParse(req.Reviewer),
 	}
 	if err := h.app.Commands.ReviewVoucher.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
@@ -193,7 +193,7 @@ func (h Handler) CancelReview(c *gin.Context) {
 	}
 	cmd := command.ReviewVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
-		Reviewer:    req.Reviewer,
+		Reviewer:    uuid.MustParse(req.Reviewer),
 	}
 	if err := h.app.Commands.ReviewVoucher.HandleCancel(c, cmd); err != nil {
 		_ = c.Error(err)

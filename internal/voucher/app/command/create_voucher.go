@@ -16,7 +16,7 @@ type CreateVoucherCmd struct {
 	VoucherType        string
 	AttachmentQuantity uint
 	LineItems          []LineItemCmd
-	Creator            string
+	Creator            uuid.UUID
 	TransactionTime    time.Time
 }
 
@@ -96,11 +96,11 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 		cmd.AttachmentQuantity,
 		lineItems,
 		cmd.Creator,
-		"",    // no reviewer
-		"",    // no auditor
-		false, // not reviewed yet
-		false, // not audited yet
-		false, // not posted yet
+		uuid.Nil, // no reviewer
+		uuid.Nil, // no auditor
+		false,    // not reviewed yet
+		false,    // not audited yet
+		false,    // not posted yet
 		cmd.TransactionTime,
 	)
 	if err != nil {

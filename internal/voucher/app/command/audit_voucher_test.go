@@ -12,29 +12,31 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var userA = uuid.New()
+
 func TestApp_HandleAuditVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
 		name        string
 		cancel      bool
 		constructor func(t *testing.T) *domain.Voucher
-		auditor     string
+		auditor     uuid.UUID
 	}{
 		{
 			"audit_success",
 			false,
 			func(t *testing.T) *domain.Voucher {
-				return createVoucherForAuditTest(t, "")
+				return createVoucherForAuditTest(t, uuid.Nil)
 			},
-			"auditor1",
+			userA,
 		},
 		{
 			"cancel_audit_success",
 			true,
 			func(t *testing.T) *domain.Voucher {
-				return createVoucherForAuditTest(t, "auditor1")
+				return createVoucherForAuditTest(t, userA)
 			},
-			"auditor1",
+			userA,
 		},
 	}
 	for _, test := range tests {
@@ -69,10 +71,10 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 	}
 }
 
-func createVoucherForAuditTest(t *testing.T, auditor string) *domain.Voucher {
-	v, err := domain.NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), "creator", "", "", false, false, false, time.Now())
+func createVoucherForAuditTest(t *testing.T, auditor uuid.UUID) *domain.Voucher {
+	v, err := domain.NewVoucher(uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), uuid.New(), uuid.Nil, uuid.Nil, false, false, false, time.Now())
 	require.NoError(t, err)
-	if auditor != "" {
+	if auditor != uuid.Nil {
 		err := v.Audit(auditor)
 		require.NoError(t, err)
 	}

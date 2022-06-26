@@ -52,7 +52,7 @@ func TestApp_HandleCreateVoucherHandler(t *testing.T) {
 			assertions.Len(v.LineItems(), 2)
 			assertions.Equal(d100, v.Credit())
 			assertions.Equal(d100, v.Debit())
-			assertions.Equal("0000", v.Creator())
+			assertions.Equal(userA, v.Creator())
 			assertions.True(accServiceMock.invoked)
 		})
 	}
@@ -78,7 +78,7 @@ func createVoucherCmd() *CreateVoucherCmd {
 		VoucherType:        "GENERAL_VOUCHER",
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
-		Creator:            "0000",
+		Creator:            userA,
 		TransactionTime:    time.Now(),
 	}
 }

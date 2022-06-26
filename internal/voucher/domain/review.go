@@ -1,16 +1,18 @@
 package domain
 
-func (v *Voucher) Review(reviewer string) error {
+import "github.com/google/uuid"
+
+func (v *Voucher) Review(reviewer uuid.UUID) error {
 	if v.IsReviewed() {
 		return newDomainErr(errReviewRepeatReview)
 	}
-	if reviewer == "" {
+	if reviewer == uuid.Nil {
 		return newDomainErr(errReviewEmptyReviewer)
 	}
 	if reviewer == v.creator {
 		return newDomainErr(errReviewReviewerSameAsCreator)
 	}
-	if v.auditor != "" && reviewer == v.auditor {
+	if v.auditor != uuid.Nil && reviewer == v.auditor {
 		return newDomainErr(errReviewReviewerSameAsAuditor)
 	}
 	v.isReviewed = true
@@ -18,7 +20,7 @@ func (v *Voucher) Review(reviewer string) error {
 	return nil
 }
 
-func (v *Voucher) CancelReview(reviewer string) error {
+func (v *Voucher) CancelReview(reviewer uuid.UUID) error {
 	if !v.IsReviewed() {
 		return newDomainErr(errCancelReviewNotReviewed)
 	}
@@ -29,6 +31,6 @@ func (v *Voucher) CancelReview(reviewer string) error {
 		return newDomainErr(errCancelReviewPosted)
 	}
 	v.isReviewed = false
-	v.reviewer = ""
+	v.reviewer = uuid.Nil
 	return nil
 }

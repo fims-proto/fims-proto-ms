@@ -71,15 +71,17 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 
 	var dbAccounts []account
 
-	db = data.EnrichDb(pageable, db).Where("sob_id = ?", sobId)
+	db = data.AddFilter(pageable, db).Where("sob_id = ?", sobId)
+
+	var count int64
+	if err := db.Model(&account{}).Count(&count).Error; err != nil {
+		return data.Page[query.Account]{}, errors.Wrap(err, "count accounts failed")
+	}
+
+	db = data.AddPaging(pageable, db)
 
 	if err := db.Find(&dbAccounts).Error; err != nil {
 		return data.Page[query.Account]{}, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
-	}
-
-	var count int64
-	if err := db.Count(&count).Error; err != nil {
-		return data.Page[query.Account]{}, errors.Wrap(err, "count accounts failed")
 	}
 
 	var queryAccounts []query.Account

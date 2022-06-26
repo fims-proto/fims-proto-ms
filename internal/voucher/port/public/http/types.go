@@ -49,20 +49,25 @@ type UpdateVoucherRequest struct {
 	LineItems       []LineItemRequest `json:"lineItems"`
 }
 
+type UserResponse struct {
+	Id     string `json:"id"`
+	Traits any    `json:"traits"`
+}
+
 type VoucherResponse struct {
 	Id                 string             `json:"id"`
 	SobId              string             `json:"sobId"`
 	Number             string             `json:"number"`
 	Type               string             `json:"type"`
 	AttachmentQuantity int                `json:"attachmentQuantity"`
-	Auditor            string             `json:"auditor"`
-	Creator            string             `json:"creator"`
+	Auditor            UserResponse       `json:"auditor"`
+	Creator            UserResponse       `json:"creator"`
+	Reviewer           UserResponse       `json:"reviewer"`
 	Credit             decimal.Decimal    `json:"credit"`
 	Debit              decimal.Decimal    `json:"debit"`
 	IsAudited          bool               `json:"isAudited"`
 	IsPosted           bool               `json:"isPosted"`
 	IsReviewed         bool               `json:"isReviewed"`
-	Reviewer           string             `json:"reviewer"`
 	TransactionTime    time.Time          `json:"transactionTime"`
 	LineItems          []LineItemResponse `json:"lineItems"`
 	CreatedAt          time.Time          `json:"createdAt"`

@@ -50,7 +50,6 @@ func TestApp_HandleUpdateVoucherHandler(t *testing.T) {
 			assertions.Len(v.LineItems(), 2)
 			assertions.Equal(d100, v.Credit())
 			assertions.Equal(d100, v.Debit())
-			assertions.Equal("0000", v.Creator())
 			assertions.True(accServiceMock.invoked)
 		})
 	}
@@ -90,9 +89,9 @@ func (r voucherRepoMock) initTestData() {
 		"1",
 		0,
 		items,
-		"0000",
-		"",
-		"",
+		uuid.New(),
+		uuid.Nil,
+		uuid.Nil,
 		false,
 		false,
 		false,

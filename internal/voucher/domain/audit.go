@@ -1,16 +1,18 @@
 package domain
 
-func (v *Voucher) Audit(auditor string) error {
+import "github.com/google/uuid"
+
+func (v *Voucher) Audit(auditor uuid.UUID) error {
 	if v.IsAudited() {
 		return newDomainErr(errAuditRepeatAudit)
 	}
-	if auditor == "" {
+	if auditor == uuid.Nil {
 		return newDomainErr(errAuditEmptyAuditor)
 	}
 	if auditor == v.creator {
 		return newDomainErr(errAuditAuditorSameAsCreator)
 	}
-	if v.reviewer != "" && auditor == v.reviewer {
+	if v.reviewer != uuid.Nil && auditor == v.reviewer {
 		return newDomainErr(errAuditAuditorSameAsReviewer)
 	}
 	v.isAudited = true
@@ -18,7 +20,7 @@ func (v *Voucher) Audit(auditor string) error {
 	return nil
 }
 
-func (v *Voucher) CancelAudit(auditor string) error {
+func (v *Voucher) CancelAudit(auditor uuid.UUID) error {
 	if !v.IsAudited() {
 		return newDomainErr(errCancelAuditNotAudited)
 	}
@@ -29,6 +31,6 @@ func (v *Voucher) CancelAudit(auditor string) error {
 		return newDomainErr(errCancelAuditPosted)
 	}
 	v.isAudited = false
-	v.auditor = ""
+	v.auditor = uuid.Nil
 	return nil
 }

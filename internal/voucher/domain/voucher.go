@@ -17,17 +17,17 @@ type Voucher struct {
 	lineItems          []*LineItem
 	debit              decimal.Decimal
 	credit             decimal.Decimal
-	creator            string
-	reviewer           string
+	creator            uuid.UUID
+	reviewer           uuid.UUID
 	isReviewed         bool
-	auditor            string
+	auditor            uuid.UUID
 	isAudited          bool
 	isPosted           bool
 	transactionTime    time.Time
 }
 
 func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuantity uint, items []*LineItem,
-	creator, reviewer, auditor string, isReviewed, isAudited, isPosted bool, transactionTime time.Time,
+	creator, reviewer, auditor uuid.UUID, isReviewed, isAudited, isPosted bool, transactionTime time.Time,
 ) (*Voucher, error) {
 	if id == uuid.Nil {
 		return nil, newDomainErr(errVoucherEmptyId)
@@ -44,15 +44,15 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 		return nil, errors.Wrap(err, "invalid voucher type")
 	}
 
-	if creator == "" {
+	if creator == uuid.Nil {
 		return nil, newDomainErr(errVoucherEmptyCreator)
 	}
 
-	if isReviewed && reviewer == "" {
+	if isReviewed && reviewer == uuid.Nil {
 		return nil, newDomainErr(errVoucherEmptyReviewer)
 	}
 
-	if isAudited && auditor == "" {
+	if isAudited && auditor == uuid.Nil {
 		return nil, newDomainErr(errVoucherEmptyAuditor)
 	}
 
@@ -138,15 +138,15 @@ func (v Voucher) Credit() decimal.Decimal {
 	return v.credit
 }
 
-func (v Voucher) Creator() string {
+func (v Voucher) Creator() uuid.UUID {
 	return v.creator
 }
 
-func (v Voucher) Reviewer() string {
+func (v Voucher) Reviewer() uuid.UUID {
 	return v.reviewer
 }
 
-func (v Voucher) Auditor() string {
+func (v Voucher) Auditor() uuid.UUID {
 	return v.auditor
 }
 

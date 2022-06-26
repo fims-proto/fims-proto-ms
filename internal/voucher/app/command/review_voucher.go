@@ -11,7 +11,7 @@ import (
 
 type ReviewVoucherCmd struct {
 	VoucherUUID uuid.UUID
-	Reviewer    string
+	Reviewer    uuid.UUID
 }
 
 type ReviewVoucherHandler struct {

@@ -4,20 +4,22 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/google/uuid"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func TestVoucher_Review(t *testing.T) {
 	type fields struct {
-		creator    string
-		auditor    string
-		reviewer   string
+		creator    uuid.UUID
+		auditor    uuid.UUID
+		reviewer   uuid.UUID
 		isAudited  bool
 		isReviewed bool
 		isPosted   bool
 	}
 	type args struct {
-		reviewer string
+		reviewer uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -28,14 +30,14 @@ func TestVoucher_Review(t *testing.T) {
 		{
 			name: "normal_success",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   uuid.Nil,
 				isAudited:  false,
 				isReviewed: false,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-b"},
+			args: args{reviewer: userB},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.NoError(t, err)
 				return false
@@ -44,14 +46,14 @@ func TestVoucher_Review(t *testing.T) {
 		{
 			name: "emptyReviewer_success",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   uuid.Nil,
 				isAudited:  false,
 				isReviewed: false,
 				isPosted:   false,
 			},
-			args: args{reviewer: ""},
+			args: args{reviewer: uuid.Nil},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errReviewEmptyReviewer, err.(domainErr).Slug())
 				return true
@@ -60,14 +62,14 @@ func TestVoucher_Review(t *testing.T) {
 		{
 			name: "repeatReview_success",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "user-b",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   userB,
 				isAudited:  false,
 				isReviewed: true,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-b"},
+			args: args{reviewer: userB},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errReviewRepeatReview, err.(domainErr).Slug())
 				return true
@@ -76,14 +78,14 @@ func TestVoucher_Review(t *testing.T) {
 		{
 			name: "reviewerSameAsCreator_success",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   uuid.Nil,
 				isAudited:  false,
 				isReviewed: false,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-a"},
+			args: args{reviewer: userA},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errReviewReviewerSameAsCreator, err.(domainErr).Slug())
 				return true
@@ -92,14 +94,14 @@ func TestVoucher_Review(t *testing.T) {
 		{
 			name: "reviewerSameAsCreator_success",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "user-b",
-				reviewer:   "",
+				creator:    userA,
+				auditor:    userB,
+				reviewer:   uuid.Nil,
 				isAudited:  true,
 				isReviewed: false,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-b"},
+			args: args{reviewer: userB},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errReviewReviewerSameAsAuditor, err.(domainErr).Slug())
 				return true
@@ -123,15 +125,15 @@ func TestVoucher_Review(t *testing.T) {
 
 func TestVoucher_CancelReview(t *testing.T) {
 	type fields struct {
-		creator    string
-		auditor    string
-		reviewer   string
+		creator    uuid.UUID
+		auditor    uuid.UUID
+		reviewer   uuid.UUID
 		isAudited  bool
 		isReviewed bool
 		isPosted   bool
 	}
 	type args struct {
-		reviewer string
+		reviewer uuid.UUID
 	}
 	tests := []struct {
 		name    string
@@ -142,14 +144,14 @@ func TestVoucher_CancelReview(t *testing.T) {
 		{
 			name: "normal_success",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "user-b",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   userB,
 				isAudited:  false,
 				isReviewed: true,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-b"},
+			args: args{reviewer: userB},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.NoError(t, err)
 				return false
@@ -158,14 +160,14 @@ func TestVoucher_CancelReview(t *testing.T) {
 		{
 			name: "notReviewed_error",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   uuid.Nil,
 				isAudited:  false,
 				isReviewed: false,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-b"},
+			args: args{reviewer: userB},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errCancelReviewNotReviewed, err.(domainErr).Slug())
 				return true
@@ -174,14 +176,14 @@ func TestVoucher_CancelReview(t *testing.T) {
 		{
 			name: "differentReviewer_error",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "",
-				reviewer:   "user-b",
+				creator:    userA,
+				auditor:    uuid.Nil,
+				reviewer:   userB,
 				isAudited:  false,
 				isReviewed: true,
 				isPosted:   false,
 			},
-			args: args{reviewer: "user-c"},
+			args: args{reviewer: userC},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errCancelReviewDifferentReviewer, err.(domainErr).Slug())
 				return true
@@ -190,14 +192,14 @@ func TestVoucher_CancelReview(t *testing.T) {
 		{
 			name: "alreadyPosted_error",
 			fields: fields{
-				creator:    "user-a",
-				auditor:    "user-b",
-				reviewer:   "user-c",
+				creator:    userA,
+				auditor:    userB,
+				reviewer:   userC,
 				isAudited:  true,
 				isReviewed: true,
 				isPosted:   true,
 			},
-			args: args{reviewer: "user-c"},
+			args: args{reviewer: userC},
 			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
 				assert.Equal(t, errCancelReviewPosted, err.(domainErr).Slug())
 				return true

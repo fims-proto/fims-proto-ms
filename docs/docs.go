@@ -1053,7 +1053,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.UserResponse"
+                            "$ref": "#/definitions/internal_user_port_public_http.UserResponse"
                         }
                     },
                     "404": {
@@ -1389,23 +1389,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UserResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "traits": {
-                    "type": "any"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "http.VoucherResponse": {
             "type": "object",
             "properties": {
@@ -1413,13 +1396,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "auditor": {
-                    "type": "string"
+                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
                 },
                 "createdAt": {
                     "type": "string"
                 },
                 "creator": {
-                    "type": "string"
+                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
                 },
                 "credit": {
                     "type": "number"
@@ -1449,7 +1432,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "reviewer": {
-                    "type": "string"
+                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
                 },
                 "sobId": {
                     "type": "string"
@@ -1526,6 +1509,34 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "internal_user_port_public_http.UserResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "traits": {
+                    "type": "any"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_voucher_port_public_http.UserResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "traits": {
+                    "type": "any"
                 }
             }
         }

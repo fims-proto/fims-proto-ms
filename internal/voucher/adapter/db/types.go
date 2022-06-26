@@ -19,10 +19,10 @@ type voucher struct {
 	AttachmentQuantity uint
 	Debit              decimal.Decimal
 	Credit             decimal.Decimal
-	Creator            string
-	Reviewer           string
+	Creator            uuid.UUID `gorm:"type:uuid"`
+	Reviewer           uuid.UUID `gorm:"type:uuid"`
 	IsReviewed         bool
-	Auditor            string
+	Auditor            uuid.UUID `gorm:"type:uuid"`
 	IsAudited          bool
 	IsPosted           bool
 	TransactionTime    time.Time
@@ -128,10 +128,10 @@ func unmarshallToQuery(dbv *voucher) query.Voucher {
 		LineItems:          items,
 		Debit:              dbv.Debit,
 		Credit:             dbv.Credit,
-		Creator:            dbv.Creator,
-		Reviewer:           dbv.Reviewer,
+		Creator:            query.User{Id: dbv.Creator},
+		Reviewer:           query.User{Id: dbv.Reviewer},
 		IsReviewed:         dbv.IsReviewed,
-		Auditor:            dbv.Auditor,
+		Auditor:            query.User{Id: dbv.Auditor},
 		IsAudited:          dbv.IsAudited,
 		IsPosted:           dbv.IsPosted,
 		TransactionTime:    dbv.TransactionTime,
