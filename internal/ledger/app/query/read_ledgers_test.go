@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 
 	"github.com/google/uuid"
@@ -54,37 +56,37 @@ var (
 
 type mockReadService struct{}
 
-func (m mockReadService) ReadLedgerById(ctx context.Context, id uuid.UUID) (Ledger, error) {
+func (m mockReadService) ReadLedgerById(context.Context, uuid.UUID) (Ledger, error) {
 	panic("implement me")
 }
 
-func (m mockReadService) ReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID) ([]Ledger, error) {
-	return []Ledger{retrievedLedger}, nil
+func (m mockReadService) ReadAllLedgersByAccountingPeriod(context.Context, uuid.UUID, data.Pageable) (data.Page[Ledger], error) {
+	return data.NewPage([]Ledger{retrievedLedger}, 1, 1, 1)
 }
 
-func (m mockReadService) ReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID) ([]AccountingPeriod, error) {
+func (m mockReadService) ReadAllAccountingPeriods(context.Context, uuid.UUID, data.Pageable) (data.Page[AccountingPeriod], error) {
 	panic("implement me")
 }
 
-func (m mockReadService) ReadAccountingPeriodById(ctx context.Context, id uuid.UUID) (AccountingPeriod, error) {
+func (m mockReadService) ReadAccountingPeriodById(context.Context, uuid.UUID) (AccountingPeriod, error) {
 	panic("implement me")
 }
 
-func (m mockReadService) ReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (AccountingPeriod, error) {
+func (m mockReadService) ReadOpenAccountingPeriod(context.Context, uuid.UUID) (AccountingPeriod, error) {
 	panic("implement me")
 }
 
-func (m mockReadService) ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountId []uuid.UUID, openingTime, endingTime time.Time) ([]LedgerLog, error) {
+func (m mockReadService) ReadLedgerLogsByAccountIdsAndTimes(context.Context, []uuid.UUID, time.Time, time.Time) ([]LedgerLog, error) {
 	panic("implement me")
 }
 
 type mockAccountService struct{}
 
-func (m mockAccountService) ReadSuperiorAccountIds(ctx context.Context, accountId uuid.UUID) ([]uuid.UUID, error) {
+func (m mockAccountService) ReadSuperiorAccountIds(context.Context, uuid.UUID) ([]uuid.UUID, error) {
 	panic("implement me")
 }
 
-func (m mockAccountService) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	return map[uuid.UUID]query.Account{
 		{}: {
 			Id:                uuid.UUID{},
@@ -100,7 +102,7 @@ func (m mockAccountService) ReadAccountsByIds(ctx context.Context, accountIds []
 	}, nil
 }
 
-func (m mockAccountService) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]uuid.UUID, error) {
+func (m mockAccountService) ReadAllAccountIdsBySobId(context.Context, uuid.UUID) ([]uuid.UUID, error) {
 	panic("implement me")
 }
 
@@ -140,12 +142,12 @@ func TestReadLedgerHandler_HandleReadAllLedgersByAccountingPeriod(t *testing.T) 
 				readModel:      tt.fields.readModel,
 				accountService: tt.fields.accountService,
 			}
-			got, err := h.HandleReadAllLedgersByAccountingPeriod(tt.args.ctx, tt.args.periodId)
+			got, err := h.HandleReadAllLedgersByAccountingPeriod(tt.args.ctx, tt.args.periodId, nil)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("HandleReadAllLedgersByAccountingPeriod() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if !reflect.DeepEqual(got.Content, tt.want) {
 				t.Errorf("HandleReadAllLedgersByAccountingPeriod() got = %v, want %v", got, tt.want)
 			}
 		})

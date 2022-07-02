@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
@@ -64,11 +66,11 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 	// read all ledgers from previous period
 	previousLedgers := make(map[uuid.UUID]query.Ledger) // key: AccountId, value: ledger
 	if accountingPeriod.PreviousPeriodId != uuid.Nil {
-		ledgers, err := h.ledgerReadModel.ReadAllLedgersByAccountingPeriod(ctx, accountingPeriod.PreviousPeriodId)
+		ledgersPage, err := h.ledgerReadModel.ReadAllLedgersByAccountingPeriod(ctx, accountingPeriod.PreviousPeriodId, data.Unpaged())
 		if err != nil {
 			return errors.Wrap(err, "failed to read ledgers by account period")
 		}
-		for _, ledger := range ledgers {
+		for _, ledger := range ledgersPage.Content {
 			previousLedgers[ledger.Account.Id] = ledger
 		}
 	}

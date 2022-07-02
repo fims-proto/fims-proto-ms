@@ -39,7 +39,7 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/vouchers/ [get]
 func (h Handler) ReadAllVouchers(c *gin.Context) {
-	pageable, err := data.NewPageable(c)
+	pageable, err := data.NewPageableFromRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

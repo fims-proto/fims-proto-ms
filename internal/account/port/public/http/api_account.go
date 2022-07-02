@@ -32,13 +32,13 @@ func NewHandler(app *app.Application) Handler {
 // @Param $page query int false "page number" default(1)
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $choose query string false "choose only field(s)" example(accountNumber,title)
+// @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'some thing' and amount lt 10)
 // @Success 200 {array} AccountResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/accounts/ [get]
 func (h Handler) ReadAllAccounts(c *gin.Context) {
-	pageable, err := data.NewPageable(c)
+	pageable, err := data.NewPageableFromRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

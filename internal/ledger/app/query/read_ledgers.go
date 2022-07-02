@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github.com/pkg/errors"
 
 	"github.com/google/uuid"
@@ -11,8 +13,8 @@ import (
 
 type LedgerReadModel interface {
 	ReadLedgerById(ctx context.Context, id uuid.UUID) (Ledger, error)
-	ReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID) ([]Ledger, error)
-	ReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID) ([]AccountingPeriod, error)
+	ReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error)
+	ReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[AccountingPeriod], error)
 	ReadAccountingPeriodById(ctx context.Context, id uuid.UUID) (AccountingPeriod, error)
 	ReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (AccountingPeriod, error)
 	ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountId []uuid.UUID, openingTime, endingTime time.Time) ([]LedgerLog, error)
@@ -36,8 +38,8 @@ func NewReadLedgerHandler(readModel LedgerReadModel, accountService AccountServi
 	}
 }
 
-func (h ReadLedgerHandler) HandleReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID) ([]AccountingPeriod, error) {
-	return h.readModel.ReadAllAccountingPeriods(ctx, sobId)
+func (h ReadLedgerHandler) HandleReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[AccountingPeriod], error) {
+	return h.readModel.ReadAllAccountingPeriods(ctx, sobId, pageable)
 }
 
 func (h ReadLedgerHandler) HandleReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (AccountingPeriod, error) {
@@ -48,29 +50,29 @@ func (h ReadLedgerHandler) HandleReadAccountingPeriodById(ctx context.Context, i
 	return h.readModel.ReadAccountingPeriodById(ctx, id)
 }
 
-func (h ReadLedgerHandler) HandleReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID) ([]Ledger, error) {
-	ledgers, err := h.readModel.ReadAllLedgersByAccountingPeriod(ctx, periodId)
+func (h ReadLedgerHandler) HandleReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {
+	ledgersPage, err := h.readModel.ReadAllLedgersByAccountingPeriod(ctx, periodId, pageable)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed on reading ledgers by period")
+		return data.Page[Ledger]{}, errors.Wrap(err, "failed on reading ledgers by period")
 	}
 
 	var accountIds []uuid.UUID
-	for _, ledger := range ledgers {
+	for _, ledger := range ledgersPage.Content {
 		accountIds = append(accountIds, ledger.Account.Id)
 	}
 
 	accounts, err := h.accountService.ReadAccountsByIds(ctx, accountIds)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read account by ids")
+		return data.Page[Ledger]{}, errors.Wrap(err, "failed to read account by ids")
 	}
-	for i := range ledgers {
-		account := accounts[ledgers[i].Account.Id]
+	for i := range ledgersPage.Content {
+		account := accounts[ledgersPage.Content[i].Account.Id]
 
-		ledgers[i].Account.SuperiorAccountId = account.SuperiorAccountId
-		ledgers[i].Account.AccountNumber = account.AccountNumber
-		ledgers[i].Account.Title = account.Title
-		ledgers[i].Account.AccountType = account.AccountType
-		ledgers[i].Account.BalanceDirection = account.BalanceDirection
+		ledgersPage.Content[i].Account.SuperiorAccountId = account.SuperiorAccountId
+		ledgersPage.Content[i].Account.AccountNumber = account.AccountNumber
+		ledgersPage.Content[i].Account.Title = account.Title
+		ledgersPage.Content[i].Account.AccountType = account.AccountType
+		ledgersPage.Content[i].Account.BalanceDirection = account.BalanceDirection
 	}
-	return ledgers, nil
+	return ledgersPage, nil
 }

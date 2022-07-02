@@ -66,5 +66,9 @@ func AddFilter(pageable Pageable, db *gorm.DB) *gorm.DB {
 
 func AddPaging(pageable Pageable, db *gorm.DB) *gorm.DB {
 	// page
-	return db.Offset(pageable.Offset()).Limit(pageable.Size())
+	if pageable.IsPaged() {
+		return db.Offset(pageable.Offset()).Limit(pageable.Size())
+	}
+
+	return db
 }

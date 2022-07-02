@@ -3,6 +3,8 @@ package http
 import (
 	"net/http"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/ledger/app"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/command"
 
@@ -51,20 +53,31 @@ func (h Handler) ReadCurrentAccountingPeriod(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
+// @Param $page query int false "page number" default(1)
+// @Param $size query int false "page size" default(40)
+// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
+// @Param $choose query string false "choose only field(s)"
+// @Param $filter query string false "filter on field(s)" example(title eq 'some thing' and amount lt 10)
 // @Success 200 {array} AccountingPeriodResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/periods/ [get]
 func (h Handler) ReadAllAccountingPeriods(c *gin.Context) {
-	periods, err := h.app.Queries.ReadLedgers.HandleReadAllAccountingPeriods(c, uuid.MustParse(c.Param("sobId")))
+	pageable, err := data.NewPageableFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	periodsPage, err := h.app.Queries.ReadLedgers.HandleReadAllAccountingPeriods(c, uuid.MustParse(c.Param("sobId")), pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	res := make([]AccountingPeriodResponse, len(periods))
-	for i, period := range periods {
-		res[i] = mapFromPeriodQuery(period)
+	periods := make([]AccountingPeriodResponse, len(periodsPage.Content))
+	for i, period := range periodsPage.Content {
+		periods[i] = mapFromPeriodQuery(period)
 	}
-	c.JSON(http.StatusOK, res)
+	resp, _ := data.NewPage(periods, periodsPage.Page, periodsPage.Size, periodsPage.NumberOfElements)
+	c.JSON(http.StatusOK, resp)
 }
 
 // ReadAccountingPeriodById godoc
@@ -143,20 +156,31 @@ func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
 // @Param periodId path string true "Accounting Period ID"
+// @Param $page query int false "page number" default(1)
+// @Param $size query int false "page size" default(40)
+// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
+// @Param $choose query string false "choose only field(s)"
+// @Param $filter query string false "filter on field(s)" example(title eq 'some thing' and amount lt 10)
 // @Success 200 {array} LedgerResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/ledgers/ [get]
 func (h Handler) ReadAllLedgersByAccountingPeriod(c *gin.Context) {
-	ledgers, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByAccountingPeriod(c, uuid.MustParse(c.Param("periodId")))
+	pageable, err := data.NewPageableFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	ledgersPage, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByAccountingPeriod(c, uuid.MustParse(c.Param("periodId")), pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	res := make([]LedgerResponse, len(ledgers))
-	for i, ledger := range ledgers {
-		res[i] = mapFromLedgerQuery(ledger)
+	ledgers := make([]LedgerResponse, len(ledgersPage.Content))
+	for i, ledger := range ledgersPage.Content {
+		ledgers[i] = mapFromLedgerQuery(ledger)
 	}
-	c.JSON(http.StatusOK, res)
+	resp, _ := data.NewPage(ledgers, ledgersPage.Page, ledgersPage.Size, ledgersPage.NumberOfElements)
+	c.JSON(http.StatusOK, resp)
 }
 
 // CalculatePeriodLedgers godoc
@@ -171,18 +195,11 @@ func (h Handler) ReadAllLedgersByAccountingPeriod(c *gin.Context) {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/ledgers/calculate [post]
 func (h Handler) CalculatePeriodLedgers(c *gin.Context) {
-	ledgers, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByAccountingPeriod(c, uuid.MustParse(c.Param("periodId")))
-	if err != nil {
-		_ = c.Error(err)
-		return
+	periodId := uuid.MustParse(c.Param("periodId"))
+	cmd := command.CalculateBalanceByPeriodCmd{
+		PeriodId: periodId,
 	}
-	cmd := command.CalculateLedgerBalanceCmd{
-		Ids: make([]uuid.UUID, len(ledgers)),
-	}
-	for i, ledger := range ledgers {
-		cmd.Ids[i] = ledger.Id
-	}
-	if err = h.app.Commands.CalculateLedgerBalance.Handle(c, cmd); err != nil {
+	if err := h.app.Commands.CalculateLedgerBalance.HandleCalculateBalanceByPeriod(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

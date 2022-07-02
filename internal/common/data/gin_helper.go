@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func NewPageable(c *gin.Context) (Pageable, error) {
+func NewPageableFromRequest(c *gin.Context) (Pageable, error) {
 	page, err := strconv.ParseInt(c.DefaultQuery("$page", "1"), 0, 0)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse page query parameter")

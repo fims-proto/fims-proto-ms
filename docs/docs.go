@@ -64,7 +64,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "accountNumber,title",
                         "description": "choose only field(s)",
                         "name": "$choose",
                         "in": "query"
@@ -209,6 +208,40 @@ const docTemplate = `{
                         "name": "periodId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "choose only field(s)",
+                        "name": "$choose",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'some thing' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -292,6 +325,40 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "choose only field(s)",
+                        "name": "$choose",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'some thing' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {

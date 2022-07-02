@@ -3,6 +3,7 @@ package data
 import "github.com/pkg/errors"
 
 type Pageable interface {
+	IsPaged() bool
 	Page() int
 	Size() int
 	Offset() int
@@ -40,6 +41,10 @@ func NewPageRequest(page, size int, sorts []Sort, chooses []Choose, filters []Fi
 	}, nil
 }
 
+func (p pageRequest) IsPaged() bool {
+	return true
+}
+
 func (p pageRequest) Page() int {
 	return p.page
 }
@@ -62,4 +67,38 @@ func (p pageRequest) Chooses() []Choose {
 
 func (p pageRequest) Filters() []Filter {
 	return p.filters
+}
+
+type unpaged struct{}
+
+func Unpaged() Pageable {
+	return unpaged{}
+}
+
+func (u unpaged) IsPaged() bool {
+	return false
+}
+
+func (u unpaged) Page() int {
+	return 0
+}
+
+func (u unpaged) Size() int {
+	return 0
+}
+
+func (u unpaged) Offset() int {
+	return 0
+}
+
+func (u unpaged) Sorts() []Sort {
+	return nil
+}
+
+func (u unpaged) Chooses() []Choose {
+	return nil
+}
+
+func (u unpaged) Filters() []Filter {
+	return nil
 }
