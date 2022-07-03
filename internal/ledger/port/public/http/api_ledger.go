@@ -23,18 +23,18 @@ func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
-// ReadCurrentAccountingPeriod godoc
-// @Summary Current accounting period
-// @Description Current accounting period
+// ReadCurrentPeriod godoc
+// @Summary Current period
+// @Description Current period
 // @Tags ledgers
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
-// @Success 200 {object} AccountingPeriodResponse
+// @Success 200 {object} PeriodResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/current [get]
-func (h Handler) ReadCurrentAccountingPeriod(c *gin.Context) {
-	period, err := h.app.Queries.ReadLedgers.HandleReadOpenAccountingPeriod(c, uuid.MustParse(c.Param("sobId")))
+func (h Handler) ReadCurrentPeriod(c *gin.Context) {
+	period, err := h.app.Queries.ReadLedgers.HandleReadOpenPeriod(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -46,9 +46,9 @@ func (h Handler) ReadCurrentAccountingPeriod(c *gin.Context) {
 	c.JSON(http.StatusOK, mapFromPeriodQuery(period))
 }
 
-// ReadAllAccountingPeriods godoc
-// @Summary All accounting periods
-// @Description All accounting periods
+// ReadAllPeriods godoc
+// @Summary All periods
+// @Description All periods
 // @Tags ledgers
 // @Accept application/json
 // @Produce application/json
@@ -58,21 +58,21 @@ func (h Handler) ReadCurrentAccountingPeriod(c *gin.Context) {
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
 // @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'some thing' and amount lt 10)
-// @Success 200 {array} AccountingPeriodResponse
+// @Success 200 {array} PeriodResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/periods/ [get]
-func (h Handler) ReadAllAccountingPeriods(c *gin.Context) {
+func (h Handler) ReadAllPeriods(c *gin.Context) {
 	pageable, err := data.NewPageableFromRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	periodsPage, err := h.app.Queries.ReadLedgers.HandleReadAllAccountingPeriods(c, uuid.MustParse(c.Param("sobId")), pageable)
+	periodsPage, err := h.app.Queries.ReadLedgers.HandleReadAllPeriods(c, uuid.MustParse(c.Param("sobId")), pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	periods := make([]AccountingPeriodResponse, len(periodsPage.Content))
+	periods := make([]PeriodResponse, len(periodsPage.Content))
 	for i, period := range periodsPage.Content {
 		periods[i] = mapFromPeriodQuery(period)
 	}
@@ -80,20 +80,20 @@ func (h Handler) ReadAllAccountingPeriods(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// ReadAccountingPeriodById godoc
-// @Summary Show accounting period by sob and id
-// @Description Show accounting period by sob and id
+// ReadPeriodById godoc
+// @Summary Show period by sob and id
+// @Description Show period by sob and id
 // @Tags ledgers
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
-// @Param periodId path string true "Accounting Period ID"
-// @Success 200 {object} AccountingPeriodResponse
+// @Param periodId path string true "Period ID"
+// @Success 200 {object} PeriodResponse
 // @Failure 404
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId} [get]
-func (h Handler) ReadAccountingPeriodById(c *gin.Context) {
-	period, err := h.app.Queries.ReadLedgers.HandleReadAccountingPeriodById(c, uuid.MustParse(c.Param("periodId")))
+func (h Handler) ReadPeriodById(c *gin.Context) {
+	period, err := h.app.Queries.ReadLedgers.HandleReadPeriodById(c, uuid.MustParse(c.Param("periodId")))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -105,27 +105,27 @@ func (h Handler) ReadAccountingPeriodById(c *gin.Context) {
 	c.JSON(http.StatusOK, mapFromPeriodQuery(period))
 }
 
-// CreateAccountingPeriod godoc
-// @Summary Create accounting period
-// @Description Create accounting period
+// CreatePeriod godoc
+// @Summary Create period
+// @Description Create period
 // @Tags ledgers
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
-// @Param CreateAccountingPeriodRequest body CreateAccountingPeriodRequest true "Create accounting period request"
-// @Success 201 {object} AccountingPeriodResponse
+// @Param CreatePeriodRequest body CreatePeriodRequest true "Create period request"
+// @Success 201 {object} PeriodResponse
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/periods/ [post]
-func (h Handler) CreateAccountingPeriod(c *gin.Context) {
-	var req CreateAccountingPeriodRequest
+func (h Handler) CreatePeriod(c *gin.Context) {
+	var req CreatePeriodRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := req.mapToCommand()
 	cmd.SobId = uuid.MustParse(c.Param("sobId"))
-	createdId, err := h.app.Commands.CreateAccountingPeriod.Handle(c, cmd)
+	createdId, err := h.app.Commands.CreatePeriod.Handle(c, cmd)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -140,7 +140,7 @@ func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 		return
 	}
 
-	createdPeriod, err := h.app.Queries.ReadLedgers.HandleReadAccountingPeriodById(c, createdId)
+	createdPeriod, err := h.app.Queries.ReadLedgers.HandleReadPeriodById(c, createdId)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -148,14 +148,14 @@ func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 	c.JSON(http.StatusCreated, createdPeriod)
 }
 
-// ReadAllLedgersByAccountingPeriod godoc
-// @Summary All ledgers in an accounting period
-// @Description All ledgers in an accounting period
+// ReadAllLedgersByPeriod godoc
+// @Summary All ledgers in an period
+// @Description All ledgers in an period
 // @Tags ledgers
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
-// @Param periodId path string true "Accounting Period ID"
+// @Param periodId path string true "Period ID"
 // @Param $page query int false "page number" default(1)
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
@@ -164,13 +164,13 @@ func (h Handler) CreateAccountingPeriod(c *gin.Context) {
 // @Success 200 {array} LedgerResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/ledgers/ [get]
-func (h Handler) ReadAllLedgersByAccountingPeriod(c *gin.Context) {
+func (h Handler) ReadAllLedgersByPeriod(c *gin.Context) {
 	pageable, err := data.NewPageableFromRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	ledgersPage, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByAccountingPeriod(c, uuid.MustParse(c.Param("periodId")), pageable)
+	ledgersPage, err := h.app.Queries.ReadLedgers.HandleReadAllLedgersByPeriod(c, uuid.MustParse(c.Param("periodId")), pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -184,13 +184,13 @@ func (h Handler) ReadAllLedgersByAccountingPeriod(c *gin.Context) {
 }
 
 // CalculatePeriodLedgers godoc
-// @Summary Calculate ledger balance in accounting period
-// @Description Calculate ledger balance in accounting period
+// @Summary Calculate ledger balance in period
+// @Description Calculate ledger balance in period
 // @Tags ledgers
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
-// @Param periodId path string true "Accounting Period ID"
+// @Param periodId path string true "Period ID"
 // @Success 204
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/ledgers/calculate [post]
@@ -207,10 +207,10 @@ func (h Handler) CalculatePeriodLedgers(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/period/current", h.ReadCurrentAccountingPeriod)
-	r.GET("/sob/:sobId/periods/", h.ReadAllAccountingPeriods)
-	r.GET("/sob/:sobId/period/:periodId", h.ReadAccountingPeriodById)
-	r.POST("/sob/:sobId/periods/", h.CreateAccountingPeriod)
-	r.GET("/sob/:sobId/period/:periodId/ledgers/", h.ReadAllLedgersByAccountingPeriod)
+	r.GET("/sob/:sobId/period/current", h.ReadCurrentPeriod)
+	r.GET("/sob/:sobId/periods/", h.ReadAllPeriods)
+	r.GET("/sob/:sobId/period/:periodId", h.ReadPeriodById)
+	r.POST("/sob/:sobId/periods/", h.CreatePeriod)
+	r.GET("/sob/:sobId/period/:periodId/ledgers/", h.ReadAllLedgersByPeriod)
 	r.POST("/sob/:sobId/period/rperiodId/ledgers/calculate", h.CalculatePeriodLedgers)
 }

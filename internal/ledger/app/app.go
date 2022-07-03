@@ -14,8 +14,8 @@ type Commands struct {
 	AppendLedgerLogs       command.AppendLedgerLogsHandler
 	CreatePeriodLedgers    command.CreatePeriodLedgersHandler
 	CalculateLedgerBalance command.CalculateLedgerBalanceHandler
-	CreateAccountingPeriod command.CreateAccountingPeriodHandler
-	CloseAccountingPeriod  command.CloseAccountingPeriodHandler
+	CreatePeriod           command.CreatePeriodHandler
+	ClosePeriod            command.ClosePeriodHandler
 	Migrate                command.MigrationHandler
 }
 
@@ -41,8 +41,8 @@ func (a *Application) Inject(
 		AppendLedgerLogs:       command.NewAppendLedgerLogsHandler(repo, accountService),
 		CreatePeriodLedgers:    command.NewCreatePeriodLedgersHandler(repo, readModel, accountService),
 		CalculateLedgerBalance: command.NewCalculateLedgerBalanceHandler(repo, readModel, accountService),
-		CreateAccountingPeriod: command.NewCreateAccountingPeriodHandler(repo, readModel),
-		CloseAccountingPeriod:  command.NewCloseAccountingPeriodHandler(repo),
+		CreatePeriod:           command.NewCreatePeriodHandler(repo, readModel),
+		ClosePeriod:            command.NewClosePeriodHandler(repo),
 		Migrate:                command.NewMigrationHandler(repo),
 	}
 }

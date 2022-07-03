@@ -10,12 +10,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type accountingPeriod struct {
+type period struct {
 	Id               uuid.UUID `gorm:"type:uuid"`
-	SobId            uuid.UUID `gorm:"type:uuid;uniqueIndex:accountingPeriods_sobid_year_number_key"`
+	SobId            uuid.UUID `gorm:"type:uuid;uniqueIndex:periods_sobid_year_number_key"`
 	PreviousPeriodId uuid.UUID `gorm:"type:uuid"`
-	FinancialYear    int       `gorm:"uniqueIndex:accountingPeriods_sobid_year_number_key"`
-	Number           int       `gorm:"uniqueIndex:accountingPeriods_sobid_year_number_key"`
+	FinancialYear    int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
+	Number           int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
 	OpeningTime      time.Time
 	EndingTime       time.Time
 	IsClosed         bool
@@ -47,8 +47,8 @@ type ledgerLog struct {
 	UpdatedAt       time.Time
 }
 
-func marshallAccountingPeriod(p *domain.AccountingPeriod) *accountingPeriod {
-	return &accountingPeriod{
+func marshallPeriod(p *domain.Period) *period {
+	return &period{
 		Id:               p.Id(),
 		SobId:            p.SobId(),
 		PreviousPeriodId: p.PreviousPeriodId(),
@@ -84,8 +84,8 @@ func marshallLedgerLog(l *domain.LedgerLog) *ledgerLog {
 	}
 }
 
-func unmarshallPeriodToDomain(dbp *accountingPeriod) (*domain.AccountingPeriod, error) {
-	return domain.NewAccountingPeriod(
+func unmarshallPeriodToDomain(dbp *period) (*domain.Period, error) {
+	return domain.NewPeriod(
 		dbp.Id,
 		dbp.SobId,
 		dbp.PreviousPeriodId,
@@ -109,8 +109,8 @@ func unmarshallLedgerToDomain(dbl *ledger) (*domain.Ledger, error) {
 	)
 }
 
-func unmarshallPeriodToQuery(dbp *accountingPeriod) query.AccountingPeriod {
-	return query.AccountingPeriod{
+func unmarshallPeriodToQuery(dbp *period) query.Period {
+	return query.Period{
 		Id:               dbp.Id,
 		SobId:            dbp.SobId,
 		PreviousPeriodId: dbp.PreviousPeriodId,

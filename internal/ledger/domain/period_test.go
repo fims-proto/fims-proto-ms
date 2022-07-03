@@ -11,7 +11,7 @@ import (
 
 var periodId = uuid.New()
 
-func TestNewAccountingPeriod(t *testing.T) {
+func TestNewPeriod(t *testing.T) {
 	type args struct {
 		id            uuid.UUID
 		financialYear int
@@ -88,8 +88,8 @@ func TestNewAccountingPeriod(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewAccountingPeriod(tt.args.id, uuid.New(), uuid.Nil, tt.args.financialYear, tt.args.number, tt.args.openingTime, tt.args.endingTime, tt.args.isClosed)
-			if !tt.wantErr(t, err, fmt.Sprintf("NewAccountingPeriod(%v, %v, %v, %v, %v, %v)", tt.args.id, tt.args.financialYear, tt.args.number, tt.args.openingTime, tt.args.endingTime, tt.args.isClosed)) {
+			got, err := NewPeriod(tt.args.id, uuid.New(), uuid.Nil, tt.args.financialYear, tt.args.number, tt.args.openingTime, tt.args.endingTime, tt.args.isClosed)
+			if !tt.wantErr(t, err, fmt.Sprintf("NewPeriod(%v, %v, %v, %v, %v, %v)", tt.args.id, tt.args.financialYear, tt.args.number, tt.args.openingTime, tt.args.endingTime, tt.args.isClosed)) {
 				return
 			}
 			assert.NotNil(t, got)

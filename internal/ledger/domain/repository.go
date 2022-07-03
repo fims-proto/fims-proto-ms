@@ -7,8 +7,8 @@ import (
 )
 
 type Repository interface {
-	CreateAccountingPeriod(ctx context.Context, period *AccountingPeriod) error
-	UpdateAccountingPeriod(ctx context.Context, id uuid.UUID, updateFn func(period *AccountingPeriod) (*AccountingPeriod, error)) error
+	CreatePeriod(ctx context.Context, period *Period) error
+	UpdatePeriod(ctx context.Context, id uuid.UUID, updateFn func(period *Period) (*Period, error)) error
 	CreateLedgers(ctx context.Context, ledgers []*Ledger) error
 	UpdateLedgers(ctx context.Context, ids []uuid.UUID, updateFn func(ledgers []*Ledger) ([]*Ledger, error)) error
 	UpdatePeriodLedgers(ctx context.Context, periodId uuid.UUID, updateFn func(ledgers []*Ledger) ([]*Ledger, error)) error

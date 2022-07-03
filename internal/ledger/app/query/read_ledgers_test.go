@@ -60,19 +60,19 @@ func (m mockReadService) ReadLedgerById(context.Context, uuid.UUID) (Ledger, err
 	panic("implement me")
 }
 
-func (m mockReadService) ReadAllLedgersByAccountingPeriod(context.Context, uuid.UUID, data.Pageable) (data.Page[Ledger], error) {
+func (m mockReadService) ReadAllLedgersByPeriod(context.Context, uuid.UUID, data.Pageable) (data.Page[Ledger], error) {
 	return data.NewPage([]Ledger{retrievedLedger}, 1, 1, 1)
 }
 
-func (m mockReadService) ReadAllAccountingPeriods(context.Context, uuid.UUID, data.Pageable) (data.Page[AccountingPeriod], error) {
+func (m mockReadService) ReadAllPeriods(context.Context, uuid.UUID, data.Pageable) (data.Page[Period], error) {
 	panic("implement me")
 }
 
-func (m mockReadService) ReadAccountingPeriodById(context.Context, uuid.UUID) (AccountingPeriod, error) {
+func (m mockReadService) ReadPeriodById(context.Context, uuid.UUID) (Period, error) {
 	panic("implement me")
 }
 
-func (m mockReadService) ReadOpenAccountingPeriod(context.Context, uuid.UUID) (AccountingPeriod, error) {
+func (m mockReadService) ReadOpenPeriod(context.Context, uuid.UUID) (Period, error) {
 	panic("implement me")
 }
 
@@ -106,7 +106,7 @@ func (m mockAccountService) ReadAllAccountIdsBySobId(context.Context, uuid.UUID)
 	panic("implement me")
 }
 
-func TestReadLedgerHandler_HandleReadAllLedgersByAccountingPeriod(t *testing.T) {
+func TestReadLedgerHandler_HandleReadAllLedgersByPeriod(t *testing.T) {
 	type fields struct {
 		readModel      LedgerReadModel
 		accountService AccountService
@@ -142,13 +142,13 @@ func TestReadLedgerHandler_HandleReadAllLedgersByAccountingPeriod(t *testing.T) 
 				readModel:      tt.fields.readModel,
 				accountService: tt.fields.accountService,
 			}
-			got, err := h.HandleReadAllLedgersByAccountingPeriod(tt.args.ctx, tt.args.periodId, nil)
+			got, err := h.HandleReadAllLedgersByPeriod(tt.args.ctx, tt.args.periodId, nil)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("HandleReadAllLedgersByAccountingPeriod() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("HandleReadAllLedgersByPeriod() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if !reflect.DeepEqual(got.Content, tt.want) {
-				t.Errorf("HandleReadAllLedgersByAccountingPeriod() got = %v, want %v", got, tt.want)
+				t.Errorf("HandleReadAllLedgersByPeriod() got = %v, want %v", got, tt.want)
 			}
 		})
 	}

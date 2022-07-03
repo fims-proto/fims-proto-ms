@@ -1,34 +1,11 @@
 basePath: /fims/api/v1
 definitions:
-  http.AccountingPeriodResponse:
-    properties:
-      createdAt:
-        type: string
-      endingTime:
-        type: string
-      financialYear:
-        type: integer
-      id:
-        type: string
-      isClosed:
-        type: boolean
-      number:
-        type: integer
-      openingTime:
-        type: string
-      previousPeriodId:
-        type: string
-      sobId:
-        type: string
-      updatedAt:
-        type: string
-    type: object
   http.AuditVoucherRequest:
     properties:
       auditor:
         type: string
     type: object
-  http.CreateAccountingPeriodRequest:
+  http.CreatePeriodRequest:
     properties:
       endingTime:
         type: string
@@ -127,6 +104,29 @@ definitions:
       id:
         type: string
       summary:
+        type: string
+    type: object
+  http.PeriodResponse:
+    properties:
+      createdAt:
+        type: string
+      endingTime:
+        type: string
+      financialYear:
+        type: integer
+      id:
+        type: string
+      isClosed:
+        type: boolean
+      number:
+        type: integer
+      openingTime:
+        type: string
+      previousPeriodId:
+        type: string
+      sobId:
+        type: string
+      updatedAt:
         type: string
     type: object
   http.ReviewVoucherRequest:
@@ -340,14 +340,14 @@ paths:
     get:
       consumes:
       - application/json
-      description: Show accounting period by sob and id
+      description: Show period by sob and id
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Accounting Period ID
+      - description: Period ID
         in: path
         name: periodId
         required: true
@@ -358,28 +358,28 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.AccountingPeriodResponse'
+            $ref: '#/definitions/http.PeriodResponse'
         "404":
           description: ""
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.Error'
-      summary: Show accounting period by sob and id
+      summary: Show period by sob and id
       tags:
       - ledgers
   /sob/{sobId}/period/{periodId}/ledgers/:
     get:
       consumes:
       - application/json
-      description: All ledgers in an accounting period
+      description: All ledgers in an period
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Accounting Period ID
+      - description: Period ID
         in: path
         name: periodId
         required: true
@@ -421,21 +421,21 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.Error'
-      summary: All ledgers in an accounting period
+      summary: All ledgers in an period
       tags:
       - ledgers
   /sob/{sobId}/period/{periodId}/ledgers/calculate:
     post:
       consumes:
       - application/json
-      description: Calculate ledger balance in accounting period
+      description: Calculate ledger balance in period
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Accounting Period ID
+      - description: Period ID
         in: path
         name: periodId
         required: true
@@ -449,14 +449,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.Error'
-      summary: Calculate ledger balance in accounting period
+      summary: Calculate ledger balance in period
       tags:
       - ledgers
   /sob/{sobId}/period/current:
     get:
       consumes:
       - application/json
-      description: Current accounting period
+      description: Current period
       parameters:
       - description: Sob ID
         in: path
@@ -469,19 +469,19 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.AccountingPeriodResponse'
+            $ref: '#/definitions/http.PeriodResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.Error'
-      summary: Current accounting period
+      summary: Current period
       tags:
       - ledgers
   /sob/{sobId}/periods/:
     get:
       consumes:
       - application/json
-      description: All accounting periods
+      description: All periods
       parameters:
       - description: Sob ID
         in: path
@@ -519,38 +519,38 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.AccountingPeriodResponse'
+              $ref: '#/definitions/http.PeriodResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.Error'
-      summary: All accounting periods
+      summary: All periods
       tags:
       - ledgers
     post:
       consumes:
       - application/json
-      description: Create accounting period
+      description: Create period
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Create accounting period request
+      - description: Create period request
         in: body
-        name: CreateAccountingPeriodRequest
+        name: CreatePeriodRequest
         required: true
         schema:
-          $ref: '#/definitions/http.CreateAccountingPeriodRequest'
+          $ref: '#/definitions/http.CreatePeriodRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/http.AccountingPeriodResponse'
+            $ref: '#/definitions/http.PeriodResponse'
         "400":
           description: Bad Request
           schema:
@@ -559,7 +559,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/http.Error'
-      summary: Create accounting period
+      summary: Create period
       tags:
       - ledgers
   /sob/{sobId}/voucher/{voucherId}:

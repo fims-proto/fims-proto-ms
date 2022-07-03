@@ -317,13 +317,13 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > create accounting period",
+			"name": "sob 1 > create period",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Create accounting period 201\", function () {",
+							"pm.test(\"Create period 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
 							"let createdId = pm.response.json()['Id']",
@@ -366,7 +366,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read accounting periods 200\", function () {",
+							"pm.test(\"Read periods 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
@@ -398,7 +398,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read accounting periods 200\", function () {",
+							"pm.test(\"Read periods 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
@@ -1749,7 +1749,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Calculate accounting periods 204\", function () {",
+							"pm.test(\"Calculate periods 204\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],

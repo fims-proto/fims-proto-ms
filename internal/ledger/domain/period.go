@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-type AccountingPeriod struct {
+type Period struct {
 	id               uuid.UUID
 	sobId            uuid.UUID
 	previousPeriodId uuid.UUID
@@ -18,9 +18,9 @@ type AccountingPeriod struct {
 	isClosed         bool
 }
 
-func NewAccountingPeriod(id, sobId, previousPeriodId uuid.UUID, financialYear, number int, openingTime, endingTime time.Time, isClosed bool) (*AccountingPeriod, error) {
+func NewPeriod(id, sobId, previousPeriodId uuid.UUID, financialYear, number int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("nil accounting period id")
+		return nil, errors.New("nil period id")
 	}
 	if sobId == uuid.Nil {
 		return nil, errors.New("nil sob id")
@@ -40,7 +40,7 @@ func NewAccountingPeriod(id, sobId, previousPeriodId uuid.UUID, financialYear, n
 		return nil, errors.New("opening time is after ending time")
 	}
 
-	return &AccountingPeriod{
+	return &Period{
 		id:               id,
 		sobId:            sobId,
 		previousPeriodId: previousPeriodId,
@@ -52,39 +52,39 @@ func NewAccountingPeriod(id, sobId, previousPeriodId uuid.UUID, financialYear, n
 	}, nil
 }
 
-func (a AccountingPeriod) Id() uuid.UUID {
+func (a Period) Id() uuid.UUID {
 	return a.id
 }
 
-func (a AccountingPeriod) SobId() uuid.UUID {
+func (a Period) SobId() uuid.UUID {
 	return a.sobId
 }
 
-func (a AccountingPeriod) PreviousPeriodId() uuid.UUID {
+func (a Period) PreviousPeriodId() uuid.UUID {
 	return a.previousPeriodId
 }
 
-func (a AccountingPeriod) FinancialYear() int {
+func (a Period) FinancialYear() int {
 	return a.financialYear
 }
 
-func (a AccountingPeriod) Number() int {
+func (a Period) Number() int {
 	return a.number
 }
 
-func (a AccountingPeriod) OpeningTime() time.Time {
+func (a Period) OpeningTime() time.Time {
 	return a.openingTime
 }
 
-func (a AccountingPeriod) EndingTime() time.Time {
+func (a Period) EndingTime() time.Time {
 	return a.endingTime
 }
 
-func (a AccountingPeriod) IsClosed() bool {
+func (a Period) IsClosed() bool {
 	return a.isClosed
 }
 
-func (a *AccountingPeriod) Close() error {
+func (a *Period) Close() error {
 	if a.IsClosed() {
 		return errors.New("period is already closed")
 	}
@@ -92,7 +92,7 @@ func (a *AccountingPeriod) Close() error {
 	return nil
 }
 
-func (a *AccountingPeriod) Reopen() error {
+func (a *Period) Reopen() error {
 	if !a.IsClosed() {
 		return errors.New("period is not closed")
 	}

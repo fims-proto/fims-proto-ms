@@ -97,7 +97,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/period/current": {
             "get": {
-                "description": "Current accounting period",
+                "description": "Current period",
                 "consumes": [
                     "application/json"
                 ],
@@ -107,7 +107,7 @@ const docTemplate = `{
                 "tags": [
                     "ledgers"
                 ],
-                "summary": "Current accounting period",
+                "summary": "Current period",
                 "parameters": [
                     {
                         "type": "string",
@@ -121,7 +121,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.AccountingPeriodResponse"
+                            "$ref": "#/definitions/http.PeriodResponse"
                         }
                     },
                     "500": {
@@ -135,7 +135,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/period/{periodId}": {
             "get": {
-                "description": "Show accounting period by sob and id",
+                "description": "Show period by sob and id",
                 "consumes": [
                     "application/json"
                 ],
@@ -145,7 +145,7 @@ const docTemplate = `{
                 "tags": [
                     "ledgers"
                 ],
-                "summary": "Show accounting period by sob and id",
+                "summary": "Show period by sob and id",
                 "parameters": [
                     {
                         "type": "string",
@@ -156,7 +156,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Accounting Period ID",
+                        "description": "Period ID",
                         "name": "periodId",
                         "in": "path",
                         "required": true
@@ -166,7 +166,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.AccountingPeriodResponse"
+                            "$ref": "#/definitions/http.PeriodResponse"
                         }
                     },
                     "404": {
@@ -183,7 +183,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/period/{periodId}/ledgers/": {
             "get": {
-                "description": "All ledgers in an accounting period",
+                "description": "All ledgers in an period",
                 "consumes": [
                     "application/json"
                 ],
@@ -193,7 +193,7 @@ const docTemplate = `{
                 "tags": [
                     "ledgers"
                 ],
-                "summary": "All ledgers in an accounting period",
+                "summary": "All ledgers in an period",
                 "parameters": [
                     {
                         "type": "string",
@@ -204,7 +204,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Accounting Period ID",
+                        "description": "Period ID",
                         "name": "periodId",
                         "in": "path",
                         "required": true
@@ -265,7 +265,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/period/{periodId}/ledgers/calculate": {
             "post": {
-                "description": "Calculate ledger balance in accounting period",
+                "description": "Calculate ledger balance in period",
                 "consumes": [
                     "application/json"
                 ],
@@ -275,7 +275,7 @@ const docTemplate = `{
                 "tags": [
                     "ledgers"
                 ],
-                "summary": "Calculate ledger balance in accounting period",
+                "summary": "Calculate ledger balance in period",
                 "parameters": [
                     {
                         "type": "string",
@@ -286,7 +286,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Accounting Period ID",
+                        "description": "Period ID",
                         "name": "periodId",
                         "in": "path",
                         "required": true
@@ -307,7 +307,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/periods/": {
             "get": {
-                "description": "All accounting periods",
+                "description": "All periods",
                 "consumes": [
                     "application/json"
                 ],
@@ -317,7 +317,7 @@ const docTemplate = `{
                 "tags": [
                     "ledgers"
                 ],
-                "summary": "All accounting periods",
+                "summary": "All periods",
                 "parameters": [
                     {
                         "type": "string",
@@ -367,7 +367,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.AccountingPeriodResponse"
+                                "$ref": "#/definitions/http.PeriodResponse"
                             }
                         }
                     },
@@ -380,7 +380,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create accounting period",
+                "description": "Create period",
                 "consumes": [
                     "application/json"
                 ],
@@ -390,7 +390,7 @@ const docTemplate = `{
                 "tags": [
                     "ledgers"
                 ],
-                "summary": "Create accounting period",
+                "summary": "Create period",
                 "parameters": [
                     {
                         "type": "string",
@@ -400,12 +400,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Create accounting period request",
-                        "name": "CreateAccountingPeriodRequest",
+                        "description": "Create period request",
+                        "name": "CreatePeriodRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CreateAccountingPeriodRequest"
+                            "$ref": "#/definitions/http.CreatePeriodRequest"
                         }
                     }
                 ],
@@ -413,7 +413,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.AccountingPeriodResponse"
+                            "$ref": "#/definitions/http.PeriodResponse"
                         }
                     },
                     "400": {
@@ -1185,41 +1185,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "http.AccountingPeriodResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "financialYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "previousPeriodId": {
-                    "type": "string"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "http.AuditVoucherRequest": {
             "type": "object",
             "properties": {
@@ -1228,7 +1193,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.CreateAccountingPeriodRequest": {
+        "http.CreatePeriodRequest": {
             "type": "object",
             "properties": {
                 "endingTime": {
@@ -1379,6 +1344,41 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "summary": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "financialYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "previousPeriodId": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }

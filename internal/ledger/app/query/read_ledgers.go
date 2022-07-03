@@ -13,10 +13,10 @@ import (
 
 type LedgerReadModel interface {
 	ReadLedgerById(ctx context.Context, id uuid.UUID) (Ledger, error)
-	ReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error)
-	ReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[AccountingPeriod], error)
-	ReadAccountingPeriodById(ctx context.Context, id uuid.UUID) (AccountingPeriod, error)
-	ReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (AccountingPeriod, error)
+	ReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error)
+	ReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error)
+	ReadPeriodById(ctx context.Context, id uuid.UUID) (Period, error)
+	ReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountId []uuid.UUID, openingTime, endingTime time.Time) ([]LedgerLog, error)
 }
 
@@ -38,20 +38,20 @@ func NewReadLedgerHandler(readModel LedgerReadModel, accountService AccountServi
 	}
 }
 
-func (h ReadLedgerHandler) HandleReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[AccountingPeriod], error) {
-	return h.readModel.ReadAllAccountingPeriods(ctx, sobId, pageable)
+func (h ReadLedgerHandler) HandleReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error) {
+	return h.readModel.ReadAllPeriods(ctx, sobId, pageable)
 }
 
-func (h ReadLedgerHandler) HandleReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (AccountingPeriod, error) {
-	return h.readModel.ReadOpenAccountingPeriod(ctx, sobId)
+func (h ReadLedgerHandler) HandleReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error) {
+	return h.readModel.ReadOpenPeriod(ctx, sobId)
 }
 
-func (h ReadLedgerHandler) HandleReadAccountingPeriodById(ctx context.Context, id uuid.UUID) (AccountingPeriod, error) {
-	return h.readModel.ReadAccountingPeriodById(ctx, id)
+func (h ReadLedgerHandler) HandleReadPeriodById(ctx context.Context, id uuid.UUID) (Period, error) {
+	return h.readModel.ReadPeriodById(ctx, id)
 }
 
-func (h ReadLedgerHandler) HandleReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {
-	ledgersPage, err := h.readModel.ReadAllLedgersByAccountingPeriod(ctx, periodId, pageable)
+func (h ReadLedgerHandler) HandleReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {
+	ledgersPage, err := h.readModel.ReadAllLedgersByPeriod(ctx, periodId, pageable)
 	if err != nil {
 		return data.Page[Ledger]{}, errors.Wrap(err, "failed on reading ledgers by period")
 	}

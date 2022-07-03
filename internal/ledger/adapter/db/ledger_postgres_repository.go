@@ -26,51 +26,51 @@ func NewLedgerPostgresRepository() *LedgerPostgresRepository {
 func (r LedgerPostgresRepository) Migrate(ctx context.Context) error {
 	db := readDBFromCtx(ctx)
 
-	if err := db.AutoMigrate(&accountingPeriod{}, &ledger{}, &ledgerLog{}); err != nil {
+	if err := db.AutoMigrate(&period{}, &ledger{}, &ledgerLog{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
 	}
 	return nil
 }
 
-func (r LedgerPostgresRepository) CreateAccountingPeriod(ctx context.Context, period *domain.AccountingPeriod) error {
+func (r LedgerPostgresRepository) CreatePeriod(ctx context.Context, period *domain.Period) error {
 	db := readDBFromCtx(ctx)
 
-	dbPeriod := marshallAccountingPeriod(period)
+	dbPeriod := marshallPeriod(period)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(dbPeriod).Error
 	}); err != nil {
-		return errors.Wrap(err, "failed to create accounting period")
+		return errors.Wrap(err, "failed to create period")
 	}
 	return nil
 }
 
-func (r LedgerPostgresRepository) UpdateAccountingPeriod(ctx context.Context, id uuid.UUID, updateFn func(period *domain.AccountingPeriod) (*domain.AccountingPeriod, error)) error {
+func (r LedgerPostgresRepository) UpdatePeriod(ctx context.Context, id uuid.UUID, updateFn func(period *domain.Period) (*domain.Period, error)) error {
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbPeriod := &accountingPeriod{}
+		dbPeriod := &period{}
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(dbPeriod, "id = ?", id).Error; err != nil {
 			return err
 		}
 
 		period, err := unmarshallPeriodToDomain(dbPeriod)
 		if err != nil {
-			return errors.Wrap(err, "unmarshall accounting period failed")
+			return errors.Wrap(err, "unmarshall period failed")
 		}
 
 		updatedPeriod, err := updateFn(period)
 		if err != nil {
-			return errors.Wrap(err, "update accounting period in transaction failed")
+			return errors.Wrap(err, "update period in transaction failed")
 		}
 
-		dbPeriod = marshallAccountingPeriod(updatedPeriod)
+		dbPeriod = marshallPeriod(updatedPeriod)
 		if err := tx.Save(dbPeriod).Error; err != nil {
-			return errors.Wrap(err, "save accounting period failed")
+			return errors.Wrap(err, "save period failed")
 		}
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "update accounting period failed")
+		return errors.Wrap(err, "update period failed")
 	}
 	return nil
 }
@@ -173,7 +173,7 @@ func (r LedgerPostgresRepository) ReadLedgerById(ctx context.Context, id uuid.UU
 	return unmarshallLedgerToQuery(&dbLedger), nil
 }
 
-func (r LedgerPostgresRepository) ReadAllLedgersByAccountingPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Ledger], error) {
+func (r LedgerPostgresRepository) ReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Ledger], error) {
 	db := readDBFromCtx(ctx)
 
 	var dbLedgers []ledger
@@ -198,12 +198,12 @@ func (r LedgerPostgresRepository) ReadAllLedgersByAccountingPeriod(ctx context.C
 	return data.NewPage(queryLedgers, pageable.Page(), pageable.Size(), int(count))
 }
 
-func (r LedgerPostgresRepository) ReadAccountingPeriodById(ctx context.Context, id uuid.UUID) (query.AccountingPeriod, error) {
+func (r LedgerPostgresRepository) ReadPeriodById(ctx context.Context, id uuid.UUID) (query.Period, error) {
 	db := readDBFromCtx(ctx)
 
-	dbPeriod := accountingPeriod{}
+	dbPeriod := period{}
 	if err := db.First(&dbPeriod, "id = ?", id).Error; err != nil {
-		return query.AccountingPeriod{}, errors.Wrap(err, "find accounting period by id failed")
+		return query.Period{}, errors.Wrap(err, "find period by id failed")
 	}
 
 	return unmarshallPeriodToQuery(&dbPeriod), nil
@@ -224,41 +224,41 @@ func (r LedgerPostgresRepository) ReadLedgerLogsByAccountIdsAndTimes(ctx context
 	return queryLedgerLogs, nil
 }
 
-func (r LedgerPostgresRepository) ReadAllAccountingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.AccountingPeriod], error) {
+func (r LedgerPostgresRepository) ReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {
 	db := readDBFromCtx(ctx)
 
-	var dbPeriods []accountingPeriod
+	var dbPeriods []period
 
 	db = data.AddFilter(pageable, db).Where("sob_id = ?", sobId)
 
 	var count int64
-	if err := db.Model(&ledger{}).Count(&count).Error; err != nil {
-		return data.Page[query.AccountingPeriod]{}, errors.Wrap(err, "count periods failed")
+	if err := db.Model(&period{}).Count(&count).Error; err != nil {
+		return data.Page[query.Period]{}, errors.Wrap(err, "count periods failed")
 	}
 
 	db = data.AddPaging(pageable, db)
 
 	if err := db.Find(&dbPeriods).Error; err != nil {
-		return data.Page[query.AccountingPeriod]{}, errors.Wrapf(err, "find accounting periods by sob %s failed", sobId)
+		return data.Page[query.Period]{}, errors.Wrapf(err, "find periods by sob %s failed", sobId)
 	}
 
-	var queryPeriods []query.AccountingPeriod
+	var queryPeriods []query.Period
 	for _, dbPeriod := range dbPeriods {
 		queryPeriods = append(queryPeriods, unmarshallPeriodToQuery(&dbPeriod))
 	}
 	return data.NewPage(queryPeriods, pageable.Page(), pageable.Size(), int(count))
 }
 
-func (r LedgerPostgresRepository) ReadOpenAccountingPeriod(ctx context.Context, sobId uuid.UUID) (query.AccountingPeriod, error) {
+func (r LedgerPostgresRepository) ReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
 	db := readDBFromCtx(ctx)
 
-	var dbPeriods []accountingPeriod
+	var dbPeriods []period
 	if err := db.Where("sob_id = ? AND is_closed = false", sobId).Find(&dbPeriods).Error; err != nil {
-		return query.AccountingPeriod{}, errors.Wrapf(err, "find open accounting period by sob %s failed", sobId)
+		return query.Period{}, errors.Wrapf(err, "find open period by sob %s failed", sobId)
 	}
 
 	if len(dbPeriods) != 1 {
-		return query.AccountingPeriod{}, errors.Errorf("expects 1 open accounting period, but find %d", len(dbPeriods))
+		return query.Period{}, errors.Errorf("expects 1 open period, but find %d", len(dbPeriods))
 	}
 
 	return unmarshallPeriodToQuery(&dbPeriods[0]), nil

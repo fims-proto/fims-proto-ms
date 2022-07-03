@@ -15,7 +15,7 @@ import (
 )
 
 // create ledgers for given period
-// using ending balance from previous accounting period
+// using ending balance from previous period
 
 type CreatePeriodLedgersCmd struct {
 	PeriodId uuid.UUID
@@ -52,21 +52,21 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 		}
 	}()
 
-	accountingPeriod, err := h.ledgerReadModel.ReadAccountingPeriodById(ctx, cmd.PeriodId)
+	period, err := h.ledgerReadModel.ReadPeriodById(ctx, cmd.PeriodId)
 	if err != nil {
-		return errors.Wrap(err, "failed to read accounting period")
+		return errors.Wrap(err, "failed to read period")
 	}
 
 	// read all accounts in sob
-	accountIds, err := h.accountService.ReadAllAccountIdsBySobId(ctx, accountingPeriod.SobId)
+	accountIds, err := h.accountService.ReadAllAccountIdsBySobId(ctx, period.SobId)
 	if err != nil {
 		return errors.Wrap(err, "failed to read all account Ids by SoB")
 	}
 
 	// read all ledgers from previous period
 	previousLedgers := make(map[uuid.UUID]query.Ledger) // key: AccountId, value: ledger
-	if accountingPeriod.PreviousPeriodId != uuid.Nil {
-		ledgersPage, err := h.ledgerReadModel.ReadAllLedgersByAccountingPeriod(ctx, accountingPeriod.PreviousPeriodId, data.Unpaged())
+	if period.PreviousPeriodId != uuid.Nil {
+		ledgersPage, err := h.ledgerReadModel.ReadAllLedgersByPeriod(ctx, period.PreviousPeriodId, data.Unpaged())
 		if err != nil {
 			return errors.Wrap(err, "failed to read ledgers by account period")
 		}

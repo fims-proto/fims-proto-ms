@@ -76,22 +76,22 @@ func (h CalculateLedgerBalanceHandler) calculateBalance(ctx context.Context, led
 		return nil, errors.Errorf("no ledgers found")
 	}
 
-	// verify accounting period: should be same
-	log.Info(ctx, "verify accounting period")
+	// verify period: should be same
+	log.Info(ctx, "verify period")
 	periods := make(map[uuid.UUID]string, 1)
 	periods[ledgers[0].PeriodId()] = "dummy"
 	for _, ledger := range ledgers {
 		_, ok := periods[ledger.PeriodId()]
 		if !ok {
-			return nil, errors.New("accounting period should be same")
+			return nil, errors.New("period should be same")
 		}
 	}
-	period, err := h.ledgerReadModel.ReadAccountingPeriodById(ctx, ledgers[0].PeriodId())
+	period, err := h.ledgerReadModel.ReadPeriodById(ctx, ledgers[0].PeriodId())
 	if err != nil {
-		return nil, errors.New("read accounting period failed")
+		return nil, errors.New("read period failed")
 	}
 	if period.IsClosed {
-		return nil, errors.New("accounting period is closed, ledger update not possible")
+		return nil, errors.New("period is closed, ledger update not possible")
 	}
 
 	// read account

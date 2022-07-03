@@ -9,7 +9,7 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type AccountingPeriod struct {
+type Period struct {
 	Id               uuid.UUID
 	SobId            uuid.UUID
 	PreviousPeriodId uuid.UUID

@@ -15,7 +15,7 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
-type AccountingPeriodResponse struct {
+type PeriodResponse struct {
 	Id               uuid.UUID `json:"id"`
 	SobId            uuid.UUID `json:"sobId"`
 	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
@@ -28,7 +28,7 @@ type AccountingPeriodResponse struct {
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
 
-type CreateAccountingPeriodRequest struct {
+type CreatePeriodRequest struct {
 	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
 	FinancialYear    int       `json:"financialYear"`
 	Number           int       `json:"number"`
@@ -57,8 +57,8 @@ type AccountResponse struct {
 	BalanceDirection  string `json:"balanceDirection"`
 }
 
-func mapFromPeriodQuery(p query.AccountingPeriod) AccountingPeriodResponse {
-	return AccountingPeriodResponse{
+func mapFromPeriodQuery(p query.Period) PeriodResponse {
+	return PeriodResponse{
 		Id:               p.Id,
 		SobId:            p.SobId,
 		PreviousPeriodId: p.PreviousPeriodId,
@@ -93,7 +93,7 @@ func mapFromLedgerQuery(l query.Ledger) LedgerResponse {
 	}
 }
 
-func (r CreateAccountingPeriodRequest) mapToCommand() command.CreatePeriodCmd {
+func (r CreatePeriodRequest) mapToCommand() command.CreatePeriodCmd {
 	return command.CreatePeriodCmd{
 		PreviousPeriodId: r.PreviousPeriodId,
 		SobId:            uuid.Nil,
