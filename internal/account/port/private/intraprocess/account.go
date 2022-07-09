@@ -31,8 +31,7 @@ func (i AccountInterface) ReadAccountById(ctx context.Context, accountId uuid.UU
 	return i.app.Queries.ReadAccounts.HandleReadById(ctx, accountId)
 }
 
-func (i AccountInterface) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
-	// one page that is big enough
+func (i AccountInterface) ReadAllAccountsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
 	accountsPage, err := i.app.Queries.ReadAccounts.HandleReadAll(ctx, sobId, data.Unpaged())
 	return accountsPage.Content, err
 }

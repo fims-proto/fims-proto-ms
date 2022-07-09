@@ -61,7 +61,7 @@ func (m mockReadService) ReadLedgerById(context.Context, uuid.UUID) (Ledger, err
 }
 
 func (m mockReadService) ReadAllLedgersByPeriod(context.Context, uuid.UUID, data.Pageable) (data.Page[Ledger], error) {
-	return data.NewPage([]Ledger{retrievedLedger}, 1, 1, 1)
+	return data.NewPage([]Ledger{retrievedLedger}, data.Unpaged(), 1)
 }
 
 func (m mockReadService) ReadAllPeriods(context.Context, uuid.UUID, data.Pageable) (data.Page[Period], error) {

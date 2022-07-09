@@ -93,7 +93,7 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 		queryAccounts = append(queryAccounts, queryAccount)
 	}
 
-	accountsPage, err := data.NewPage(queryAccounts, pageable.Page(), pageable.Size(), int(count))
+	accountsPage, err := data.NewPage(queryAccounts, pageable, int(count))
 	if err != nil {
 		return data.Page[query.Account]{}, errors.Wrap(err, "wrap to page failed")
 	}

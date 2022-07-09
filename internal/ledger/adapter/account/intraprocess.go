@@ -3,7 +3,7 @@ package account
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/account/app/query"
+	accountQuery "github/fims-proto/fims-proto-ms/internal/account/app/query"
 
 	accountPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 
@@ -34,19 +34,10 @@ func (a IntraProcessAdapter) ReadSuperiorAccountIds(ctx context.Context, account
 	return superiorAccountIds, nil
 }
 
-func (a IntraProcessAdapter) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+func (a IntraProcessAdapter) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]accountQuery.Account, error) {
 	return a.accountInterface.ReadAccountsByIds(ctx, accountIds)
 }
 
-func (a IntraProcessAdapter) ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]uuid.UUID, error) {
-	accounts, err := a.accountInterface.ReadAllAccountIdsBySobId(ctx, sobId)
-	if err != nil {
-		return nil, errors.Wrap(err, "read accounts by sob failed")
-	}
-
-	var accountIds []uuid.UUID
-	for _, account := range accounts {
-		accountIds = append(accountIds, account.Id)
-	}
-	return accountIds, nil
+func (a IntraProcessAdapter) ReadAllAccountsBySobId(ctx context.Context, sobId uuid.UUID) ([]accountQuery.Account, error) {
+	return a.accountInterface.ReadAllAccountsBySobId(ctx, sobId)
 }

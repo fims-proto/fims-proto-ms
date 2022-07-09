@@ -53,7 +53,7 @@ func (h Handler) ReadAllVouchers(c *gin.Context) {
 	for i, voucher := range page.Content {
 		vouchers[i] = mapFromVoucherQuery(voucher)
 	}
-	res, _ := data.NewPage(vouchers, page.Page, page.Size, page.NumberOfElements)
+	res, _ := data.NewPage(vouchers, pageable, page.NumberOfElements)
 	c.JSON(http.StatusOK, res)
 }
 

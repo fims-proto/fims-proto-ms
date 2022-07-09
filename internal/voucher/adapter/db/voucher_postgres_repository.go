@@ -100,7 +100,7 @@ func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sobId uu
 	for _, dbVoucher := range dbVouchers {
 		qvs = append(qvs, unmarshallToQuery(&dbVoucher))
 	}
-	return data.NewPage(qvs, pageable.Page(), pageable.Size(), int(count))
+	return data.NewPage(qvs, pageable, int(count))
 }
 
 func (r VoucherPostgresRepository) ReadById(ctx context.Context, uuid uuid.UUID) (query.Voucher, error) {

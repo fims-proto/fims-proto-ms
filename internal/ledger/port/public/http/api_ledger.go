@@ -76,7 +76,7 @@ func (h Handler) ReadAllPeriods(c *gin.Context) {
 	for i, period := range periodsPage.Content {
 		periods[i] = mapFromPeriodQuery(period)
 	}
-	resp, _ := data.NewPage(periods, periodsPage.Page, periodsPage.Size, periodsPage.NumberOfElements)
+	resp, _ := data.NewPage(periods, pageable, periodsPage.NumberOfElements)
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -179,7 +179,7 @@ func (h Handler) ReadAllLedgersByPeriod(c *gin.Context) {
 	for i, ledger := range ledgersPage.Content {
 		ledgers[i] = mapFromLedgerQuery(ledger)
 	}
-	resp, _ := data.NewPage(ledgers, ledgersPage.Page, ledgersPage.Size, ledgersPage.NumberOfElements)
+	resp, _ := data.NewPage(ledgers, pageable, ledgersPage.NumberOfElements)
 	c.JSON(http.StatusOK, resp)
 }
 

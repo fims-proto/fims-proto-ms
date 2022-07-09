@@ -1,6 +1,7 @@
 package db
 
 import (
+	"gorm.io/gorm/schema"
 	"time"
 
 	"github.com/spf13/viper"
@@ -34,6 +35,9 @@ func (d Connector) open(dsn string) (*gorm.DB, error) {
 		logLevel = logger.Info
 	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "a_",
+		},
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {

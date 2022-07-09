@@ -69,7 +69,7 @@ func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID,
 		return data.Page[Voucher]{}, errors.Wrap(err, "failed to enrich user in vouchers")
 	}
 
-	return data.NewPage(vouchers, vouchersPage.Page, vouchersPage.Size, vouchersPage.NumberOfElements)
+	return data.NewPage(vouchers, pageable, vouchersPage.NumberOfElements)
 }
 
 func (h ReadVouchersHandler) HandleReadById(ctx context.Context, id uuid.UUID) (Voucher, error) {

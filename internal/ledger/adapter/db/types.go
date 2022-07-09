@@ -27,6 +27,7 @@ type ledger struct {
 	Id             uuid.UUID `gorm:"type:uuid"`
 	PeriodId       uuid.UUID `gorm:"type:uuid;uniqueIndex:ledgers_periodid_accountid_key"`
 	AccountId      uuid.UUID `gorm:"type:uuid;uniqueIndex:ledgers_periodid_accountid_key"`
+	AccountNumber  string
 	OpeningBalance decimal.Decimal
 	EndingBalance  decimal.Decimal
 	Debit          decimal.Decimal
@@ -65,6 +66,7 @@ func marshallLedger(l *domain.Ledger) *ledger {
 		Id:             l.Id(),
 		PeriodId:       l.PeriodId(),
 		AccountId:      l.AccountId(),
+		AccountNumber:  l.AccountNumber(),
 		OpeningBalance: l.OpeningBalance(),
 		EndingBalance:  l.EndingBalance(),
 		Debit:          l.Debit(),
@@ -102,6 +104,7 @@ func unmarshallLedgerToDomain(dbl *ledger) (*domain.Ledger, error) {
 		dbl.Id,
 		dbl.PeriodId,
 		dbl.AccountId,
+		dbl.AccountNumber,
 		dbl.OpeningBalance,
 		dbl.EndingBalance,
 		dbl.Debit,

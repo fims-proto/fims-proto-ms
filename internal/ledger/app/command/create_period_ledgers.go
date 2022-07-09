@@ -58,7 +58,7 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 	}
 
 	// read all accounts in sob
-	accountIds, err := h.accountService.ReadAllAccountIdsBySobId(ctx, period.SobId)
+	accounts, err := h.accountService.ReadAllAccountsBySobId(ctx, period.SobId)
 	if err != nil {
 		return errors.Wrap(err, "failed to read all account Ids by SoB")
 	}
@@ -77,16 +77,16 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 
 	// prepare ledgers in this period
 	var ledgers []*domain.Ledger
-	for _, accountId := range accountIds {
+	for _, account := range accounts {
 		// use ending balance from previous period as opening balance if available
 		openingBalance := decimal.Zero
-		previousLedger, ok := previousLedgers[accountId]
+		previousLedger, ok := previousLedgers[account.Id]
 		if ok {
 			// TODO how to ensure the endingBalance is up-to-date?
 			openingBalance = previousLedger.EndingBalance
 		}
 
-		ledger, err := domain.NewLedger(uuid.New(), cmd.PeriodId, accountId, openingBalance, decimal.Zero, decimal.Zero, decimal.Zero)
+		ledger, err := domain.NewLedger(uuid.New(), cmd.PeriodId, account.Id, account.AccountNumber, openingBalance, decimal.Zero, decimal.Zero, decimal.Zero)
 		if err != nil {
 			return errors.Wrap(err, "failed to create ledger domain model")
 		}

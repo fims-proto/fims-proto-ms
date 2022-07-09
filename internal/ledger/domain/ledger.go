@@ -12,13 +12,14 @@ type Ledger struct {
 	id             uuid.UUID
 	periodId       uuid.UUID
 	accountId      uuid.UUID
+	accountNumber  string
 	openingBalance decimal.Decimal
 	endingBalance  decimal.Decimal
 	debit          decimal.Decimal
 	credit         decimal.Decimal
 }
 
-func NewLedger(id, periodId, accountId uuid.UUID, openingBalance, endingBalance, debit, credit decimal.Decimal) (*Ledger, error) {
+func NewLedger(id, periodId, accountId uuid.UUID, accountNumber string, openingBalance, endingBalance, debit, credit decimal.Decimal) (*Ledger, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil ledger id")
 	}
@@ -28,11 +29,15 @@ func NewLedger(id, periodId, accountId uuid.UUID, openingBalance, endingBalance,
 	if accountId == uuid.Nil {
 		return nil, errors.New("nil account id")
 	}
+	if accountNumber == "" {
+		return nil, errors.New("empty account number")
+	}
 
 	return &Ledger{
 		id:             id,
 		periodId:       periodId,
 		accountId:      accountId,
+		accountNumber:  accountNumber,
 		openingBalance: openingBalance,
 		endingBalance:  endingBalance,
 		debit:          debit,
@@ -50,6 +55,10 @@ func (l Ledger) PeriodId() uuid.UUID {
 
 func (l Ledger) AccountId() uuid.UUID {
 	return l.accountId
+}
+
+func (l Ledger) AccountNumber() string {
+	return l.accountNumber
 }
 
 func (l Ledger) OpeningBalance() decimal.Decimal {

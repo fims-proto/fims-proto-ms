@@ -11,5 +11,5 @@ import (
 type AccountService interface {
 	ReadSuperiorAccountIds(ctx context.Context, accountId uuid.UUID) ([]uuid.UUID, error)
 	ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]accountQuery.Account, error)
-	ReadAllAccountIdsBySobId(ctx context.Context, sobId uuid.UUID) ([]uuid.UUID, error)
+	ReadAllAccountsBySobId(ctx context.Context, sobId uuid.UUID) ([]accountQuery.Account, error)
 }

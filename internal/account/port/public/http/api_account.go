@@ -52,7 +52,7 @@ func (h Handler) ReadAllAccounts(c *gin.Context) {
 	for i, account := range accountsPage.Content {
 		accountResponses[i] = mapFromAccountQuery(account)
 	}
-	resp, _ := data.NewPage(accountResponses, accountsPage.Page, accountsPage.Size, accountsPage.NumberOfElements)
+	resp, _ := data.NewPage(accountResponses, pageable, accountsPage.NumberOfElements)
 	c.JSON(http.StatusOK, resp)
 }
 

@@ -195,7 +195,7 @@ func (r LedgerPostgresRepository) ReadAllLedgersByPeriod(ctx context.Context, pe
 	for i, dbLedger := range dbLedgers {
 		queryLedgers[i] = unmarshallLedgerToQuery(&dbLedger)
 	}
-	return data.NewPage(queryLedgers, pageable.Page(), pageable.Size(), int(count))
+	return data.NewPage(queryLedgers, pageable, int(count))
 }
 
 func (r LedgerPostgresRepository) ReadPeriodById(ctx context.Context, id uuid.UUID) (query.Period, error) {
@@ -246,7 +246,7 @@ func (r LedgerPostgresRepository) ReadAllPeriods(ctx context.Context, sobId uuid
 	for _, dbPeriod := range dbPeriods {
 		queryPeriods = append(queryPeriods, unmarshallPeriodToQuery(&dbPeriod))
 	}
-	return data.NewPage(queryPeriods, pageable.Page(), pageable.Size(), int(count))
+	return data.NewPage(queryPeriods, pageable, int(count))
 }
 
 func (r LedgerPostgresRepository) ReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
