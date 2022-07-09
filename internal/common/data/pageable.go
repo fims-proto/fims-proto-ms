@@ -21,7 +21,7 @@ type pageRequest struct {
 	filters []Filter
 }
 
-func NewPageRequest(page, size int, sorts []Sort, chooses []Choose, filters []Filter) (Pageable, error) {
+func newPageRequest(page, size int, sorts []Sort, chooses []Choose, filters []Filter) (Pageable, error) {
 	if page < 1 {
 		return nil, errors.New("zero page number. page number starts with 1")
 	}

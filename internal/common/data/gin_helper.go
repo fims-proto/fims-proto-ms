@@ -36,5 +36,5 @@ func NewPageableFromRequest(c *gin.Context) (Pageable, error) {
 		return nil, err
 	}
 
-	return NewPageRequest(int(page), int(size), sorts, chooses, filters)
+	return newPageRequest(int(page), int(size), sorts, chooses, filters)
 }
