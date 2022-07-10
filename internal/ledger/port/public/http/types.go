@@ -15,6 +15,25 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
+type CreatePeriodRequest struct {
+	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
+	FinancialYear    int       `json:"financialYear"`
+	Number           int       `json:"number"`
+	OpeningTime      time.Time `json:"openingTime"`
+	EndingTime       time.Time `json:"endingTime"`
+}
+
+func (r CreatePeriodRequest) mapToCommand() command.CreatePeriodCmd {
+	return command.CreatePeriodCmd{
+		PreviousPeriodId: r.PreviousPeriodId,
+		SobId:            uuid.Nil,
+		FinancialYear:    r.FinancialYear,
+		Number:           r.Number,
+		OpeningTime:      r.OpeningTime,
+		EndingTime:       r.EndingTime,
+	}
+}
+
 type PeriodResponse struct {
 	Id               uuid.UUID `json:"id"`
 	SobId            uuid.UUID `json:"sobId"`
@@ -26,14 +45,6 @@ type PeriodResponse struct {
 	IsClosed         bool      `json:"isClosed"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
-}
-
-type CreatePeriodRequest struct {
-	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
-	FinancialYear    int       `json:"financialYear"`
-	Number           int       `json:"number"`
-	OpeningTime      time.Time `json:"openingTime"`
-	EndingTime       time.Time `json:"endingTime"`
 }
 
 type LedgerResponse struct {
@@ -90,16 +101,5 @@ func mapFromLedgerQuery(l query.Ledger) LedgerResponse {
 		Credit:         l.Credit,
 		CreatedAt:      l.CreatedAt,
 		UpdatedAt:      l.UpdatedAt,
-	}
-}
-
-func (r CreatePeriodRequest) mapToCommand() command.CreatePeriodCmd {
-	return command.CreatePeriodCmd{
-		PreviousPeriodId: r.PreviousPeriodId,
-		SobId:            uuid.Nil,
-		FinancialYear:    r.FinancialYear,
-		Number:           r.Number,
-		OpeningTime:      r.OpeningTime,
-		EndingTime:       r.EndingTime,
 	}
 }

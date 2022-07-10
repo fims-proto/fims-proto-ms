@@ -48,11 +48,11 @@ func (h Handler) ReadAllAccounts(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	accountResponses := make([]AccountResponse, len(accountsPage.Content))
-	for i, account := range accountsPage.Content {
+	accountResponses := make([]AccountResponse, len(accountsPage.Content()))
+	for i, account := range accountsPage.Content() {
 		accountResponses[i] = mapFromAccountQuery(account)
 	}
-	resp, _ := data.NewPage(accountResponses, pageable, accountsPage.NumberOfElements)
+	resp, _ := data.NewPage(accountResponses, pageable, accountsPage.NumberOfElements())
 	c.JSON(http.StatusOK, resp)
 }
 

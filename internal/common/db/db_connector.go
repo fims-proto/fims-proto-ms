@@ -1,8 +1,9 @@
 package db
 
 import (
-	"gorm.io/gorm/schema"
 	"time"
+
+	"gorm.io/gorm/schema"
 
 	"github.com/spf13/viper"
 

@@ -56,20 +56,20 @@ func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountS
 func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Voucher], error) {
 	vouchersPage, err := h.readModel.ReadAllVouchers(ctx, sobId, pageable)
 	if err != nil {
-		return data.Page[Voucher]{}, errors.Wrap(err, "failed to read all vouchers")
+		return nil, errors.Wrap(err, "failed to read all vouchers")
 	}
 
-	vouchers, err := h.enrichLineItemAccountNumber(ctx, vouchersPage.Content)
+	vouchers, err := h.enrichLineItemAccountNumber(ctx, vouchersPage.Content())
 	if err != nil {
-		return data.Page[Voucher]{}, errors.Wrap(err, "failed to enrich account number in vouchers")
+		return nil, errors.Wrap(err, "failed to enrich account number in vouchers")
 	}
 
 	vouchers, err = h.enrichUserName(ctx, vouchers)
 	if err != nil {
-		return data.Page[Voucher]{}, errors.Wrap(err, "failed to enrich user in vouchers")
+		return nil, errors.Wrap(err, "failed to enrich user in vouchers")
 	}
 
-	return data.NewPage(vouchers, pageable, vouchersPage.NumberOfElements)
+	return data.NewPage(vouchers, pageable, vouchersPage.NumberOfElements())
 }
 
 func (h ReadVouchersHandler) HandleReadById(ctx context.Context, id uuid.UUID) (Voucher, error) {

@@ -72,11 +72,11 @@ func (h Handler) ReadAllPeriods(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	periods := make([]PeriodResponse, len(periodsPage.Content))
-	for i, period := range periodsPage.Content {
+	periods := make([]PeriodResponse, len(periodsPage.Content()))
+	for i, period := range periodsPage.Content() {
 		periods[i] = mapFromPeriodQuery(period)
 	}
-	resp, _ := data.NewPage(periods, pageable, periodsPage.NumberOfElements)
+	resp, _ := data.NewPage(periods, pageable, periodsPage.NumberOfElements())
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -175,11 +175,11 @@ func (h Handler) ReadAllLedgersByPeriod(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	ledgers := make([]LedgerResponse, len(ledgersPage.Content))
-	for i, ledger := range ledgersPage.Content {
+	ledgers := make([]LedgerResponse, len(ledgersPage.Content()))
+	for i, ledger := range ledgersPage.Content() {
 		ledgers[i] = mapFromLedgerQuery(ledger)
 	}
-	resp, _ := data.NewPage(ledgers, pageable, ledgersPage.NumberOfElements)
+	resp, _ := data.NewPage(ledgers, pageable, ledgersPage.NumberOfElements())
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -212,5 +212,5 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/period/:periodId", h.ReadPeriodById)
 	r.POST("/sob/:sobId/periods/", h.CreatePeriod)
 	r.GET("/sob/:sobId/period/:periodId/ledgers/", h.ReadAllLedgersByPeriod)
-	r.POST("/sob/:sobId/period/rperiodId/ledgers/calculate", h.CalculatePeriodLedgers)
+	r.POST("/sob/:sobId/period/:periodId/ledgers/calculate", h.CalculatePeriodLedgers)
 }

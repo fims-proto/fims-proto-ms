@@ -53,26 +53,26 @@ func (h ReadLedgerHandler) HandleReadPeriodById(ctx context.Context, id uuid.UUI
 func (h ReadLedgerHandler) HandleReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {
 	ledgersPage, err := h.readModel.ReadAllLedgersByPeriod(ctx, periodId, pageable)
 	if err != nil {
-		return data.Page[Ledger]{}, errors.Wrap(err, "failed on reading ledgers by period")
+		return nil, errors.Wrap(err, "failed on reading ledgers by period")
 	}
 
 	var accountIds []uuid.UUID
-	for _, ledger := range ledgersPage.Content {
+	for _, ledger := range ledgersPage.Content() {
 		accountIds = append(accountIds, ledger.Account.Id)
 	}
 
 	accounts, err := h.accountService.ReadAccountsByIds(ctx, accountIds)
 	if err != nil {
-		return data.Page[Ledger]{}, errors.Wrap(err, "failed to read account by ids")
+		return nil, errors.Wrap(err, "failed to read account by ids")
 	}
-	for i := range ledgersPage.Content {
-		account := accounts[ledgersPage.Content[i].Account.Id]
+	for i := range ledgersPage.Content() {
+		account := accounts[ledgersPage.Content()[i].Account.Id]
 
-		ledgersPage.Content[i].Account.SuperiorAccountId = account.SuperiorAccountId
-		ledgersPage.Content[i].Account.AccountNumber = account.AccountNumber
-		ledgersPage.Content[i].Account.Title = account.Title
-		ledgersPage.Content[i].Account.AccountType = account.AccountType
-		ledgersPage.Content[i].Account.BalanceDirection = account.BalanceDirection
+		ledgersPage.Content()[i].Account.SuperiorAccountId = account.SuperiorAccountId
+		ledgersPage.Content()[i].Account.AccountNumber = account.AccountNumber
+		ledgersPage.Content()[i].Account.Title = account.Title
+		ledgersPage.Content()[i].Account.AccountType = account.AccountType
+		ledgersPage.Content()[i].Account.BalanceDirection = account.BalanceDirection
 	}
 	return ledgersPage, nil
 }

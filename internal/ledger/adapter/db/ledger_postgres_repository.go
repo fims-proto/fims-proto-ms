@@ -182,13 +182,13 @@ func (r LedgerPostgresRepository) ReadAllLedgersByPeriod(ctx context.Context, pe
 
 	var count int64
 	if err := db.Model(&ledger{}).Count(&count).Error; err != nil {
-		return data.Page[query.Ledger]{}, errors.Wrap(err, "count ledgers failed")
+		return nil, errors.Wrap(err, "count ledgers failed")
 	}
 
 	db = data.AddPaging(pageable, db)
 
 	if err := db.Find(&dbLedgers).Error; err != nil {
-		return data.Page[query.Ledger]{}, errors.Wrapf(err, "find ledgers by period %s failed", periodId)
+		return nil, errors.Wrapf(err, "find ledgers by period %s failed", periodId)
 	}
 
 	queryLedgers := make([]query.Ledger, len(dbLedgers))
@@ -233,13 +233,13 @@ func (r LedgerPostgresRepository) ReadAllPeriods(ctx context.Context, sobId uuid
 
 	var count int64
 	if err := db.Model(&period{}).Count(&count).Error; err != nil {
-		return data.Page[query.Period]{}, errors.Wrap(err, "count periods failed")
+		return nil, errors.Wrap(err, "count periods failed")
 	}
 
 	db = data.AddPaging(pageable, db)
 
 	if err := db.Find(&dbPeriods).Error; err != nil {
-		return data.Page[query.Period]{}, errors.Wrapf(err, "find periods by sob %s failed", sobId)
+		return nil, errors.Wrapf(err, "find periods by sob %s failed", sobId)
 	}
 
 	var queryPeriods []query.Period

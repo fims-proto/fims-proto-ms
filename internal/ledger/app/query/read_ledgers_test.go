@@ -147,7 +147,7 @@ func TestReadLedgerHandler_HandleReadAllLedgersByPeriod(t *testing.T) {
 				t.Errorf("HandleReadAllLedgersByPeriod() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got.Content, tt.want) {
+			if !reflect.DeepEqual(got.Content(), tt.want) {
 				t.Errorf("HandleReadAllLedgersByPeriod() got = %v, want %v", got, tt.want)
 			}
 		})

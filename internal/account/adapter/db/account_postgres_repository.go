@@ -75,27 +75,27 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 
 	var count int64
 	if err := db.Model(&account{}).Count(&count).Error; err != nil {
-		return data.Page[query.Account]{}, errors.Wrap(err, "count accounts failed")
+		return nil, errors.Wrap(err, "count accounts failed")
 	}
 
 	db = data.AddPaging(pageable, db)
 
 	if err := db.Find(&dbAccounts).Error; err != nil {
-		return data.Page[query.Account]{}, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
+		return nil, errors.Wrapf(err, "find accounts by sobId %s failed", sobId)
 	}
 
 	var queryAccounts []query.Account
 	for _, dbAccount := range dbAccounts {
 		queryAccount, err := unmarshallToQuery(dbAccount)
 		if err != nil {
-			return data.Page[query.Account]{}, errors.Wrap(err, "failed to unmarshall account")
+			return nil, errors.Wrap(err, "failed to unmarshall account")
 		}
 		queryAccounts = append(queryAccounts, queryAccount)
 	}
 
 	accountsPage, err := data.NewPage(queryAccounts, pageable, int(count))
 	if err != nil {
-		return data.Page[query.Account]{}, errors.Wrap(err, "wrap to page failed")
+		return nil, errors.Wrap(err, "wrap to page failed")
 	}
 
 	return accountsPage, nil

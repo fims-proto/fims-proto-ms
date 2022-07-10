@@ -49,11 +49,11 @@ func (h Handler) ReadAllVouchers(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	vouchers := make([]VoucherResponse, len(page.Content))
-	for i, voucher := range page.Content {
+	vouchers := make([]VoucherResponse, len(page.Content()))
+	for i, voucher := range page.Content() {
 		vouchers[i] = mapFromVoucherQuery(voucher)
 	}
-	res, _ := data.NewPage(vouchers, pageable, page.NumberOfElements)
+	res, _ := data.NewPage(vouchers, pageable, page.NumberOfElements())
 	c.JSON(http.StatusOK, res)
 }
 

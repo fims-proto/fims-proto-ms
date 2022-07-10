@@ -70,7 +70,7 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 		if err != nil {
 			return errors.Wrap(err, "failed to read ledgers by account period")
 		}
-		for _, ledger := range ledgersPage.Content {
+		for _, ledger := range ledgersPage.Content() {
 			previousLedgers[ledger.Account.Id] = ledger
 		}
 	}
