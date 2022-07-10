@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
@@ -107,7 +108,11 @@ func (h CalculateLedgerBalanceHandler) calculateBalance(ctx context.Context, led
 
 	// read ledger logs
 	log.Info(ctx, "read ledger logs")
-	ledgerLogs, err := h.ledgerReadModel.ReadLedgerLogsByAccountIdsAndTimes(ctx, accountIds, period.OpeningTime, period.EndingTime)
+	endingTime := period.EndingTime
+	if endingTime.IsZero() {
+		endingTime = time.Now()
+	}
+	ledgerLogs, err := h.ledgerReadModel.ReadLedgerLogsByAccountIdsAndTimes(ctx, accountIds, period.OpeningTime, endingTime)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read ledger logs by AccountId and opening and ending time")
 	}

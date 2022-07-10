@@ -111,7 +111,7 @@ func (r LedgerPostgresRepository) UpdatePeriodLedgers(ctx context.Context, perio
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		var dbLedgers []ledger
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&dbLedgers, "periodId = ?", periodId).Error; err != nil {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&dbLedgers, "period_id = ?", periodId).Error; err != nil {
 			return err
 		}
 		return r.updateLedgers(tx, dbLedgers, updateFn)
