@@ -33,18 +33,19 @@ func (a *Application) Inject(
 	repo domain.Repository,
 	accountQueryService query.AccountService,
 	userQueryService query.UserService,
+	ledgerQueryService query.LedgerService,
 	accountService command.AccountService,
 	ledgerService command.LedgerService,
 	counterService command.CounterService,
 ) {
 	a.Queries = Queries{
-		ReadVouchers: query.NewReadVouchersHandler(readModel, accountQueryService, userQueryService),
+		ReadVouchers: query.NewReadVouchersHandler(readModel, accountQueryService, userQueryService, ledgerQueryService),
 	}
 	a.Commands = Commands{
-		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, counterService),
+		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, counterService, ledgerService),
 		AuditVoucher:  command.NewAuditVoucherHandler(repo),
 		ReviewVoucher: command.NewReviewVoucherHandler(repo),
-		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService),
+		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService, ledgerService),
 		PostVoucher:   command.NewPostVoucherHandler(readModel, repo, ledgerService),
 		Migrate:       command.NewMigrationHandler(repo),
 	}

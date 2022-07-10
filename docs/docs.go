@@ -121,7 +121,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.PeriodResponse"
+                            "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
                         }
                     },
                     "500": {
@@ -166,7 +166,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.PeriodResponse"
+                            "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
                         }
                     },
                     "404": {
@@ -367,7 +367,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.PeriodResponse"
+                                "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
                             }
                         }
                     },
@@ -413,7 +413,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.PeriodResponse"
+                            "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
                         }
                     },
                     "400": {
@@ -1348,41 +1348,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "financialYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "previousPeriodId": {
-                    "type": "string"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "http.ReviewVoucherRequest": {
             "type": "object",
             "properties": {
@@ -1498,6 +1463,9 @@ const docTemplate = `{
                 "number": {
                     "type": "string"
                 },
+                "period": {
+                    "$ref": "#/definitions/internal_voucher_port_public_http.PeriodResponse"
+                },
                 "reviewer": {
                     "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
                 },
@@ -1579,6 +1547,41 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_ledger_port_public_http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "financialYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "previousPeriodId": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_user_port_public_http.UserResponse": {
             "type": "object",
             "properties": {
@@ -1592,6 +1595,29 @@ const docTemplate = `{
                     "type": "any"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_voucher_port_public_http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "endingTime": {
+                    "type": "string"
+                },
+                "financialYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "openingTime": {
                     "type": "string"
                 }
             }

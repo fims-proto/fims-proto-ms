@@ -24,9 +24,10 @@ type CreateVoucherHandler struct {
 	repo           domain.Repository
 	accountService AccountService
 	counterService CounterService
+	ledgerService  LedgerService
 }
 
-func NewCreateVoucherHandler(repo domain.Repository, accountService AccountService, counterService CounterService) CreateVoucherHandler {
+func NewCreateVoucherHandler(repo domain.Repository, accountService AccountService, counterService CounterService, ledgerService LedgerService) CreateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -36,10 +37,14 @@ func NewCreateVoucherHandler(repo domain.Repository, accountService AccountServi
 	if counterService == nil {
 		panic("nil counter service")
 	}
+	if ledgerService == nil {
+		panic("nil ledger service")
+	}
 	return CreateVoucherHandler{
 		repo:           repo,
 		accountService: accountService,
 		counterService: counterService,
+		ledgerService:  ledgerService,
 	}
 }
 
@@ -51,6 +56,16 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 			log.Err(ctx, err, "handle creating failed")
 		}
 	}()
+
+	// read period by transaction time
+	period, err := h.ledgerService.ReadPeriodByTime(ctx, cmd.SobId, cmd.TransactionTime)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "failed to read period by transaction time")
+	}
+
+	if period.IsClosed {
+		return uuid.Nil, errors.New("period is closed")
+	}
 
 	// validate account numbers
 	var accountNumbers []string
@@ -91,6 +106,7 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 	newVoucher, err := domain.NewVoucher(
 		uuid.New(),
 		cmd.SobId,
+		period.Id,
 		cmd.VoucherType,
 		identifier,
 		cmd.AttachmentQuantity,

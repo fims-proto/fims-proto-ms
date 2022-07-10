@@ -54,9 +54,19 @@ type UserResponse struct {
 	Traits any    `json:"traits"`
 }
 
+type PeriodResponse struct {
+	Id            string    `json:"id"`
+	FinancialYear int       `json:"financialYear"`
+	Number        int       `json:"number"`
+	OpeningTime   time.Time `json:"openingTime"`
+	EndingTime    time.Time `json:"endingTime"`
+	IsClosed      bool      `json:"isClosed"`
+}
+
 type VoucherResponse struct {
-	Id                 string             `json:"id"`
-	SobId              string             `json:"sobId"`
+	Id                 string `json:"id"`
+	SobId              string `json:"sobId"`
+	Period             PeriodResponse
 	Number             string             `json:"number"`
 	Type               string             `json:"type"`
 	AttachmentQuantity int                `json:"attachmentQuantity"`

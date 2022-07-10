@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -133,6 +135,18 @@ func TestVoucher_UpdateTransactionTime(t *testing.T) {
 			},
 		},
 		{
+			name: "futureTransactionTime_success",
+			fields: fields{
+				isReviewed: false,
+				isAudited:  false,
+			},
+			args: args{transactionTime: time.Now().Add(time.Hour)},
+			wantErr: func(t assert.TestingT, err error, i ...interface{}) bool {
+				assert.Equal(t, errVoucherFutureTransactionTime, err.(domainErr).Slug())
+				return true
+			},
+		},
+		{
 			name: "voucherReviewed_success",
 			fields: fields{
 				isReviewed: true,
@@ -163,7 +177,7 @@ func TestVoucher_UpdateTransactionTime(t *testing.T) {
 				isReviewed: tt.fields.isReviewed,
 				isAudited:  tt.fields.isAudited,
 			}
-			tt.wantErr(t, v.UpdateTransactionTime(tt.args.transactionTime), fmt.Sprintf("UpdateTransactionTime(%v)", tt.args.transactionTime))
+			tt.wantErr(t, v.UpdateTransactionTime(tt.args.transactionTime, uuid.New()), fmt.Sprintf("UpdateTransactionTime(%v)", tt.args.transactionTime))
 		})
 	}
 }

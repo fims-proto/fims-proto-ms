@@ -2,13 +2,17 @@ package command
 
 import (
 	"context"
+	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+
+	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 
 	"github.com/google/uuid"
 )
 
 type LedgerService interface {
+	ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (ledgerQuery.Period, error)
 	PostVoucher(ctx context.Context, voucher query.Voucher) error
 }
 

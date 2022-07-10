@@ -36,7 +36,8 @@ func TestApp_HandleUpdateVoucherHandler(t *testing.T) {
 			repoMock := newVoucherRepoMock()
 			repoMock.initTestData()
 			accServiceMock := newAccountService()
-			handler := NewUpdateVoucherHandler(repoMock, &accServiceMock)
+			ledServiceMock := newLedgerService()
+			handler := NewUpdateVoucherHandler(repoMock, &accServiceMock, &ledServiceMock)
 			err := handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
@@ -84,6 +85,7 @@ func (r voucherRepoMock) initTestData() {
 	items := []*domain.LineItem{item0, item1}
 	v, _ := domain.NewVoucher(
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),
+		uuid.New(),
 		uuid.New(),
 		"GENERAL_VOUCHER",
 		"1",

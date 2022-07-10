@@ -16,7 +16,9 @@ type LedgerReadModel interface {
 	ReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error)
 	ReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error)
 	ReadPeriodById(ctx context.Context, id uuid.UUID) (Period, error)
+	ReadPeriodsByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]Period, error)
 	ReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
+	ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error)
 	ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountId []uuid.UUID, openingTime, endingTime time.Time) ([]LedgerLog, error)
 }
 
@@ -48,6 +50,14 @@ func (h ReadLedgerHandler) HandleReadOpenPeriod(ctx context.Context, sobId uuid.
 
 func (h ReadLedgerHandler) HandleReadPeriodById(ctx context.Context, id uuid.UUID) (Period, error) {
 	return h.readModel.ReadPeriodById(ctx, id)
+}
+
+func (h ReadLedgerHandler) HandleReadPeriodsByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]Period, error) {
+	return h.readModel.ReadPeriodsByIds(ctx, ids)
+}
+
+func (h ReadLedgerHandler) HandleReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error) {
+	return h.readModel.ReadPeriodByTime(ctx, sobId, timePoint)
 }
 
 func (h ReadLedgerHandler) HandleReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {

@@ -20,18 +20,23 @@ type UpdateVoucherCmd struct {
 type UpdateVoucherHandler struct {
 	repo           domain.Repository
 	accountService AccountService
+	ledgerService  LedgerService
 }
 
-func NewUpdateVoucherHandler(repo domain.Repository, accountService AccountService) UpdateVoucherHandler {
+func NewUpdateVoucherHandler(repo domain.Repository, accountService AccountService, ledgerService LedgerService) UpdateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 	if accountService == nil {
 		panic("nil account service")
 	}
+	if ledgerService == nil {
+		panic("nil ledger service")
+	}
 	return UpdateVoucherHandler{
 		repo:           repo,
 		accountService: accountService,
+		ledgerService:  ledgerService,
 	}
 }
 
@@ -91,8 +96,17 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 			}
 
 			if !cmd.TransactionTime.IsZero() {
+				period, err := h.ledgerService.ReadPeriodByTime(ctx, v.SobId(), cmd.TransactionTime)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to read period by transaction time")
+				}
+
+				if period.IsClosed {
+					return nil, errors.New("period is closed")
+				}
+
 				log.Info(ctx, "updating voucher transaction time")
-				if err := v.UpdateTransactionTime(cmd.TransactionTime); err != nil {
+				if err := v.UpdateTransactionTime(cmd.TransactionTime, period.Id); err != nil {
 					return nil, err
 				}
 			}

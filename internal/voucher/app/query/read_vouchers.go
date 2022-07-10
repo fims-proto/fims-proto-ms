@@ -34,9 +34,10 @@ type ReadVouchersHandler struct {
 	readModel      VouchersReadModel
 	accountService AccountService
 	userService    UserService
+	ledgerService  LedgerService
 }
 
-func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountService, userService UserService) ReadVouchersHandler {
+func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountService, userService UserService, ledgerService LedgerService) ReadVouchersHandler {
 	if readModel == nil {
 		panic("nil readModel")
 	}
@@ -46,10 +47,14 @@ func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountS
 	if userService == nil {
 		panic("nil user service")
 	}
+	if ledgerService == nil {
+		panic("nil ledger service")
+	}
 	return ReadVouchersHandler{
 		readModel:      readModel,
 		accountService: accountService,
 		userService:    userService,
+		ledgerService:  ledgerService,
 	}
 }
 
@@ -69,6 +74,11 @@ func (h ReadVouchersHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID,
 		return nil, errors.Wrap(err, "failed to enrich user in vouchers")
 	}
 
+	vouchers, err = h.enrichPeriod(ctx, vouchers)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to enrich period in vouchers")
+	}
+
 	return data.NewPage(vouchers, pageable, vouchersPage.NumberOfElements())
 }
 
@@ -86,6 +96,11 @@ func (h ReadVouchersHandler) HandleReadById(ctx context.Context, id uuid.UUID) (
 	singletonList, err = h.enrichUserName(ctx, singletonList)
 	if err != nil {
 		return Voucher{}, errors.Wrap(err, "failed to enrich user in voucher")
+	}
+
+	singletonList, err = h.enrichPeriod(ctx, singletonList)
+	if err != nil {
+		return Voucher{}, errors.Wrap(err, "failed to enrich period in voucher")
 	}
 
 	return singletonList[0], nil
@@ -136,6 +151,13 @@ func (h ReadVouchersHandler) enrichUserName(ctx context.Context, vouchers []Vouc
 		return nil, errors.Wrap(err, "failed to read users by Ids")
 	}
 
+	convertUser := func(user User, users map[uuid.UUID]userQuery.User) User {
+		return User{
+			Id:     user.Id,
+			Traits: users[user.Id].Traits,
+		}
+	}
+
 	for i := range vouchers {
 		if vouchers[i].Creator.Id != uuid.Nil {
 			vouchers[i].Creator = convertUser(vouchers[i].Creator, users)
@@ -151,9 +173,31 @@ func (h ReadVouchersHandler) enrichUserName(ctx context.Context, vouchers []Vouc
 	return vouchers, nil
 }
 
-func convertUser(user User, users map[uuid.UUID]userQuery.User) User {
-	return User{
-		Id:     user.Id,
-		Traits: users[user.Id].Traits,
+func (h ReadVouchersHandler) enrichPeriod(ctx context.Context, vouchers []Voucher) ([]Voucher, error) {
+	periodSet := make(map[uuid.UUID]void)
+	for _, voucher := range vouchers {
+		periodSet[voucher.Period.Id] = empty
 	}
+
+	periods, err := h.ledgerService.ReadPeriodsByIds(ctx, toKeySlice[uuid.UUID, void](periodSet))
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read periods by Ids")
+	}
+
+	for i := range vouchers {
+		period, ok := periods[vouchers[i].Period.Id]
+		if !ok {
+			return nil, errors.Errorf("period not found by id: %s", vouchers[i].Period.Id)
+		}
+		vouchers[i].Period = Period{
+			Id:            period.Id,
+			FinancialYear: period.FinancialYear,
+			Number:        period.Number,
+			OpeningTime:   period.OpeningTime,
+			EndingTime:    period.EndingTime,
+			IsClosed:      period.IsClosed,
+		}
+	}
+
+	return vouchers, nil
 }

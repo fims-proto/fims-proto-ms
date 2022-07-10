@@ -16,21 +16,23 @@ var sobId = uuid.New()
 func TestDomain_NewVoucher(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		name        string
-		voucherType string
-		id          uuid.UUID
-		sobId       uuid.UUID
-		number      string
-		items       []*LineItem
-		verify      func(t *testing.T, voucher *Voucher, err error)
+		name            string
+		voucherType     string
+		id              uuid.UUID
+		sobId           uuid.UUID
+		number          string
+		items           []*LineItem
+		transactionTime time.Time
+		verify          func(t *testing.T, voucher *Voucher, err error)
 	}{
 		{
-			name:        "normal_success",
-			voucherType: "GENERAL_VOUCHER",
-			id:          uuid.NewSHA1(uuid.Nil, []byte("test_uuid")),
-			sobId:       sobId,
-			number:      "1",
-			items:       prepareBalancedItems(),
+			name:            "normal_success",
+			voucherType:     "GENERAL_VOUCHER",
+			id:              uuid.NewSHA1(uuid.Nil, []byte("test_uuid")),
+			sobId:           sobId,
+			number:          "1",
+			items:           prepareBalancedItems(),
+			transactionTime: time.Now(),
 			verify: func(t *testing.T, voucher *Voucher, err error) {
 				require.NoError(t, err)
 				assert.Equal(t, uuid.NewSHA1(uuid.Nil, []byte("test_uuid")), voucher.Id())
@@ -40,27 +42,42 @@ func TestDomain_NewVoucher(t *testing.T) {
 			},
 		},
 		{
-			name:        "imbalanced_error",
-			voucherType: "GENERAL_VOUCHER",
-			id:          uuid.New(),
-			sobId:       sobId,
-			number:      "1",
-			items:       prepareImbalancedItems(),
+			name:            "imbalanced_error",
+			voucherType:     "GENERAL_VOUCHER",
+			id:              uuid.New(),
+			sobId:           sobId,
+			number:          "1",
+			items:           prepareImbalancedItems(),
+			transactionTime: time.Now(),
 			verify: func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
 				assert.Equal(t, errVoucherNotBalanced, err.(domainErr).Slug())
 			},
 		},
 		{
-			name:        "empty_line_item_error",
-			voucherType: "GENERAL_VOUCHER",
-			id:          uuid.New(),
-			sobId:       sobId,
-			number:      "1",
-			items:       []*LineItem{},
+			name:            "empty_line_item_error",
+			voucherType:     "GENERAL_VOUCHER",
+			id:              uuid.New(),
+			sobId:           sobId,
+			number:          "1",
+			items:           []*LineItem{},
+			transactionTime: time.Now(),
 			verify: func(t *testing.T, voucher *Voucher, err error) {
 				require.Nil(t, voucher)
 				assert.Equal(t, errVoucherEmptyLineItem, err.(domainErr).Slug())
+			},
+		},
+		{
+			name:            "futureTransactionTime_error",
+			voucherType:     "GENERAL_VOUCHER",
+			id:              uuid.NewSHA1(uuid.Nil, []byte("test_uuid")),
+			sobId:           sobId,
+			number:          "1",
+			items:           prepareBalancedItems(),
+			transactionTime: time.Now().Add(time.Hour),
+			verify: func(t *testing.T, voucher *Voucher, err error) {
+				require.Nil(t, voucher)
+				assert.Equal(t, errVoucherFutureTransactionTime, err.(domainErr).Slug())
 			},
 		},
 	}
@@ -68,7 +85,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		test := test
 		t.Run(test.name, func(t *testing.T) {
 			t.Parallel()
-			voucher, err := NewVoucher(test.id, test.sobId, test.voucherType, test.number, 0, test.items, uuid.New(), uuid.Nil, uuid.Nil, false, false, false, time.Now())
+			voucher, err := NewVoucher(test.id, test.sobId, uuid.New(), test.voucherType, test.number, 0, test.items, uuid.New(), uuid.Nil, uuid.Nil, false, false, false, test.transactionTime)
 			test.verify(t, voucher, err)
 		})
 	}

@@ -146,6 +146,7 @@ func main() {
 		voucherRepository,
 		accountServiceForVoucher,
 		userServiceForVoucher,
+		ledgerServiceForVoucher,
 		accountServiceForVoucher,
 		ledgerServiceForVoucher,
 		counterServiceForVoucher,

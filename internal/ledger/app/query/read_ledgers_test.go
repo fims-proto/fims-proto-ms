@@ -72,7 +72,15 @@ func (m mockReadService) ReadPeriodById(context.Context, uuid.UUID) (Period, err
 	panic("implement me")
 }
 
+func (m mockReadService) ReadPeriodsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]Period, error) {
+	panic("implement me")
+}
+
 func (m mockReadService) ReadOpenPeriod(context.Context, uuid.UUID) (Period, error) {
+	panic("implement me")
+}
+
+func (m mockReadService) ReadPeriodByTime(context.Context, uuid.UUID, time.Time) (Period, error) {
 	panic("implement me")
 }
 
@@ -81,10 +89,6 @@ func (m mockReadService) ReadLedgerLogsByAccountIdsAndTimes(context.Context, []u
 }
 
 type mockAccountService struct{}
-
-func (m mockAccountService) ReadSuperiorAccountIds(context.Context, uuid.UUID) ([]uuid.UUID, error) {
-	panic("implement me")
-}
 
 func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	return map[uuid.UUID]query.Account{
@@ -100,10 +104,6 @@ func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map
 			SuperiorAccount:   nil,
 		},
 	}, nil
-}
-
-func (m mockAccountService) ReadAllAccountIdsBySobId(context.Context, uuid.UUID) ([]uuid.UUID, error) {
-	panic("implement me")
 }
 
 func TestReadLedgerHandler_HandleReadAllLedgersByPeriod(t *testing.T) {

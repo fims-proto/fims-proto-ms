@@ -5,6 +5,9 @@ import (
 	"testing"
 	"time"
 
+	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
@@ -38,7 +41,8 @@ func TestApp_HandleCreateVoucherHandler(t *testing.T) {
 			repoMock := newVoucherRepoMock()
 			accServiceMock := newAccountService()
 			cntServiceMock := newCounterService()
-			handler := NewCreateVoucherHandler(repoMock, &accServiceMock, &cntServiceMock)
+			ledServiceMock := newLedgerService()
+			handler := NewCreateVoucherHandler(repoMock, &accServiceMock, &cntServiceMock, &ledServiceMock)
 			newUUID, err := handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
@@ -93,6 +97,10 @@ func newAccountService() accountServiceMock {
 
 func newCounterService() counterServiceMock {
 	return counterServiceMock{invoked: false}
+}
+
+func newLedgerService() ledgerServiceMock {
+	return ledgerServiceMock{}
 }
 
 type voucherRepoMock struct {
@@ -155,4 +163,17 @@ func prepareBalancedItems() []*domain.LineItem {
 		item3,
 		item4,
 	}
+}
+
+type ledgerServiceMock struct{}
+
+func (l ledgerServiceMock) ReadPeriodByTime(context.Context, uuid.UUID, time.Time) (ledgerQuery.Period, error) {
+	return ledgerQuery.Period{
+		Id:       uuid.New(),
+		IsClosed: false,
+	}, nil
+}
+
+func (l ledgerServiceMock) PostVoucher(context.Context, query.Voucher) error {
+	panic("implement me")
 }

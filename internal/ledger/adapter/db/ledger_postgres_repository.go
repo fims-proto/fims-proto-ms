@@ -209,6 +209,37 @@ func (r LedgerPostgresRepository) ReadPeriodById(ctx context.Context, id uuid.UU
 	return unmarshallPeriodToQuery(&dbPeriod), nil
 }
 
+func (r LedgerPostgresRepository) ReadPeriodsByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]query.Period, error) {
+	db := readDBFromCtx(ctx)
+
+	var dbPeriods []period
+	if err := db.Find(&dbPeriods, "id IN ?", ids).Error; err != nil {
+		return nil, errors.Wrap(err, "find period by id failed")
+	}
+
+	periods := make(map[uuid.UUID]query.Period)
+	for _, dbPeriod := range dbPeriods {
+		periods[dbPeriod.Id] = unmarshallPeriodToQuery(&dbPeriod)
+	}
+
+	return periods, nil
+}
+
+func (r LedgerPostgresRepository) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
+	db := readDBFromCtx(ctx)
+
+	var dbPeriods []period
+	if err := db.Where("sob_id = ? AND opening_time <= ? AND (ending_time > ? OR ending_time = ?)", sobId, timePoint, timePoint, time.Time{}).Find(&dbPeriods).Error; err != nil {
+		return query.Period{}, errors.Wrap(err, "find period by id failed")
+	}
+
+	if len(dbPeriods) != 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(dbPeriods))
+	}
+
+	return unmarshallPeriodToQuery(&dbPeriods[0]), nil
+}
+
 func (r LedgerPostgresRepository) ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountIds []uuid.UUID, openingTime, endingTime time.Time) ([]query.LedgerLog, error) {
 	db := readDBFromCtx(ctx)
 

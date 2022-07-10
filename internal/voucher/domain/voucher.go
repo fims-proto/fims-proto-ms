@@ -11,6 +11,7 @@ import (
 type Voucher struct {
 	id                 uuid.UUID
 	sobId              uuid.UUID
+	periodId           uuid.UUID
 	voucherType        VoucherType
 	number             string
 	attachmentQuantity uint
@@ -26,7 +27,7 @@ type Voucher struct {
 	transactionTime    time.Time
 }
 
-func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuantity uint, items []*LineItem,
+func NewVoucher(id, sobId, periodId uuid.UUID, voucherType, number string, attachmentQuantity uint, items []*LineItem,
 	creator, reviewer, auditor uuid.UUID, isReviewed, isAudited, isPosted bool, transactionTime time.Time,
 ) (*Voucher, error) {
 	if id == uuid.Nil {
@@ -34,6 +35,9 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 	}
 	if sobId == uuid.Nil {
 		return nil, newDomainErr(errVoucherEmptySobId)
+	}
+	if periodId == uuid.Nil {
+		return nil, newDomainErr(errVoucherEmptyPeriodId)
 	}
 	if number == "" {
 		return nil, newDomainErr(errVoucherEmptyNumber)
@@ -69,9 +73,14 @@ func NewVoucher(id, sobId uuid.UUID, voucherType, number string, attachmentQuant
 		return nil, newDomainErr(errVoucherZeroTransactionTime)
 	}
 
+	if transactionTime.After(time.Now()) {
+		return nil, newDomainErr(errVoucherFutureTransactionTime, transactionTime)
+	}
+
 	return &Voucher{
 		sobId:              sobId,
 		id:                 id,
+		periodId:           periodId,
 		voucherType:        vt,
 		number:             number,
 		attachmentQuantity: attachmentQuantity,
@@ -112,6 +121,10 @@ func (v Voucher) SobId() uuid.UUID {
 
 func (v Voucher) Id() uuid.UUID {
 	return v.id
+}
+
+func (v Voucher) PeriodId() uuid.UUID {
+	return v.periodId
 }
 
 func (v Voucher) Type() VoucherType {

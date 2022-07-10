@@ -1,10 +1,9 @@
 package http
 
 import (
+	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
-
-	"github.com/google/uuid"
 )
 
 func (r LineItemRequest) mapToCommand() command.LineItemCmd {
@@ -49,8 +48,16 @@ func mapFromVoucherQuery(q query.Voucher) VoucherResponse {
 		itemRes = append(itemRes, mapFromLineItemQuery(item))
 	}
 	return VoucherResponse{
-		SobId:              q.SobId.String(),
-		Id:                 q.Id.String(),
+		SobId: q.SobId.String(),
+		Id:    q.Id.String(),
+		Period: PeriodResponse{
+			Id:            q.Period.Id.String(),
+			FinancialYear: q.Period.FinancialYear,
+			Number:        q.Period.Number,
+			OpeningTime:   q.Period.OpeningTime,
+			EndingTime:    q.Period.EndingTime,
+			IsClosed:      q.Period.IsClosed,
+		},
 		Type:               q.VoucherType,
 		Number:             q.Number,
 		AttachmentQuantity: int(q.AttachmentQuantity),

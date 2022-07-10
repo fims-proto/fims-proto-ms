@@ -2,6 +2,9 @@ package ledger
 
 import (
 	"context"
+	"time"
+
+	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 
@@ -34,4 +37,12 @@ func (s IntraProcessAdapter) PostVoucher(ctx context.Context, voucher query.Vouc
 		})
 	}
 	return s.ledgerInterface.AppendLedgerLogs(ctx, commands)
+}
+
+func (s IntraProcessAdapter) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (ledgerQuery.Period, error) {
+	return s.ledgerInterface.ReadPeriodByTime(ctx, sobId, transactionTime)
+}
+
+func (s IntraProcessAdapter) ReadPeriodsByIds(ctx context.Context, periodIds []uuid.UUID) (map[uuid.UUID]ledgerQuery.Period, error) {
+	return s.ledgerInterface.ReadPeriodsByIds(ctx, periodIds)
 }

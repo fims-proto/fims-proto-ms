@@ -2,6 +2,8 @@ package domain
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func (v *Voucher) UpdateLineItems(items []*LineItem) error {
@@ -23,9 +25,15 @@ func (v *Voucher) UpdateLineItems(items []*LineItem) error {
 	return nil
 }
 
-func (v *Voucher) UpdateTransactionTime(transactionTime time.Time) error {
+func (v *Voucher) UpdateTransactionTime(transactionTime time.Time, periodId uuid.UUID) error {
+	if periodId == uuid.Nil {
+		return newDomainErr(errVoucherEmptyPeriodId)
+	}
 	if transactionTime.IsZero() {
 		return newDomainErr(errUpdateZeroTransactionTime)
+	}
+	if transactionTime.After(time.Now()) {
+		return newDomainErr(errVoucherFutureTransactionTime, transactionTime)
 	}
 	if v.IsAudited() {
 		return newDomainErr(errUpdateAudited)

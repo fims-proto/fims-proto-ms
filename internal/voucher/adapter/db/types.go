@@ -13,8 +13,9 @@ import (
 
 type voucher struct {
 	Id                 uuid.UUID `gorm:"type:uuid"`
-	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:vouchers_sobid_number_key"`
-	Number             string    `gorm:"uniqueIndex:vouchers_sobid_number_key"`
+	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:vouchers_sob_period_number_key"`
+	PeriodId           uuid.UUID `gorm:"type:uuid;uniqueIndex:vouchers_sob_period_number_key"`
+	Number             string    `gorm:"uniqueIndex:vouchers_sob_period_number_key"`
 	VoucherType        string
 	AttachmentQuantity uint
 	Debit              decimal.Decimal
@@ -45,6 +46,7 @@ func marshall(dv *domain.Voucher) *voucher {
 	v := voucher{
 		Id:                 dv.Id(),
 		SobId:              dv.SobId(),
+		PeriodId:           dv.PeriodId(),
 		Number:             dv.Number(),
 		VoucherType:        dv.Type().String(),
 		AttachmentQuantity: dv.AttachmentQuantity(),
@@ -92,6 +94,7 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 	return domain.NewVoucher(
 		dbv.Id,
 		dbv.SobId,
+		dbv.PeriodId,
 		dbv.VoucherType,
 		dbv.Number,
 		dbv.AttachmentQuantity,
@@ -122,6 +125,7 @@ func unmarshallToQuery(dbv *voucher) query.Voucher {
 	return query.Voucher{
 		Id:                 dbv.Id,
 		SobId:              dbv.SobId,
+		Period:             query.Period{Id: dbv.PeriodId},
 		VoucherType:        dbv.VoucherType,
 		Number:             dbv.Number,
 		AttachmentQuantity: dbv.AttachmentQuantity,
