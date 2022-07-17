@@ -66,7 +66,7 @@ func (r AccountPostgresRepository) DataLoad(ctx context.Context, domainAccounts 
 	return nil
 }
 
-func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
+func (r AccountPostgresRepository) ReadAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
 	db := readDBFromCtx(ctx)
 
 	var dbAccounts []account
@@ -101,17 +101,17 @@ func (r AccountPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uu
 	return accountsPage, nil
 }
 
-func (r AccountPostgresRepository) ReadById(ctx context.Context, accountId uuid.UUID) (query.Account, error) {
+func (r AccountPostgresRepository) ReadAccountsWithSuperiorsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
 	db := readDBFromCtx(ctx)
 
-	qas, err := r.readAccountWithSuperiorAccount(db, accountId)
+	queryAccounts, err := r.readAccountsWithSuperiors(db, accountIds)
 	if err != nil {
-		return query.Account{}, errors.Wrapf(err, "failed to read account %s", accountId.String())
+		return nil, errors.Wrap(err, "failed to read accounts by ids")
 	}
-	return qas, nil
+	return queryAccounts, nil
 }
 
-func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+func (r AccountPostgresRepository) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	db := readDBFromCtx(ctx)
 
 	if len(accountIds) == 0 {
@@ -134,7 +134,7 @@ func (r AccountPostgresRepository) ReadByIds(ctx context.Context, accountIds []u
 	return queryAccounts, nil
 }
 
-func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (query.Account, error) {
+func (r AccountPostgresRepository) ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (query.Account, error) {
 	db := readDBFromCtx(ctx)
 
 	dbAccount := account{}
@@ -149,25 +149,51 @@ func (r AccountPostgresRepository) ReadByAccountNumber(ctx context.Context, sobI
 	return result, nil
 }
 
-func (r AccountPostgresRepository) readAccountWithSuperiorAccount(db *gorm.DB, accountId uuid.UUID) (query.Account, error) {
-	dbAccount := account{}
-	if err := db.Where("id = ?", accountId).Find(&dbAccount).Error; err != nil {
-		return query.Account{}, errors.Wrap(err, "read account by id failed")
+func (r AccountPostgresRepository) readAccountsWithSuperiors(db *gorm.DB, ids []uuid.UUID) ([]query.Account, error) {
+	if len(ids) == 0 {
+		return nil, nil
 	}
 
-	result, err := unmarshallToQuery(dbAccount)
+	var dbAccounts []account
+	if err := db.Where("id IN ?", ids).Find(&dbAccounts).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to read accounts by ids")
+	}
+
+	var queryAccounts []*query.Account
+	var superiorIds []uuid.UUID
+	superior2AccountMap := make(map[uuid.UUID]*query.Account)
+	for _, dbAccount := range dbAccounts {
+		queryAccount, err := unmarshallToQuery(dbAccount)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to unmarshall db account")
+		}
+		queryAccounts = append(queryAccounts, &queryAccount)
+
+		if dbAccount.SuperiorAccountId != uuid.Nil {
+			superiorIds = append(superiorIds, dbAccount.SuperiorAccountId)
+			superior2AccountMap[dbAccount.SuperiorAccountId] = &queryAccount
+		}
+	}
+
+	superiorAccounts, err := r.readAccountsWithSuperiors(db, superiorIds)
 	if err != nil {
-		return query.Account{}, errors.Wrap(err, "failed to unmarshall account")
+		return nil, errors.Wrap(err, "failed to read superior accounts")
 	}
-	if dbAccount.SuperiorAccountId == uuid.Nil {
-		return result, nil
+
+	for _, superiorAccount := range superiorAccounts {
+		childAccount, ok := superior2AccountMap[superiorAccount.Id]
+		if !ok {
+			return nil, errors.Errorf("failed to find child account by superior %s", superiorAccount.Id)
+		}
+		childAccount.SuperiorAccount = &superiorAccount
 	}
-	superiorAccount, err := r.readAccountWithSuperiorAccount(db, dbAccount.SuperiorAccountId)
-	if err != nil {
-		return query.Account{}, err
+
+	var res []query.Account
+	for _, queryAccount := range queryAccounts {
+		res = append(res, *queryAccount)
 	}
-	result.SuperiorAccount = &superiorAccount
-	return result, nil
+
+	return res, nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

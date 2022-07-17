@@ -58,18 +58,21 @@ func unmarshallToQuery(dba account) (query.Account, error) {
 	if err != nil {
 		return query.Account{}, errors.Wrap(err, "should not happen: failed to parse balance direction")
 	}
-	return query.Account{
-		Id:                dba.Id,
-		SobId:             dba.SobId,
-		Title:             dba.Title,
-		AccountNumber:     dba.AccountNumber,
-		NumberHierarchy:   numbers,
-		SuperiorAccountId: dba.SuperiorAccountId,
-		AccountType:       accountType,
-		BalanceDirection:  direction,
-		Level:             dba.Level,
-		SuperiorAccount:   nil,
-		CreatedAt:         dba.CreatedAt,
-		UpdatedAt:         dba.UpdatedAt,
-	}, nil
+	res := query.Account{
+		Id:               dba.Id,
+		SobId:            dba.SobId,
+		Title:            dba.Title,
+		AccountNumber:    dba.AccountNumber,
+		NumberHierarchy:  numbers,
+		AccountType:      accountType,
+		BalanceDirection: direction,
+		Level:            dba.Level,
+		SuperiorAccount:  nil,
+		CreatedAt:        dba.CreatedAt,
+		UpdatedAt:        dba.UpdatedAt,
+	}
+	if dba.SuperiorAccountId != uuid.Nil {
+		res.SuperiorAccount = &query.Account{Id: dba.SuperiorAccountId}
+	}
+	return res, nil
 }

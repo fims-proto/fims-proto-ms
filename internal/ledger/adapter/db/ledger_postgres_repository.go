@@ -26,7 +26,7 @@ func NewLedgerPostgresRepository() *LedgerPostgresRepository {
 func (r LedgerPostgresRepository) Migrate(ctx context.Context) error {
 	db := readDBFromCtx(ctx)
 
-	if err := db.AutoMigrate(&period{}, &ledger{}, &ledgerLog{}); err != nil {
+	if err := db.AutoMigrate(&period{}, &ledger{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
 	}
 	return nil
@@ -41,36 +41,6 @@ func (r LedgerPostgresRepository) CreatePeriod(ctx context.Context, period *doma
 		return tx.Create(dbPeriod).Error
 	}); err != nil {
 		return errors.Wrap(err, "failed to create period")
-	}
-	return nil
-}
-
-func (r LedgerPostgresRepository) UpdatePeriod(ctx context.Context, id uuid.UUID, updateFn func(period *domain.Period) (*domain.Period, error)) error {
-	db := readDBFromCtx(ctx)
-
-	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbPeriod := &period{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(dbPeriod, "id = ?", id).Error; err != nil {
-			return err
-		}
-
-		period, err := unmarshallPeriodToDomain(dbPeriod)
-		if err != nil {
-			return errors.Wrap(err, "unmarshall period failed")
-		}
-
-		updatedPeriod, err := updateFn(period)
-		if err != nil {
-			return errors.Wrap(err, "update period in transaction failed")
-		}
-
-		dbPeriod = marshallPeriod(updatedPeriod)
-		if err := tx.Save(dbPeriod).Error; err != nil {
-			return errors.Wrap(err, "save period failed")
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "update period failed")
 	}
 	return nil
 }
@@ -91,27 +61,12 @@ func (r LedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*
 	return nil
 }
 
-func (r LedgerPostgresRepository) UpdateLedgers(ctx context.Context, ids []uuid.UUID, updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error)) error {
+func (r LedgerPostgresRepository) UpdateLedgersByPeriodAndAccounts(ctx context.Context, periodId uuid.UUID, accountIds []uuid.UUID, updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error)) error {
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		var dbLedgers []ledger
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&dbLedgers, "id IN ?", ids).Error; err != nil {
-			return err
-		}
-		return r.updateLedgers(tx, dbLedgers, updateFn)
-	}); err != nil {
-		return errors.Wrap(err, "update ledger failed")
-	}
-	return nil
-}
-
-func (r LedgerPostgresRepository) UpdatePeriodLedgers(ctx context.Context, periodId uuid.UUID, updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error)) error {
-	db := readDBFromCtx(ctx)
-
-	if err := db.Transaction(func(tx *gorm.DB) error {
-		var dbLedgers []ledger
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&dbLedgers, "period_id = ?", periodId).Error; err != nil {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&dbLedgers, "period_id = ? AND account_id IN ?", periodId, accountIds).Error; err != nil {
 			return err
 		}
 		return r.updateLedgers(tx, dbLedgers, updateFn)
@@ -146,34 +101,7 @@ func (r LedgerPostgresRepository) updateLedgers(tx *gorm.DB, dbLedgers []ledger,
 	return nil
 }
 
-func (r LedgerPostgresRepository) CreateLedgerLogs(ctx context.Context, logs []*domain.LedgerLog) error {
-	db := readDBFromCtx(ctx)
-
-	var dbLedgerLogs []*ledgerLog
-	for _, ledgerLog := range logs {
-		dbLedgerLogs = append(dbLedgerLogs, marshallLedgerLog(ledgerLog))
-	}
-
-	if err := db.Transaction(func(tx *gorm.DB) error {
-		return tx.CreateInBatches(dbLedgerLogs, 100).Error
-	}); err != nil {
-		return errors.Wrap(err, "failed to create ledger logs")
-	}
-	return nil
-}
-
-func (r LedgerPostgresRepository) ReadLedgerById(ctx context.Context, id uuid.UUID) (query.Ledger, error) {
-	db := readDBFromCtx(ctx)
-
-	dbLedger := ledger{}
-	if err := db.First(&dbLedger, "id = ?", id).Error; err != nil {
-		return query.Ledger{}, errors.Wrap(err, "find ledger by id failed")
-	}
-
-	return unmarshallLedgerToQuery(&dbLedger), nil
-}
-
-func (r LedgerPostgresRepository) ReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Ledger], error) {
+func (r LedgerPostgresRepository) ReadLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Ledger], error) {
 	db := readDBFromCtx(ctx)
 
 	var dbLedgers []ledger
@@ -240,22 +168,7 @@ func (r LedgerPostgresRepository) ReadPeriodByTime(ctx context.Context, sobId uu
 	return unmarshallPeriodToQuery(&dbPeriods[0]), nil
 }
 
-func (r LedgerPostgresRepository) ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountIds []uuid.UUID, openingTime, endingTime time.Time) ([]query.LedgerLog, error) {
-	db := readDBFromCtx(ctx)
-
-	var dbLedgerLogs []ledgerLog
-	if err := db.Where("account_id IN ? AND transaction_time >= ? AND transaction_time < ?", accountIds, openingTime, endingTime).Find(&dbLedgerLogs).Error; err != nil {
-		return nil, errors.Wrapf(err, "find ledger logs by account and period failed")
-	}
-
-	var queryLedgerLogs []query.LedgerLog
-	for _, dbLedgerLog := range dbLedgerLogs {
-		queryLedgerLogs = append(queryLedgerLogs, unmarshallLedgerLogToQuery(&dbLedgerLog))
-	}
-	return queryLedgerLogs, nil
-}
-
-func (r LedgerPostgresRepository) ReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {
+func (r LedgerPostgresRepository) ReadPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {
 	db := readDBFromCtx(ctx)
 
 	var dbPeriods []period

@@ -135,7 +135,7 @@ func (h Handler) CreatePeriod(c *gin.Context) {
 	createLedgersCmd := command.CreatePeriodLedgersCmd{
 		PeriodId: createdId,
 	}
-	if err = h.app.Commands.CreatePeriodLedgers.Handle(c, createLedgersCmd); err != nil {
+	if err = h.app.Commands.CreateLedgersForPeriod.Handle(c, createLedgersCmd); err != nil {
 		_ = c.Error(err)
 		return
 	}
@@ -183,34 +183,10 @@ func (h Handler) ReadAllLedgersByPeriod(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// CalculatePeriodLedgers godoc
-// @Summary Calculate ledger balance in period
-// @Description Calculate ledger balance in period
-// @Tags ledgers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param periodId path string true "Period ID"
-// @Success 204
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/period/{periodId}/ledgers/calculate [post]
-func (h Handler) CalculatePeriodLedgers(c *gin.Context) {
-	periodId := uuid.MustParse(c.Param("periodId"))
-	cmd := command.CalculateBalanceByPeriodCmd{
-		PeriodId: periodId,
-	}
-	if err := h.app.Commands.CalculateLedgerBalance.HandleCalculateBalanceByPeriod(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.Status(http.StatusNoContent)
-}
-
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/period/current", h.ReadCurrentPeriod)
 	r.GET("/sob/:sobId/periods/", h.ReadAllPeriods)
 	r.GET("/sob/:sobId/period/:periodId", h.ReadPeriodById)
 	r.POST("/sob/:sobId/periods/", h.CreatePeriod)
 	r.GET("/sob/:sobId/period/:periodId/ledgers/", h.ReadAllLedgersByPeriod)
-	r.POST("/sob/:sobId/period/:periodId/ledgers/calculate", h.CalculatePeriodLedgers)
 }

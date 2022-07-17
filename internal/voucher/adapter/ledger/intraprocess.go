@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
-	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 
 	ledgerCommand "github/fims-proto/fims-proto-ms/internal/ledger/app/command"
 	ledgerPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
@@ -22,21 +22,21 @@ func NewIntraProcessAdapter(ledgerInterface ledgerPort.LedgerInterface) IntraPro
 	return IntraProcessAdapter{ledgerInterface: ledgerInterface}
 }
 
-func (s IntraProcessAdapter) PostVoucher(ctx context.Context, voucher query.Voucher) error {
-	// posting id is same in one post
-	postingId := uuid.New()
-	var commands []ledgerCommand.AppendLedgerLogCmd
-	for _, item := range voucher.LineItems {
-		commands = append(commands, ledgerCommand.AppendLedgerLogCmd{
-			PostingId:       postingId,
-			VoucherId:       voucher.Id,
-			AccountId:       item.AccountId,
-			TransactionTime: voucher.TransactionTime,
-			Debit:           item.Debit,
-			Credit:          item.Credit,
-		})
+func (s IntraProcessAdapter) PostVoucher(ctx context.Context, voucher domain.Voucher) error {
+	amountCmds := make(map[uuid.UUID]ledgerCommand.PostLedgersAmountCmd)
+	for _, item := range voucher.LineItems() {
+		amountCmds[item.AccountId()] = ledgerCommand.PostLedgersAmountCmd{
+			Debit:  item.Debit(),
+			Credit: item.Credit(),
+		}
 	}
-	return s.ledgerInterface.AppendLedgerLogs(ctx, commands)
+
+	command := ledgerCommand.PostLedgersCmd{
+		Accounts: amountCmds,
+		PeriodId: voucher.PeriodId(),
+	}
+
+	return s.ledgerInterface.PostLedgers(ctx, command)
 }
 
 func (s IntraProcessAdapter) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (ledgerQuery.Period, error) {

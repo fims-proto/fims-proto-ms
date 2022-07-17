@@ -7,6 +7,9 @@ import (
 	"fmt"
 	"strings"
 
+	ledgerSelfServiceAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/self"
+	sobLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/ledger"
+
 	"github/fims-proto/fims-proto-ms/internal/common/exception"
 	"golang.org/x/text/language"
 
@@ -122,11 +125,13 @@ func main() {
 
 	// application dependencies injection
 	accountServiceForSob := sobAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	ledgerServiceForSob := sobLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
 	counterServiceForSob := sobCounterAdapter.NewIntraProcessAdapter(counterInterface)
 	sobApplication.Inject(
 		sobRepository,
 		sobRepository,
 		accountServiceForSob,
+		ledgerServiceForSob,
 		counterServiceForSob,
 	)
 
@@ -152,10 +157,12 @@ func main() {
 		counterServiceForVoucher,
 	)
 
+	ledgerSelfService := ledgerSelfServiceAdapter.NewIntraProcessAdapter(ledgerInterface)
 	accountServiceForLedger := ledgerAccountAdapter.NewIntraProcessAdapter(accountInterface)
 	ledgerApplication.Inject(
 		ledgerRepository,
 		ledgerRepository,
+		ledgerSelfService,
 		accountServiceForLedger,
 		accountServiceForLedger,
 	)

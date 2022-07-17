@@ -214,8 +214,8 @@ definitions:
         type: array
       sobId:
         type: string
-      superiorAccountId:
-        type: string
+      superiorAccount:
+        $ref: '#/definitions/internal_account_port_public_http.AccountResponse'
       title:
         type: string
       updatedAt:
@@ -439,34 +439,6 @@ paths:
           schema:
             $ref: '#/definitions/http.Error'
       summary: All ledgers in an period
-      tags:
-      - ledgers
-  /sob/{sobId}/period/{periodId}/ledgers/calculate:
-    post:
-      consumes:
-      - application/json
-      description: Calculate ledger balance in period
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Period ID
-        in: path
-        name: periodId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: ""
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/http.Error'
-      summary: Calculate ledger balance in period
       tags:
       - ledgers
   /sob/{sobId}/period/current:

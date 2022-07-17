@@ -8,8 +8,11 @@ import (
 	"github.com/google/uuid"
 )
 
+type SelfService interface {
+	CreateLedgersForPeriod(ctx context.Context, periodId uuid.UUID) error
+}
+
 type AccountService interface {
-	ReadSuperiorAccountIds(ctx context.Context, accountId uuid.UUID) ([]uuid.UUID, error)
-	ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]accountQuery.Account, error)
-	ReadAllAccountsBySobId(ctx context.Context, sobId uuid.UUID) ([]accountQuery.Account, error)
+	ReadAccountsBySobId(ctx context.Context, sobId uuid.UUID) ([]accountQuery.Account, error)
+	ReadAccountsWithSuperiorsByIds(ctx context.Context, accountIds []uuid.UUID) ([]accountQuery.Account, error)
 }

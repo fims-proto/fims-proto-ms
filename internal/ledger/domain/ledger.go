@@ -1,8 +1,6 @@
 package domain
 
 import (
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -75,19 +73,4 @@ func (l Ledger) Debit() decimal.Decimal {
 
 func (l Ledger) Credit() decimal.Decimal {
 	return l.credit
-}
-
-func (l *Ledger) UpdatePeriodAmount(debit, credit decimal.Decimal, balanceDirection commonAccount.Direction) {
-	l.debit = debit
-	l.credit = credit
-
-	addingAmount := l.debit
-	subAmount := l.credit
-
-	if balanceDirection == commonAccount.Credit {
-		addingAmount = l.credit
-		subAmount = l.debit
-	}
-
-	l.endingBalance = l.openingBalance.Add(addingAmount).Sub(subAmount)
 }

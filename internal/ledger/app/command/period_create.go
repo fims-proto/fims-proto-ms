@@ -25,20 +25,25 @@ type CreatePeriodCmd struct {
 }
 
 type CreatePeriodHandler struct {
-	repo            domain.Repository
-	ledgerReadModel query.LedgerReadModel
+	repo        domain.Repository
+	selfService SelfService
+	readModel   query.LedgerReadModel
 }
 
-func NewCreatePeriodHandler(repo domain.Repository, readModel query.LedgerReadModel) CreatePeriodHandler {
+func NewCreatePeriodHandler(repo domain.Repository, selfService SelfService, readModel query.LedgerReadModel) CreatePeriodHandler {
 	if repo == nil {
 		panic("nil ledger repo")
+	}
+	if selfService == nil {
+		panic("nil ledger self service")
 	}
 	if readModel == nil {
 		panic("nil ledger read model")
 	}
 	return CreatePeriodHandler{
-		repo:            repo,
-		ledgerReadModel: readModel,
+		repo:        repo,
+		selfService: selfService,
+		readModel:   readModel,
 	}
 }
 
@@ -54,7 +59,7 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) (c
 	// otherwise using given opening time
 	openingTime := cmd.OpeningTime
 	if cmd.PreviousPeriodId != uuid.Nil {
-		previousPeriod, err := h.ledgerReadModel.ReadPeriodById(ctx, cmd.PreviousPeriodId)
+		previousPeriod, err := h.readModel.ReadPeriodById(ctx, cmd.PreviousPeriodId)
 		if err != nil {
 			return uuid.Nil, errors.Wrap(err, "failed to read previous period")
 		}
@@ -75,7 +80,11 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) (c
 	if err := h.repo.CreatePeriod(ctx, period); err != nil {
 		return uuid.Nil, err
 	}
-	return createdId, nil
 
-	// TODO create ledgers for new period
+	// create ledgers for this period
+	if err := h.selfService.CreateLedgersForPeriod(ctx, createdId); err != nil {
+		return uuid.Nil, errors.Wrap(err, "failed to create ledgers for period")
+	}
+
+	return createdId, nil
 }

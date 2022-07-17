@@ -10,10 +10,10 @@ import (
 )
 
 type AccountsReadModel interface {
-	ReadAllAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error)
-	ReadById(ctx context.Context, accountId uuid.UUID) (Account, error)
-	ReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]Account, error)
-	ReadByAccountNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (Account, error)
+	ReadAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error)
+	ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]Account, error)
+	ReadAccountsWithSuperiorsByIds(ctx context.Context, accountIds []uuid.UUID) ([]Account, error)
+	ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (Account, error)
 }
 
 type ReadAccountsHandler struct {
@@ -28,22 +28,22 @@ func NewReadAccountsHandler(readModel AccountsReadModel) ReadAccountsHandler {
 }
 
 func (h ReadAccountsHandler) HandleReadAll(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error) {
-	return h.readModel.ReadAllAccounts(ctx, sobId, pageable)
-}
-
-func (h ReadAccountsHandler) HandleReadById(ctx context.Context, accountId uuid.UUID) (Account, error) {
-	return h.readModel.ReadById(ctx, accountId)
+	return h.readModel.ReadAccounts(ctx, sobId, pageable)
 }
 
 func (h ReadAccountsHandler) HandleReadByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]Account, error) {
-	return h.readModel.ReadByIds(ctx, accountIds)
+	return h.readModel.ReadAccountsByIds(ctx, accountIds)
 }
 
-func (h ReadAccountsHandler) HandleReadByAccountNumber(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]Account, error) {
+func (h ReadAccountsHandler) HandleReadWithSuperiorsByIds(ctx context.Context, accountIds []uuid.UUID) ([]Account, error) {
+	return h.readModel.ReadAccountsWithSuperiorsByIds(ctx, accountIds)
+}
+
+func (h ReadAccountsHandler) HandleReadByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]Account, error) {
 	accounts := make(map[string]Account)
 
 	for _, accountNumber := range accountNumbers {
-		account, err := h.readModel.ReadByAccountNumber(ctx, sobId, accountNumber)
+		account, err := h.readModel.ReadAccountByNumber(ctx, sobId, accountNumber)
 		if err != nil {
 			return nil, errors.Wrapf(err, "validate existence of account %s failed", accountNumber)
 		}

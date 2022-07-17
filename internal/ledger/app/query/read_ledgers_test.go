@@ -56,15 +56,11 @@ var (
 
 type mockReadService struct{}
 
-func (m mockReadService) ReadLedgerById(context.Context, uuid.UUID) (Ledger, error) {
-	panic("implement me")
-}
-
-func (m mockReadService) ReadAllLedgersByPeriod(context.Context, uuid.UUID, data.Pageable) (data.Page[Ledger], error) {
+func (m mockReadService) ReadLedgersByPeriod(context.Context, uuid.UUID, data.Pageable) (data.Page[Ledger], error) {
 	return data.NewPage([]Ledger{retrievedLedger}, data.Unpaged(), 1)
 }
 
-func (m mockReadService) ReadAllPeriods(context.Context, uuid.UUID, data.Pageable) (data.Page[Period], error) {
+func (m mockReadService) ReadPeriods(context.Context, uuid.UUID, data.Pageable) (data.Page[Period], error) {
 	panic("implement me")
 }
 
@@ -84,24 +80,19 @@ func (m mockReadService) ReadPeriodByTime(context.Context, uuid.UUID, time.Time)
 	panic("implement me")
 }
 
-func (m mockReadService) ReadLedgerLogsByAccountIdsAndTimes(context.Context, []uuid.UUID, time.Time, time.Time) ([]LedgerLog, error) {
-	panic("implement me")
-}
-
 type mockAccountService struct{}
 
 func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	return map[uuid.UUID]query.Account{
 		{}: {
-			Id:                uuid.UUID{},
-			SobId:             uuid.UUID{},
-			SuperiorAccountId: uuid.UUID{},
-			NumberHierarchy:   nil,
-			AccountNumber:     "12345",
-			Title:             "",
-			AccountType:       0,
-			BalanceDirection:  0,
-			SuperiorAccount:   nil,
+			Id:               uuid.UUID{},
+			SobId:            uuid.UUID{},
+			NumberHierarchy:  nil,
+			AccountNumber:    "12345",
+			Title:            "",
+			AccountType:      0,
+			BalanceDirection: 0,
+			SuperiorAccount:  nil,
 		},
 	}, nil
 }

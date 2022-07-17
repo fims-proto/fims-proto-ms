@@ -22,29 +22,30 @@ type CreateSobCmd struct {
 type CreateSobHandler struct {
 	repo           domain.Repository
 	accountService AccountService
+	ledgerService  LedgerService
 	counterService CounterService
 }
 
-func NewCreateSobHandler(repo domain.Repository, accountService AccountService, counterService CounterService) CreateSobHandler {
+func NewCreateSobHandler(repo domain.Repository, accountService AccountService, ledgerService LedgerService, counterService CounterService) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 	if accountService == nil {
 		panic("nil account service")
 	}
-	if counterService == nil {
-		panic("nil counter service")
+	if ledgerService == nil {
+		panic("nil ledger service")
 	}
 	return CreateSobHandler{
 		repo:           repo,
 		accountService: accountService,
+		ledgerService:  ledgerService,
 		counterService: counterService,
 	}
 }
 
 func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (createdId uuid.UUID, err error) {
-	log.Info(ctx, "handle creating sob")
-	log.Debug(ctx, "handle creating sob, cmd: %+v", cmd)
+	log.Info(ctx, "handle creating sob, cmd: %+v", cmd)
 	defer func() {
 		if err != nil {
 			log.Err(ctx, err, "handle creating sob failed")
@@ -63,8 +64,16 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (created
 	if err := h.counterService.InitializeCounters(ctx, sob.Id()); err != nil {
 		return uuid.Nil, errors.Wrapf(err, "failed to initialize counters")
 	}
+
+	// triggers
+	// create accounts
 	if err := h.accountService.InitializeAccounts(ctx, sob.Id()); err != nil {
 		return uuid.Nil, errors.Wrapf(err, "failed to initialize accounts")
+	}
+
+	// create period
+	if err := h.ledgerService.InitializeFirstPeriod(ctx, sob.Id(), sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
+		return uuid.Nil, errors.Wrapf(err, "failed to initialize first period")
 	}
 
 	return sob.Id(), nil

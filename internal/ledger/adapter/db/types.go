@@ -36,18 +36,6 @@ type ledger struct {
 	UpdatedAt      time.Time
 }
 
-type ledgerLog struct {
-	Id              uuid.UUID `gorm:"type:uuid"`
-	VoucherId       uuid.UUID `gorm:"type:uuid"`
-	PostingId       uuid.UUID `gorm:"type:uuid"`
-	AccountId       uuid.UUID `gorm:"type:uuid"`
-	TransactionTime time.Time
-	Debit           decimal.Decimal
-	Credit          decimal.Decimal
-	CreatedAt       time.Time `gorm:"<-:create"`
-	UpdatedAt       time.Time
-}
-
 func marshallPeriod(p *domain.Period) *period {
 	return &period{
 		Id:               p.Id(),
@@ -72,31 +60,6 @@ func marshallLedger(l *domain.Ledger) *ledger {
 		Debit:          l.Debit(),
 		Credit:         l.Credit(),
 	}
-}
-
-func marshallLedgerLog(l *domain.LedgerLog) *ledgerLog {
-	return &ledgerLog{
-		Id:              l.Id(),
-		VoucherId:       l.VoucherId(),
-		PostingId:       l.PostingId(),
-		AccountId:       l.AccountId(),
-		TransactionTime: l.TransactionTime(),
-		Debit:           l.Debit(),
-		Credit:          l.Credit(),
-	}
-}
-
-func unmarshallPeriodToDomain(dbp *period) (*domain.Period, error) {
-	return domain.NewPeriod(
-		dbp.Id,
-		dbp.SobId,
-		dbp.PreviousPeriodId,
-		dbp.FinancialYear,
-		dbp.Number,
-		dbp.OpeningTime,
-		dbp.EndingTime,
-		dbp.IsClosed,
-	)
 }
 
 func unmarshallLedgerToDomain(dbl *ledger) (*domain.Ledger, error) {
@@ -138,19 +101,5 @@ func unmarshallLedgerToQuery(dbl *ledger) query.Ledger {
 		Credit:         dbl.Credit,
 		CreatedAt:      dbl.CreatedAt,
 		UpdatedAt:      dbl.UpdatedAt,
-	}
-}
-
-func unmarshallLedgerLogToQuery(dbl *ledgerLog) query.LedgerLog {
-	return query.LedgerLog{
-		Id:              dbl.Id,
-		VoucherId:       dbl.VoucherId,
-		PostingId:       dbl.PostingId,
-		AccountId:       dbl.AccountId,
-		TransactionTime: dbl.TransactionTime,
-		Debit:           dbl.Debit,
-		Credit:          dbl.Credit,
-		CreatedAt:       dbl.CreatedAt,
-		UpdatedAt:       dbl.UpdatedAt,
 	}
 }

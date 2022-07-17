@@ -29,13 +29,14 @@ func (a *Application) Inject(
 	readModel query.SobsReadModel,
 	repo domain.Repository,
 	accountService command.AccountService,
+	ledgerService command.LedgerService,
 	counterService command.CounterService,
 ) {
 	a.Queries = Queries{
 		ReadSobs: query.NewReadSobsHandler(readModel),
 	}
 	a.Commands = Commands{
-		CreateSob: command.NewCreateSobHandler(repo, accountService, counterService),
+		CreateSob: command.NewCreateSobHandler(repo, accountService, ledgerService, counterService),
 		UpdateSob: command.NewUpdateSobHandler(repo),
 		Migrate:   command.NewMigrationHandler(repo),
 	}

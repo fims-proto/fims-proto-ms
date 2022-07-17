@@ -11,11 +11,10 @@ type Queries struct {
 }
 
 type Commands struct {
-	AppendLedgerLogs       command.AppendLedgerLogsHandler
-	CreatePeriodLedgers    command.CreatePeriodLedgersHandler
-	CalculateLedgerBalance command.CalculateLedgerBalanceHandler
 	CreatePeriod           command.CreatePeriodHandler
 	ClosePeriod            command.ClosePeriodHandler
+	CreateLedgersForPeriod command.CreatePeriodLedgersHandler
+	PostLedgers            command.PostLedgersHandler
 	Migrate                command.MigrationHandler
 }
 
@@ -31,6 +30,7 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	readModel query.LedgerReadModel,
 	repo domain.Repository,
+	selfService command.SelfService,
 	accountQueryService query.AccountService,
 	accountService command.AccountService,
 ) {
@@ -38,11 +38,10 @@ func (a *Application) Inject(
 		ReadLedgers: query.NewReadLedgerHandler(readModel, accountQueryService),
 	}
 	a.Commands = Commands{
-		AppendLedgerLogs:       command.NewAppendLedgerLogsHandler(repo, accountService),
-		CreatePeriodLedgers:    command.NewCreatePeriodLedgersHandler(repo, readModel, accountService),
-		CalculateLedgerBalance: command.NewCalculateLedgerBalanceHandler(repo, readModel, accountService),
-		CreatePeriod:           command.NewCreatePeriodHandler(repo, readModel),
+		CreatePeriod:           command.NewCreatePeriodHandler(repo, selfService, readModel),
 		ClosePeriod:            command.NewClosePeriodHandler(repo),
+		CreateLedgersForPeriod: command.NewCreatePeriodLedgersHandler(repo, readModel, accountService),
+		PostLedgers:            command.NewPostLedgersHandler(repo, accountService),
 		Migrate:                command.NewMigrationHandler(repo),
 	}
 }

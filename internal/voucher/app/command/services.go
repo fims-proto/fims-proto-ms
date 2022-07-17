@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 
@@ -13,7 +13,7 @@ import (
 
 type LedgerService interface {
 	ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (ledgerQuery.Period, error)
-	PostVoucher(ctx context.Context, voucher query.Voucher) error
+	PostVoucher(ctx context.Context, voucher domain.Voucher) error
 }
 
 type CounterService interface {

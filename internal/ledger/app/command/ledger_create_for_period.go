@@ -22,9 +22,9 @@ type CreatePeriodLedgersCmd struct {
 }
 
 type CreatePeriodLedgersHandler struct {
-	repo            domain.Repository
-	ledgerReadModel query.LedgerReadModel
-	accountService  AccountService
+	repo           domain.Repository
+	readModel      query.LedgerReadModel
+	accountService AccountService
 }
 
 func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService AccountService) CreatePeriodLedgersHandler {
@@ -38,9 +38,9 @@ func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.Ledge
 		panic("nil account service")
 	}
 	return CreatePeriodLedgersHandler{
-		repo:            repo,
-		ledgerReadModel: readModel,
-		accountService:  accountService,
+		repo:           repo,
+		readModel:      readModel,
+		accountService: accountService,
 	}
 }
 
@@ -52,13 +52,13 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 		}
 	}()
 
-	period, err := h.ledgerReadModel.ReadPeriodById(ctx, cmd.PeriodId)
+	period, err := h.readModel.ReadPeriodById(ctx, cmd.PeriodId)
 	if err != nil {
 		return errors.Wrap(err, "failed to read period")
 	}
 
 	// read all accounts in sob
-	accounts, err := h.accountService.ReadAllAccountsBySobId(ctx, period.SobId)
+	accounts, err := h.accountService.ReadAccountsBySobId(ctx, period.SobId)
 	if err != nil {
 		return errors.Wrap(err, "failed to read all account Ids by SoB")
 	}
@@ -66,7 +66,7 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 	// read all ledgers from previous period
 	previousLedgers := make(map[uuid.UUID]query.Ledger) // key: AccountId, value: ledger
 	if period.PreviousPeriodId != uuid.Nil {
-		ledgersPage, err := h.ledgerReadModel.ReadAllLedgersByPeriod(ctx, period.PreviousPeriodId, data.Unpaged())
+		ledgersPage, err := h.readModel.ReadLedgersByPeriod(ctx, period.PreviousPeriodId, data.Unpaged())
 		if err != nil {
 			return errors.Wrap(err, "failed to read ledgers by account period")
 		}

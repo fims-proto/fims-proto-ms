@@ -6,8 +6,6 @@ import (
 	"time"
 
 	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
-	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
-
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
@@ -174,6 +172,6 @@ func (l ledgerServiceMock) ReadPeriodByTime(context.Context, uuid.UUID, time.Tim
 	}, nil
 }
 
-func (l ledgerServiceMock) PostVoucher(context.Context, query.Voucher) error {
+func (l ledgerServiceMock) PostVoucher(context.Context, domain.Voucher) error {
 	panic("implement me")
 }

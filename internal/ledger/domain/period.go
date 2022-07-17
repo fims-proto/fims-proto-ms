@@ -32,7 +32,6 @@ func NewPeriod(id, sobId, previousPeriodId uuid.UUID, financialYear, number int,
 		return nil, errors.New("invalid period number")
 	}
 
-	// TODO: question here: should ending time be provided when creating period?
 	if openingTime.IsZero() {
 		return nil, errors.New("zero opening time")
 	}
@@ -82,19 +81,4 @@ func (a Period) EndingTime() time.Time {
 
 func (a Period) IsClosed() bool {
 	return a.isClosed
-}
-
-func (a *Period) Close() error {
-	if a.IsClosed() {
-		return errors.New("period is already closed")
-	}
-	a.isClosed = true
-	return nil
-}
-
-func (a *Period) Reopen() error {
-	if !a.IsClosed() {
-		return errors.New("period is not closed")
-	}
-	return errors.New("reopen period is not supported")
 }

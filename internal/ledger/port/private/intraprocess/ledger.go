@@ -19,8 +19,26 @@ func NewLedgerInterface(app *app.Application) LedgerInterface {
 	return LedgerInterface{app: app}
 }
 
-func (i LedgerInterface) AppendLedgerLogs(ctx context.Context, logs []command.AppendLedgerLogCmd) error {
-	return i.app.Commands.AppendLedgerLogs.Handle(ctx, logs)
+func (i LedgerInterface) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error {
+	startDateOfMonth := time.Date(financialYear, time.Month(number), 1, 0, 0, 0, 0, time.UTC)
+	cmd := command.CreatePeriodCmd{
+		PreviousPeriodId: uuid.Nil,
+		SobId:            sobId,
+		FinancialYear:    financialYear,
+		Number:           number,
+		OpeningTime:      startDateOfMonth,
+	}
+
+	_, err := i.app.Commands.CreatePeriod.Handle(ctx, cmd)
+	return err
+}
+
+func (i LedgerInterface) InitializeLedgersForPeriod(ctx context.Context, periodId uuid.UUID) error {
+	return i.app.Commands.CreateLedgersForPeriod.Handle(ctx, command.CreatePeriodLedgersCmd{PeriodId: periodId})
+}
+
+func (i LedgerInterface) PostLedgers(ctx context.Context, cmd command.PostLedgersCmd) error {
+	return i.app.Commands.PostLedgers.Handle(ctx, cmd)
 }
 
 func (i LedgerInterface) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {

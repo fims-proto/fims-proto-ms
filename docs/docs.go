@@ -263,48 +263,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/period/{periodId}/ledgers/calculate": {
-            "post": {
-                "description": "Calculate ledger balance in period",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "summary": "Calculate ledger balance in period",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Period ID",
-                        "name": "periodId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": ""
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sob/{sobId}/periods/": {
             "get": {
                 "description": "All periods",
@@ -1513,8 +1471,8 @@ const docTemplate = `{
                 "sobId": {
                     "type": "string"
                 },
-                "superiorAccountId": {
-                    "type": "string"
+                "superiorAccount": {
+                    "$ref": "#/definitions/internal_account_port_public_http.AccountResponse"
                 },
                 "title": {
                     "type": "string"

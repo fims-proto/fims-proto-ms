@@ -12,14 +12,13 @@ import (
 )
 
 type LedgerReadModel interface {
-	ReadLedgerById(ctx context.Context, id uuid.UUID) (Ledger, error)
-	ReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error)
-	ReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error)
-	ReadPeriodById(ctx context.Context, id uuid.UUID) (Period, error)
+	ReadPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error)
 	ReadPeriodsByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]Period, error)
-	ReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
+	ReadPeriodById(ctx context.Context, id uuid.UUID) (Period, error)
 	ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error)
-	ReadLedgerLogsByAccountIdsAndTimes(ctx context.Context, accountId []uuid.UUID, openingTime, endingTime time.Time) ([]LedgerLog, error)
+	ReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
+
+	ReadLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error)
 }
 
 type ReadLedgerHandler struct {
@@ -41,7 +40,7 @@ func NewReadLedgerHandler(readModel LedgerReadModel, accountService AccountServi
 }
 
 func (h ReadLedgerHandler) HandleReadAllPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error) {
-	return h.readModel.ReadAllPeriods(ctx, sobId, pageable)
+	return h.readModel.ReadPeriods(ctx, sobId, pageable)
 }
 
 func (h ReadLedgerHandler) HandleReadOpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error) {
@@ -61,7 +60,7 @@ func (h ReadLedgerHandler) HandleReadPeriodByTime(ctx context.Context, sobId uui
 }
 
 func (h ReadLedgerHandler) HandleReadAllLedgersByPeriod(ctx context.Context, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {
-	ledgersPage, err := h.readModel.ReadAllLedgersByPeriod(ctx, periodId, pageable)
+	ledgersPage, err := h.readModel.ReadLedgersByPeriod(ctx, periodId, pageable)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed on reading ledgers by period")
 	}
@@ -78,7 +77,6 @@ func (h ReadLedgerHandler) HandleReadAllLedgersByPeriod(ctx context.Context, per
 	for i := range ledgersPage.Content() {
 		account := accounts[ledgersPage.Content()[i].Account.Id]
 
-		ledgersPage.Content()[i].Account.SuperiorAccountId = account.SuperiorAccountId
 		ledgersPage.Content()[i].Account.AccountNumber = account.AccountNumber
 		ledgersPage.Content()[i].Account.Title = account.Title
 		ledgersPage.Content()[i].Account.AccountType = account.AccountType
