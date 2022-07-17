@@ -27,8 +27,7 @@ func NewUpdateUserHandler(repo domain.Repository) UpdateUserHandler {
 }
 
 func (h UpdateUserHandler) Handle(ctx context.Context, cmd UpdateUserCmd) (err error) {
-	log.Info(ctx, "handle updating user")
-	log.Debug(ctx, "handle updating user, cmd: %+v", cmd)
+	log.Info(ctx, "handle updating user, cmd: %+v", cmd)
 	defer func() {
 		if err != nil {
 			log.Err(ctx, err, "handle updating failed")

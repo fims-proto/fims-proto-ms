@@ -21,7 +21,7 @@ func NewTenantPostgresRepository(db *gorm.DB) *TenantPostgresRepository {
 	return &TenantPostgresRepository{db: db}
 }
 
-func (t TenantPostgresRepository) ReadByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
+func (t TenantPostgresRepository) ReadById(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
 	dbTenant := tenant{}
 
 	if err := t.db.WithContext(ctx).First(&dbTenant, "id = ?", tenantId).Error; err != nil {

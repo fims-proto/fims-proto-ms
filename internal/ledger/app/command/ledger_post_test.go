@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
@@ -22,7 +24,7 @@ var (
 func TestPostLedgersHandler_Handle(t *testing.T) {
 	type fields struct {
 		repo           domain.Repository
-		accountService AccountService
+		accountService service.AccountService
 	}
 	type args struct {
 		cmd PostLedgersCmd
@@ -129,6 +131,10 @@ func (m mockRepo) Migrate(context.Context) error {
 type mockAccountService struct{}
 
 func (m mockAccountService) ReadAccountsBySobId(context.Context, uuid.UUID) ([]accountQuery.Account, error) {
+	panic("implement me")
+}
+
+func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]accountQuery.Account, error) {
 	panic("implement me")
 }
 

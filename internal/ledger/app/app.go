@@ -3,6 +3,7 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 )
 
@@ -30,15 +31,14 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	readModel query.LedgerReadModel,
 	repo domain.Repository,
-	selfService command.SelfService,
-	accountQueryService query.AccountService,
-	accountService command.AccountService,
+	selfService service.SelfService,
+	accountService service.AccountService,
 ) {
 	a.Queries = Queries{
-		ReadLedgers: query.NewReadLedgerHandler(readModel, accountQueryService),
+		ReadLedgers: query.NewReadLedgerHandler(readModel, accountService),
 	}
 	a.Commands = Commands{
-		CreatePeriod:           command.NewCreatePeriodHandler(repo, selfService, readModel),
+		CreatePeriod:           command.NewCreatePeriodHandler(repo, readModel, selfService),
 		ClosePeriod:            command.NewClosePeriodHandler(repo),
 		CreateLedgersForPeriod: command.NewCreatePeriodLedgersHandler(repo, readModel, accountService),
 		PostLedgers:            command.NewPostLedgersHandler(repo, accountService),

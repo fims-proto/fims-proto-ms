@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -24,10 +26,10 @@ type CreatePeriodLedgersCmd struct {
 type CreatePeriodLedgersHandler struct {
 	repo           domain.Repository
 	readModel      query.LedgerReadModel
-	accountService AccountService
+	accountService service.AccountService
 }
 
-func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService AccountService) CreatePeriodLedgersHandler {
+func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.LedgerReadModel, accountService service.AccountService) CreatePeriodLedgersHandler {
 	if repo == nil {
 		panic("nil ledger repository")
 	}

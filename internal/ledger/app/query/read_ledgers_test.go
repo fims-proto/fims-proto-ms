@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
@@ -82,6 +84,14 @@ func (m mockReadService) ReadPeriodByTime(context.Context, uuid.UUID, time.Time)
 
 type mockAccountService struct{}
 
+func (m mockAccountService) ReadAccountsBySobId(context.Context, uuid.UUID) ([]query.Account, error) {
+	panic("implement me")
+}
+
+func (m mockAccountService) ReadAccountsWithSuperiorsByIds(context.Context, []uuid.UUID) ([]query.Account, error) {
+	panic("implement me")
+}
+
 func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	return map[uuid.UUID]query.Account{
 		{}: {
@@ -100,7 +110,7 @@ func (m mockAccountService) ReadAccountsByIds(context.Context, []uuid.UUID) (map
 func TestReadLedgerHandler_HandleReadAllLedgersByPeriod(t *testing.T) {
 	type fields struct {
 		readModel      LedgerReadModel
-		accountService AccountService
+		accountService service.AccountService
 	}
 	type args struct {
 		ctx      context.Context

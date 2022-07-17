@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
+
 	ledgerQuery "github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
@@ -85,6 +87,19 @@ func createVoucherCmd() *CreateVoucherCmd {
 	}
 }
 
+func prepareBalancedItems() []*domain.LineItem {
+	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.RequireFromString("100"), decimal.Zero)
+	item2, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.RequireFromString("100"), decimal.Zero)
+	item3, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.Zero, decimal.RequireFromString("150"))
+	item4, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.Zero, decimal.RequireFromString("50"))
+	return []*domain.LineItem{
+		item1,
+		item2,
+		item3,
+		item4,
+	}
+}
+
 func newVoucherRepoMock() voucherRepoMock {
 	return voucherRepoMock{vouchers: make(map[uuid.UUID]domain.Voucher)}
 }
@@ -141,6 +156,10 @@ func (s *accountServiceMock) ValidateExistenceAndGetId(_ context.Context, _ uuid
 	return accountIds, nil
 }
 
+func (s *accountServiceMock) ReadAccountsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+	panic("implement me")
+}
+
 type counterServiceMock struct {
 	invoked bool
 }
@@ -150,19 +169,6 @@ func (c *counterServiceMock) GetNextIdentifier(context.Context, ...string) (stri
 	return "1", nil
 }
 
-func prepareBalancedItems() []*domain.LineItem {
-	item1, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.RequireFromString("100"), decimal.Zero)
-	item2, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.RequireFromString("100"), decimal.Zero)
-	item3, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.Zero, decimal.RequireFromString("150"))
-	item4, _ := domain.NewLineItem(uuid.New(), uuid.New(), "test", decimal.Zero, decimal.RequireFromString("50"))
-	return []*domain.LineItem{
-		item1,
-		item2,
-		item3,
-		item4,
-	}
-}
-
 type ledgerServiceMock struct{}
 
 func (l ledgerServiceMock) ReadPeriodByTime(context.Context, uuid.UUID, time.Time) (ledgerQuery.Period, error) {
@@ -170,6 +176,10 @@ func (l ledgerServiceMock) ReadPeriodByTime(context.Context, uuid.UUID, time.Tim
 		Id:       uuid.New(),
 		IsClosed: false,
 	}, nil
+}
+
+func (l ledgerServiceMock) ReadPeriodsByIds(context.Context, []uuid.UUID) (map[uuid.UUID]ledgerQuery.Period, error) {
+	panic("implement me")
 }
 
 func (l ledgerServiceMock) PostVoucher(context.Context, domain.Voucher) error {

@@ -18,7 +18,7 @@ func NewTenantInterface(app *app.Application) TenantInterface {
 }
 
 func (i TenantInterface) ReadTenantByUUID(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
-	return i.app.Queries.ReadTenants.HandleReadByUUID(ctx, tenantId)
+	return i.app.Queries.ReadTenants.HandleReadById(ctx, tenantId)
 }
 
 func (i TenantInterface) ReadTenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {

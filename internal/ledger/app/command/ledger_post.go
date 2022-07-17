@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -23,10 +25,10 @@ type PostLedgersCmd struct {
 
 type PostLedgersHandler struct {
 	repo           domain.Repository
-	accountService AccountService
+	accountService service.AccountService
 }
 
-func NewPostLedgersHandler(repo domain.Repository, accountService AccountService) PostLedgersHandler {
+func NewPostLedgersHandler(repo domain.Repository, accountService service.AccountService) PostLedgersHandler {
 	if repo == nil {
 		panic("nil ledger repository")
 	}

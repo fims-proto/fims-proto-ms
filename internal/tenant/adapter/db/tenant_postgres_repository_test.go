@@ -40,7 +40,7 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 
 	// WHEN
 	repo := NewTenantPostgresRepository(db)
-	tenant, err := repo.ReadByUUID(context.Background(), tenantId)
+	tenant, err := repo.ReadById(context.Background(), tenantId)
 
 	// THEN
 	assert.NoError(t, err)

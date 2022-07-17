@@ -16,6 +16,6 @@ func NewIntraProcessAdapter(userInterface userPort.UserInterface) IntraProcessAd
 	return IntraProcessAdapter{userInterface: userInterface}
 }
 
-func (i IntraProcessAdapter) ReadUserByIds(ctx context.Context, userIds []uuid.UUID) (map[uuid.UUID]query.User, error) {
-	return i.userInterface.ReadUserByIds(ctx, userIds)
+func (i IntraProcessAdapter) ReadUsersByIds(ctx context.Context, userIds []uuid.UUID) (map[uuid.UUID]query.User, error) {
+	return i.userInterface.ReadUsersByIds(ctx, userIds)
 }

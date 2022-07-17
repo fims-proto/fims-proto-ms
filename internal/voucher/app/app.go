@@ -3,6 +3,7 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/command"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/service"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 )
 
@@ -31,15 +32,13 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	readModel query.VouchersReadModel,
 	repo domain.Repository,
-	accountQueryService query.AccountService,
-	userQueryService query.UserService,
-	ledgerQueryService query.LedgerService,
-	accountService command.AccountService,
-	ledgerService command.LedgerService,
-	counterService command.CounterService,
+	accountService service.AccountService,
+	ledgerService service.LedgerService,
+	userService service.UserService,
+	counterService service.CounterService,
 ) {
 	a.Queries = Queries{
-		ReadVouchers: query.NewReadVouchersHandler(readModel, accountQueryService, userQueryService, ledgerQueryService),
+		ReadVouchers: query.NewReadVouchersHandler(readModel, accountService, userService, ledgerService),
 	}
 	a.Commands = Commands{
 		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, counterService, ledgerService),

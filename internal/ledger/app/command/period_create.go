@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/ledger/app/service"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
@@ -26,19 +28,19 @@ type CreatePeriodCmd struct {
 
 type CreatePeriodHandler struct {
 	repo        domain.Repository
-	selfService SelfService
 	readModel   query.LedgerReadModel
+	selfService service.SelfService
 }
 
-func NewCreatePeriodHandler(repo domain.Repository, selfService SelfService, readModel query.LedgerReadModel) CreatePeriodHandler {
+func NewCreatePeriodHandler(repo domain.Repository, readModel query.LedgerReadModel, selfService service.SelfService) CreatePeriodHandler {
 	if repo == nil {
 		panic("nil ledger repo")
 	}
-	if selfService == nil {
-		panic("nil ledger self service")
-	}
 	if readModel == nil {
 		panic("nil ledger read model")
+	}
+	if selfService == nil {
+		panic("nil ledger self service")
 	}
 	return CreatePeriodHandler{
 		repo:        repo,

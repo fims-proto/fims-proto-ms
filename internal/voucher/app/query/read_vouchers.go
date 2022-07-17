@@ -3,6 +3,8 @@ package query
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/service"
+
 	userQuery "github/fims-proto/fims-proto-ms/internal/user/app/query"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -32,12 +34,12 @@ type VouchersReadModel interface {
 
 type ReadVouchersHandler struct {
 	readModel      VouchersReadModel
-	accountService AccountService
-	userService    UserService
-	ledgerService  LedgerService
+	accountService service.AccountService
+	userService    service.UserService
+	ledgerService  service.LedgerService
 }
 
-func NewReadVouchersHandler(readModel VouchersReadModel, accountService AccountService, userService UserService, ledgerService LedgerService) ReadVouchersHandler {
+func NewReadVouchersHandler(readModel VouchersReadModel, accountService service.AccountService, userService service.UserService, ledgerService service.LedgerService) ReadVouchersHandler {
 	if readModel == nil {
 		panic("nil readModel")
 	}
@@ -146,7 +148,7 @@ func (h ReadVouchersHandler) enrichUserName(ctx context.Context, vouchers []Vouc
 		}
 	}
 
-	users, err := h.userService.ReadUserByIds(ctx, toKeySlice[uuid.UUID, void](userSet))
+	users, err := h.userService.ReadUsersByIds(ctx, toKeySlice[uuid.UUID, void](userSet))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read users by Ids")
 	}

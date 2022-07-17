@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/service"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
@@ -22,12 +24,12 @@ type CreateVoucherCmd struct {
 
 type CreateVoucherHandler struct {
 	repo           domain.Repository
-	accountService AccountService
-	counterService CounterService
-	ledgerService  LedgerService
+	accountService service.AccountService
+	counterService service.CounterService
+	ledgerService  service.LedgerService
 }
 
-func NewCreateVoucherHandler(repo domain.Repository, accountService AccountService, counterService CounterService, ledgerService LedgerService) CreateVoucherHandler {
+func NewCreateVoucherHandler(repo domain.Repository, accountService service.AccountService, counterService service.CounterService, ledgerService service.LedgerService) CreateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

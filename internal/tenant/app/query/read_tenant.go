@@ -7,7 +7,7 @@ import (
 )
 
 type TenantsReadModel interface {
-	ReadByUUID(ctx context.Context, tenantId uuid.UUID) (Tenant, error)
+	ReadById(ctx context.Context, tenantId uuid.UUID) (Tenant, error)
 	ReadBySubdomain(ctx context.Context, subdomain string) (Tenant, error)
 }
 
@@ -22,8 +22,8 @@ func NewReadTenantsHandler(readModel TenantsReadModel) ReadTenantsHandler {
 	return ReadTenantsHandler{readModel: readModel}
 }
 
-func (h ReadTenantsHandler) HandleReadByUUID(ctx context.Context, tenantId uuid.UUID) (Tenant, error) {
-	return h.readModel.ReadByUUID(ctx, tenantId)
+func (h ReadTenantsHandler) HandleReadById(ctx context.Context, tenantId uuid.UUID) (Tenant, error) {
+	return h.readModel.ReadById(ctx, tenantId)
 }
 
 func (h ReadTenantsHandler) HandleReadBySubdomain(ctx context.Context, subdomain string) (Tenant, error) {

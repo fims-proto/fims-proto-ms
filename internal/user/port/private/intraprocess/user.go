@@ -16,6 +16,6 @@ func NewUserInterface(app *app.Application) UserInterface {
 	return UserInterface{app: app}
 }
 
-func (i UserInterface) ReadUserByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]query.User, error) {
+func (i UserInterface) ReadUsersByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]query.User, error) {
 	return i.app.Queries.ReadUsers.HandleReadByIds(ctx, ids)
 }

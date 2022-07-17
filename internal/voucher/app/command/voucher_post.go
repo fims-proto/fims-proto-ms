@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/service"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
@@ -18,10 +20,10 @@ type PostVoucherCmd struct {
 type PostVoucherHandler struct {
 	readModel     query.VouchersReadModel
 	repo          domain.Repository
-	ledgerService LedgerService
+	ledgerService service.LedgerService
 }
 
-func NewPostVoucherHandler(readModel query.VouchersReadModel, repo domain.Repository, ledgerService LedgerService) PostVoucherHandler {
+func NewPostVoucherHandler(readModel query.VouchersReadModel, repo domain.Repository, ledgerService service.LedgerService) PostVoucherHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}

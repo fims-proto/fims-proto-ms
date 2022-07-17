@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
@@ -21,12 +23,12 @@ type CreateSobCmd struct {
 
 type CreateSobHandler struct {
 	repo           domain.Repository
-	accountService AccountService
-	ledgerService  LedgerService
-	counterService CounterService
+	accountService service.AccountService
+	ledgerService  service.LedgerService
+	counterService service.CounterService
 }
 
-func NewCreateSobHandler(repo domain.Repository, accountService AccountService, ledgerService LedgerService, counterService CounterService) CreateSobHandler {
+func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService, ledgerService service.LedgerService, counterService service.CounterService) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}

@@ -7,9 +7,6 @@ import (
 	"fmt"
 	"strings"
 
-	ledgerSelfServiceAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/self"
-	sobLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/ledger"
-
 	"github/fims-proto/fims-proto-ms/internal/common/exception"
 	"golang.org/x/text/language"
 
@@ -38,23 +35,28 @@ import (
 
 	ledgerAccountAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
 	ledgerAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/db"
+	ledgerSelfServiceAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/self"
 	ledgerApp "github/fims-proto/fims-proto-ms/internal/ledger/app"
 	ledgerPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
 	ledgerIntraPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
 	ledgerPublicHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/public/http"
+
 	sobAccountAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/account"
 	sobCounterAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/counter"
 	sobAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/db"
+	sobLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/ledger"
 	sobApp "github/fims-proto/fims-proto-ms/internal/sob/app"
 	sobPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/http"
 	sobIntraPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/intraprocess"
 	sobPublicHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/public/http"
+
 	tenantDb "github/fims-proto/fims-proto-ms/internal/tenant/adapter/db"
 	tenantApp "github/fims-proto/fims-proto-ms/internal/tenant/app"
 	ginMiddleware "github/fims-proto/fims-proto-ms/internal/tenant/lib/gin-middleware"
 	tenantManager "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-manager"
 	tenantService "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
 	tenantIntraPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
+
 	voucherAccountAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
 	voucherCounterAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
 	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
@@ -150,10 +152,8 @@ func main() {
 		voucherRepository,
 		voucherRepository,
 		accountServiceForVoucher,
+		ledgerServiceForVoucher,
 		userServiceForVoucher,
-		ledgerServiceForVoucher,
-		accountServiceForVoucher,
-		ledgerServiceForVoucher,
 		counterServiceForVoucher,
 	)
 
@@ -163,7 +163,6 @@ func main() {
 		ledgerRepository,
 		ledgerRepository,
 		ledgerSelfService,
-		accountServiceForLedger,
 		accountServiceForLedger,
 	)
 
