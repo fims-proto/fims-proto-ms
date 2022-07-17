@@ -23,16 +23,16 @@ func NewIntraProcessAdapter(ledgerInterface ledgerPort.LedgerInterface) IntraPro
 }
 
 func (s IntraProcessAdapter) PostVoucher(ctx context.Context, voucher domain.Voucher) error {
-	amountCmds := make(map[uuid.UUID]ledgerCommand.PostLedgersAmountCmd)
+	accountAmountCommands := make(map[uuid.UUID]ledgerCommand.PostLedgersAmountCmd)
 	for _, item := range voucher.LineItems() {
-		amountCmds[item.AccountId()] = ledgerCommand.PostLedgersAmountCmd{
+		accountAmountCommands[item.AccountId()] = ledgerCommand.PostLedgersAmountCmd{
 			Debit:  item.Debit(),
 			Credit: item.Credit(),
 		}
 	}
 
 	command := ledgerCommand.PostLedgersCmd{
-		Accounts: amountCmds,
+		Accounts: accountAmountCommands,
 		PeriodId: voucher.PeriodId(),
 	}
 

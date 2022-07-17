@@ -25,15 +25,7 @@ func NewAuditVoucherHandler(repo domain.Repository) AuditVoucherHandler {
 	return AuditVoucherHandler{repo: repo}
 }
 
-func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) (err error) {
-	log.Info(ctx, "handle auditing voucher")
-	log.Debug(ctx, "handle auditing voucher, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle auditing failed")
-		}
-	}()
-
+func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
@@ -45,15 +37,7 @@ func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) (e
 	)
 }
 
-func (h AuditVoucherHandler) HandleCancel(ctx context.Context, cmd AuditVoucherCmd) (err error) {
-	log.Info(ctx, "handle cancelling audit voucher")
-	log.Debug(ctx, "handle cancelling audit voucher, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle cancelling audit failed")
-		}
-	}()
-
+func (h AuditVoucherHandler) HandleCancel(ctx context.Context, cmd AuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,

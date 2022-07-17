@@ -34,15 +34,7 @@ func NewPostVoucherHandler(readModel query.VouchersReadModel, repo domain.Reposi
 	}
 }
 
-func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) (err error) {
-	log.Info(ctx, "handle posting voucher")
-	log.Debug(ctx, "handle posting voucher, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle posting failed")
-		}
-	}()
-
+func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
@@ -52,11 +44,11 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) (err
 				return nil, err
 			}
 
-			if err = h.ledgerService.PostVoucher(ctx, *v); err != nil {
+			if err := h.ledgerService.PostVoucher(ctx, *v); err != nil {
 				return nil, errors.Wrap(err, "failed to post voucher to ledgers")
 			}
 
-			return v, err
+			return v, nil
 		},
 	)
 }
