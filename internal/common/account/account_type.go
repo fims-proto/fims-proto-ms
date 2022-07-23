@@ -15,12 +15,12 @@ const (
 )
 
 var availableTypes = map[Type]string{
-	Assets:        "ASSETS",
-	Cost:          "COST",
-	Liabilities:   "LIABILITIES",
-	Equity:        "EQUITY",
-	ProfitAndLoss: "PROFIT_AND_LOSS",
-	Common:        "COMMON",
+	Assets:        "assets",
+	Cost:          "cost",
+	Liabilities:   "liabilities",
+	Equity:        "equity",
+	ProfitAndLoss: "profit_and_loss",
+	Common:        "common",
 }
 
 func NewAccountType(s string) (Type, error) {

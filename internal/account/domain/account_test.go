@@ -32,7 +32,7 @@ func TestNewAccount(t *testing.T) {
 			level:             1,
 			numberHierarchy:   []int{1001},
 			codeLength:        []int{4, 3, 3},
-			accountType:       "ASSETS",
+			accountType:       "assets",
 			balanceDirection:  "DEBIT",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
@@ -53,7 +53,7 @@ func TestNewAccount(t *testing.T) {
 			level:             2,
 			numberHierarchy:   []int{1001, 1},
 			codeLength:        []int{4, 3, 3},
-			accountType:       "ASSETS",
+			accountType:       "assets",
 			balanceDirection:  "DEBIT",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
@@ -74,7 +74,7 @@ func TestNewAccount(t *testing.T) {
 			level:             1,
 			numberHierarchy:   []int{0},
 			codeLength:        []int{4, 3, 3},
-			accountType:       "ASSETS",
+			accountType:       "assets",
 			balanceDirection:  "DEBIT",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
@@ -89,7 +89,7 @@ func TestNewAccount(t *testing.T) {
 			level:             2,
 			numberHierarchy:   []int{1001, 1},
 			codeLength:        []int{4, 3, 3},
-			accountType:       "ASSETS",
+			accountType:       "assets",
 			balanceDirection:  "DEBIT",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
@@ -104,7 +104,7 @@ func TestNewAccount(t *testing.T) {
 			level:             2,
 			numberHierarchy:   []int{1001, 1111},
 			codeLength:        []int{4, 3, 3},
-			accountType:       "ASSETS",
+			accountType:       "assets",
 			balanceDirection:  "DEBIT",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
@@ -119,7 +119,7 @@ func TestNewAccount(t *testing.T) {
 			level:             1,
 			numberHierarchy:   []int{1001, 1, 1, 1},
 			codeLength:        []int{4, 3, 3},
-			accountType:       "ASSETS",
+			accountType:       "assets",
 			balanceDirection:  "DEBIT",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)

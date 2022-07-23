@@ -70,7 +70,7 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 }
 
 func createVoucherForReviewTest(t *testing.T, reviewer uuid.UUID) *domain.Voucher {
-	v, err := domain.NewVoucher(uuid.New(), uuid.New(), uuid.New(), "GENERAL_VOUCHER", "1", 0, prepareBalancedItems(), uuid.New(), uuid.Nil, uuid.Nil, false, false, false, time.Now())
+	v, err := domain.NewVoucher(uuid.New(), uuid.New(), uuid.New(), "general_voucher", "1", 0, prepareBalancedItems(), uuid.New(), uuid.Nil, uuid.Nil, false, false, false, time.Now())
 	require.NoError(t, err)
 	if reviewer != uuid.Nil {
 		err := v.Review(reviewer)

@@ -25,10 +25,9 @@ type CreateSobHandler struct {
 	repo           domain.Repository
 	accountService service.AccountService
 	ledgerService  service.LedgerService
-	counterService service.CounterService
 }
 
-func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService, ledgerService service.LedgerService, counterService service.CounterService) CreateSobHandler {
+func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService, ledgerService service.LedgerService) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -42,7 +41,6 @@ func NewCreateSobHandler(repo domain.Repository, accountService service.AccountS
 		repo:           repo,
 		accountService: accountService,
 		ledgerService:  ledgerService,
-		counterService: counterService,
 	}
 }
 
@@ -60,11 +58,6 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (created
 	}
 	if err := h.repo.CreateSob(ctx, sob); err != nil {
 		return uuid.Nil, err
-	}
-
-	// after sob creation, load counters and accounts
-	if err := h.counterService.InitializeCounters(ctx, sob.Id()); err != nil {
-		return uuid.Nil, errors.Wrapf(err, "failed to initialize counters")
 	}
 
 	// triggers

@@ -87,7 +87,7 @@ func (r voucherRepoMock) initTestData() {
 		uuid.NewSHA1(uuid.Nil, []byte("0000")),
 		uuid.New(),
 		uuid.New(),
-		"GENERAL_VOUCHER",
+		"general_voucher",
 		"1",
 		0,
 		items,

@@ -81,7 +81,7 @@ e.g.:
 ```
 {
     accountType: {
-        $in: ['ASSET', 'COST']
+        $in: ['ASSET', 'cost']
     }
 }
 ```
@@ -99,7 +99,7 @@ e.g.:
 {
     title: "something",
     accountType: {
-        $in: ['ASSET', 'COST']
+        $in: ['ASSET', 'cost']
     }
 }
 ```
@@ -120,7 +120,7 @@ e.g.:
         { title: "something" },
         {
             accountType: {
-                $in: ['ASSET', 'COST']
+                $in: ['ASSET', 'cost']
             }
         }
     ]

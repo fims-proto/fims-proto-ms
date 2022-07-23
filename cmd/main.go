@@ -22,10 +22,10 @@ import (
 	accountIntraPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 	accountPublicHttpPort "github/fims-proto/fims-proto-ms/internal/account/port/public/http"
 
-	counterAdapter "github/fims-proto/fims-proto-ms/internal/counter/adapter/db"
-	counterApp "github/fims-proto/fims-proto-ms/internal/counter/app"
-	counterPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/http"
-	counterIntraPort "github/fims-proto/fims-proto-ms/internal/counter/port/private/intraprocess"
+	numberingAdapter "github/fims-proto/fims-proto-ms/internal/numbering/adapter/db"
+	numberingApp "github/fims-proto/fims-proto-ms/internal/numbering/app"
+	numberingPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/http"
+	numberingIntraPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/intraprocess"
 
 	userAdapter "github/fims-proto/fims-proto-ms/internal/user/adapter/db"
 	userApp "github/fims-proto/fims-proto-ms/internal/user/app"
@@ -35,6 +35,7 @@ import (
 
 	ledgerAccountAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
 	ledgerAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/db"
+	ledgerNumberingAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/numbering"
 	ledgerSelfServiceAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/self"
 	ledgerApp "github/fims-proto/fims-proto-ms/internal/ledger/app"
 	ledgerPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
@@ -42,7 +43,6 @@ import (
 	ledgerPublicHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/public/http"
 
 	sobAccountAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/account"
-	sobCounterAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/counter"
 	sobAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/db"
 	sobLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/ledger"
 	sobApp "github/fims-proto/fims-proto-ms/internal/sob/app"
@@ -58,9 +58,9 @@ import (
 	tenantIntraPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
 
 	voucherAccountAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
-	voucherCounterAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/counter"
 	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
 	voucherLedgerAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/ledger"
+	voucherNumberingAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/numbering"
 	voucherUserAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/user"
 	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
 	voucherPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
@@ -107,7 +107,7 @@ func main() {
 	accountRepository := accountAdapter.NewAccountPostgresRepository()
 	voucherRepository := voucherAdapter.NewVoucherPostgresRepository()
 	ledgerRepository := ledgerAdapter.NewLedgerPostgresRepository()
-	counterRepository := counterAdapter.NewCounterPostgresRepository()
+	numberingRepository := numberingAdapter.NewNumberingPostgresRepository()
 	userRepository := userAdapter.NewUserPostgresRepository()
 
 	// application - will be passed by reference, in order to make injection work
@@ -115,26 +115,24 @@ func main() {
 	accountApplication := accountApp.NewApplication()
 	voucherApplication := voucherApp.NewApplication()
 	ledgerApplication := ledgerApp.NewApplication()
-	counterApplication := counterApp.NewApplication()
+	numberingApplication := numberingApp.NewApplication()
 	userApplication := userApp.NewApplication()
 
 	// intra process interfaces
 	sobInterface := sobIntraPort.NewSobInterface(&sobApplication)
 	accountInterface := accountIntraPort.NewAccountInterface(&accountApplication)
 	ledgerInterface := ledgerIntraPort.NewLedgerInterface(&ledgerApplication)
-	counterInterface := counterIntraPort.NewCounterInterface(&counterApplication)
+	numberingInterface := numberingIntraPort.NewNumberingInterface(&numberingApplication)
 	userInterface := userIntraPort.NewUserInterface(&userApplication)
 
 	// application dependencies injection
 	accountServiceForSob := sobAccountAdapter.NewIntraProcessAdapter(accountInterface)
 	ledgerServiceForSob := sobLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
-	counterServiceForSob := sobCounterAdapter.NewIntraProcessAdapter(counterInterface)
 	sobApplication.Inject(
 		sobRepository,
 		sobRepository,
 		accountServiceForSob,
 		ledgerServiceForSob,
-		counterServiceForSob,
 	)
 
 	sobServiceForAccount := accountSobAdapter.NewIntraProcessAdapter(sobInterface)
@@ -146,7 +144,7 @@ func main() {
 
 	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
 	ledgerServiceForVoucher := voucherLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
-	counterServiceForVoucher := voucherCounterAdapter.NewIntraProcessAdapter(counterInterface)
+	numberingServiceForVoucher := voucherNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
 	userServiceForVoucher := voucherUserAdapter.NewIntraProcessAdapter(userInterface)
 	voucherApplication.Inject(
 		voucherRepository,
@@ -154,21 +152,24 @@ func main() {
 		accountServiceForVoucher,
 		ledgerServiceForVoucher,
 		userServiceForVoucher,
-		counterServiceForVoucher,
+		numberingServiceForVoucher,
 	)
 
 	ledgerSelfService := ledgerSelfServiceAdapter.NewIntraProcessAdapter(ledgerInterface)
 	accountServiceForLedger := ledgerAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	numberingServiceForLedger := ledgerNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
 	ledgerApplication.Inject(
 		ledgerRepository,
 		ledgerRepository,
 		ledgerSelfService,
 		accountServiceForLedger,
+		numberingServiceForLedger,
 	)
 
-	counterApplication.Inject(
-		counterRepository, // because of pinter receiver
-		counterRepository,
+	numberingApplication.Inject(
+		numberingRepository, // because of pinter receiver
+		numberingRepository,
+		numberingRepository,
 	)
 
 	userApplication.Inject(
@@ -193,7 +194,7 @@ func main() {
 	// private http API, should have different authentication method then public API
 	privateApiRouter := router.Group("/internal")
 	sobPrivateHttpPort.InitRouter(sobPrivateHttpPort.NewHandler(&sobApplication), privateApiRouter)
-	counterPrivateHttpPort.InitRouter(counterPrivateHttpPort.NewHandler(&counterApplication), privateApiRouter)
+	numberingPrivateHttpPort.InitRouter(numberingPrivateHttpPort.NewHandler(&numberingApplication), privateApiRouter)
 	accountPrivateHttpPort.InitRouter(accountPrivateHttpPort.NewHandler(&accountApplication), privateApiRouter)
 	ledgerPrivateHttpPort.InitRouter(ledgerPrivateHttpPort.NewHandler(&ledgerApplication), privateApiRouter)
 	voucherPrivateHttpPort.InitRouter(voucherPrivateHttpPort.NewHandler(&voucherApplication), privateApiRouter)

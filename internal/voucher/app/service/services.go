@@ -28,6 +28,6 @@ type UserService interface {
 	ReadUsersByIds(ctx context.Context, userIds []uuid.UUID) (map[uuid.UUID]userQuery.User, error)
 }
 
-type CounterService interface {
-	GetNextIdentifier(ctx context.Context, businessObjects ...string) (string, error)
+type NumberingService interface {
+	GenerateIdentifier(ctx context.Context, periodId uuid.UUID, voucherType string) (string, error)
 }

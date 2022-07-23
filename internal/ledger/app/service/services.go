@@ -16,3 +16,7 @@ type AccountService interface {
 	ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]accountQuery.Account, error)
 	ReadAccountsWithSuperiorsByIds(ctx context.Context, accountIds []uuid.UUID) ([]accountQuery.Account, error)
 }
+
+type NumberingService interface {
+	InitializeIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error
+}

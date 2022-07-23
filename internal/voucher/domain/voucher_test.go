@@ -27,7 +27,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 	}{
 		{
 			name:            "normal_success",
-			voucherType:     "GENERAL_VOUCHER",
+			voucherType:     "general_voucher",
 			id:              uuid.NewSHA1(uuid.Nil, []byte("test_uuid")),
 			sobId:           sobId,
 			number:          "1",
@@ -43,7 +43,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		},
 		{
 			name:            "imbalanced_error",
-			voucherType:     "GENERAL_VOUCHER",
+			voucherType:     "general_voucher",
 			id:              uuid.New(),
 			sobId:           sobId,
 			number:          "1",
@@ -56,7 +56,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		},
 		{
 			name:            "empty_line_item_error",
-			voucherType:     "GENERAL_VOUCHER",
+			voucherType:     "general_voucher",
 			id:              uuid.New(),
 			sobId:           sobId,
 			number:          "1",
@@ -69,7 +69,7 @@ func TestDomain_NewVoucher(t *testing.T) {
 		},
 		{
 			name:            "futureTransactionTime_error",
-			voucherType:     "GENERAL_VOUCHER",
+			voucherType:     "general_voucher",
 			id:              uuid.NewSHA1(uuid.Nil, []byte("test_uuid")),
 			sobId:           sobId,
 			number:          "1",

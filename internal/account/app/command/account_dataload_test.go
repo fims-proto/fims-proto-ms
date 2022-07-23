@@ -47,7 +47,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            1,
 						title:            "库存现金",
 						superiorNumber:   "",
-						accountType:      "ASSETS",
+						accountType:      "assets",
 						balanceDirection: "DEBIT",
 					},
 					{
@@ -55,7 +55,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            1,
 						title:            "银行存款",
 						superiorNumber:   "",
-						accountType:      "ASSETS",
+						accountType:      "assets",
 						balanceDirection: "DEBIT",
 					},
 					{
@@ -63,7 +63,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            2,
 						title:            "中国银行存款",
 						superiorNumber:   "1002",
-						accountType:      "ASSETS",
+						accountType:      "assets",
 						balanceDirection: "DEBIT",
 					},
 					{
@@ -71,7 +71,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            2,
 						title:            "招商银行存款",
 						superiorNumber:   "1002",
-						accountType:      "ASSETS",
+						accountType:      "assets",
 						balanceDirection: "DEBIT",
 					},
 					{
@@ -79,7 +79,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            1,
 						title:            "管理费用",
 						superiorNumber:   "",
-						accountType:      "PROFIT_AND_LOSS",
+						accountType:      "profit_and_loss",
 						balanceDirection: "NOT_DEFINED",
 					},
 					{
@@ -87,7 +87,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            2,
 						title:            "办公费",
 						superiorNumber:   "6602",
-						accountType:      "PROFIT_AND_LOSS",
+						accountType:      "profit_and_loss",
 						balanceDirection: "NOT_DEFINED",
 					},
 					{
@@ -95,7 +95,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            3,
 						title:            "办公室租金",
 						superiorNumber:   "6602001",
-						accountType:      "PROFIT_AND_LOSS",
+						accountType:      "profit_and_loss",
 						balanceDirection: "NOT_DEFINED",
 					},
 					{
@@ -103,7 +103,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 						level:            3,
 						title:            "文具费用",
 						superiorNumber:   "6602001",
-						accountType:      "PROFIT_AND_LOSS",
+						accountType:      "profit_and_loss",
 						balanceDirection: "NOT_DEFINED",
 					},
 				},

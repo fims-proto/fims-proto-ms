@@ -6,7 +6,6 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/voucher/app/service"
 
-	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain"
 
 	"github.com/google/uuid"
@@ -23,42 +22,34 @@ type CreateVoucherCmd struct {
 }
 
 type CreateVoucherHandler struct {
-	repo           domain.Repository
-	accountService service.AccountService
-	counterService service.CounterService
-	ledgerService  service.LedgerService
+	repo             domain.Repository
+	accountService   service.AccountService
+	numberingService service.NumberingService
+	ledgerService    service.LedgerService
 }
 
-func NewCreateVoucherHandler(repo domain.Repository, accountService service.AccountService, counterService service.CounterService, ledgerService service.LedgerService) CreateVoucherHandler {
+func NewCreateVoucherHandler(repo domain.Repository, accountService service.AccountService, numberingService service.NumberingService, ledgerService service.LedgerService) CreateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 	if accountService == nil {
 		panic("nil account service")
 	}
-	if counterService == nil {
-		panic("nil counter service")
+	if numberingService == nil {
+		panic("nil numbering service")
 	}
 	if ledgerService == nil {
 		panic("nil ledger service")
 	}
 	return CreateVoucherHandler{
-		repo:           repo,
-		accountService: accountService,
-		counterService: counterService,
-		ledgerService:  ledgerService,
+		repo:             repo,
+		accountService:   accountService,
+		numberingService: numberingService,
+		ledgerService:    ledgerService,
 	}
 }
 
-func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) (createdId uuid.UUID, err error) {
-	log.Info(ctx, "handle creating voucher")
-	log.Debug(ctx, "handle creating voucher, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle creating failed")
-		}
-	}()
-
+func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) (uuid.UUID, error) {
 	// read period by transaction time
 	period, err := h.ledgerService.ReadPeriodByTime(ctx, cmd.SobId, cmd.TransactionTime)
 	if err != nil {
@@ -100,7 +91,7 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 	}
 
 	// get voucher number
-	identifier, err := h.counterService.GetNextIdentifier(ctx, cmd.SobId.String(), cmd.VoucherType)
+	identifier, err := h.numberingService.GenerateIdentifier(ctx, period.Id, cmd.VoucherType)
 	if err != nil {
 		return uuid.Nil, errors.Wrap(err, "unable to generate next number")
 	}
@@ -114,11 +105,11 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 		cmd.AttachmentQuantity,
 		lineItems,
 		cmd.Creator,
-		uuid.Nil, // no reviewer
-		uuid.Nil, // no auditor
-		false,    // not reviewed yet
-		false,    // not audited yet
-		false,    // not posted yet
+		uuid.Nil,
+		uuid.Nil,
+		false,
+		false,
+		false,
 		cmd.TransactionTime,
 	)
 	if err != nil {

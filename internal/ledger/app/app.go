@@ -33,12 +33,13 @@ func (a *Application) Inject(
 	repo domain.Repository,
 	selfService service.SelfService,
 	accountService service.AccountService,
+	numberingService service.NumberingService,
 ) {
 	a.Queries = Queries{
 		ReadLedgers: query.NewReadLedgerHandler(readModel, accountService),
 	}
 	a.Commands = Commands{
-		CreatePeriod:           command.NewCreatePeriodHandler(repo, readModel, selfService),
+		CreatePeriod:           command.NewCreatePeriodHandler(repo, readModel, selfService, numberingService),
 		ClosePeriod:            command.NewClosePeriodHandler(repo),
 		CreateLedgersForPeriod: command.NewCreatePeriodLedgersHandler(repo, readModel, accountService),
 		PostLedgers:            command.NewPostLedgersHandler(repo, accountService),

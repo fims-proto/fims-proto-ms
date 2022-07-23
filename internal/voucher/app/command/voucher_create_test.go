@@ -40,7 +40,7 @@ func TestApp_HandleCreateVoucherHandler(t *testing.T) {
 
 			repoMock := newVoucherRepoMock()
 			accServiceMock := newAccountService()
-			cntServiceMock := newCounterService()
+			cntServiceMock := newNumberingService()
 			ledServiceMock := newLedgerService()
 			handler := NewCreateVoucherHandler(repoMock, &accServiceMock, &cntServiceMock, &ledServiceMock)
 			newUUID, err := handler.Handle(context.Background(), *cmd)
@@ -79,7 +79,7 @@ func createVoucherCmd() *CreateVoucherCmd {
 	}
 	return &CreateVoucherCmd{
 		SobId:              uuid.New(),
-		VoucherType:        "GENERAL_VOUCHER",
+		VoucherType:        "general_voucher",
 		AttachmentQuantity: 0,
 		LineItems:          lineItems,
 		Creator:            userA,
@@ -108,8 +108,8 @@ func newAccountService() accountServiceMock {
 	return accountServiceMock{invoked: false}
 }
 
-func newCounterService() counterServiceMock {
-	return counterServiceMock{invoked: false}
+func newNumberingService() numberingServiceMock {
+	return numberingServiceMock{invoked: false}
 }
 
 func newLedgerService() ledgerServiceMock {
@@ -160,11 +160,11 @@ func (s *accountServiceMock) ReadAccountsByIds(context.Context, []uuid.UUID) (ma
 	panic("implement me")
 }
 
-type counterServiceMock struct {
+type numberingServiceMock struct {
 	invoked bool
 }
 
-func (c *counterServiceMock) GetNextIdentifier(context.Context, ...string) (string, error) {
+func (c *numberingServiceMock) GenerateIdentifier(context.Context, uuid.UUID, string) (string, error) {
 	c.invoked = true
 	return "1", nil
 }
