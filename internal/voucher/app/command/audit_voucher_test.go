@@ -51,9 +51,10 @@ func TestApp_HandleAuditVoucher(t *testing.T) {
 			}
 
 			handler := NewAuditVoucherHandler(repoMock)
+			cancelHandler := NewCancelAuditVoucherHandler(repoMock)
 
 			if test.cancel {
-				err := handler.HandleCancel(context.Background(), AuditVoucherCmd{
+				err := cancelHandler.Handle(context.Background(), CancelAuditVoucherCmd{
 					VoucherUUID: v.Id(),
 					Auditor:     test.auditor,
 				})

@@ -49,9 +49,10 @@ func TestApp_HandleReviewVoucher(t *testing.T) {
 			}
 
 			handler := NewReviewVoucherHandler(repoMock)
+			cancelHandler := NewCancelReviewVoucherHandler(repoMock)
 
 			if test.cancel {
-				err := handler.HandleCancel(context.Background(), ReviewVoucherCmd{
+				err := cancelHandler.Handle(context.Background(), CancelReviewVoucherCmd{
 					VoucherUUID: v.Id(),
 					Reviewer:    test.reviewer,
 				})

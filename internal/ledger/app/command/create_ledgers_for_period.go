@@ -76,7 +76,6 @@ func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriod
 		openingBalance := decimal.Zero
 		previousLedger, ok := previousLedgers[account.Id]
 		if ok {
-			// TODO how to ensure the endingBalance is up-to-date?
 			openingBalance = previousLedger.EndingBalance
 		}
 

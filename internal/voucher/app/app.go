@@ -12,12 +12,14 @@ type Queries struct {
 }
 
 type Commands struct {
-	CreateVoucher command.CreateVoucherHandler
-	AuditVoucher  command.AuditVoucherHandler
-	ReviewVoucher command.ReviewVoucherHandler
-	UpdateVoucher command.UpdateVoucherHandler
-	PostVoucher   command.PostVoucherHandler
-	Migrate       command.MigrationHandler
+	CreateVoucher       command.CreateVoucherHandler
+	AuditVoucher        command.AuditVoucherHandler
+	CancelAuditVoucher  command.CancelAuditVoucherHandler
+	ReviewVoucher       command.ReviewVoucherHandler
+	CancelReviewVoucher command.CancelReviewVoucherHandler
+	UpdateVoucher       command.UpdateVoucherHandler
+	PostVoucher         command.PostVoucherHandler
+	Migrate             command.MigrationHandler
 }
 
 type Application struct {
@@ -41,11 +43,13 @@ func (a *Application) Inject(
 		ReadVouchers: query.NewReadVouchersHandler(readModel, accountService, userService, ledgerService),
 	}
 	a.Commands = Commands{
-		CreateVoucher: command.NewCreateVoucherHandler(repo, accountService, numberingService, ledgerService),
-		AuditVoucher:  command.NewAuditVoucherHandler(repo),
-		ReviewVoucher: command.NewReviewVoucherHandler(repo),
-		UpdateVoucher: command.NewUpdateVoucherHandler(repo, accountService, ledgerService),
-		PostVoucher:   command.NewPostVoucherHandler(readModel, repo, ledgerService),
-		Migrate:       command.NewMigrationHandler(repo),
+		CreateVoucher:       command.NewCreateVoucherHandler(repo, accountService, numberingService, ledgerService),
+		AuditVoucher:        command.NewAuditVoucherHandler(repo),
+		CancelAuditVoucher:  command.NewCancelAuditVoucherHandler(repo),
+		ReviewVoucher:       command.NewReviewVoucherHandler(repo),
+		CancelReviewVoucher: command.NewCancelReviewVoucherHandler(repo),
+		UpdateVoucher:       command.NewUpdateVoucherHandler(repo, accountService, ledgerService),
+		PostVoucher:         command.NewPostVoucherHandler(readModel, repo, ledgerService),
+		Migrate:             command.NewMigrationHandler(repo),
 	}
 }

@@ -131,11 +131,11 @@ func (h Handler) CancelAudit(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	cmd := command.AuditVoucherCmd{
+	cmd := command.CancelAuditVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Auditor:     uuid.MustParse(req.Auditor),
 	}
-	if err := h.app.Commands.AuditVoucher.HandleCancel(c, cmd); err != nil {
+	if err := h.app.Commands.CancelAuditVoucher.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}
@@ -191,11 +191,11 @@ func (h Handler) CancelReview(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	cmd := command.ReviewVoucherCmd{
+	cmd := command.CancelReviewVoucherCmd{
 		VoucherUUID: uuid.MustParse(c.Param("voucherId")),
 		Reviewer:    uuid.MustParse(req.Reviewer),
 	}
-	if err := h.app.Commands.ReviewVoucher.HandleCancel(c, cmd); err != nil {
+	if err := h.app.Commands.CancelReviewVoucher.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

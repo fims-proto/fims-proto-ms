@@ -9,29 +9,29 @@ import (
 	"github.com/google/uuid"
 )
 
-type AuditVoucherCmd struct {
+type CancelAuditVoucherCmd struct {
 	VoucherUUID uuid.UUID
 	Auditor     uuid.UUID
 }
 
-type AuditVoucherHandler struct {
+type CancelAuditVoucherHandler struct {
 	repo domain.Repository
 }
 
-func NewAuditVoucherHandler(repo domain.Repository) AuditVoucherHandler {
+func NewCancelAuditVoucherHandler(repo domain.Repository) CancelAuditVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return AuditVoucherHandler{repo: repo}
+	return CancelAuditVoucherHandler{repo: repo}
 }
 
-func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) error {
+func (h CancelAuditVoucherHandler) Handle(ctx context.Context, cmd CancelAuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherUUID,
 		func(v *domain.Voucher) (*domain.Voucher, error) {
-			log.Info(ctx, "auditing voucher")
-			err := v.Audit(cmd.Auditor)
+			log.Info(ctx, "cancelling audit voucher")
+			err := v.CancelAudit(cmd.Auditor)
 			return v, err
 		},
 	)
