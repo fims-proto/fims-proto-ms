@@ -27,12 +27,12 @@ type account struct {
 	UpdatedAt         time.Time
 }
 
-func marshal(a *domain.Account) (*account, error) {
+func marshal(a domain.Account) (account, error) {
 	var int4array pgtype.Int4Array
 	if err := int4array.Set(a.NumberHierarchy()); err != nil {
-		return nil, errors.Wrap(err, "convert []int to Int4Array failed")
+		return account{}, errors.Wrap(err, "convert []int to Int4Array failed")
 	}
-	return &account{
+	return account{
 		Id:                a.Id(),
 		SobId:             a.SobId(),
 		AccountNumber:     a.AccountNumber(),

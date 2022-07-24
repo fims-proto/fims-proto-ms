@@ -26,10 +26,10 @@ func (r NumberingPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
-func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.Context, configuration *domain.IdentifierConfiguration) error {
+func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.Context, domainConfig *domain.IdentifierConfiguration) error {
 	db := readDBFromCtx(ctx)
 
-	dbConfig, err := marshalIdentifierConfiguration(configuration)
+	dbConfig, err := marshalIdentifierConfiguration(*domainConfig)
 	if err != nil {
 		return err
 	}
@@ -47,8 +47,8 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.C
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbConfig := &identifierConfiguration{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(dbConfig, "id = ?", id).Error; err != nil {
+		dbConfig := identifierConfiguration{}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&dbConfig, "id = ?", id).Error; err != nil {
 			return err
 		}
 
@@ -62,7 +62,7 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.C
 			return errors.Wrap(err, "update identifier configuration in transaction failed")
 		}
 
-		dbConfig, err = marshalIdentifierConfiguration(updatedConfig)
+		dbConfig, err = marshalIdentifierConfiguration(*updatedConfig)
 		if err != nil {
 			return errors.Wrap(err, "marshal identifier configuration failed")
 		}
@@ -77,10 +77,10 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.C
 	return nil
 }
 
-func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, identifier *domain.Identifier) error {
+func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, domainIdent *domain.Identifier) error {
 	db := readDBFromCtx(ctx)
 
-	dbIdent := marshalIdentifier(identifier)
+	dbIdent := marshalIdentifier(*domainIdent)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(dbIdent).Error
@@ -100,7 +100,7 @@ func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.
 	}
 
 	for _, dbConfig := range dbConfigs {
-		domainConfig, err := unmarshalToIdentConfigDomain(&dbConfig)
+		domainConfig, err := unmarshalToIdentConfigDomain(dbConfig)
 		if err != nil {
 			return query.IdentifierConfiguration{}, errors.Wrap(err, "unmarshal identifier configuration failed")
 		}
@@ -116,12 +116,12 @@ func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.
 func (r NumberingPostgresRepository) IdentifierById(ctx context.Context, id uuid.UUID) (query.Identifier, error) {
 	db := readDBFromCtx(ctx)
 
-	dbIdentifier := &identifier{}
-	if err := db.First(dbIdentifier, "id = ?", id).Error; err != nil {
+	dbIdentifier := identifier{}
+	if err := db.First(&dbIdentifier, "id = ?", id).Error; err != nil {
 		return query.Identifier{}, errors.Wrap(err, "failed to read identifier by id")
 	}
 
-	return unmarshalToIdentifier(*dbIdentifier), nil
+	return unmarshalToIdentifier(dbIdentifier), nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

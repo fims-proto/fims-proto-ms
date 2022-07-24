@@ -42,7 +42,7 @@ type lineItem struct {
 }
 
 // from domain to db
-func marshal(dv *domain.Voucher) *voucher {
+func marshal(dv domain.Voucher) voucher {
 	v := voucher{
 		Id:                 dv.Id(),
 		SobId:              dv.SobId(),
@@ -70,11 +70,11 @@ func marshal(dv *domain.Voucher) *voucher {
 			Credit:    item.Credit(),
 		})
 	}
-	return &v
+	return v
 }
 
 // from db to domain
-func unmarshalToDomain(dbv *voucher) (*domain.Voucher, error) {
+func unmarshalToDomain(dbv voucher) (*domain.Voucher, error) {
 	var items []*domain.LineItem
 
 	for _, dbItem := range dbv.LineItems {
@@ -109,7 +109,7 @@ func unmarshalToDomain(dbv *voucher) (*domain.Voucher, error) {
 	)
 }
 
-func unmarshalToQuery(dbv *voucher) query.Voucher {
+func unmarshalToQuery(dbv voucher) query.Voucher {
 	var items []query.LineItem
 
 	for _, dbItem := range dbv.LineItems {

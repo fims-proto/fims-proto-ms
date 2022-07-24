@@ -30,12 +30,12 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *domain.Sob) error {
 	db := readDBFromCtx(ctx)
 
-	dbSob, err := marshal(sob)
+	dbSob, err := marshal(*sob)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal sob")
 	}
 
-	if err := db.Transaction(func(tx *gorm.DB) error {
+	if err = db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(dbSob).Error
 	}); err != nil {
 		return errors.Wrap(err, "create sob failed")
@@ -48,8 +48,8 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbSob := &sob{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(dbSob, "id = ?", sobId).Error; err != nil {
+		dbSob := sob{}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&dbSob, "id = ?", sobId).Error; err != nil {
 			return errors.Wrap(err, "failed to find sob")
 		}
 
@@ -63,7 +63,7 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 			return errors.Wrap(err, "failed to update sob in transaction")
 		}
 
-		dbSob, err = marshal(updatedDomainSob)
+		dbSob, err = marshal(*updatedDomainSob)
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal sob")
 		}
@@ -87,7 +87,7 @@ func (r SobPostgresRepository) AllSobs(ctx context.Context) ([]query.Sob, error)
 
 	var querySobs []query.Sob
 	for _, dbSob := range dbSobs {
-		querySob, err := unmarshalToQuery(&dbSob)
+		querySob, err := unmarshalToQuery(dbSob)
 		if err != nil {
 			return []query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
 		}
@@ -104,7 +104,7 @@ func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (qu
 		return query.Sob{}, errors.Wrapf(err, "failed to read sob %s", sobId)
 	}
 
-	querySob, err := unmarshalToQuery(&dbSob)
+	querySob, err := unmarshalToQuery(dbSob)
 	if err != nil {
 		return query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
 	}

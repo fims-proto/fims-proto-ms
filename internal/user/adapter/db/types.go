@@ -18,18 +18,18 @@ type user struct {
 	UpdatedAt time.Time
 }
 
-func marshal(u *domain.User) (*user, error) {
+func marshal(u domain.User) (user, error) {
 	var traits pgtype.JSONB
 	if err := traits.Set(u.Traits()); err != nil {
-		return nil, errors.Wrap(err, "convert json.RawMessage to pgtype.JSONB failed")
+		return user{}, errors.Wrap(err, "convert json.RawMessage to pgtype.JSONB failed")
 	}
-	return &user{
+	return user{
 		Id:     u.Id(),
 		Traits: traits,
 	}, nil
 }
 
-func unmarshalToDomain(dbu *user) (*domain.User, error) {
+func unmarshalToDomain(dbu user) (*domain.User, error) {
 	var traits json.RawMessage
 	marshalJSON, err := dbu.Traits.MarshalJSON()
 	if err != nil {
@@ -41,7 +41,7 @@ func unmarshalToDomain(dbu *user) (*domain.User, error) {
 	return domain.NewUser(dbu.Id, traits)
 }
 
-func unmarshalToQuery(dbu *user) (query.User, error) {
+func unmarshalToQuery(dbu user) (query.User, error) {
 	var traits json.RawMessage
 	marshalJSON, err := dbu.Traits.MarshalJSON()
 	if err != nil {

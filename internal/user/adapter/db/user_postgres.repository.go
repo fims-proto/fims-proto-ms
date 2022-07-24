@@ -34,7 +34,7 @@ func (r UserPostgresRepository) ReadById(ctx context.Context, id uuid.UUID) (que
 		return query.User{}, errors.Wrapf(err, "failed to read id %s", id)
 	}
 
-	queryUser, err := unmarshalToQuery(&dbUser)
+	queryUser, err := unmarshalToQuery(dbUser)
 	if err != nil {
 		return query.User{}, errors.Wrap(err, "failed to unmarshal user")
 	}
@@ -55,7 +55,7 @@ func (r UserPostgresRepository) ReadByIds(ctx context.Context, ids []uuid.UUID) 
 
 	queryUsers := make(map[uuid.UUID]query.User)
 	for _, dbUser := range dbUsers {
-		queryUser, err := unmarshalToQuery(&dbUser)
+		queryUser, err := unmarshalToQuery(dbUser)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to unmarshal user")
 		}
@@ -69,8 +69,8 @@ func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, up
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbUser := &user{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(dbUser, "id = ?", id).Error; err != nil {
+		dbUser := user{}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&dbUser, "id = ?", id).Error; err != nil {
 			return errors.Wrap(err, "failed to find user")
 		}
 
@@ -84,7 +84,7 @@ func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, up
 			return errors.Wrap(err, "failed to update user in transaction")
 		}
 
-		dbUser, err = marshal(updatedDomainUser)
+		dbUser, err = marshal(*updatedDomainUser)
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal user")
 		}

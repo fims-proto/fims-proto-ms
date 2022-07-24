@@ -32,7 +32,7 @@ func (r VoucherPostgresRepository) Migrate(ctx context.Context) error {
 func (r VoucherPostgresRepository) CreateVoucher(ctx context.Context, v *domain.Voucher) error {
 	db := readDBFromCtx(ctx)
 
-	dbVoucher := marshal(v)
+	dbVoucher := marshal(*v)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(dbVoucher).Error
@@ -47,27 +47,27 @@ func (r VoucherPostgresRepository) UpdateVoucher(ctx context.Context, id uuid.UU
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbVoucher := &voucher{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("LineItems").First(dbVoucher, "id = ?", id).Error; err != nil {
+		dbVoucher := voucher{}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("LineItems").First(&dbVoucher, "id = ?", id).Error; err != nil {
 			return err
 		}
 
-		voucher, err := unmarshalToDomain(dbVoucher)
+		domainVoucher, err := unmarshalToDomain(dbVoucher)
 		if err != nil {
 			return errors.Wrap(err, "unmarshal voucher failed")
 		}
 
-		updatedVoucher, err := updateFn(voucher)
+		updatedVoucher, err := updateFn(domainVoucher)
 		if err != nil {
 			return errors.Wrap(err, "update voucher in transaction failed")
 		}
 
-		dbVoucher = marshal(updatedVoucher)
+		dbVoucher = marshal(*updatedVoucher)
 		// remove existing first
-		if err := tx.Where("voucher_id = ?", dbVoucher.Id).Delete(&lineItem{}).Error; err != nil {
+		if err = tx.Where("voucher_id = ?", dbVoucher.Id).Delete(&lineItem{}).Error; err != nil {
 			return errors.Wrap(err, "delete voucher items failed")
 		}
-		if err := tx.Save(dbVoucher).Error; err != nil {
+		if err = tx.Save(dbVoucher).Error; err != nil {
 			return errors.Wrap(err, "save voucher failed")
 		}
 		return nil
@@ -98,7 +98,7 @@ func (r VoucherPostgresRepository) ReadAllVouchers(ctx context.Context, sobId uu
 
 	var qvs []query.Voucher
 	for _, dbVoucher := range dbVouchers {
-		qvs = append(qvs, unmarshalToQuery(&dbVoucher))
+		qvs = append(qvs, unmarshalToQuery(dbVoucher))
 	}
 	return data.NewPage(qvs, pageable, int(count))
 }
@@ -111,7 +111,7 @@ func (r VoucherPostgresRepository) ReadById(ctx context.Context, uuid uuid.UUID)
 		return query.Voucher{}, errors.Wrap(err, "find voucher by uuid failed")
 	}
 
-	return unmarshalToQuery(&dbVoucher), nil
+	return unmarshalToQuery(dbVoucher), nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

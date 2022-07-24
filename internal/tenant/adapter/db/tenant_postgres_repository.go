@@ -32,7 +32,7 @@ func (t TenantPostgresRepository) ReadById(ctx context.Context, tenantId uuid.UU
 		}
 	}
 
-	return unmarshalToQuery(&dbTenant), nil
+	return unmarshalToQuery(dbTenant), nil
 }
 
 func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
@@ -46,5 +46,5 @@ func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain
 		}
 	}
 
-	return unmarshalToQuery(&dbTenant), nil
+	return unmarshalToQuery(dbTenant), nil
 }

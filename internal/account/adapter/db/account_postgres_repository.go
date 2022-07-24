@@ -49,11 +49,11 @@ func (r AccountPostgresRepository) DataLoad(ctx context.Context, domainAccounts 
 		// create all
 		var dbAccounts []account
 		for _, domainAcc := range domainAccounts {
-			dbAccount, err := marshal(domainAcc)
+			dbAccount, err := marshal(*domainAcc)
 			if err != nil {
 				return errors.Wrap(err, "failed to marshal account")
 			}
-			dbAccounts = append(dbAccounts, *dbAccount)
+			dbAccounts = append(dbAccounts, dbAccount)
 		}
 		if err := tx.CreateInBatches(&dbAccounts, 100).Error; err != nil {
 			return errors.Wrap(err, "accounts create failed")

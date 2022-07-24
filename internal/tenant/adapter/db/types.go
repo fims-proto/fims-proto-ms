@@ -16,7 +16,7 @@ type tenant struct {
 	UpdatedAt time.Time
 }
 
-func unmarshalToQuery(t *tenant) query.Tenant {
+func unmarshalToQuery(t tenant) query.Tenant {
 	return query.Tenant{
 		TenantId:  t.Id,
 		Subdomain: t.Subdomain,

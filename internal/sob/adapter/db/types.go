@@ -23,12 +23,12 @@ type sob struct {
 	UpdatedAt           time.Time
 }
 
-func marshal(s *domain.Sob) (*sob, error) {
+func marshal(s domain.Sob) (sob, error) {
 	var intArray pgtype.Int4Array
 	if err := intArray.Set(s.AccountsCodeLength()); err != nil {
-		return nil, errors.Wrap(err, "convert []int to Int4Array failed")
+		return sob{}, errors.Wrap(err, "convert []int to Int4Array failed")
 	}
-	return &sob{
+	return sob{
 		Id:                  s.Id(),
 		Name:                s.Name(),
 		Description:         s.Description(),
@@ -39,7 +39,7 @@ func marshal(s *domain.Sob) (*sob, error) {
 	}, nil
 }
 
-func unmarshalToDomain(dbs *sob) (*domain.Sob, error) {
+func unmarshalToDomain(dbs sob) (*domain.Sob, error) {
 	var codesLength []int
 	if err := dbs.AccountsCodeLength.AssignTo(&codesLength); err != nil {
 		return nil, errors.Wrap(err, "assign Int4Array to []int failed")
@@ -55,7 +55,7 @@ func unmarshalToDomain(dbs *sob) (*domain.Sob, error) {
 	)
 }
 
-func unmarshalToQuery(dbs *sob) (query.Sob, error) {
+func unmarshalToQuery(dbs sob) (query.Sob, error) {
 	var codesLength []int
 	if err := dbs.AccountsCodeLength.AssignTo(&codesLength); err != nil {
 		return query.Sob{}, errors.Wrap(err, "assign Int4Array to []int failed")

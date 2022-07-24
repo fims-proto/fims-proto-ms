@@ -49,13 +49,13 @@ func marshalPropertyMatchers(domainMatchers []domain.PropertyMatcher) (pgtype.JS
 	return dbMatchers, nil
 }
 
-func marshalIdentifierConfiguration(config *domain.IdentifierConfiguration) (*identifierConfiguration, error) {
+func marshalIdentifierConfiguration(config domain.IdentifierConfiguration) (identifierConfiguration, error) {
 	matchers, err := marshalPropertyMatchers(config.PropertyMatchers())
 	if err != nil {
-		return nil, err
+		return identifierConfiguration{}, err
 	}
 
-	return &identifierConfiguration{
+	return identifierConfiguration{
 		Id:                   config.Id(),
 		TargetBusinessObject: config.TargetBusinessObject(),
 		PropertyMatchers:     matchers,
@@ -65,8 +65,8 @@ func marshalIdentifierConfiguration(config *domain.IdentifierConfiguration) (*id
 	}, nil
 }
 
-func marshalIdentifier(ident *domain.Identifier) *identifier {
-	return &identifier{
+func marshalIdentifier(ident domain.Identifier) identifier {
+	return identifier{
 		Id:                        ident.Id(),
 		IdentifierConfigurationId: ident.IdentifierConfigurationId(),
 		Identifier:                ident.Identifier(),
@@ -81,7 +81,7 @@ func unmarshalPropertyMatchers(dbMatchers pgtype.JSONB) ([]propertyMatcher, erro
 	return *matchers, nil
 }
 
-func unmarshalToIdentConfigDomain(dbConfig *identifierConfiguration) (*domain.IdentifierConfiguration, error) {
+func unmarshalToIdentConfigDomain(dbConfig identifierConfiguration) (*domain.IdentifierConfiguration, error) {
 	matchers, err := unmarshalPropertyMatchers(dbConfig.PropertyMatchers)
 	if err != nil {
 		return nil, err

@@ -35,7 +35,7 @@ func (r LedgerPostgresRepository) Migrate(ctx context.Context) error {
 func (r LedgerPostgresRepository) CreatePeriod(ctx context.Context, period *domain.Period) error {
 	db := readDBFromCtx(ctx)
 
-	dbPeriod := marshalPeriod(period)
+	dbPeriod := marshalPeriod(*period)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		return tx.Create(dbPeriod).Error
@@ -48,9 +48,9 @@ func (r LedgerPostgresRepository) CreatePeriod(ctx context.Context, period *doma
 func (r LedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*domain.Ledger) error {
 	db := readDBFromCtx(ctx)
 
-	var dbLedgers []*ledger
-	for _, ledger := range ledgers {
-		dbLedgers = append(dbLedgers, marshalLedger(ledger))
+	var dbLedgers []ledger
+	for _, domainLedger := range ledgers {
+		dbLedgers = append(dbLedgers, marshalLedger(*domainLedger))
 	}
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
@@ -79,11 +79,11 @@ func (r LedgerPostgresRepository) UpdateLedgersByPeriodAndAccounts(ctx context.C
 func (r LedgerPostgresRepository) updateLedgers(tx *gorm.DB, dbLedgers []ledger, updateFn func(ledgers []*domain.Ledger) ([]*domain.Ledger, error)) error {
 	var ledgers []*domain.Ledger
 	for _, dbLedger := range dbLedgers {
-		ledger, err := unmarshalLedgerToDomain(&dbLedger)
+		domainLedger, err := unmarshalLedgerToDomain(dbLedger)
 		if err != nil {
 			return errors.Wrap(err, "unmarshal ledger failed")
 		}
-		ledgers = append(ledgers, ledger)
+		ledgers = append(ledgers, domainLedger)
 	}
 
 	updatedLedgers, err := updateFn(ledgers)
@@ -93,7 +93,7 @@ func (r LedgerPostgresRepository) updateLedgers(tx *gorm.DB, dbLedgers []ledger,
 
 	dbLedgers = nil // empty slice
 	for _, updatedLedger := range updatedLedgers {
-		dbLedgers = append(dbLedgers, *marshalLedger(updatedLedger))
+		dbLedgers = append(dbLedgers, marshalLedger(*updatedLedger))
 	}
 	if err := tx.Save(&dbLedgers).Error; err != nil {
 		return errors.Wrap(err, "save ledger failed")
@@ -121,7 +121,7 @@ func (r LedgerPostgresRepository) ReadLedgersByPeriod(ctx context.Context, perio
 
 	queryLedgers := make([]query.Ledger, len(dbLedgers))
 	for i, dbLedger := range dbLedgers {
-		queryLedgers[i] = unmarshalLedgerToQuery(&dbLedger)
+		queryLedgers[i] = unmarshalLedgerToQuery(dbLedger)
 	}
 	return data.NewPage(queryLedgers, pageable, int(count))
 }
@@ -134,7 +134,7 @@ func (r LedgerPostgresRepository) ReadPeriodById(ctx context.Context, id uuid.UU
 		return query.Period{}, errors.Wrap(err, "find period by id failed")
 	}
 
-	return unmarshalPeriodToQuery(&dbPeriod), nil
+	return unmarshalPeriodToQuery(dbPeriod), nil
 }
 
 func (r LedgerPostgresRepository) ReadPeriodsByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]query.Period, error) {
@@ -147,7 +147,7 @@ func (r LedgerPostgresRepository) ReadPeriodsByIds(ctx context.Context, ids []uu
 
 	periods := make(map[uuid.UUID]query.Period)
 	for _, dbPeriod := range dbPeriods {
-		periods[dbPeriod.Id] = unmarshalPeriodToQuery(&dbPeriod)
+		periods[dbPeriod.Id] = unmarshalPeriodToQuery(dbPeriod)
 	}
 
 	return periods, nil
@@ -165,7 +165,7 @@ func (r LedgerPostgresRepository) ReadPeriodByTime(ctx context.Context, sobId uu
 		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(dbPeriods))
 	}
 
-	return unmarshalPeriodToQuery(&dbPeriods[0]), nil
+	return unmarshalPeriodToQuery(dbPeriods[0]), nil
 }
 
 func (r LedgerPostgresRepository) ReadPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {
@@ -188,7 +188,7 @@ func (r LedgerPostgresRepository) ReadPeriods(ctx context.Context, sobId uuid.UU
 
 	var queryPeriods []query.Period
 	for _, dbPeriod := range dbPeriods {
-		queryPeriods = append(queryPeriods, unmarshalPeriodToQuery(&dbPeriod))
+		queryPeriods = append(queryPeriods, unmarshalPeriodToQuery(dbPeriod))
 	}
 	return data.NewPage(queryPeriods, pageable, int(count))
 }
@@ -205,7 +205,7 @@ func (r LedgerPostgresRepository) ReadOpenPeriod(ctx context.Context, sobId uuid
 		return query.Period{}, errors.Errorf("expects 1 open period, but find %d", len(dbPeriods))
 	}
 
-	return unmarshalPeriodToQuery(&dbPeriods[0]), nil
+	return unmarshalPeriodToQuery(dbPeriods[0]), nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

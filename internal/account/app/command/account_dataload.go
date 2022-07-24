@@ -44,14 +44,7 @@ func NewAccountDataLoadHandler(repo domain.Repository, sobService service.SobSer
 	}
 }
 
-func (h AccountDataLoadHandler) Handle(ctx context.Context, sobId uuid.UUID) (err error) {
-	log.Info(ctx, "handle accounts data load for sob %s", sobId.String())
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle accounts data load for sob %s failed", sobId.String())
-		}
-	}()
-
+func (h AccountDataLoadHandler) Handle(ctx context.Context, sobId uuid.UUID) error {
 	// 0. read sob
 	sob, err := h.sobService.ReadById(ctx, sobId)
 	if err != nil {
@@ -150,7 +143,6 @@ func (h AccountDataLoadHandler) prepareAccounts(sobId uuid.UUID, accountEntries 
 					return nil, errors.Wrapf(err, "dataload failed on account %s", entry.number)
 				}
 				preparedAccounts[entry.number] = account
-
 			}
 		}
 	}
