@@ -84,12 +84,13 @@ func (h Handler) CreateSob(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	createdId, err := h.app.Commands.CreateSob.Handle(c, req.mapToCommand())
+	cmd := req.mapToCommand()
+	err := h.app.Commands.CreateSob.Handle(c, cmd)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	createdSob, err := h.app.Queries.ReadSobs.HandleReadById(c, createdId)
+	createdSob, err := h.app.Queries.ReadSobs.HandleReadById(c, cmd.SobId)
 	if err != nil {
 		_ = c.Error(err)
 		return

@@ -34,9 +34,9 @@ func (r UserPostgresRepository) ReadById(ctx context.Context, id uuid.UUID) (que
 		return query.User{}, errors.Wrapf(err, "failed to read id %s", id)
 	}
 
-	queryUser, err := unmarshallToQuery(&dbUser)
+	queryUser, err := unmarshalToQuery(&dbUser)
 	if err != nil {
-		return query.User{}, errors.Wrap(err, "failed to unmarshall user")
+		return query.User{}, errors.Wrap(err, "failed to unmarshal user")
 	}
 	return queryUser, nil
 }
@@ -55,9 +55,9 @@ func (r UserPostgresRepository) ReadByIds(ctx context.Context, ids []uuid.UUID) 
 
 	queryUsers := make(map[uuid.UUID]query.User)
 	for _, dbUser := range dbUsers {
-		queryUser, err := unmarshallToQuery(&dbUser)
+		queryUser, err := unmarshalToQuery(&dbUser)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshall user")
+			return nil, errors.Wrap(err, "failed to unmarshal user")
 		}
 		queryUsers[dbUser.Id] = queryUser
 	}
@@ -74,9 +74,9 @@ func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, up
 			return errors.Wrap(err, "failed to find user")
 		}
 
-		domainUser, err := unmarshallToDomain(dbUser)
+		domainUser, err := unmarshalToDomain(dbUser)
 		if err != nil {
-			return errors.Wrap(err, "failed to unmarshall user")
+			return errors.Wrap(err, "failed to unmarshal user")
 		}
 
 		updatedDomainUser, err := updateFn(domainUser)
@@ -84,9 +84,9 @@ func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, up
 			return errors.Wrap(err, "failed to update user in transaction")
 		}
 
-		dbUser, err = marshall(updatedDomainUser)
+		dbUser, err = marshal(updatedDomainUser)
 		if err != nil {
-			return errors.Wrap(err, "failed to marshall user")
+			return errors.Wrap(err, "failed to marshal user")
 		}
 		if err = tx.Save(dbUser).Error; err != nil {
 			return errors.Wrap(err, "failed to save user")

@@ -17,6 +17,7 @@ import (
 // create period, checking number, using ending time as opening time
 
 type CreatePeriodCmd struct {
+	PeriodId         uuid.UUID
 	PreviousPeriodId uuid.UUID
 	SobId            uuid.UUID
 	FinancialYear    int
@@ -53,42 +54,41 @@ func NewCreatePeriodHandler(repo domain.Repository, readModel query.LedgerReadMo
 	}
 }
 
-func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) (uuid.UUID, error) {
+func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) error {
 	// use previous period ending time as new opening time if previous period provided
 	// otherwise using given opening time
 	openingTime := cmd.OpeningTime
 	if cmd.PreviousPeriodId != uuid.Nil {
 		previousPeriod, err := h.readModel.ReadPeriodById(ctx, cmd.PreviousPeriodId)
 		if err != nil {
-			return uuid.Nil, errors.Wrap(err, "failed to read previous period")
+			return errors.Wrap(err, "failed to read previous period")
 		}
 		if previousPeriod.SobId != cmd.SobId {
-			return uuid.Nil, errors.Wrap(err, "sob id not equals to the one from previous period")
+			return errors.Wrap(err, "sob id not equals to the one from previous period")
 		}
 		if !previousPeriod.IsClosed {
-			return uuid.Nil, errors.Wrap(err, "previous period not closed")
+			return errors.Wrap(err, "previous period not closed")
 		}
 		openingTime = previousPeriod.EndingTime
 	}
 
-	createdId := uuid.New()
-	period, err := domain.NewPeriod(createdId, cmd.SobId, cmd.PreviousPeriodId, cmd.FinancialYear, cmd.Number, openingTime, cmd.EndingTime, false)
+	period, err := domain.NewPeriod(cmd.PeriodId, cmd.SobId, cmd.PreviousPeriodId, cmd.FinancialYear, cmd.Number, openingTime, cmd.EndingTime, false)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to create period domain model")
+		return errors.Wrap(err, "failed to create period domain model")
 	}
 	if err = h.repo.CreatePeriod(ctx, period); err != nil {
-		return uuid.Nil, err
+		return err
 	}
 
 	// create ledgers for this period
-	if err = h.selfService.CreateLedgersForPeriod(ctx, createdId); err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to create ledgers for period")
+	if err = h.selfService.CreateLedgersForPeriod(ctx, cmd.PeriodId); err != nil {
+		return errors.Wrap(err, "failed to create ledgers for period")
 	}
 
 	// create numbering configuration for vouchers in this period
-	if err = h.numberingService.InitializeIdentifierConfigurationForVoucher(ctx, createdId); err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to create numbering configuration for period")
+	if err = h.numberingService.InitializeIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
+		return errors.Wrap(err, "failed to create numbering configuration for period")
 	}
 
-	return createdId, nil
+	return nil
 }

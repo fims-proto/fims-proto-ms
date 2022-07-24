@@ -36,7 +36,7 @@ type ledger struct {
 	UpdatedAt      time.Time
 }
 
-func marshallPeriod(p *domain.Period) *period {
+func marshalPeriod(p *domain.Period) *period {
 	return &period{
 		Id:               p.Id(),
 		SobId:            p.SobId(),
@@ -49,7 +49,7 @@ func marshallPeriod(p *domain.Period) *period {
 	}
 }
 
-func marshallLedger(l *domain.Ledger) *ledger {
+func marshalLedger(l *domain.Ledger) *ledger {
 	return &ledger{
 		Id:             l.Id(),
 		PeriodId:       l.PeriodId(),
@@ -62,7 +62,7 @@ func marshallLedger(l *domain.Ledger) *ledger {
 	}
 }
 
-func unmarshallLedgerToDomain(dbl *ledger) (*domain.Ledger, error) {
+func unmarshalLedgerToDomain(dbl *ledger) (*domain.Ledger, error) {
 	return domain.NewLedger(
 		dbl.Id,
 		dbl.PeriodId,
@@ -75,7 +75,7 @@ func unmarshallLedgerToDomain(dbl *ledger) (*domain.Ledger, error) {
 	)
 }
 
-func unmarshallPeriodToQuery(dbp *period) query.Period {
+func unmarshalPeriodToQuery(dbp *period) query.Period {
 	return query.Period{
 		Id:               dbp.Id,
 		SobId:            dbp.SobId,
@@ -90,7 +90,7 @@ func unmarshallPeriodToQuery(dbp *period) query.Period {
 	}
 }
 
-func unmarshallLedgerToQuery(dbl *ledger) query.Ledger {
+func unmarshalLedgerToQuery(dbl *ledger) query.Ledger {
 	return query.Ledger{
 		Id:             dbl.Id,
 		PeriodId:       dbl.PeriodId,

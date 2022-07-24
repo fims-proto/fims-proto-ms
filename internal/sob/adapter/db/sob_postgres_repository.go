@@ -30,7 +30,7 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *domain.Sob) error {
 	db := readDBFromCtx(ctx)
 
-	dbSob, err := marshall(sob)
+	dbSob, err := marshal(sob)
 	if err != nil {
 		return errors.Wrap(err, "failed to marshal sob")
 	}
@@ -53,9 +53,9 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 			return errors.Wrap(err, "failed to find sob")
 		}
 
-		domainSob, err := unmarshallToDomain(dbSob)
+		domainSob, err := unmarshalToDomain(dbSob)
 		if err != nil {
-			return errors.Wrap(err, "failed to unmarshall sob")
+			return errors.Wrap(err, "failed to unmarshal sob")
 		}
 
 		updatedDomainSob, err := updateFn(domainSob)
@@ -63,9 +63,9 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 			return errors.Wrap(err, "failed to update sob in transaction")
 		}
 
-		dbSob, err = marshall(updatedDomainSob)
+		dbSob, err = marshal(updatedDomainSob)
 		if err != nil {
-			return errors.Wrap(err, "failed to marshall sob")
+			return errors.Wrap(err, "failed to marshal sob")
 		}
 		if err = tx.Save(dbSob).Error; err != nil {
 			return errors.Wrap(err, "failed to save sob")
@@ -87,9 +87,9 @@ func (r SobPostgresRepository) AllSobs(ctx context.Context) ([]query.Sob, error)
 
 	var querySobs []query.Sob
 	for _, dbSob := range dbSobs {
-		querySob, err := unmarshallToQuery(&dbSob)
+		querySob, err := unmarshalToQuery(&dbSob)
 		if err != nil {
-			return []query.Sob{}, errors.Wrap(err, "failed to unmarshall sob")
+			return []query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
 		}
 		querySobs = append(querySobs, querySob)
 	}
@@ -104,9 +104,9 @@ func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (qu
 		return query.Sob{}, errors.Wrapf(err, "failed to read sob %s", sobId)
 	}
 
-	querySob, err := unmarshallToQuery(&dbSob)
+	querySob, err := unmarshalToQuery(&dbSob)
 	if err != nil {
-		return query.Sob{}, errors.Wrap(err, "failed to unmarshall sob")
+		return query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
 	}
 	return querySob, nil
 }

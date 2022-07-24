@@ -23,10 +23,11 @@ type CreatePeriodRequest struct {
 	EndingTime       time.Time `json:"endingTime"`
 }
 
-func (r CreatePeriodRequest) mapToCommand() command.CreatePeriodCmd {
+func (r CreatePeriodRequest) mapToCommand(sobId uuid.UUID) command.CreatePeriodCmd {
 	return command.CreatePeriodCmd{
+		PeriodId:         uuid.New(),
 		PreviousPeriodId: r.PreviousPeriodId,
-		SobId:            uuid.Nil,
+		SobId:            sobId,
 		FinancialYear:    r.FinancialYear,
 		Number:           r.Number,
 		OpeningTime:      r.OpeningTime,

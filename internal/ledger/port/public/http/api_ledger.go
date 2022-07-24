@@ -5,11 +5,9 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
-	"github/fims-proto/fims-proto-ms/internal/ledger/app"
-	"github/fims-proto/fims-proto-ms/internal/ledger/app/command"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"github/fims-proto/fims-proto-ms/internal/ledger/app"
 )
 
 type Handler struct {
@@ -123,24 +121,14 @@ func (h Handler) CreatePeriod(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	cmd := req.mapToCommand()
-	cmd.SobId = uuid.MustParse(c.Param("sobId"))
-	createdId, err := h.app.Commands.CreatePeriod.Handle(c, cmd)
+	cmd := req.mapToCommand(uuid.MustParse(c.Param("sobId")))
+	err := h.app.Commands.CreatePeriod.Handle(c, cmd)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	// also create ledgers
-	createLedgersCmd := command.CreatePeriodLedgersCmd{
-		PeriodId: createdId,
-	}
-	if err = h.app.Commands.CreateLedgersForPeriod.Handle(c, createLedgersCmd); err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	createdPeriod, err := h.app.Queries.ReadLedgers.HandleReadPeriodById(c, createdId)
+	createdPeriod, err := h.app.Queries.ReadLedgers.HandleReadPeriodById(c, cmd.PeriodId)
 	if err != nil {
 		_ = c.Error(err)
 		return

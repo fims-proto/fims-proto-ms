@@ -5,7 +5,6 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
 
-	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
@@ -13,6 +12,7 @@ import (
 )
 
 type CreateSobCmd struct {
+	SobId               uuid.UUID
 	Name                string
 	Description         string
 	BaseCurrency        string
@@ -44,32 +44,25 @@ func NewCreateSobHandler(repo domain.Repository, accountService service.AccountS
 	}
 }
 
-func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) (createdId uuid.UUID, err error) {
-	log.Info(ctx, "handle creating sob, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle creating sob failed")
-		}
-	}()
-
-	sob, err := domain.NewSob(uuid.New(), cmd.Name, cmd.Description, cmd.BaseCurrency, cmd.StartingPeriodYear, cmd.StartingPeriodMonth, cmd.AccountsCodeLength)
+func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
+	sob, err := domain.NewSob(cmd.SobId, cmd.Name, cmd.Description, cmd.BaseCurrency, cmd.StartingPeriodYear, cmd.StartingPeriodMonth, cmd.AccountsCodeLength)
 	if err != nil {
-		return uuid.Nil, errors.Wrapf(err, "create sob failed")
+		return errors.Wrap(err, "create sob failed")
 	}
 	if err := h.repo.CreateSob(ctx, sob); err != nil {
-		return uuid.Nil, err
+		return err
 	}
 
 	// triggers
 	// create accounts
-	if err := h.accountService.InitializeAccounts(ctx, sob.Id()); err != nil {
-		return uuid.Nil, errors.Wrapf(err, "failed to initialize accounts")
+	if err := h.accountService.InitializeAccounts(ctx, cmd.SobId); err != nil {
+		return errors.Wrapf(err, "failed to initialize accounts")
 	}
 
 	// create period
-	if err := h.ledgerService.InitializeFirstPeriod(ctx, sob.Id(), sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
-		return uuid.Nil, errors.Wrapf(err, "failed to initialize first period")
+	if err := h.ledgerService.InitializeFirstPeriod(ctx, cmd.SobId, sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
+		return errors.Wrapf(err, "failed to initialize first period")
 	}
 
-	return sob.Id(), nil
+	return nil
 }

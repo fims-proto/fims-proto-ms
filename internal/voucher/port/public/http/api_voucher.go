@@ -256,14 +256,13 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	cmd := req.mapToCommand()
-	cmd.SobId = uuid.MustParse(c.Param("sobId"))
-	createdId, err := h.app.Commands.CreateVoucher.Handle(c, cmd)
+	cmd := req.mapToCommand(uuid.MustParse(c.Param("sobId")))
+	err := h.app.Commands.CreateVoucher.Handle(c, cmd)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	createdVoucher, err := h.app.Queries.ReadVouchers.HandleReadById(c, createdId)
+	createdVoucher, err := h.app.Queries.ReadVouchers.HandleReadById(c, cmd.VoucherId)
 	if err != nil {
 		_ = c.Error(err)
 		return

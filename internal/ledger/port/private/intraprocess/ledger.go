@@ -22,6 +22,7 @@ func NewLedgerInterface(app *app.Application) LedgerInterface {
 func (i LedgerInterface) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error {
 	startDateOfMonth := time.Date(financialYear, time.Month(number), 1, 0, 0, 0, 0, time.UTC)
 	cmd := command.CreatePeriodCmd{
+		PeriodId:         uuid.New(),
 		PreviousPeriodId: uuid.Nil,
 		SobId:            sobId,
 		FinancialYear:    financialYear,
@@ -29,8 +30,7 @@ func (i LedgerInterface) InitializeFirstPeriod(ctx context.Context, sobId uuid.U
 		OpeningTime:      startDateOfMonth,
 	}
 
-	_, err := i.app.Commands.CreatePeriod.Handle(ctx, cmd)
-	return err
+	return i.app.Commands.CreatePeriod.Handle(ctx, cmd)
 }
 
 func (i LedgerInterface) InitializeLedgersForPeriod(ctx context.Context, periodId uuid.UUID) error {

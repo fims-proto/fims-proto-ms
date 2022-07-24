@@ -17,12 +17,14 @@ func (r LineItemRequest) mapToCommand() command.LineItemCmd {
 	}
 }
 
-func (r CreateVoucherRequest) mapToCommand() command.CreateVoucherCmd {
+func (r CreateVoucherRequest) mapToCommand(sobId uuid.UUID) command.CreateVoucherCmd {
 	var itemCmd []command.LineItemCmd
 	for _, item := range r.LineItems {
 		itemCmd = append(itemCmd, item.mapToCommand())
 	}
 	return command.CreateVoucherCmd{
+		VoucherId:          uuid.New(),
+		SobId:              sobId,
 		VoucherType:        r.VoucherType,
 		AttachmentQuantity: uint(r.AttachmentQuantity),
 		LineItems:          itemCmd,

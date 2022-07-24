@@ -42,7 +42,7 @@ type lineItem struct {
 }
 
 // from domain to db
-func marshall(dv *domain.Voucher) *voucher {
+func marshal(dv *domain.Voucher) *voucher {
 	v := voucher{
 		Id:                 dv.Id(),
 		SobId:              dv.SobId(),
@@ -74,7 +74,7 @@ func marshall(dv *domain.Voucher) *voucher {
 }
 
 // from db to domain
-func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
+func unmarshalToDomain(dbv *voucher) (*domain.Voucher, error) {
 	var items []*domain.LineItem
 
 	for _, dbItem := range dbv.LineItems {
@@ -86,7 +86,7 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 			dbItem.Credit,
 		)
 		if err != nil {
-			return nil, errors.Wrap(err, "unmarshall lineItem failed")
+			return nil, errors.Wrap(err, "unmarshal lineItem failed")
 		}
 		items = append(items, item)
 	}
@@ -109,7 +109,7 @@ func unmarshallToDomain(dbv *voucher) (*domain.Voucher, error) {
 	)
 }
 
-func unmarshallToQuery(dbv *voucher) query.Voucher {
+func unmarshalToQuery(dbv *voucher) query.Voucher {
 	var items []query.LineItem
 
 	for _, dbItem := range dbv.LineItems {

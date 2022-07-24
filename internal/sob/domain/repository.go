@@ -8,10 +8,6 @@ import (
 
 type Repository interface {
 	CreateSob(ctx context.Context, sob *Sob) error
-	UpdateSob(
-		ctx context.Context,
-		sobId uuid.UUID,
-		updateFn func(s *Sob) (*Sob, error),
-	) error
+	UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *Sob) (*Sob, error)) error
 	Migrate(ctx context.Context) error
 }

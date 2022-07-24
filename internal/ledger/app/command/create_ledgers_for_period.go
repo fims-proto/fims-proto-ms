@@ -7,7 +7,6 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
-	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/ledger/domain"
 
@@ -46,14 +45,7 @@ func NewCreatePeriodLedgersHandler(repo domain.Repository, readModel query.Ledge
 	}
 }
 
-func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriodLedgersCmd) (err error) {
-	log.Info(ctx, "handle create ledgers for period, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle create ledgers for period")
-		}
-	}()
-
+func (h CreatePeriodLedgersHandler) Handle(ctx context.Context, cmd CreatePeriodLedgersCmd) error {
 	period, err := h.readModel.ReadPeriodById(ctx, cmd.PeriodId)
 	if err != nil {
 		return errors.Wrap(err, "failed to read period")

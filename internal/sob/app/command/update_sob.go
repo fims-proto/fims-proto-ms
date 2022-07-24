@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
@@ -27,15 +26,7 @@ func NewUpdateSobHandler(repo domain.Repository) UpdateSobHandler {
 	return UpdateSobHandler{repo: repo}
 }
 
-func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) (err error) {
-	log.Info(ctx, "handle updating sob")
-	log.Debug(ctx, "handle updating sob, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle updating failed")
-		}
-	}()
-
+func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) error {
 	return h.repo.UpdateSob(
 		ctx,
 		cmd.Id,

@@ -13,6 +13,7 @@ import (
 )
 
 type CreateVoucherCmd struct {
+	VoucherId          uuid.UUID
 	SobId              uuid.UUID
 	VoucherType        string
 	AttachmentQuantity uint
@@ -49,15 +50,15 @@ func NewCreateVoucherHandler(repo domain.Repository, accountService service.Acco
 	}
 }
 
-func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) (uuid.UUID, error) {
+func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) error {
 	// read period by transaction time
 	period, err := h.ledgerService.ReadPeriodByTime(ctx, cmd.SobId, cmd.TransactionTime)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to read period by transaction time")
+		return errors.Wrap(err, "failed to read period by transaction time")
 	}
 
 	if period.IsClosed {
-		return uuid.Nil, errors.New("period is closed")
+		return errors.New("period is closed")
 	}
 
 	// validate account numbers
@@ -67,7 +68,7 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 	}
 	accountIds, err := h.accountService.ValidateExistenceAndGetId(ctx, cmd.SobId, accountNumbers)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "unable to validate account numbers")
+		return errors.Wrap(err, "unable to validate account numbers")
 	}
 
 	// validate line items
@@ -75,7 +76,7 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 	for _, item := range cmd.LineItems {
 		accountId, ok := accountIds[item.AccountNumber]
 		if !ok {
-			return uuid.Nil, errors.Wrapf(err, "unable to find account id by number %s", item.AccountNumber)
+			return errors.Wrapf(err, "unable to find account id by number %s", item.AccountNumber)
 		}
 		lineItem, err := domain.NewLineItem(
 			uuid.New(),
@@ -85,7 +86,7 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 			item.Credit,
 		)
 		if err != nil {
-			return uuid.Nil, err
+			return err
 		}
 		lineItems = append(lineItems, lineItem)
 	}
@@ -93,11 +94,11 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 	// get voucher number
 	identifier, err := h.numberingService.GenerateIdentifier(ctx, period.Id, cmd.VoucherType)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "unable to generate next number")
+		return errors.Wrap(err, "unable to generate next number")
 	}
 
 	newVoucher, err := domain.NewVoucher(
-		uuid.New(),
+		cmd.VoucherId,
 		cmd.SobId,
 		period.Id,
 		cmd.VoucherType,
@@ -113,7 +114,7 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 		cmd.TransactionTime,
 	)
 	if err != nil {
-		return uuid.Nil, err
+		return err
 	}
 
 	return h.repo.CreateVoucher(ctx, newVoucher)

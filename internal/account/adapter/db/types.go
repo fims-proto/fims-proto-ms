@@ -27,7 +27,7 @@ type account struct {
 	UpdatedAt         time.Time
 }
 
-func marshall(a *domain.Account) (*account, error) {
+func marshal(a *domain.Account) (*account, error) {
 	var int4array pgtype.Int4Array
 	if err := int4array.Set(a.NumberHierarchy()); err != nil {
 		return nil, errors.Wrap(err, "convert []int to Int4Array failed")
@@ -45,7 +45,7 @@ func marshall(a *domain.Account) (*account, error) {
 	}, nil
 }
 
-func unmarshallToQuery(dba account) (query.Account, error) {
+func unmarshalToQuery(dba account) (query.Account, error) {
 	var numbers []int
 	if err := dba.NumberHierarchy.AssignTo(&numbers); err != nil {
 		return query.Account{}, errors.Wrap(err, "assign Int4Array to []int failed")

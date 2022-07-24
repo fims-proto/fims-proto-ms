@@ -43,14 +43,14 @@ func TestApp_HandleCreateVoucherHandler(t *testing.T) {
 			cntServiceMock := newNumberingService()
 			ledServiceMock := newLedgerService()
 			handler := NewCreateVoucherHandler(repoMock, &accServiceMock, &cntServiceMock, &ledServiceMock)
-			newUUID, err := handler.Handle(context.Background(), *cmd)
+			err := handler.Handle(context.Background(), *cmd)
 
 			assertions.NoError(err)
 			vouchers := repoMock.vouchers
 
 			d100, _ := decimal.NewFromString("100")
 
-			v := vouchers[newUUID]
+			v := vouchers[cmd.VoucherId]
 
 			assertions.Len(vouchers, 1)
 			assertions.Len(v.LineItems(), 2)
@@ -78,6 +78,7 @@ func createVoucherCmd() *CreateVoucherCmd {
 		},
 	}
 	return &CreateVoucherCmd{
+		VoucherId:          uuid.New(),
 		SobId:              uuid.New(),
 		VoucherType:        "general_voucher",
 		AttachmentQuantity: 0,
@@ -120,9 +121,9 @@ type voucherRepoMock struct {
 	vouchers map[uuid.UUID]domain.Voucher
 }
 
-func (r voucherRepoMock) CreateVoucher(_ context.Context, v *domain.Voucher) (uuid.UUID, error) {
+func (r voucherRepoMock) CreateVoucher(_ context.Context, v *domain.Voucher) error {
 	r.vouchers[v.Id()] = *v
-	return v.Id(), nil
+	return nil
 }
 
 func (r voucherRepoMock) UpdateVoucher(_ context.Context, id uuid.UUID, updateFn func(voucher *domain.Voucher) (*domain.Voucher, error)) error {

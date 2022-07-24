@@ -49,9 +49,9 @@ func (r AccountPostgresRepository) DataLoad(ctx context.Context, domainAccounts 
 		// create all
 		var dbAccounts []account
 		for _, domainAcc := range domainAccounts {
-			dbAccount, err := marshall(domainAcc)
+			dbAccount, err := marshal(domainAcc)
 			if err != nil {
-				return errors.Wrap(err, "failed to marshall account")
+				return errors.Wrap(err, "failed to marshal account")
 			}
 			dbAccounts = append(dbAccounts, *dbAccount)
 		}
@@ -86,9 +86,9 @@ func (r AccountPostgresRepository) ReadAccounts(ctx context.Context, sobId uuid.
 
 	var queryAccounts []query.Account
 	for _, dbAccount := range dbAccounts {
-		queryAccount, err := unmarshallToQuery(dbAccount)
+		queryAccount, err := unmarshalToQuery(dbAccount)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshall account")
+			return nil, errors.Wrap(err, "failed to unmarshal account")
 		}
 		queryAccounts = append(queryAccounts, queryAccount)
 	}
@@ -125,9 +125,9 @@ func (r AccountPostgresRepository) ReadAccountsByIds(ctx context.Context, accoun
 
 	queryAccounts := make(map[uuid.UUID]query.Account)
 	for _, dbAccount := range dbAccounts {
-		queryAccount, err := unmarshallToQuery(dbAccount)
+		queryAccount, err := unmarshalToQuery(dbAccount)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshall account")
+			return nil, errors.Wrap(err, "failed to unmarshal account")
 		}
 		queryAccounts[dbAccount.Id] = queryAccount
 	}
@@ -142,9 +142,9 @@ func (r AccountPostgresRepository) ReadAccountByNumber(ctx context.Context, sobI
 		Find(&dbAccount).Error; err != nil {
 		return query.Account{}, errors.Wrap(err, "read account by number and superior number failed")
 	}
-	result, err := unmarshallToQuery(dbAccount)
+	result, err := unmarshalToQuery(dbAccount)
 	if err != nil {
-		return query.Account{}, errors.Wrap(err, "failed to unmarshall account")
+		return query.Account{}, errors.Wrap(err, "failed to unmarshal account")
 	}
 	return result, nil
 }
@@ -163,9 +163,9 @@ func (r AccountPostgresRepository) readAccountsWithSuperiors(db *gorm.DB, ids []
 	var superiorIds []uuid.UUID
 	superior2AccountMap := make(map[uuid.UUID]*query.Account)
 	for _, dbAccount := range dbAccounts {
-		queryAccount, err := unmarshallToQuery(dbAccount)
+		queryAccount, err := unmarshalToQuery(dbAccount)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshall db account")
+			return nil, errors.Wrap(err, "failed to unmarshal db account")
 		}
 		queryAccounts = append(queryAccounts, &queryAccount)
 

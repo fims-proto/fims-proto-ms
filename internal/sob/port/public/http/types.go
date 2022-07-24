@@ -1,6 +1,7 @@
 package http
 
 import (
+	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 )
@@ -48,6 +49,7 @@ func mapFromSobQuery(q query.Sob) SobResponse {
 
 func (r CreateSobRequest) mapToCommand() command.CreateSobCmd {
 	return command.CreateSobCmd{
+		SobId:               uuid.New(),
 		Name:                r.Name,
 		Description:         r.Description,
 		BaseCurrency:        r.BaseCurrency,
