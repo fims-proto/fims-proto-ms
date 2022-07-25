@@ -38,7 +38,7 @@ func (r LedgerPostgresRepository) CreatePeriod(ctx context.Context, period *doma
 	dbPeriod := marshalPeriod(*period)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(dbPeriod).Error
+		return tx.Create(&dbPeriod).Error
 	}); err != nil {
 		return errors.Wrap(err, "failed to create period")
 	}
@@ -95,7 +95,7 @@ func (r LedgerPostgresRepository) updateLedgers(tx *gorm.DB, dbLedgers []ledger,
 	for _, updatedLedger := range updatedLedgers {
 		dbLedgers = append(dbLedgers, marshalLedger(*updatedLedger))
 	}
-	if err := tx.Save(&dbLedgers).Error; err != nil {
+	if err = tx.Save(&dbLedgers).Error; err != nil {
 		return errors.Wrap(err, "save ledger failed")
 	}
 	return nil

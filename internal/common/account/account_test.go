@@ -16,8 +16,8 @@ func TestAccountType(t *testing.T) {
 }
 
 func TestNewDirectionFromString(t *testing.T) {
-	direction, err := NewDirection("DEBIT")
+	direction, err := NewDirection("debit")
 	require.NoError(t, err)
 	assert.Equal(t, Debit, direction)
-	assert.Equal(t, "DEBIT", direction.String())
+	assert.Equal(t, "debit", direction.String())
 }

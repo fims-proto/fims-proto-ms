@@ -74,11 +74,11 @@ func marshalIdentifier(ident domain.Identifier) identifier {
 }
 
 func unmarshalPropertyMatchers(dbMatchers pgtype.JSONB) ([]propertyMatcher, error) {
-	var matchers *[]propertyMatcher
-	if err := dbMatchers.AssignTo(matchers); err != nil {
+	var matchers []propertyMatcher
+	if err := dbMatchers.AssignTo(&matchers); err != nil {
 		return nil, errors.Wrap(err, "failed to unmarshal property matchers")
 	}
-	return *matchers, nil
+	return matchers, nil
 }
 
 func unmarshalToIdentConfigDomain(dbConfig identifierConfiguration) (*domain.IdentifierConfiguration, error) {

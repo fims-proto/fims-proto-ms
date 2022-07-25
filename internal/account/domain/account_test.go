@@ -33,7 +33,7 @@ func TestNewAccount(t *testing.T) {
 			numberHierarchy:   []int{1001},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "assets",
-			balanceDirection:  "DEBIT",
+			balanceDirection:  "debit",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, []int{1001}, account.NumberHierarchy())
@@ -54,7 +54,7 @@ func TestNewAccount(t *testing.T) {
 			numberHierarchy:   []int{1001, 1},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "assets",
-			balanceDirection:  "DEBIT",
+			balanceDirection:  "debit",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, err)
 				assert.Equal(t, []int{1001, 1}, account.NumberHierarchy())
@@ -75,7 +75,7 @@ func TestNewAccount(t *testing.T) {
 			numberHierarchy:   []int{0},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "assets",
-			balanceDirection:  "DEBIT",
+			balanceDirection:  "debit",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
@@ -90,7 +90,7 @@ func TestNewAccount(t *testing.T) {
 			numberHierarchy:   []int{1001, 1},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "assets",
-			balanceDirection:  "DEBIT",
+			balanceDirection:  "debit",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
@@ -105,7 +105,7 @@ func TestNewAccount(t *testing.T) {
 			numberHierarchy:   []int{1001, 1111},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "assets",
-			balanceDirection:  "DEBIT",
+			balanceDirection:  "debit",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)
@@ -120,7 +120,7 @@ func TestNewAccount(t *testing.T) {
 			numberHierarchy:   []int{1001, 1, 1, 1},
 			codeLength:        []int{4, 3, 3},
 			accountType:       "assets",
-			balanceDirection:  "DEBIT",
+			balanceDirection:  "debit",
 			verify: func(t *testing.T, account *Account, err error) {
 				require.Nil(t, account)
 				assert.Error(t, err)

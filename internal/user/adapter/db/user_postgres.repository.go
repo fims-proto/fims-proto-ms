@@ -65,18 +65,22 @@ func (r UserPostgresRepository) ReadByIds(ctx context.Context, ids []uuid.UUID) 
 	return queryUsers, nil
 }
 
-func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, updateFn func(*domain.User) (*domain.User, error)) error {
+func (r UserPostgresRepository) UpsertUser(ctx context.Context, id uuid.UUID, updateFn func(*domain.User) (*domain.User, error)) error {
 	db := readDBFromCtx(ctx)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
 		dbUser := user{}
+		var domainUser *domain.User
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&dbUser, "id = ?", id).Error; err != nil {
-			return errors.Wrap(err, "failed to find user")
-		}
-
-		domainUser, err := unmarshalToDomain(dbUser)
-		if err != nil {
-			return errors.Wrap(err, "failed to unmarshal user")
+			domainUser, err = domain.NewUser(id, nil)
+			if err != nil {
+				return errors.Wrap(err, "failed to create user")
+			}
+		} else {
+			domainUser, err = unmarshalToDomain(dbUser)
+			if err != nil {
+				return errors.Wrap(err, "failed to unmarshal user")
+			}
 		}
 
 		updatedDomainUser, err := updateFn(domainUser)
@@ -88,7 +92,7 @@ func (r UserPostgresRepository) UpdateUser(ctx context.Context, id uuid.UUID, up
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal user")
 		}
-		if err = tx.Save(dbUser).Error; err != nil {
+		if err = tx.Save(&dbUser).Error; err != nil {
 			return errors.Wrap(err, "failed to save user")
 		}
 		return nil

@@ -12,9 +12,9 @@ const (
 )
 
 var availableDirections = map[Direction]string{
-	Debit:              "DEBIT",
-	Credit:             "CREDIT",
-	UndefinedDirection: "NOT_DEFINED",
+	Debit:              "debit",
+	Credit:             "credit",
+	UndefinedDirection: "not_defined",
 }
 
 func NewDirection(s string) (Direction, error) {

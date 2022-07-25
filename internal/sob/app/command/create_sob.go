@@ -55,12 +55,12 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 
 	// triggers
 	// create accounts
-	if err := h.accountService.InitializeAccounts(ctx, cmd.SobId); err != nil {
+	if err = h.accountService.InitializeAccounts(ctx, cmd.SobId); err != nil {
 		return errors.Wrapf(err, "failed to initialize accounts")
 	}
 
 	// create period
-	if err := h.ledgerService.InitializeFirstPeriod(ctx, cmd.SobId, sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
+	if err = h.ledgerService.InitializeFirstPeriod(ctx, cmd.SobId, sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
 		return errors.Wrapf(err, "failed to initialize first period")
 	}
 

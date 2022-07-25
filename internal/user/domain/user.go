@@ -16,9 +16,6 @@ func NewUser(id uuid.UUID, traits json.RawMessage) (*User, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("empty user id")
 	}
-	if len(traits) == 0 {
-		return nil, errors.New("empty user traits")
-	}
 
 	return &User{
 		id:     id,

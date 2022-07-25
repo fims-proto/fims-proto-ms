@@ -35,7 +35,7 @@ func (r VoucherPostgresRepository) CreateVoucher(ctx context.Context, v *domain.
 	dbVoucher := marshal(*v)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(dbVoucher).Error
+		return tx.Create(&dbVoucher).Error
 	}); err != nil {
 		return errors.Wrap(err, "create voucher failed")
 	}
@@ -67,7 +67,7 @@ func (r VoucherPostgresRepository) UpdateVoucher(ctx context.Context, id uuid.UU
 		if err = tx.Where("voucher_id = ?", dbVoucher.Id).Delete(&lineItem{}).Error; err != nil {
 			return errors.Wrap(err, "delete voucher items failed")
 		}
-		if err = tx.Save(dbVoucher).Error; err != nil {
+		if err = tx.Save(&dbVoucher).Error; err != nil {
 			return errors.Wrap(err, "save voucher failed")
 		}
 		return nil

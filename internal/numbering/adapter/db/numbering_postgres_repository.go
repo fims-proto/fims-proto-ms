@@ -35,7 +35,7 @@ func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.C
 	}
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(dbConfig).Error
+		return tx.Create(&dbConfig).Error
 	}); err != nil {
 		return errors.Wrap(err, "create identifier configuration failed")
 	}
@@ -66,7 +66,7 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.C
 		if err != nil {
 			return errors.Wrap(err, "marshal identifier configuration failed")
 		}
-		if err = tx.Save(dbConfig).Error; err != nil {
+		if err = tx.Save(&dbConfig).Error; err != nil {
 			return errors.Wrap(err, "save identifier configuration failed")
 		}
 		return nil
@@ -83,7 +83,7 @@ func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, domai
 	dbIdent := marshalIdentifier(*domainIdent)
 
 	if err := db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(dbIdent).Error
+		return tx.Create(&dbIdent).Error
 	}); err != nil {
 		return errors.Wrap(err, "create identifier failed")
 	}

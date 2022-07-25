@@ -26,7 +26,7 @@ func NewUpdateUserHandler(repo domain.Repository) UpdateUserHandler {
 }
 
 func (h UpdateUserHandler) Handle(ctx context.Context, cmd UpdateUserCmd) error {
-	return h.repo.UpdateUser(ctx, cmd.Id, func(user *domain.User) (*domain.User, error) {
+	return h.repo.UpsertUser(ctx, cmd.Id, func(user *domain.User) (*domain.User, error) {
 		if err := user.Update(cmd.Traits); err != nil {
 			return nil, errors.Wrap(err, "failed to update user")
 		}

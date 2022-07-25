@@ -36,7 +36,7 @@ func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *domain.Sob) e
 	}
 
 	if err = db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(dbSob).Error
+		return tx.Create(&dbSob).Error
 	}); err != nil {
 		return errors.Wrap(err, "create sob failed")
 	}
@@ -67,7 +67,7 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 		if err != nil {
 			return errors.Wrap(err, "failed to marshal sob")
 		}
-		if err = tx.Save(dbSob).Error; err != nil {
+		if err = tx.Save(&dbSob).Error; err != nil {
 			return errors.Wrap(err, "failed to save sob")
 		}
 		return nil

@@ -3,6 +3,8 @@ package http
 import (
 	"time"
 
+	"github.com/google/uuid"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 )
 
@@ -26,9 +28,16 @@ type AccountResponse struct {
 }
 
 func mapFromAccountQuery(q query.Account) AccountResponse {
-	var superiorAccount AccountResponse
+	var superiorAccount *AccountResponse
 	if q.SuperiorAccount != nil {
-		superiorAccount = mapFromAccountQuery(*q.SuperiorAccount)
+		a := mapFromAccountQuery(*q.SuperiorAccount)
+		superiorAccount = &a
+	}
+	if q.SobId == uuid.Nil {
+		// sob id is nil means only ID field presents
+		return AccountResponse{
+			Id: q.Id.String(),
+		}
 	}
 	return AccountResponse{
 		Id:               q.Id.String(),
@@ -36,7 +45,7 @@ func mapFromAccountQuery(q query.Account) AccountResponse {
 		AccountNumber:    q.AccountNumber,
 		Title:            q.Title,
 		NumberHierarchy:  q.NumberHierarchy,
-		SuperiorAccount:  &superiorAccount,
+		SuperiorAccount:  superiorAccount,
 		AccountType:      q.AccountType.String(),
 		BalanceDirection: q.BalanceDirection.String(),
 		Level:            q.Level,
