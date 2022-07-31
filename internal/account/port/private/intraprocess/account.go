@@ -2,6 +2,8 @@ package intraprocess
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/account/app/command"
+	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
@@ -27,4 +29,16 @@ func (i AccountInterface) ReadAccountsByIds(ctx context.Context, accountIds []uu
 
 func (i AccountInterface) InitializeAccounts(ctx context.Context, sobId uuid.UUID) error {
 	return i.app.Commands.InitialAccountConfigurations.Handle(ctx, sobId)
+}
+
+func (i AccountInterface) CreatePeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error {
+	startDateOfMonth := time.Date(financialYear, time.Month(number), 1, 0, 0, 0, 0, time.UTC)
+
+	return i.app.Commands.CreatePeriod.Handle(ctx, command.CreatePeriodCmd{
+		SobId:         sobId,
+		PeriodId:      uuid.New(),
+		FinancialYear: financialYear,
+		Number:        number,
+		OpeningTime:   startDateOfMonth,
+	})
 }

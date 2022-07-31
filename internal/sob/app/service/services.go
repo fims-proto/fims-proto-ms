@@ -8,8 +8,5 @@ import (
 
 type AccountService interface {
 	InitializeAccounts(ctx context.Context, sobId uuid.UUID) error
-}
-
-type LedgerService interface {
 	InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error
 }

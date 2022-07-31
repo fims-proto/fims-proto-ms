@@ -24,32 +24,38 @@ type CreateSobCmd struct {
 type CreateSobHandler struct {
 	repo           domain.Repository
 	accountService service.AccountService
-	ledgerService  service.LedgerService
 }
 
-func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService, ledgerService service.LedgerService) CreateSobHandler {
+func NewCreateSobHandler(repo domain.Repository, accountService service.AccountService) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
+
 	if accountService == nil {
 		panic("nil account service")
 	}
-	if ledgerService == nil {
-		panic("nil ledger service")
-	}
+
 	return CreateSobHandler{
 		repo:           repo,
 		accountService: accountService,
-		ledgerService:  ledgerService,
 	}
 }
 
 func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
-	sob, err := domain.NewSob(cmd.SobId, cmd.Name, cmd.Description, cmd.BaseCurrency, cmd.StartingPeriodYear, cmd.StartingPeriodMonth, cmd.AccountsCodeLength)
+	sob, err := domain.NewSob(
+		cmd.SobId,
+		cmd.Name,
+		cmd.Description,
+		cmd.BaseCurrency,
+		cmd.StartingPeriodYear,
+		cmd.StartingPeriodMonth,
+		cmd.AccountsCodeLength,
+	)
 	if err != nil {
 		return errors.Wrap(err, "create sob failed")
 	}
-	if err := h.repo.CreateSob(ctx, sob); err != nil {
+
+	if err = h.repo.CreateSob(ctx, sob); err != nil {
 		return err
 	}
 
@@ -60,7 +66,7 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 	}
 
 	// create period
-	if err = h.ledgerService.InitializeFirstPeriod(ctx, cmd.SobId, sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
+	if err = h.accountService.InitializeFirstPeriod(ctx, cmd.SobId, sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
 		return errors.Wrapf(err, "failed to initialize first period")
 	}
 
