@@ -23,7 +23,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 // ReadAllAccounts godoc
-// @Summary List all accounts
+// @Text List all accounts
 // @Description List all accounts
 // @Tags accounts
 // @Accept application/json

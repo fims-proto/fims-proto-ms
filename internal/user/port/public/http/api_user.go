@@ -22,7 +22,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 // ReadUserById godoc
-// @Summary Show user by id
+// @Text Show user by id
 // @Description Show user by id
 // @Tags users
 // @Accept application/json
@@ -46,7 +46,7 @@ func (h Handler) ReadUserById(c *gin.Context) {
 }
 
 // UpdateUser godoc
-// @Summary Update user
+// @Text Update user
 // @Description Update user
 // @Tags users
 // @Accept application/json

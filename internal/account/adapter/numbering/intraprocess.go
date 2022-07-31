@@ -16,5 +16,5 @@ func NewIntraProcessAdapter(numberingInterface numberingPort.NumberingInterface)
 }
 
 func (i IntraProcessAdapter) InitializeIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error {
-	return i.numberingInterface.CreateIdentifierConfigurationForVoucher(ctx, periodId, "general_voucher")
+	return i.numberingInterface.CreateIdentifierConfigurationForVoucher(ctx, periodId, "general_journal")
 }

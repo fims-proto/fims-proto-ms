@@ -150,11 +150,11 @@ func (r AccountPostgresRepository) tempPagingAllAccountConfiguration(ctx context
 
 	var count int64
 	if err := db.Model(&accountConfigurationPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "count account configuration failed")
+		return nil, errors.Wrap(err, "count account configurations failed")
 	}
 
 	if err := db.Scopes(data.Paging(pageable)).Find(&accountConfigurationPOs).Error; err != nil {
-		return nil, errors.Wrapf(err, "find account configurations by sobId %s failed", sobId)
+		return nil, errors.Wrapf(err, "failed to find account configurations by sobId %s", sobId)
 	}
 
 	var configDTOs []query.AccountConfiguration

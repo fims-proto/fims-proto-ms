@@ -22,7 +22,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 // ReadAllSobs godoc
-// @Summary List all sobs
+// @Text List all sobs
 // @Description List all sobs
 // @Tags sobs
 // @Accept application/json
@@ -44,7 +44,7 @@ func (h Handler) ReadAllSobs(c *gin.Context) {
 }
 
 // ReadSobById godoc
-// @Summary Show sob by id
+// @Text Show sob by id
 // @Description Show sob by id
 // @Tags sobs
 // @Accept application/json
@@ -68,7 +68,7 @@ func (h Handler) ReadSobById(c *gin.Context) {
 }
 
 // CreateSob godoc
-// @Summary Create sob
+// @Text Create sob
 // @Description Create sob
 // @Tags sobs
 // @Accept application/json
@@ -99,7 +99,7 @@ func (h Handler) CreateSob(c *gin.Context) {
 }
 
 // UpdateSob godoc
-// @Summary Update sob
+// @Text Update sob
 // @Description Update sob
 // @Tags sobs
 // @Accept application/json
