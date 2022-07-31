@@ -8,12 +8,13 @@ import (
 )
 
 type Queries struct {
-	ReadAccounts query.ReadAccountsHandler
 }
 
 type Commands struct {
-	LoadAccounts command.AccountDataLoadHandler
-	Migrate      command.MigrationHandler
+	InitialAccountConfigurations command.InitialAccountConfigurationHandler
+	CreatePeriod                 command.CreatePeriodHandler
+	PostAccounts                 command.PostAccountsHandler
+	Migrate                      command.MigrationHandler
 }
 
 type Application struct {
@@ -26,15 +27,25 @@ func NewApplication() Application {
 }
 
 func (a *Application) Inject(
-	readModel query.AccountsReadModel,
 	repo domain.Repository,
 	sobService service.SobService,
+	numberingService service.NumberingService,
+	periodByIdReadModel query.PeriodByIdReadModel,
+	allAccountConfigurationsReadModel query.AllAccountConfigurationsReadModel,
+	accountsInPeriodReadModel query.AccountsInPeriodReadModel,
+	superiorAccountsReadModel query.SuperiorAccountConfigurationsReadModel,
 ) {
-	a.Queries = Queries{
-		ReadAccounts: query.NewReadAccountsHandler(readModel),
-	}
+	a.Queries = Queries{}
 	a.Commands = Commands{
-		LoadAccounts: command.NewAccountDataLoadHandler(repo, sobService),
+		InitialAccountConfigurations: command.NewInitialAccountConfigurationHandler(repo, sobService),
+		CreatePeriod: command.NewCreatePeriodHandler(
+			repo,
+			numberingService,
+			periodByIdReadModel,
+			allAccountConfigurationsReadModel,
+			accountsInPeriodReadModel,
+		),
+		PostAccounts: command.NewPostAccountsHandler(repo, superiorAccountsReadModel),
 		Migrate:      command.NewMigrationHandler(repo),
 	}
 }

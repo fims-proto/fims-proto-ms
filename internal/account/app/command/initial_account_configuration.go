@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 	"encoding/csv"
+	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
+	"github/fims-proto/fims-proto-ms/internal/account/domain/balance_direction"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,16 +13,12 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 
-	"github/fims-proto/fims-proto-ms/internal/account/domain"
-	"github/fims-proto/fims-proto-ms/internal/common/log"
-
-	commonAccount "github/fims-proto/fims-proto-ms/internal/common/account"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/account/domain"
 )
 
-type accountDataLoadEntry struct {
+type accountConfigurationEntry struct {
 	number           string
 	level            int
 	title            string
@@ -29,22 +27,22 @@ type accountDataLoadEntry struct {
 	balanceDirection string
 }
 
-type AccountDataLoadHandler struct {
+type InitialAccountConfigurationHandler struct {
 	repo       domain.Repository
 	sobService service.SobService
 }
 
-func NewAccountDataLoadHandler(repo domain.Repository, sobService service.SobService) AccountDataLoadHandler {
+func NewInitialAccountConfigurationHandler(repo domain.Repository, sobService service.SobService) InitialAccountConfigurationHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return AccountDataLoadHandler{
+	return InitialAccountConfigurationHandler{
 		repo:       repo,
 		sobService: sobService,
 	}
 }
 
-func (h AccountDataLoadHandler) Handle(ctx context.Context, sobId uuid.UUID) error {
+func (h InitialAccountConfigurationHandler) Handle(ctx context.Context, sobId uuid.UUID) error {
 	// 0. read sob
 	sob, err := h.sobService.ReadById(ctx, sobId)
 	if err != nil {
@@ -52,22 +50,21 @@ func (h AccountDataLoadHandler) Handle(ctx context.Context, sobId uuid.UUID) err
 	}
 
 	// 1. read CSV
-	accountEntries, err := h.readFromCSV()
+	accountConfigurationEntries, err := h.readFromCSV()
 	if err != nil {
 		return err
 	}
-	log.Info(ctx, "loaded csv file, size: %d", len(accountEntries))
 
 	// 2. prepare accounts
-	preparedAccounts, err := h.prepareAccounts(sobId, accountEntries, sob.AccountsCodeLength)
+	preparedAccounts, err := h.prepareAccountConfigurations(sobId, accountConfigurationEntries, sob.AccountsCodeLength)
 	if err != nil {
 		return err
 	}
 
-	return h.repo.DataLoad(ctx, preparedAccounts)
+	return h.repo.InitialAccountConfiguration(ctx, preparedAccounts)
 }
 
-func (h AccountDataLoadHandler) readFromCSV() ([]accountDataLoadEntry, error) {
+func (h InitialAccountConfigurationHandler) readFromCSV() ([]accountConfigurationEntry, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get working directory")
@@ -86,7 +83,7 @@ func (h AccountDataLoadHandler) readFromCSV() ([]accountDataLoadEntry, error) {
 		return nil, errors.Wrap(err, "could not read file")
 	}
 
-	var entries []accountDataLoadEntry
+	var entries []accountConfigurationEntry
 	for {
 		line, err := csvReader.Read()
 		if err == io.EOF {
@@ -101,9 +98,9 @@ func (h AccountDataLoadHandler) readFromCSV() ([]accountDataLoadEntry, error) {
 		}
 		balanceDirection := line[5]
 		if balanceDirection == "" {
-			balanceDirection = commonAccount.UndefinedDirection.String()
+			balanceDirection = balance_direction.Unknown.String()
 		}
-		entries = append(entries, accountDataLoadEntry{
+		entries = append(entries, accountConfigurationEntry{
 			number:           line[1],
 			level:            level,
 			title:            line[3],
@@ -116,12 +113,11 @@ func (h AccountDataLoadHandler) readFromCSV() ([]accountDataLoadEntry, error) {
 	return entries, nil
 }
 
-func (h AccountDataLoadHandler) prepareAccounts(sobId uuid.UUID, accountEntries []accountDataLoadEntry, codeLengthLimits []int) ([]*domain.Account, error) {
-	preparedAccounts := make(map[string]*domain.Account)
+func (h InitialAccountConfigurationHandler) prepareAccountConfigurations(sobId uuid.UUID, accountEntries []accountConfigurationEntry, codeLengthLimits []int) ([]*account_configuration.AccountConfiguration, error) {
+	preparedAccounts := make(map[string]*account_configuration.AccountConfiguration)
 	for i := 0; i < len(codeLengthLimits); i++ {
 		for _, entry := range accountEntries {
 			if entry.level == i+1 {
-
 				var levelNumber int
 				var superiorAccountId uuid.UUID
 				var numberHierarchy []int
@@ -135,10 +131,10 @@ func (h AccountDataLoadHandler) prepareAccounts(sobId uuid.UUID, accountEntries 
 					if !ok {
 						return nil, errors.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
 					}
-					superiorAccountId = superiorAccount.Id()
+					superiorAccountId = superiorAccount.AccountId()
 					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
-				account, err := domain.NewAccount(uuid.New(), sobId, superiorAccountId, entry.title, entry.number, entry.accountType, entry.balanceDirection, entry.level, numberHierarchy, codeLengthLimits)
+				account, err := account_configuration.New(sobId, uuid.New(), superiorAccountId, entry.title, entry.number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
 				if err != nil {
 					return nil, errors.Wrapf(err, "dataload failed on account %s", entry.number)
 				}
@@ -148,7 +144,7 @@ func (h AccountDataLoadHandler) prepareAccounts(sobId uuid.UUID, accountEntries 
 	}
 
 	// to slice
-	accounts := make([]*domain.Account, len(preparedAccounts))
+	accounts := make([]*account_configuration.AccountConfiguration, len(preparedAccounts))
 	i := 0
 	for _, v := range preparedAccounts {
 		accounts[i] = v

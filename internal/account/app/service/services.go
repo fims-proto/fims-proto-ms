@@ -11,3 +11,7 @@ import (
 type SobService interface {
 	ReadById(ctx context.Context, sobId uuid.UUID) (sobQuery.Sob, error)
 }
+
+type NumberingService interface {
+	InitializeIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error
+}
