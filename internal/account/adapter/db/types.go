@@ -49,28 +49,23 @@ type accountPO struct {
 	EndingBalance  decimal.Decimal
 	PeriodDebit    decimal.Decimal
 	PeriodCredit   decimal.Decimal
-	CreatedAt      time.Time `gorm:"<-:create"`
+	Configuration  accountConfigurationPO `gorm:"foreignKey:AccountId"`
+	CreatedAt      time.Time              `gorm:"<-:create"`
 	UpdatedAt      time.Time
-}
-
-type accountVO struct {
-	Account accountPO              `gorm:"embedded"`
-	Config  accountConfigurationPO `gorm:"embedded"`
-	Period  periodPO               `gorm:"embedded"`
 }
 
 // table names
 
 func (a accountPO) TableName() string {
-	return "accounts"
+	return "a_accounts"
 }
 
 func (a accountConfigurationPO) TableName() string {
-	return "account_configurations"
+	return "a_account_configurations"
 }
 
 func (p periodPO) TableName() string {
-	return "periods"
+	return "a_periods"
 }
 
 // mappers
@@ -171,40 +166,40 @@ func accountBOToPO(bo account.Account) accountPO {
 	}
 }
 
-func accountVOToBO(vo accountVO) (*account.Account, error) {
-	configuration, err := accountConfigurationPOToBO(vo.Config)
+func accountPOToBO(po accountPO) (*account.Account, error) {
+	configuration, err := accountConfigurationPOToBO(po.Configuration)
 	if err != nil {
 		return nil, err
 	}
 
 	return account.New(
-		vo.Account.SobId,
-		vo.Account.AccountId,
-		vo.Account.PeriodId,
-		vo.Account.OpeningBalance,
-		vo.Account.EndingBalance,
-		vo.Account.PeriodDebit,
-		vo.Account.PeriodCredit,
+		po.SobId,
+		po.AccountId,
+		po.PeriodId,
+		po.OpeningBalance,
+		po.EndingBalance,
+		po.PeriodDebit,
+		po.PeriodCredit,
 		*configuration,
 	)
 }
 
-func accountVOToDTO(vo accountVO) (query.Account, error) {
-	configuration, err := accountConfigurationPOToDTO(vo.Config)
+func accountPOToDTO(po accountPO) (query.Account, error) {
+	configuration, err := accountConfigurationPOToDTO(po.Configuration)
 	if err != nil {
 		return query.Account{}, err
 	}
 
 	return query.Account{
-		SobId:          vo.Account.SobId,
-		AccountId:      vo.Account.AccountId,
-		OpeningBalance: vo.Account.OpeningBalance,
-		EndingBalance:  vo.Account.EndingBalance,
-		PeriodDebit:    vo.Account.PeriodDebit,
-		PeriodCredit:   vo.Account.PeriodCredit,
-		CreatedAt:      vo.Account.CreatedAt,
-		UpdatedAt:      vo.Account.UpdatedAt,
+		SobId:          po.SobId,
+		AccountId:      po.AccountId,
+		PeriodId:       po.PeriodId,
+		OpeningBalance: po.OpeningBalance,
+		EndingBalance:  po.EndingBalance,
+		PeriodDebit:    po.PeriodDebit,
+		PeriodCredit:   po.PeriodCredit,
 		Configuration:  configuration,
-		Period:         periodPOToDTO(vo.Period),
+		CreatedAt:      po.CreatedAt,
+		UpdatedAt:      po.UpdatedAt,
 	}, nil
 }

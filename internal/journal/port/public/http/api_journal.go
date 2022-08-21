@@ -103,7 +103,7 @@ func (h Handler) Audit(c *gin.Context) {
 	}
 	cmd := command.AuditJournalEntryCmd{
 		EntryId: uuid.MustParse(c.Param("entryId")),
-		Auditor: uuid.MustParse(req.Auditor),
+		Auditor: req.Auditor,
 	}
 	if err := h.app.Commands.AuditJournalEntry.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
@@ -133,7 +133,7 @@ func (h Handler) CancelAudit(c *gin.Context) {
 	}
 	cmd := command.CancelAuditJournalEntryCmd{
 		EntryId: uuid.MustParse(c.Param("entryId")),
-		Auditor: uuid.MustParse(req.Auditor),
+		Auditor: req.Auditor,
 	}
 	if err := h.app.Commands.CancelAuditJournalEntry.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
@@ -163,7 +163,7 @@ func (h Handler) Review(c *gin.Context) {
 	}
 	cmd := command.ReviewJournalEntryCmd{
 		EntryId:  uuid.MustParse(c.Param("entryId")),
-		Reviewer: uuid.MustParse(req.Reviewer),
+		Reviewer: req.Reviewer,
 	}
 	if err := h.app.Commands.ReviewJournalEntry.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
@@ -193,9 +193,39 @@ func (h Handler) CancelReview(c *gin.Context) {
 	}
 	cmd := command.CancelReviewJournalEntryCmd{
 		EntryId:  uuid.MustParse(c.Param("entryId")),
-		Reviewer: uuid.MustParse(req.Reviewer),
+		Reviewer: req.Reviewer,
 	}
 	if err := h.app.Commands.CancelReviewJournalEntry.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+// Post godoc
+// @Text Post journal entry
+// @Description Post journal entry
+// @Tags journals
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Param entryId path string true "Entry ID"
+// @Param PostJournalEntryRequest body PostJournalEntryRequest true "Post journal entry request, poster user ID"
+// @Success 204
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/journal-entry/{entryId}/post [post]
+func (h Handler) Post(c *gin.Context) {
+	var req PostJournalEntryRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	cmd := command.PostJournalEntryCmd{
+		EntryId: uuid.MustParse(c.Param("entryId")),
+		Poster:  req.Poster,
+	}
+	if err := h.app.Commands.PostJournalEntry.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}
@@ -268,35 +298,6 @@ func (h Handler) CreateJournalEntry(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, JournalEntryDTOToVO(createdEntry))
-}
-
-// Post godoc
-// @Text Post journal entry
-// @Description Post journal entry
-// @Tags journals
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param entryId path string true "Entry ID"
-// @Success 204
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/journal-entry/{entryId}/post [post]
-func (h Handler) Post(c *gin.Context) {
-	var req PostJournalEntryRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	cmd := command.PostJournalEntryCmd{
-		EntryId: uuid.MustParse(c.Param("entryId")),
-		Poster:  uuid.MustParse(req.Poster),
-	}
-	if err := h.app.Commands.PostJournalEntry.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.Status(http.StatusNoContent)
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

@@ -7,37 +7,37 @@ import (
 )
 
 type Error struct {
-	Message string `json:"message"`
-	Slug    string `json:"slug"`
+	Message string `json:"message,omitempty"`
+	Slug    string `json:"slug,omitempty"`
 }
 
 type CreateSobRequest struct {
-	Name                string `json:"name"`
-	Description         string `json:"description"`
-	BaseCurrency        string `json:"baseCurrency"`
-	StartingPeriodYear  int    `json:"startingPeriodYear"`
-	StartingPeriodMonth int    `json:"startingPeriodMonth"`
-	AccountsCodeLength  []int  `json:"accountsCodeLength"`
+	Name                string `json:"name,omitempty"`
+	Description         string `json:"description,omitempty"`
+	BaseCurrency        string `json:"baseCurrency,omitempty"`
+	StartingPeriodYear  int    `json:"startingPeriodYear,omitempty"`
+	StartingPeriodMonth int    `json:"startingPeriodMonth,omitempty"`
+	AccountsCodeLength  []int  `json:"accountsCodeLength,omitempty"`
 }
 
 type UpdateSobRequest struct {
-	Name               string `json:"name"`
-	AccountsCodeLength []int  `json:"accountsCodeLength"`
+	Name               string `json:"name,omitempty"`
+	AccountsCodeLength []int  `json:"accountsCodeLength,omitempty"`
 }
 
 type SobResponse struct {
-	Id                  string `json:"id"`
-	Name                string `json:"name"`
-	Description         string `json:"description"`
-	BaseCurrency        string `json:"baseCurrency"`
-	StartingPeriodYear  int    `json:"startingPeriodYear"`
-	StartingPeriodMonth int    `json:"startingPeriodMonth"`
-	AccountsCodeLength  []int  `json:"accountsCodeLength"`
+	Id                  uuid.UUID `json:"id,omitempty"`
+	Name                string    `json:"name,omitempty"`
+	Description         string    `json:"description,omitempty"`
+	BaseCurrency        string    `json:"baseCurrency,omitempty"`
+	StartingPeriodYear  int       `json:"startingPeriodYear,omitempty"`
+	StartingPeriodMonth int       `json:"startingPeriodMonth,omitempty"`
+	AccountsCodeLength  []int     `json:"accountsCodeLength,omitempty"`
 }
 
 func sobDTOToVO(q query.Sob) SobResponse {
 	return SobResponse{
-		Id:                  q.Id.String(),
+		Id:                  q.Id,
 		Name:                q.Name,
 		Description:         q.Description,
 		BaseCurrency:        q.BaseCurrency,

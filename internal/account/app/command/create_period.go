@@ -79,7 +79,7 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 		openingTime = previousPeriod.EndingTime
 	}
 
-	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.PreviousPeriodId, cmd.FinancialYear, cmd.Number, openingTime, cmd.EndingTime, false)
+	p, err := period.New(cmd.SobId, cmd.PeriodId, cmd.PreviousPeriodId, cmd.FinancialYear, cmd.Number, openingTime, cmd.EndingTime, false)
 	if err != nil {
 		return errors.Wrap(err, "failed to create period domain model")
 	}

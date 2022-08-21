@@ -26,7 +26,7 @@ type sobPO struct {
 // table names
 
 func (s sobPO) TableName() string {
-	return "sobs"
+	return "a_sobs"
 }
 
 // mappers

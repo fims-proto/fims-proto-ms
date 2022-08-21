@@ -27,6 +27,29 @@ definitions:
       updatedAt:
         type: string
     type: object
+  http.AccountResponse:
+    properties:
+      accountId:
+        type: string
+      configuration:
+        $ref: '#/definitions/http.AccountConfigurationResponse'
+      createdAt:
+        type: string
+      endingBalance:
+        type: number
+      openingBalance:
+        type: number
+      periodCredit:
+        type: number
+      periodDebit:
+        type: number
+      periodId:
+        type: string
+      sobId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   http.AuditJournalEntryRequest:
     properties:
       auditor:
@@ -97,7 +120,7 @@ definitions:
           $ref: '#/definitions/http.LineItemResponse'
         type: array
       period:
-        $ref: '#/definitions/http.PeriodResponse'
+        $ref: '#/definitions/internal_journal_port_public_http.PeriodResponse'
       poster:
         $ref: '#/definitions/internal_journal_port_public_http.UserResponse'
       reviewer:
@@ -141,23 +164,9 @@ definitions:
       updatedAt:
         type: string
     type: object
-  http.PeriodResponse:
+  http.PostJournalEntryRequest:
     properties:
-      createdAt:
-        type: string
-      endingTime:
-        type: string
-      financialYear:
-        type: integer
-      id:
-        type: string
-      isClosed:
-        type: boolean
-      number:
-        type: integer
-      openingTime:
-        type: string
-      updatedAt:
+      poster:
         type: string
     type: object
   http.ReviewJournalEntryRequest:
@@ -214,11 +223,53 @@ definitions:
       slug:
         type: string
     type: object
+  internal_account_port_public_http.PeriodResponse:
+    properties:
+      createdAt:
+        type: string
+      endingTime:
+        type: string
+      financialYear:
+        type: integer
+      isClosed:
+        type: boolean
+      number:
+        type: integer
+      openingTime:
+        type: string
+      periodId:
+        type: string
+      previousPeriodId:
+        type: string
+      sobId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   internal_journal_port_public_http.Error:
     properties:
       message:
         type: string
       slug:
+        type: string
+    type: object
+  internal_journal_port_public_http.PeriodResponse:
+    properties:
+      createdAt:
+        type: string
+      endingTime:
+        type: string
+      financialYear:
+        type: integer
+      id:
+        type: string
+      isClosed:
+        type: boolean
+      number:
+        type: integer
+      openingTime:
+        type: string
+      updatedAt:
         type: string
     type: object
   internal_journal_port_public_http.UserResponse:
@@ -589,6 +640,12 @@ paths:
         name: entryId
         required: true
         type: string
+      - description: Post journal entry request, poster user ID
+        in: body
+        name: PostJournalEntryRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.PostJournalEntryRequest'
       produces:
       - application/json
       responses:
@@ -637,6 +694,111 @@ paths:
             $ref: '#/definitions/internal_journal_port_public_http.Error'
       tags:
       - journals
+  /sob/{sobId}/period/{periodId}/accounts/:
+    get:
+      consumes:
+      - application/json
+      description: List accounts in period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: choose only field(s)
+        in: query
+        name: $choose
+        type: string
+      - description: filter on field(s)
+        example: title eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.AccountResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_account_port_public_http.Error'
+      tags:
+      - accounts
+  /sob/{sobId}/periods/:
+    get:
+      consumes:
+      - application/json
+      description: List periods
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: choose only field(s)
+        in: query
+        name: $choose
+        type: string
+      - description: filter on field(s)
+        example: title eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/internal_account_port_public_http.PeriodResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_account_port_public_http.Error'
+      tags:
+      - accounts
   /sobs/:
     get:
       consumes:

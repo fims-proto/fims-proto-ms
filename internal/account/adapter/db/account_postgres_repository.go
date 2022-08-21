@@ -80,7 +80,7 @@ func (r AccountPostgresRepository) CreateAccounts(ctx context.Context, accounts 
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return tx.CreateInBatches(&accountPOs, 100).Error
+		return tx.Omit("Configuration", "Period").CreateInBatches(&accountPOs, 100).Error
 	})
 }
 
@@ -88,17 +88,17 @@ func (r AccountPostgresRepository) UpdateAccountsByPeriodAndIds(ctx context.Cont
 	db := readDBFromCtx(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		var accountVOs []accountVO
+		var accountPOs []accountPO
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-			Scopes(selectAccountVO).
-			Where("accounts.period_id = ? AND accounts.account_id IN ?", periodId, accountIds).
-			Find(&accountVOs).Error; err != nil {
+			Where("period_id = ? AND account_id IN ?", periodId, accountIds).
+			Preload("Configuration").
+			Find(&accountPOs).Error; err != nil {
 			return err
 		}
 
 		var accountBOs []*account.Account
-		for _, vo := range accountVOs {
-			bo, err := accountVOToBO(vo)
+		for _, vo := range accountPOs {
+			bo, err := accountPOToBO(vo)
 			if err != nil {
 				return errors.Wrap(err, "failed to map account")
 			}
@@ -110,37 +110,51 @@ func (r AccountPostgresRepository) UpdateAccountsByPeriodAndIds(ctx context.Cont
 			return errors.Wrap(err, "failed to update account in transaction")
 		}
 
-		var accountPOs []accountPO
+		var updatedPOs []accountPO
 		for _, updatedAccount := range updatedAccounts {
-			accountPOs = append(accountPOs, accountBOToPO(*updatedAccount))
+			updatedPOs = append(updatedPOs, accountBOToPO(*updatedAccount))
 		}
 
-		return tx.Save(&accountPOs).Error
+		return tx.Save(&updatedPOs).Error
 	})
 }
 
 // queries
 
-func (r AccountPostgresRepository) AccountsInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Account, error) {
+func (r AccountPostgresRepository) PagingAccountsByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
 	db := readDBFromCtx(ctx)
 
-	var accountVOs []accountVO
-	if err := db.Scopes(selectAccountVO).
-		Where("accounts.sob_id = ? AND accounts.period_id = ?", sobId, periodId).
-		Find(&accountVOs).Error; err != nil {
-		return nil, err
+	var accountPOs []accountPO
+
+	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ? AND period_id = ?", sobId, periodId)
+
+	var count int64
+	if err := db.Model(&accountPO{}).Count(&count).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to count accounts")
+	}
+
+	if err := db.Scopes(data.Paging(pageable)).Preload("Configuration").Find(&accountPOs).Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to find accounts by sobId %s and periodId %s", sobId, periodId)
 	}
 
 	var accountDTOs []query.Account
-	for _, vo := range accountVOs {
-		dto, err := accountVOToDTO(vo)
+	for _, vo := range accountPOs {
+		dto, err := accountPOToDTO(vo)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to map account")
 		}
 		accountDTOs = append(accountDTOs, dto)
 	}
 
-	return accountDTOs, nil
+	return data.NewPage(accountDTOs, pageable, int(count))
+}
+
+func (r AccountPostgresRepository) AccountsInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Account, error) {
+	accounts, err := r.PagingAccountsByPeriod(ctx, sobId, periodId, data.Unpaged())
+	if err != nil {
+		return nil, err
+	}
+	return accounts.Content(), nil
 }
 
 func (r AccountPostgresRepository) PagingAccountConfigurations(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.AccountConfiguration], error) {
@@ -256,6 +270,30 @@ func (r AccountPostgresRepository) AccountConfigurationsByNumbers(ctx context.Co
 	return configDTOs, nil
 }
 
+func (r AccountPostgresRepository) PagingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {
+	db := readDBFromCtx(ctx)
+
+	var periodPOs []periodPO
+
+	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ?", sobId)
+
+	var count int64
+	if err := db.Model(&periodPO{}).Count(&count).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to count periods")
+	}
+
+	if err := db.Scopes(data.Paging(pageable)).Find(&periodPOs).Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to find periods by sobId %s", sobId)
+	}
+
+	var periodDTOs []query.Period
+	for _, po := range periodPOs {
+		periodDTOs = append(periodDTOs, periodPOToDTO(po))
+	}
+
+	return data.NewPage(periodDTOs, pageable, int(count))
+}
+
 func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
 	db := readDBFromCtx(ctx)
 
@@ -298,13 +336,6 @@ func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds [
 	}
 
 	return periodDTOs, nil
-}
-
-func selectAccountVO(db *gorm.DB) *gorm.DB {
-	return db.Table("accounts").
-		Select("accounts.*, account_configurations.*, periods.*").
-		Joins("JOIN account_configurations ON accounts.account_id = account_configurations.account_id").
-		Joins("JOIN periods ON accounts.period_id = periods.period_id")
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

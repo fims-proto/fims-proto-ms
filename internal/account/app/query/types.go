@@ -38,12 +38,12 @@ type Period struct {
 type Account struct {
 	SobId          uuid.UUID
 	AccountId      uuid.UUID
+	PeriodId       uuid.UUID
 	OpeningBalance decimal.Decimal
 	EndingBalance  decimal.Decimal
 	PeriodDebit    decimal.Decimal
 	PeriodCredit   decimal.Decimal
 	Configuration  AccountConfiguration
-	Period         Period
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }

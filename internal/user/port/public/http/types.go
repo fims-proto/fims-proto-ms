@@ -8,19 +8,19 @@ import (
 )
 
 type Error struct {
-	Message string `json:"message"`
-	Slug    string `json:"slug"`
+	Message string `json:"message,omitempty"`
+	Slug    string `json:"slug,omitempty"`
 }
 
 type UserResponse struct {
-	Id        uuid.UUID `json:"id"`
-	Traits    any       `json:"traits"`
+	Id        uuid.UUID `json:"id,omitempty"`
+	Traits    any       `json:"traits,omitempty"`
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 type UpdateUserRequest struct {
-	Traits string `json:"traits"`
+	Traits string `json:"traits,omitempty"`
 }
 
 func userDTOToVO(u query.User) UserResponse {

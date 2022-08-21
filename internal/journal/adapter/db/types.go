@@ -30,8 +30,8 @@ type journalEntryPO struct {
 	IsAudited          bool
 	IsPosted           bool
 	TransactionTime    time.Time
-	LineItems          []lineItemPO
-	CreatedAt          time.Time `gorm:"<-:create"`
+	LineItems          []lineItemPO `gorm:"foreignKey:EntryId"`
+	CreatedAt          time.Time    `gorm:"<-:create"`
 	UpdatedAt          time.Time
 }
 
@@ -49,11 +49,11 @@ type lineItemPO struct {
 // table names
 
 func (j journalEntryPO) TableName() string {
-	return "journal_entries"
+	return "a_journal_entries"
 }
 
 func (l lineItemPO) TableName() string {
-	return "line_items"
+	return "a_line_items"
 }
 
 // mappers

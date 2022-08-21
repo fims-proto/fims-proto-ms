@@ -22,7 +22,7 @@ type userPO struct {
 // table names
 
 func (u userPO) TableName() string {
-	return "users"
+	return "a_users"
 }
 
 // mappers

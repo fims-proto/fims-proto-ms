@@ -16,7 +16,9 @@ type AccountReadModel interface {
 	SuperiorAccountConfigurations(ctx context.Context, accountId uuid.UUID) ([]AccountConfiguration, error)
 
 	AccountsInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]Account, error)
+	PagingAccountsByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageable data.Pageable) (data.Page[Account], error)
 
+	PagingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Period], error)
 	PeriodById(ctx context.Context, periodId uuid.UUID) (Period, error)
 	PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error)
 	PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]Period, error)

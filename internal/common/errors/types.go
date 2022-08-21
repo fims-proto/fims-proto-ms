@@ -3,8 +3,8 @@ package errors
 const unknownErrorSlug = "unknown-error"
 
 type slugErrResponse struct {
-	Message string `json:"message"`
-	Slug    string `json:"slug"`
+	Message string `json:"message,omitempty"`
+	Slug    string `json:"slug,omitempty"`
 }
 
 type SlugErr struct {

@@ -11,8 +11,10 @@ type Queries struct {
 	PagingAccountConfigurations    query.PagingAccountConfigurationsHandler
 	AccountConfigurationsByIds     query.AccountConfigurationsByIdsHandler
 	AccountConfigurationsByNumbers query.AccountConfigurationsByNumbersHandler
+	PagingPeriods                  query.PagingPeriodsHandler
 	PeriodByTime                   query.PeriodByTimeHandler
 	PeriodsByIds                   query.PeriodsByIdsHandler
+	PagingAccountsByPeriod         query.PagingAccountsByPeriodHandler
 }
 
 type Commands struct {
@@ -41,8 +43,10 @@ func (a *Application) Inject(
 		PagingAccountConfigurations:    query.NewPagingAccountConfigurationsHandler(readModel),
 		AccountConfigurationsByNumbers: query.NewAccountConfigurationsByNumbersHandler(readModel),
 		AccountConfigurationsByIds:     query.NewAccountConfigurationsByIdsHandler(readModel),
+		PagingPeriods:                  query.NewPagingPeriodsHandler(readModel),
 		PeriodByTime:                   query.NewPeriodByTimeHandler(readModel),
 		PeriodsByIds:                   query.NewPeriodsByIdsHandler(readModel),
+		PagingAccountsByPeriod:         query.NewPagingAccountsByPeriodHandler(readModel),
 	}
 	a.Commands = Commands{
 		InitialAccountConfigurations: command.NewInitialAccountConfigurationHandler(repo, sobService),

@@ -13,8 +13,8 @@ import (
 )
 
 type propertyMatcher struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+	Name  string `json:"name,omitempty"`
+	Value string `json:"value,omitempty"`
 }
 
 type identifierConfigurationPO struct {
@@ -38,11 +38,11 @@ type identifierPO struct {
 // table names
 
 func (c identifierConfigurationPO) TableName() string {
-	return "identifier_configurations"
+	return "a_identifier_configurations"
 }
 
 func (i identifierPO) TableName() string {
-	return "identifiers"
+	return "a_identifiers"
 }
 
 // mappers

@@ -99,7 +99,7 @@ func (h InitialAccountConfigurationHandler) readFromCSV() ([]accountConfiguratio
 		}
 		balanceDirection := line[5]
 		if balanceDirection == "" {
-			balanceDirection = balance_direction.Unknown.String()
+			balanceDirection = balance_direction.NotDefined.String()
 		}
 		entries = append(entries, accountConfigurationEntry{
 			number:           line[1],

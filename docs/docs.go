@@ -512,6 +512,15 @@ const docTemplate = `{
                         "name": "entryId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Post journal entry request, poster user ID",
+                        "name": "PostJournalEntryRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.PostJournalEntryRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -578,6 +587,161 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/internal_journal_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/period/{periodId}/accounts/": {
+            "get": {
+                "description": "List accounts in period",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period ID",
+                        "name": "periodId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "choose only field(s)",
+                        "name": "$choose",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.AccountResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/periods/": {
+            "get": {
+                "description": "List periods",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "choose only field(s)",
+                        "name": "$choose",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_account_port_public_http.PeriodResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_account_port_public_http.Error"
                         }
                     }
                 }
@@ -874,6 +1038,41 @@ const docTemplate = `{
                 }
             }
         },
+        "http.AccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "configuration": {
+                    "$ref": "#/definitions/http.AccountConfigurationResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingBalance": {
+                    "type": "number"
+                },
+                "openingBalance": {
+                    "type": "number"
+                },
+                "periodCredit": {
+                    "type": "number"
+                },
+                "periodDebit": {
+                    "type": "number"
+                },
+                "periodId": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "http.AuditJournalEntryRequest": {
             "type": "object",
             "properties": {
@@ -980,7 +1179,7 @@ const docTemplate = `{
                     }
                 },
                 "period": {
-                    "$ref": "#/definitions/http.PeriodResponse"
+                    "$ref": "#/definitions/internal_journal_port_public_http.PeriodResponse"
                 },
                 "poster": {
                     "$ref": "#/definitions/internal_journal_port_public_http.UserResponse"
@@ -1048,31 +1247,10 @@ const docTemplate = `{
                 }
             }
         },
-        "http.PeriodResponse": {
+        "http.PostJournalEntryRequest": {
             "type": "object",
             "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "financialYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "updatedAt": {
+                "poster": {
                     "type": "string"
                 }
             }
@@ -1161,6 +1339,41 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_account_port_public_http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "financialYear": {
+                    "type": "integer"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "periodId": {
+                    "type": "string"
+                },
+                "previousPeriodId": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_journal_port_public_http.Error": {
             "type": "object",
             "properties": {
@@ -1168,6 +1381,35 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_journal_port_public_http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "financialYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
