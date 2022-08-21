@@ -1,4 +1,4 @@
-package domain
+package identifier_configuration
 
 import (
 	"testing"
@@ -10,7 +10,7 @@ import (
 func TestIdentifierConfiguration_IsMatchProperties(t *testing.T) {
 	matcher1, _ := NewPropertyMatcher("name1", "dummy1")
 	matcher2, _ := NewPropertyMatcher("name2", "dummy2")
-	config, _ := NewIdentifierConfiguration(uuid.New(), "dummy", []PropertyMatcher{*matcher1, *matcher2}, 0, "", "")
+	config, _ := New(uuid.New(), "dummy", []PropertyMatcher{*matcher1, *matcher2}, 0, "", "")
 
 	assert.True(t, config.IsMatchProperties(map[string]string{
 		"name1": "dummy1",

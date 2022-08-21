@@ -7,7 +7,8 @@ import (
 )
 
 type Queries struct {
-	ReadUsers query.ReadUsersHandler
+	UserById   query.UserByIdHandler
+	UsersByIds query.UsersByIdsHandler
 }
 
 type Commands struct {
@@ -25,11 +26,12 @@ func NewApplication() Application {
 }
 
 func (a *Application) Inject(
-	readModel query.UsersReadModel,
+	readModel query.UserReadModel,
 	repo domain.Repository,
 ) {
 	a.Queries = Queries{
-		ReadUsers: query.NewReadUsersHandler(readModel),
+		UserById:   query.NewUserByIdHandler(readModel),
+		UsersByIds: query.NewUsersByIdsHandler(readModel),
 	}
 
 	a.Commands = Commands{

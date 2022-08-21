@@ -1,10 +1,11 @@
 package journal_entry
 
 import (
+	"time"
+
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_type"
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/line_item"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"

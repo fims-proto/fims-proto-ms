@@ -1,4 +1,4 @@
-package domain
+package identifier_configuration
 
 import (
 	"sync"

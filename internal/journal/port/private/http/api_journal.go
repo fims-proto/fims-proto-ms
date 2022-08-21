@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github/fims-proto/fims-proto-ms/internal/voucher/app"
+	"github/fims-proto/fims-proto-ms/internal/journal/app"
 
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +28,7 @@ func (h Handler) Migrate(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g := r.Group("/vouchers/")
+	g := r.Group("/journals/")
 	{
 		g.POST("migrate", h.Migrate)
 	}

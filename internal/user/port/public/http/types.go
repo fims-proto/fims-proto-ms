@@ -23,7 +23,7 @@ type UpdateUserRequest struct {
 	Traits string `json:"traits"`
 }
 
-func mapFromUserQuery(u query.User) UserResponse {
+func userDTOToVO(u query.User) UserResponse {
 	return UserResponse{
 		Id:        u.Id,
 		Traits:    u.Traits,

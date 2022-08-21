@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"

@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"strings"
 
+	accountNumberingAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/numbering"
+
 	"golang.org/x/text/language"
 
 	"github/fims-proto/fims-proto-ms/internal/common/db"
@@ -32,18 +34,8 @@ import (
 	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
 	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
 
-	ledgerAccountAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/account"
-	ledgerAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/db"
-	ledgerNumberingAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/numbering"
-	ledgerSelfServiceAdapter "github/fims-proto/fims-proto-ms/internal/ledger/adapter/self"
-	ledgerApp "github/fims-proto/fims-proto-ms/internal/ledger/app"
-	ledgerPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/http"
-	ledgerIntraPort "github/fims-proto/fims-proto-ms/internal/ledger/port/private/intraprocess"
-	ledgerPublicHttpPort "github/fims-proto/fims-proto-ms/internal/ledger/port/public/http"
-
 	sobAccountAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/account"
 	sobAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/db"
-	sobLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/ledger"
 	sobApp "github/fims-proto/fims-proto-ms/internal/sob/app"
 	sobPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/http"
 	sobIntraPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/intraprocess"
@@ -56,17 +48,18 @@ import (
 	tenantService "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
 	tenantIntraPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
 
-	voucherAccountAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
-	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
-	voucherLedgerAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/ledger"
-	voucherNumberingAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/numbering"
-	voucherUserAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/user"
-	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
-	voucherPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
-	voucherPublicHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
+	journalAccountAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/account"
+	journalAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/db"
+	journalNumberingAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/numbering"
+	journalUserAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/user"
+	journalApp "github/fims-proto/fims-proto-ms/internal/journal/app"
+	journalPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/journal/port/private/http"
+	journalPublicHttpPort "github/fims-proto/fims-proto-ms/internal/journal/port/public/http"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/gin-gonic/gin"
 	"github.com/nicksnyder/go-i18n/v2/i18n"
@@ -104,69 +97,52 @@ func main() {
 	// repositories
 	sobRepository := sobAdapter.NewSobPostgresRepository()
 	accountRepository := accountAdapter.NewAccountPostgresRepository()
-	voucherRepository := voucherAdapter.NewVoucherPostgresRepository()
-	ledgerRepository := ledgerAdapter.NewLedgerPostgresRepository()
+	journalRepository := journalAdapter.NewJournalEntryPostgresRepository()
 	numberingRepository := numberingAdapter.NewNumberingPostgresRepository()
 	userRepository := userAdapter.NewUserPostgresRepository()
 
 	// application - will be passed by reference, in order to make injection work
 	sobApplication := sobApp.NewApplication()
 	accountApplication := accountApp.NewApplication()
-	voucherApplication := voucherApp.NewApplication()
-	ledgerApplication := ledgerApp.NewApplication()
+	journalApplication := journalApp.NewApplication()
 	numberingApplication := numberingApp.NewApplication()
 	userApplication := userApp.NewApplication()
 
 	// intra process interfaces
 	sobInterface := sobIntraPort.NewSobInterface(&sobApplication)
 	accountInterface := accountIntraPort.NewAccountInterface(&accountApplication)
-	ledgerInterface := ledgerIntraPort.NewLedgerInterface(&ledgerApplication)
 	numberingInterface := numberingIntraPort.NewNumberingInterface(&numberingApplication)
 	userInterface := userIntraPort.NewUserInterface(&userApplication)
 
 	// application dependencies injection
 	accountServiceForSob := sobAccountAdapter.NewIntraProcessAdapter(accountInterface)
-	ledgerServiceForSob := sobLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
 	sobApplication.Inject(
 		sobRepository,
 		sobRepository,
 		accountServiceForSob,
-		ledgerServiceForSob,
 	)
 
 	sobServiceForAccount := accountSobAdapter.NewIntraProcessAdapter(sobInterface)
+	numberingServiceForAccount := accountNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
 	accountApplication.Inject(
 		accountRepository,
 		accountRepository,
 		sobServiceForAccount,
+		numberingServiceForAccount,
 	)
 
-	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
-	ledgerServiceForVoucher := voucherLedgerAdapter.NewIntraProcessAdapter(ledgerInterface)
-	numberingServiceForVoucher := voucherNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
-	userServiceForVoucher := voucherUserAdapter.NewIntraProcessAdapter(userInterface)
-	voucherApplication.Inject(
-		voucherRepository,
-		voucherRepository,
-		accountServiceForVoucher,
-		ledgerServiceForVoucher,
-		userServiceForVoucher,
-		numberingServiceForVoucher,
-	)
-
-	ledgerSelfService := ledgerSelfServiceAdapter.NewIntraProcessAdapter(ledgerInterface)
-	accountServiceForLedger := ledgerAccountAdapter.NewIntraProcessAdapter(accountInterface)
-	numberingServiceForLedger := ledgerNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
-	ledgerApplication.Inject(
-		ledgerRepository,
-		ledgerRepository,
-		ledgerSelfService,
-		accountServiceForLedger,
-		numberingServiceForLedger,
+	accountServiceForJournal := journalAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	numberingServiceForJournal := journalNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
+	userServiceForJournal := journalUserAdapter.NewIntraProcessAdapter(userInterface)
+	journalApplication.Inject(
+		journalRepository,
+		journalRepository,
+		accountServiceForJournal,
+		userServiceForJournal,
+		numberingServiceForJournal,
 	)
 
 	numberingApplication.Inject(
-		numberingRepository, // because of pinter receiver
 		numberingRepository,
 		numberingRepository,
 	)
@@ -180,14 +156,13 @@ func main() {
 
 	router := gin.Default()
 	router.Use(ginMiddleware.ResolveTenantBySubdomain(tenantManagerImpl))
-	router.Use(errors.ErrorHandler(bundle))
+	router.Use(commonErrors.ErrorHandler(bundle))
 
 	// public http API
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
 	accountPublicHttpPort.InitRouter(accountPublicHttpPort.NewHandler(&accountApplication), publicApiRouter)
-	voucherPublicHttpPort.InitRouter(voucherPublicHttpPort.NewHandler(&voucherApplication), publicApiRouter)
-	ledgerPublicHttpPort.InitRouter(ledgerPublicHttpPort.NewHandler(&ledgerApplication), publicApiRouter)
+	journalPublicHttpPort.InitRouter(journalPublicHttpPort.NewHandler(&journalApplication), publicApiRouter)
 	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
 
 	// private http API, should have different authentication method then public API
@@ -195,8 +170,7 @@ func main() {
 	sobPrivateHttpPort.InitRouter(sobPrivateHttpPort.NewHandler(&sobApplication), privateApiRouter)
 	numberingPrivateHttpPort.InitRouter(numberingPrivateHttpPort.NewHandler(&numberingApplication), privateApiRouter)
 	accountPrivateHttpPort.InitRouter(accountPrivateHttpPort.NewHandler(&accountApplication), privateApiRouter)
-	ledgerPrivateHttpPort.InitRouter(ledgerPrivateHttpPort.NewHandler(&ledgerApplication), privateApiRouter)
-	voucherPrivateHttpPort.InitRouter(voucherPrivateHttpPort.NewHandler(&voucherApplication), privateApiRouter)
+	journalPrivateHttpPort.InitRouter(journalPrivateHttpPort.NewHandler(&journalApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
 	if strings.HasPrefix(viper.GetString("profile"), "dev") {

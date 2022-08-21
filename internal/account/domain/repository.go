@@ -2,6 +2,7 @@ package domain
 
 import (
 	"context"
+
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"

@@ -22,9 +22,9 @@ func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
-// ReadAllAccounts godoc
-// @Text List all accounts
-// @Description List all accounts
+// ReadAllAccountConfigurations godoc
+// @Text List all account configurations
+// @Description List all account configurations
 // @Tags accounts
 // @Accept application/json
 // @Produce application/json
@@ -33,29 +33,29 @@ func NewHandler(app *app.Application) Handler {
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
 // @Param $choose query string false "choose only field(s)"
-// @Param $filter query string false "filter on field(s)" example(title eq 'some thing' and amount lt 10)
-// @Success 200 {array} AccountResponse
+// @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
+// @Success 200 {array} AccountConfigurationResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/accounts/ [get]
-func (h Handler) ReadAllAccounts(c *gin.Context) {
+// @Router /sob/{sobId}/account-configurations/ [get]
+func (h Handler) ReadAllAccountConfigurations(c *gin.Context) {
 	pageable, err := data.NewPageableFromRequest(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	accountsPage, err := h.app.Queries.ReadAccounts.HandleReadAll(c, uuid.MustParse(c.Param("sobId")), pageable)
+	accountConfigurationsPage, err := h.app.Queries.PagingAccountConfigurations.Handle(c, uuid.MustParse(c.Param("sobId")), pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	accountResponses := make([]AccountResponse, len(accountsPage.Content()))
-	for i, account := range accountsPage.Content() {
-		accountResponses[i] = mapFromAccountQuery(account)
+	accountConfigurations := make([]AccountConfigurationResponse, len(accountConfigurationsPage.Content()))
+	for i, account := range accountConfigurationsPage.Content() {
+		accountConfigurations[i] = accountConfigurationDTOToVO(account)
 	}
-	resp, _ := data.NewPage(accountResponses, pageable, accountsPage.NumberOfElements())
+	resp, _ := data.NewPage(accountConfigurations, pageable, accountConfigurationsPage.NumberOfElements())
 	c.JSON(http.StatusOK, resp)
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/accounts/", h.ReadAllAccounts)
+	r.GET("/sob/:sobId/account-configurations/", h.ReadAllAccountConfigurations)
 }

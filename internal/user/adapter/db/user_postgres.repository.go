@@ -3,10 +3,11 @@ package db
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
-	"github/fims-proto/fims-proto-ms/internal/user/domain"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -20,86 +21,84 @@ func NewUserPostgresRepository() *UserPostgresRepository {
 func (r UserPostgresRepository) Migrate(ctx context.Context) error {
 	db := readDBFromCtx(ctx)
 
-	if err := db.AutoMigrate(&user{}); err != nil {
+	if err := db.AutoMigrate(&userPO{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
 	}
 	return nil
 }
 
-func (r UserPostgresRepository) ReadById(ctx context.Context, id uuid.UUID) (query.User, error) {
+func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID, updateFn func(*user.User) (*user.User, error)) error {
 	db := readDBFromCtx(ctx)
 
-	dbUser := user{}
-	if err := db.Where("id = ?", id).First(&dbUser).Error; err != nil {
+	return db.Transaction(func(tx *gorm.DB) error {
+		po := userPO{}
+		var bo *user.User
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", userId).Error; err != nil {
+			bo, err = user.New(userId, nil)
+			if err != nil {
+				return errors.Wrap(err, "failed to create user")
+			}
+		} else {
+			bo, err = userPOToBO(po)
+			if err != nil {
+				return errors.Wrap(err, "failed to unmarshal user")
+			}
+		}
+
+		updatedBO, err := updateFn(bo)
+		if err != nil {
+			return errors.Wrap(err, "failed to update user in transaction")
+		}
+
+		po, err = userBOToPO(*updatedBO)
+		if err != nil {
+			return errors.Wrap(err, "failed to userBOToPO user")
+		}
+		return tx.Save(&po).Error
+	})
+}
+
+// queries
+
+func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (query.User, error) {
+	db := readDBFromCtx(ctx)
+
+	po := userPO{}
+	if err := db.Where("id = ?", id).First(&po).Error; err != nil {
 		return query.User{}, errors.Wrapf(err, "failed to read id %s", id)
 	}
 
-	queryUser, err := unmarshalToQuery(dbUser)
+	queryUser, err := userPOToDTO(po)
 	if err != nil {
 		return query.User{}, errors.Wrap(err, "failed to unmarshal user")
 	}
+
 	return queryUser, nil
 }
 
-func (r UserPostgresRepository) ReadByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]query.User, error) {
+func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID) ([]query.User, error) {
 	db := readDBFromCtx(ctx)
 
 	if len(ids) == 0 {
 		return nil, nil
 	}
 
-	var dbUsers []user
-	if err := db.Where("id IN ?", ids).Find(&dbUsers).Error; err != nil {
+	var userPOs []userPO
+	if err := db.Where("id IN ?", ids).Find(&userPOs).Error; err != nil {
 		return nil, errors.Wrapf(err, "failed to read ids")
 	}
 
-	queryUsers := make(map[uuid.UUID]query.User)
-	for _, dbUser := range dbUsers {
-		queryUser, err := unmarshalToQuery(dbUser)
+	var userDTOs []query.User
+	for _, po := range userPOs {
+		dto, err := userPOToDTO(po)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to unmarshal user")
 		}
-		queryUsers[dbUser.Id] = queryUser
+
+		userDTOs = append(userDTOs, dto)
 	}
 
-	return queryUsers, nil
-}
-
-func (r UserPostgresRepository) UpsertUser(ctx context.Context, id uuid.UUID, updateFn func(*domain.User) (*domain.User, error)) error {
-	db := readDBFromCtx(ctx)
-
-	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbUser := user{}
-		var domainUser *domain.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&dbUser, "id = ?", id).Error; err != nil {
-			domainUser, err = domain.NewUser(id, nil)
-			if err != nil {
-				return errors.Wrap(err, "failed to create user")
-			}
-		} else {
-			domainUser, err = unmarshalToDomain(dbUser)
-			if err != nil {
-				return errors.Wrap(err, "failed to unmarshal user")
-			}
-		}
-
-		updatedDomainUser, err := updateFn(domainUser)
-		if err != nil {
-			return errors.Wrap(err, "failed to update user in transaction")
-		}
-
-		dbUser, err = marshal(*updatedDomainUser)
-		if err != nil {
-			return errors.Wrap(err, "failed to marshal user")
-		}
-		if err = tx.Save(&dbUser).Error; err != nil {
-			return errors.Wrap(err, "failed to save user")
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "failed to update user")
-	}
-	return nil
+	return userDTOs, nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

@@ -33,16 +33,15 @@ func NewApplication() Application {
 }
 
 func (a *Application) Inject(
-	journalEntryByIdReadModel query.JournalEntryByIdReadModel,
-	pagingJournalEntriesReadModel query.PagingJournalEntriesReadModel,
 	repo domain.Repository,
+	readModel query.JournalReadModel,
 	accountService service.AccountService,
 	userService service.UserService,
 	numberingService service.NumberingService,
 ) {
 	a.Queries = Queries{
-		JournalEntryById:     query.NewJournalEntryByIdHandler(journalEntryByIdReadModel, accountService, userService),
-		PagingJournalEntries: query.NewPagingJournalEntriesHandler(pagingJournalEntriesReadModel, userService),
+		JournalEntryById:     query.NewJournalEntryByIdHandler(readModel, accountService, userService),
+		PagingJournalEntries: query.NewPagingJournalEntriesHandler(readModel, userService),
 	}
 	a.Commands = Commands{
 		CreateJournalEntry:       command.NewCreateJournalEntryHandler(repo, accountService, numberingService),

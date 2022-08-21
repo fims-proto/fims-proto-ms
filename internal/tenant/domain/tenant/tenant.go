@@ -1,4 +1,4 @@
-package domain
+package tenant
 
 import (
 	"github.com/google/uuid"
@@ -6,31 +6,33 @@ import (
 )
 
 type Tenant struct {
-	tenantId  uuid.UUID
+	id        uuid.UUID
 	subdomain string
 	dsn       string
 }
 
-func NewTenant(tenantId uuid.UUID, subdomain, dsn string) (*Tenant, error) {
-	if tenantId == uuid.Nil {
-		return nil, errors.New("nil tenantId")
+func New(id uuid.UUID, subdomain, dsn string) (*Tenant, error) {
+	if id == uuid.Nil {
+		return nil, errors.New("nil id")
 	}
+
 	if subdomain == "" {
 		return nil, errors.New("empty subdomain")
 	}
+
 	if dsn == "" {
 		return nil, errors.New("empty dsn")
 	}
 
 	return &Tenant{
-		tenantId:  tenantId,
+		id:        id,
 		subdomain: subdomain,
 		dsn:       dsn,
 	}, nil
 }
 
-func (t Tenant) TenantId() uuid.UUID {
-	return t.tenantId
+func (t Tenant) Id() uuid.UUID {
+	return t.id
 }
 
 func (t Tenant) Subdomain() string {

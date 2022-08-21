@@ -2,6 +2,9 @@ package account
 
 import (
 	"context"
+	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/account/app/command"
 
 	accountPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
 
@@ -17,9 +20,17 @@ func NewIntraProcessAdapter(accountInterface accountPort.AccountInterface) Intra
 }
 
 func (i IntraProcessAdapter) InitializeAccounts(ctx context.Context, sobId uuid.UUID) error {
-	return i.accountInterface.InitializeAccounts(ctx, sobId)
+	return i.accountInterface.InitializeAccountConfigurations(ctx, sobId)
 }
 
 func (i IntraProcessAdapter) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error {
-	return i.accountInterface.CreatePeriod(ctx, sobId, financialYear, number)
+	startDateOfMonth := time.Date(financialYear, time.Month(number), 1, 0, 0, 0, 0, time.UTC)
+
+	return i.accountInterface.CreatePeriod(ctx, command.CreatePeriodCmd{
+		SobId:         sobId,
+		PeriodId:      uuid.New(),
+		FinancialYear: financialYear,
+		Number:        number,
+		OpeningTime:   startDateOfMonth,
+	})
 }

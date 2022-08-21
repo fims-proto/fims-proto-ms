@@ -3,11 +3,12 @@ package db
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
-	"github/fims-proto/fims-proto-ms/internal/sob/domain"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -21,93 +22,96 @@ func NewSobPostgresRepository() *SobPostgresRepository {
 func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 	db := readDBFromCtx(ctx)
 
-	if err := db.AutoMigrate(&sob{}); err != nil {
+	if err := db.AutoMigrate(&sobPO{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
 	}
 	return nil
 }
 
-func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *domain.Sob) error {
+func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
 	db := readDBFromCtx(ctx)
 
-	dbSob, err := marshal(*sob)
+	po, err := sobBOToPO(*sob)
 	if err != nil {
-		return errors.Wrap(err, "failed to marshal sob")
+		return errors.Wrap(err, "failed to sobBOToPO sob")
 	}
 
-	if err = db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(&dbSob).Error
-	}); err != nil {
-		return errors.Wrap(err, "create sob failed")
-	}
-
-	return nil
+	return db.Transaction(func(tx *gorm.DB) error {
+		return tx.Create(&po).Error
+	})
 }
 
-func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *domain.Sob) (*domain.Sob, error)) error {
+func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {
 	db := readDBFromCtx(ctx)
 
-	if err := db.Transaction(func(tx *gorm.DB) error {
-		dbSob := sob{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&dbSob, "id = ?", sobId).Error; err != nil {
+	return db.Transaction(func(tx *gorm.DB) error {
+		po := sobPO{}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", sobId).Error; err != nil {
 			return errors.Wrap(err, "failed to find sob")
 		}
 
-		domainSob, err := unmarshalToDomain(dbSob)
+		bo, err := sobPOToBO(po)
 		if err != nil {
 			return errors.Wrap(err, "failed to unmarshal sob")
 		}
 
-		updatedDomainSob, err := updateFn(domainSob)
+		updatedBO, err := updateFn(bo)
 		if err != nil {
 			return errors.Wrap(err, "failed to update sob in transaction")
 		}
 
-		dbSob, err = marshal(*updatedDomainSob)
+		po, err = sobBOToPO(*updatedBO)
 		if err != nil {
-			return errors.Wrap(err, "failed to marshal sob")
+			return errors.Wrap(err, "failed to sobBOToPO sob")
 		}
-		if err = tx.Save(&dbSob).Error; err != nil {
-			return errors.Wrap(err, "failed to save sob")
-		}
-		return nil
-	}); err != nil {
-		return errors.Wrap(err, "failed to updated sob")
-	}
-	return nil
+
+		return tx.Save(&po).Error
+	})
 }
 
-func (r SobPostgresRepository) AllSobs(ctx context.Context) ([]query.Sob, error) {
+// Queries
+
+func (r SobPostgresRepository) PagingSobs(ctx context.Context, pageable data.Pageable) (data.Page[query.Sob], error) {
 	db := readDBFromCtx(ctx)
 
-	var dbSobs []sob
-	if err := db.Find(&dbSobs).Error; err != nil {
-		return []query.Sob{}, errors.Wrap(err, "failed to read all sob")
+	var sobPOs []sobPO
+
+	db = db.Scopes(data.Filtering(pageable))
+
+	var count int64
+	if err := db.Model(&sobPO{}).Count(&count).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to count sobs")
+	}
+
+	if err := db.Scopes(data.Paging(pageable)).Find(&sobPOs).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to find sobs")
 	}
 
 	var querySobs []query.Sob
-	for _, dbSob := range dbSobs {
-		querySob, err := unmarshalToQuery(dbSob)
+	for _, dbSob := range sobPOs {
+		querySob, err := sobPOToDTO(dbSob)
 		if err != nil {
-			return []query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
+			return nil, errors.Wrap(err, "failed to unmarshal sob")
 		}
 		querySobs = append(querySobs, querySob)
 	}
-	return querySobs, nil
+
+	return data.NewPage(querySobs, pageable, int(count))
 }
 
 func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {
 	db := readDBFromCtx(ctx)
 
-	dbSob := sob{}
+	dbSob := sobPO{}
 	if err := db.Where("id = ?", sobId).First(&dbSob).Error; err != nil {
 		return query.Sob{}, errors.Wrapf(err, "failed to read sob %s", sobId)
 	}
 
-	querySob, err := unmarshalToQuery(dbSob)
+	querySob, err := sobPOToDTO(dbSob)
 	if err != nil {
 		return query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
 	}
+
 	return querySob, nil
 }
 

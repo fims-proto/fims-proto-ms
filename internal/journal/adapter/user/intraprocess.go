@@ -17,5 +17,15 @@ func NewIntraProcessAdapter(userInterface userPort.UserInterface) IntraProcessAd
 }
 
 func (i IntraProcessAdapter) ReadUsersByIds(ctx context.Context, userIds []uuid.UUID) (map[uuid.UUID]query.User, error) {
-	return i.userInterface.ReadUsersByIds(ctx, userIds)
+	users, err := i.userInterface.ReadUsersByIds(ctx, userIds)
+	if err != nil {
+		return nil, err
+	}
+
+	usersMap := make(map[uuid.UUID]query.User)
+	for _, user := range users {
+		usersMap[user.Id] = user
+	}
+
+	return usersMap, nil
 }

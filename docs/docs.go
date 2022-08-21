@@ -20,9 +20,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sob/{sobId}/accounts/": {
+        "/sob/{sobId}/account-configurations/": {
             "get": {
-                "description": "List all accounts",
+                "description": "List all account configurations",
                 "consumes": [
                     "application/json"
                 ],
@@ -32,7 +32,6 @@ const docTemplate = `{
                 "tags": [
                     "accounts"
                 ],
-                "summary": "List all accounts",
                 "parameters": [
                     {
                         "type": "string",
@@ -70,7 +69,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "title eq 'some thing' and amount lt 10",
+                        "example": "title eq 'something' and amount lt 10",
                         "description": "filter on field(s)",
                         "name": "$filter",
                         "in": "query"
@@ -82,22 +81,22 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_account_port_public_http.AccountResponse"
+                                "$ref": "#/definitions/http.AccountConfigurationResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_account_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/period/current": {
+        "/sob/{sobId}/journal-entries/": {
             "get": {
-                "description": "Current period",
+                "description": "List all journals by sob with pagination",
                 "consumes": [
                     "application/json"
                 ],
@@ -105,177 +104,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ledgers"
+                    "journals"
                 ],
-                "summary": "Current period",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/period/{periodId}": {
-            "get": {
-                "description": "Show period by sob and id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "summary": "Show period by sob and id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Period ID",
-                        "name": "periodId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
-                        }
-                    },
-                    "404": {
-                        "description": ""
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/period/{periodId}/ledgers/": {
-            "get": {
-                "description": "All ledgers in an period",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "summary": "All ledgers in an period",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Period ID",
-                        "name": "periodId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "choose only field(s)",
-                        "name": "$choose",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'some thing' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/periods/": {
-            "get": {
-                "description": "All periods",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "summary": "All periods",
                 "parameters": [
                     {
                         "type": "string",
@@ -313,7 +143,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "example": "title eq 'some thing' and amount lt 10",
                         "description": "filter on field(s)",
                         "name": "$filter",
                         "in": "query"
@@ -325,20 +154,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
+                                "$ref": "#/definitions/http.JournalEntryResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Create period",
+                "description": "Create journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -346,9 +175,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ledgers"
+                    "journals"
                 ],
-                "summary": "Create period",
                 "parameters": [
                     {
                         "type": "string",
@@ -358,12 +186,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Create period request",
-                        "name": "CreatePeriodRequest",
+                        "description": "Create journal entry request",
+                        "name": "CreateJournalEntryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CreatePeriodRequest"
+                            "$ref": "#/definitions/http.CreateJournalEntryRequest"
                         }
                     }
                 ],
@@ -371,27 +199,27 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_ledger_port_public_http.PeriodResponse"
+                            "$ref": "#/definitions/http.JournalEntryResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}": {
+        "/sob/{sobId}/journal-entry/{entryId}": {
             "get": {
-                "description": "Show voucher by sob and voucher id",
+                "description": "Show journal entry by sob and entry id",
                 "consumes": [
                     "application/json"
                 ],
@@ -399,9 +227,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Show voucher by sob and voucher id",
                 "parameters": [
                     {
                         "type": "string",
@@ -412,8 +239,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     }
@@ -422,7 +249,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.VoucherResponse"
+                            "$ref": "#/definitions/http.JournalEntryResponse"
                         }
                     },
                     "404": {
@@ -431,13 +258,13 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             },
             "patch": {
-                "description": "Update voucher",
+                "description": "Update journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -445,9 +272,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Update voucher",
                 "parameters": [
                     {
                         "type": "string",
@@ -458,18 +284,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Update voucher request",
-                        "name": "UpdateVoucherRequest",
+                        "description": "Update journal entry request",
+                        "name": "UpdateJournalEntryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.UpdateVoucherRequest"
+                            "$ref": "#/definitions/http.UpdateJournalEntryRequest"
                         }
                     }
                 ],
@@ -480,21 +306,21 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}/audit": {
+        "/sob/{sobId}/journal-entry/{entryId}/audit": {
             "post": {
-                "description": "Audit voucher",
+                "description": "Audit journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -502,9 +328,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Audit voucher",
                 "parameters": [
                     {
                         "type": "string",
@@ -515,18 +340,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Audit voucher request, auditor user ID",
-                        "name": "AuditVoucherRequest",
+                        "description": "Audit journal entry request, auditor user ID",
+                        "name": "AuditJournalEntryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.AuditVoucherRequest"
+                            "$ref": "#/definitions/http.AuditJournalEntryRequest"
                         }
                     }
                 ],
@@ -537,21 +362,21 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}/cancel-audit": {
+        "/sob/{sobId}/journal-entry/{entryId}/cancel-audit": {
             "post": {
-                "description": "Cancel audit voucher",
+                "description": "Cancel audit journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -559,9 +384,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Cancel audit voucher",
                 "parameters": [
                     {
                         "type": "string",
@@ -572,18 +396,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Cancel audit voucher request, auditor user ID",
-                        "name": "AuditVoucherRequest",
+                        "description": "Cancel audit journal entry request, auditor user ID",
+                        "name": "AuditJournalEntryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.AuditVoucherRequest"
+                            "$ref": "#/definitions/http.AuditJournalEntryRequest"
                         }
                     }
                 ],
@@ -594,21 +418,21 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}/cancel-review": {
+        "/sob/{sobId}/journal-entry/{entryId}/cancel-review": {
             "post": {
-                "description": "Cancel review voucher",
+                "description": "Cancel review journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -616,9 +440,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Cancel review voucher",
                 "parameters": [
                     {
                         "type": "string",
@@ -629,18 +452,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Cancel review voucher request, reviewer user ID",
-                        "name": "ReviewVoucherRequest",
+                        "description": "Cancel review journal entry request, reviewer user ID",
+                        "name": "ReviewJournalEntryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.ReviewVoucherRequest"
+                            "$ref": "#/definitions/http.ReviewJournalEntryRequest"
                         }
                     }
                 ],
@@ -651,21 +474,21 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}/post": {
+        "/sob/{sobId}/journal-entry/{entryId}/post": {
             "post": {
-                "description": "Post voucher",
+                "description": "Post journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -673,9 +496,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Post voucher",
                 "parameters": [
                     {
                         "type": "string",
@@ -686,8 +508,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     }
@@ -699,15 +521,15 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}/review": {
+        "/sob/{sobId}/journal-entry/{entryId}/review": {
             "post": {
-                "description": "Review voucher",
+                "description": "Review journal entry",
                 "consumes": [
                     "application/json"
                 ],
@@ -715,9 +537,8 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "vouchers"
+                    "journals"
                 ],
-                "summary": "Review voucher",
                 "parameters": [
                     {
                         "type": "string",
@@ -728,18 +549,18 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
+                        "description": "Entry ID",
+                        "name": "entryId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Review voucher request, reviewer user ID",
-                        "name": "ReviewVoucherRequest",
+                        "description": "Review journal entry request, reviewer user ID",
+                        "name": "ReviewJournalEntryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.ReviewVoucherRequest"
+                            "$ref": "#/definitions/http.ReviewJournalEntryRequest"
                         }
                     }
                 ],
@@ -750,138 +571,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/vouchers/": {
-            "get": {
-                "description": "List all vouchers by sob with pagination",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "summary": "List all vouchers by sob",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "choose only field(s)",
-                        "name": "$choose",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.VoucherResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "summary": "Create voucher",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create voucher request",
-                        "name": "CreateVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.CreateVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/http.VoucherResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_journal_port_public_http.Error"
                         }
                     }
                 }
@@ -899,7 +595,6 @@ const docTemplate = `{
                 "tags": [
                     "sobs"
                 ],
-                "summary": "List all sobs",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -913,7 +608,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -929,7 +624,6 @@ const docTemplate = `{
                 "tags": [
                     "sobs"
                 ],
-                "summary": "Create sob",
                 "parameters": [
                     {
                         "description": "CreateSob SobId",
@@ -951,13 +645,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -975,7 +669,6 @@ const docTemplate = `{
                 "tags": [
                     "sobs"
                 ],
-                "summary": "Show sob by id",
                 "parameters": [
                     {
                         "type": "string",
@@ -998,7 +691,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -1014,7 +707,6 @@ const docTemplate = `{
                 "tags": [
                     "sobs"
                 ],
-                "summary": "Update sob",
                 "parameters": [
                     {
                         "type": "string",
@@ -1040,13 +732,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -1064,7 +756,6 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Show user by id",
                 "parameters": [
                     {
                         "type": "string",
@@ -1087,7 +778,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_user_port_public_http.Error"
                         }
                     }
                 }
@@ -1103,7 +794,6 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Update user",
                 "parameters": [
                     {
                         "type": "string",
@@ -1129,13 +819,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_user_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_user_port_public_http.Error"
                         }
                     }
                 }
@@ -1143,7 +833,48 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "http.AuditVoucherRequest": {
+        "http.AccountConfigurationResponse": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "accountNumber": {
+                    "type": "string"
+                },
+                "accountType": {
+                    "type": "string"
+                },
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "numberHierarchy": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AuditJournalEntryRequest": {
             "type": "object",
             "properties": {
                 "auditor": {
@@ -1151,22 +882,28 @@ const docTemplate = `{
                 }
             }
         },
-        "http.CreatePeriodRequest": {
+        "http.CreateJournalEntryRequest": {
             "type": "object",
             "properties": {
-                "endingTime": {
-                    "type": "string"
-                },
-                "financialYear": {
+                "attachmentQuantity": {
                     "type": "integer"
                 },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
+                "creator": {
                     "type": "string"
                 },
-                "previousPeriodId": {
+                "headerText": {
+                    "type": "string"
+                },
+                "journalType": {
+                    "type": "string"
+                },
+                "lineItems": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LineItemRequest"
+                    }
+                },
+                "transactionTime": {
                     "type": "string"
                 }
             }
@@ -1197,48 +934,20 @@ const docTemplate = `{
                 }
             }
         },
-        "http.CreateVoucherRequest": {
+        "http.JournalEntryResponse": {
             "type": "object",
             "properties": {
                 "attachmentQuantity": {
                     "type": "integer"
                 },
-                "creator": {
-                    "type": "string"
-                },
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemRequest"
-                    }
-                },
-                "transactionTime": {
-                    "type": "string"
-                },
-                "voucherType": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.LedgerResponse": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "$ref": "#/definitions/internal_ledger_port_public_http.AccountResponse"
+                "auditor": {
+                    "$ref": "#/definitions/internal_journal_port_public_http.UserResponse"
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/internal_journal_port_public_http.UserResponse"
                 },
                 "credit": {
                     "type": "number"
@@ -1246,16 +955,43 @@ const docTemplate = `{
                 "debit": {
                     "type": "number"
                 },
-                "endingBalance": {
-                    "type": "number"
-                },
-                "id": {
+                "documentNumber": {
                     "type": "string"
                 },
-                "openingBalance": {
-                    "type": "number"
+                "entryId": {
+                    "type": "string"
                 },
-                "periodId": {
+                "isAudited": {
+                    "type": "boolean"
+                },
+                "isPosted": {
+                    "type": "boolean"
+                },
+                "isReviewed": {
+                    "type": "boolean"
+                },
+                "journalType": {
+                    "type": "string"
+                },
+                "lineItems": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LineItemResponse"
+                    }
+                },
+                "period": {
+                    "$ref": "#/definitions/http.PeriodResponse"
+                },
+                "poster": {
+                    "$ref": "#/definitions/internal_journal_port_public_http.UserResponse"
+                },
+                "reviewer": {
+                    "$ref": "#/definitions/internal_journal_port_public_http.UserResponse"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "transactionTime": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1275,10 +1011,10 @@ const docTemplate = `{
                 "debit": {
                     "type": "number"
                 },
-                "id": {
+                "itemId": {
                     "type": "string"
                 },
-                "summary": {
+                "text": {
                     "type": "string"
                 }
             }
@@ -1292,21 +1028,56 @@ const docTemplate = `{
                 "accountNumber": {
                     "type": "string"
                 },
+                "createdAt": {
+                    "type": "string"
+                },
                 "credit": {
                     "type": "number"
                 },
                 "debit": {
                     "type": "number"
                 },
-                "id": {
+                "itemId": {
                     "type": "string"
                 },
-                "summary": {
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
         },
-        "http.ReviewVoucherRequest": {
+        "http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "financialYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "number": {
+                    "type": "integer"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ReviewJournalEntryRequest": {
             "type": "object",
             "properties": {
                 "reviewer": {
@@ -1343,6 +1114,20 @@ const docTemplate = `{
                 }
             }
         },
+        "http.UpdateJournalEntryRequest": {
+            "type": "object",
+            "properties": {
+                "lineItems": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LineItemRequest"
+                    }
+                },
+                "transactionTime": {
+                    "type": "string"
+                }
+            }
+        },
         "http.UpdateSobRequest": {
             "type": "object",
             "properties": {
@@ -1365,177 +1150,57 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateVoucherRequest": {
+        "internal_account_port_public_http.Error": {
             "type": "object",
             "properties": {
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemRequest"
-                    }
+                "message": {
+                    "type": "string"
                 },
-                "transactionTime": {
+                "slug": {
                     "type": "string"
                 }
             }
         },
-        "http.VoucherResponse": {
+        "internal_journal_port_public_http.Error": {
             "type": "object",
             "properties": {
-                "attachmentQuantity": {
-                    "type": "integer"
-                },
-                "auditor": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
-                },
-                "createdAt": {
+                "message": {
                     "type": "string"
                 },
-                "creator": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
-                },
-                "credit": {
-                    "type": "number"
-                },
-                "debit": {
-                    "type": "number"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isAudited": {
-                    "type": "boolean"
-                },
-                "isPosted": {
-                    "type": "boolean"
-                },
-                "isReviewed": {
-                    "type": "boolean"
-                },
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemResponse"
-                    }
-                },
-                "number": {
-                    "type": "string"
-                },
-                "period": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.PeriodResponse"
-                },
-                "reviewer": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "transactionTime": {
-                    "type": "string"
-                },
-                "type": {
-                    "type": "string"
-                },
-                "updatedAt": {
+                "slug": {
                     "type": "string"
                 }
             }
         },
-        "internal_account_port_public_http.AccountResponse": {
+        "internal_journal_port_public_http.UserResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "accountType": {
-                    "type": "string"
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
                 "id": {
                     "type": "string"
                 },
-                "level": {
-                    "type": "integer"
-                },
-                "numberHierarchy": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "sobId": {
+                "traits": {
+                    "type": "any"
+                }
+            }
+        },
+        "internal_sob_port_public_http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
                     "type": "string"
                 },
-                "superiorAccount": {
-                    "$ref": "#/definitions/internal_account_port_public_http.AccountResponse"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
+                "slug": {
                     "type": "string"
                 }
             }
         },
-        "internal_ledger_port_public_http.AccountResponse": {
+        "internal_user_port_public_http.Error": {
             "type": "object",
             "properties": {
-                "accountNumber": {
+                "message": {
                     "type": "string"
                 },
-                "accountType": {
-                    "type": "string"
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_ledger_port_public_http.PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "financialYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "previousPeriodId": {
-                    "type": "string"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "updatedAt": {
+                "slug": {
                     "type": "string"
                 }
             }
@@ -1554,40 +1219,6 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
-                }
-            }
-        },
-        "internal_voucher_port_public_http.PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "endingTime": {
-                    "type": "string"
-                },
-                "financialYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_voucher_port_public_http.UserResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "traits": {
-                    "type": "any"
                 }
             }
         }

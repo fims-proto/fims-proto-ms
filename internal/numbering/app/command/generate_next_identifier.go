@@ -3,6 +3,9 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
+	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
@@ -16,26 +19,27 @@ type GenerateNextIdentifierCmd struct {
 }
 
 type GenerateNextIdentifierHandler struct {
-	repo               domain.Repository
-	resolveIdentConfig query.ResolveIdentifierConfigurationReadModel
+	repo      domain.Repository
+	readModel query.NumberingReadModel
 }
 
-func NewGenerateNextIdentifierHandler(repo domain.Repository, resolveIdentConfig query.ResolveIdentifierConfigurationReadModel) GenerateNextIdentifierHandler {
+func NewGenerateNextIdentifierHandler(repo domain.Repository, readModel query.NumberingReadModel) GenerateNextIdentifierHandler {
 	if repo == nil {
 		panic("nil numbering repo")
 	}
-	if resolveIdentConfig == nil {
+
+	if readModel == nil {
 		panic("nil ResolveIdentifierConfigurationReadModel")
 	}
 
 	return GenerateNextIdentifierHandler{
-		repo:               repo,
-		resolveIdentConfig: resolveIdentConfig,
+		repo:      repo,
+		readModel: readModel,
 	}
 }
 
 func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateNextIdentifierCmd) error {
-	configuration, err := h.resolveIdentConfig.ResolveIdentifierConfiguration(ctx, cmd.TargetBusinessObject, cmd.ObjectsToMatch)
+	configuration, err := h.readModel.ResolveIdentifierConfiguration(ctx, cmd.TargetBusinessObject, cmd.ObjectsToMatch)
 	if err != nil {
 		return errors.Wrap(err, "failed to handle generate identifier")
 	}
@@ -43,15 +47,15 @@ func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateN
 	return h.repo.UpdateIdentifierConfiguration(
 		ctx,
 		configuration.Id,
-		func(config *domain.IdentifierConfiguration) (*domain.IdentifierConfiguration, error) {
+		func(config *identifier_configuration.IdentifierConfiguration) (*identifier_configuration.IdentifierConfiguration, error) {
 			config.IncrementCounter()
 
-			identifier, err := domain.NewIdentifier(cmd.IdentifierId, config.Id(), config.Stringify())
+			identifierBO, err := identifier.New(cmd.IdentifierId, config.Id(), config.Stringify())
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to create identifier domain entity")
 			}
 
-			err = h.repo.CreateIdentifier(ctx, identifier)
+			err = h.repo.CreateIdentifier(ctx, identifierBO)
 			if err != nil {
 				return nil, errors.Wrap(err, "failed to create identifier")
 			}

@@ -8,6 +8,11 @@ import (
 )
 
 type Queries struct {
+	PagingAccountConfigurations    query.PagingAccountConfigurationsHandler
+	AccountConfigurationsByIds     query.AccountConfigurationsByIdsHandler
+	AccountConfigurationsByNumbers query.AccountConfigurationsByNumbersHandler
+	PeriodByTime                   query.PeriodByTimeHandler
+	PeriodsByIds                   query.PeriodsByIdsHandler
 }
 
 type Commands struct {
@@ -28,24 +33,25 @@ func NewApplication() Application {
 
 func (a *Application) Inject(
 	repo domain.Repository,
+	readModel query.AccountReadModel,
 	sobService service.SobService,
 	numberingService service.NumberingService,
-	periodByIdReadModel query.PeriodByIdReadModel,
-	allAccountConfigurationsReadModel query.AllAccountConfigurationsReadModel,
-	accountsInPeriodReadModel query.AccountsInPeriodReadModel,
-	superiorAccountsReadModel query.SuperiorAccountConfigurationsReadModel,
 ) {
-	a.Queries = Queries{}
+	a.Queries = Queries{
+		PagingAccountConfigurations:    query.NewPagingAccountConfigurationsHandler(readModel),
+		AccountConfigurationsByNumbers: query.NewAccountConfigurationsByNumbersHandler(readModel),
+		AccountConfigurationsByIds:     query.NewAccountConfigurationsByIdsHandler(readModel),
+		PeriodByTime:                   query.NewPeriodByTimeHandler(readModel),
+		PeriodsByIds:                   query.NewPeriodsByIdsHandler(readModel),
+	}
 	a.Commands = Commands{
 		InitialAccountConfigurations: command.NewInitialAccountConfigurationHandler(repo, sobService),
 		CreatePeriod: command.NewCreatePeriodHandler(
 			repo,
 			numberingService,
-			periodByIdReadModel,
-			allAccountConfigurationsReadModel,
-			accountsInPeriodReadModel,
+			readModel,
 		),
-		PostAccounts: command.NewPostAccountsHandler(repo, superiorAccountsReadModel),
+		PostAccounts: command.NewPostAccountsHandler(repo, readModel),
 		Migrate:      command.NewMigrationHandler(repo),
 	}
 }

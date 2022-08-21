@@ -2,9 +2,10 @@ package account_configuration
 
 import (
 	"fmt"
-	"github.com/pkg/errors"
 	"strconv"
 	"strings"
+
+	"github.com/pkg/errors"
 )
 
 func (ac AccountConfiguration) ComposeAccountNumber(codeLengths []int) (string, error) {

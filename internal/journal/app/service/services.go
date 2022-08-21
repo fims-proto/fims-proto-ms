@@ -2,8 +2,9 @@ package service
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
 	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
 
 	accountQuery "github/fims-proto/fims-proto-ms/internal/account/app/query"
 	userQuery "github/fims-proto/fims-proto-ms/internal/user/app/query"

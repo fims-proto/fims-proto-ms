@@ -2,12 +2,14 @@ package db
 
 import (
 	"context"
+	"strings"
+	"time"
+
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"gorm.io/gorm/clause"
-	"strings"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -141,7 +143,7 @@ func (r AccountPostgresRepository) AccountsInPeriod(ctx context.Context, sobId u
 	return accountDTOs, nil
 }
 
-func (r AccountPostgresRepository) tempPagingAllAccountConfiguration(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.AccountConfiguration], error) {
+func (r AccountPostgresRepository) PagingAccountConfigurations(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.AccountConfiguration], error) {
 	db := readDBFromCtx(ctx)
 
 	var accountConfigurationPOs []accountConfigurationPO
@@ -150,7 +152,7 @@ func (r AccountPostgresRepository) tempPagingAllAccountConfiguration(ctx context
 
 	var count int64
 	if err := db.Model(&accountConfigurationPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "count account configurations failed")
+		return nil, errors.Wrap(err, "failed to count account configurations")
 	}
 
 	if err := db.Scopes(data.Paging(pageable)).Find(&accountConfigurationPOs).Error; err != nil {
@@ -170,26 +172,15 @@ func (r AccountPostgresRepository) tempPagingAllAccountConfiguration(ctx context
 }
 
 func (r AccountPostgresRepository) AllAccountConfigurations(ctx context.Context, sobId uuid.UUID) ([]query.AccountConfiguration, error) {
-	configuration, err := r.tempPagingAllAccountConfiguration(ctx, sobId, data.Unpaged())
+	configuration, err := r.PagingAccountConfigurations(ctx, sobId, data.Unpaged())
 	if err != nil {
 		return nil, err
 	}
 	return configuration.Content(), nil
 }
 
-func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
-	db := readDBFromCtx(ctx)
-
-	po := periodPO{}
-	if err := db.First(&po, "id = ?", periodId).Error; err != nil {
-		return query.Period{}, errors.Wrap(err, "failed to find period by id")
-	}
-
-	return periodPOToDTO(po), nil
-}
-
 func (r AccountPostgresRepository) SuperiorAccountConfigurations(ctx context.Context, accountId uuid.UUID) ([]query.AccountConfiguration, error) {
-	var rawSql = `WITH RECURSIVE res AS (
+	rawSql := `WITH RECURSIVE res AS (
 		   SELECT *
 		   FROM account_configurations
 		   WHERE account_id = ?
@@ -221,6 +212,92 @@ func (r AccountPostgresRepository) SuperiorAccountConfigurations(ctx context.Con
 	}
 
 	return acDTOs, nil
+}
+
+func (r AccountPostgresRepository) AccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.AccountConfiguration, error) {
+	db := readDBFromCtx(ctx)
+
+	var configPOs []accountConfigurationPO
+	if err := db.Find(&configPOs, "WHERE account_id IN ?", accountIds).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to read account configuration")
+	}
+
+	var configDTOs []query.AccountConfiguration
+	for _, po := range configPOs {
+		dto, err := accountConfigurationPOToDTO(po)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to map account configuration")
+		}
+
+		configDTOs = append(configDTOs, dto)
+	}
+
+	return configDTOs, nil
+}
+
+func (r AccountPostgresRepository) AccountConfigurationsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.AccountConfiguration, error) {
+	db := readDBFromCtx(ctx)
+
+	var configPOs []accountConfigurationPO
+	if err := db.Find(&configPOs, "WHERE sob_id = ? AND account_number IN ?", sobId, accountNumbers).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to read account configuration")
+	}
+
+	var configDTOs []query.AccountConfiguration
+	for _, po := range configPOs {
+		dto, err := accountConfigurationPOToDTO(po)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to map account configuration")
+		}
+
+		configDTOs = append(configDTOs, dto)
+	}
+
+	return configDTOs, nil
+}
+
+func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
+	db := readDBFromCtx(ctx)
+
+	var periodPOs []periodPO
+	if err := db.
+		Where("sob_id = ? AND opening_time <= ? AND (ending_time > ? OR ending_time = ?)", sobId, timePoint, timePoint, time.Time{}).
+		Find(&periodPOs).Error; err != nil {
+		return query.Period{}, errors.Wrap(err, "find period by id failed")
+	}
+
+	if len(periodPOs) != 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(periodPOs))
+	}
+
+	return periodPOToDTO(periodPOs[0]), nil
+}
+
+func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
+	db := readDBFromCtx(ctx)
+
+	po := periodPO{}
+	if err := db.First(&po, "id = ?", periodId).Error; err != nil {
+		return query.Period{}, errors.Wrap(err, "failed to find period by id")
+	}
+
+	return periodPOToDTO(po), nil
+}
+
+func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
+	db := readDBFromCtx(ctx)
+
+	var periodPOs []periodPO
+	if err := db.Find(&periodPOs, "WHERE period_id IN ?", periodIds).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to read periods")
+	}
+
+	var periodDTOs []query.Period
+	for _, po := range periodPOs {
+		periodDTOs = append(periodDTOs, periodPOToDTO(po))
+	}
+
+	return periodDTOs, nil
 }
 
 func selectAccountVO(db *gorm.DB) *gorm.DB {

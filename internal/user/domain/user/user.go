@@ -1,4 +1,4 @@
-package domain
+package user
 
 import (
 	"encoding/json"
@@ -12,7 +12,7 @@ type User struct {
 	traits json.RawMessage
 }
 
-func NewUser(id uuid.UUID, traits json.RawMessage) (*User, error) {
+func New(id uuid.UUID, traits json.RawMessage) (*User, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("empty user id")
 	}
@@ -23,10 +23,10 @@ func NewUser(id uuid.UUID, traits json.RawMessage) (*User, error) {
 	}, nil
 }
 
-func (u User) Id() uuid.UUID {
+func (u *User) Id() uuid.UUID {
 	return u.id
 }
 
-func (u User) Traits() json.RawMessage {
+func (u *User) Traits() json.RawMessage {
 	return u.traits
 }

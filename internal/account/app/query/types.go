@@ -1,8 +1,9 @@
 package query
 
 import (
-	"github.com/shopspring/decimal"
 	"time"
+
+	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
 )

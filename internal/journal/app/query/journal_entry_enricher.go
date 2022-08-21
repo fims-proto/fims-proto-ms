@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/journal/app/service"

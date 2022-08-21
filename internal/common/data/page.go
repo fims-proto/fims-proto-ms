@@ -10,7 +10,7 @@ type Page[T any] interface {
 	Content() []T
 	Page() int
 	Size() int
-	Total() int
+	TotalPage() int
 	NumberOfElements() int
 }
 
@@ -55,7 +55,7 @@ func (p pageImplWrapper[T]) Size() int {
 	return p.pageImpl.Size
 }
 
-func (p pageImplWrapper[T]) Total() int {
+func (p pageImplWrapper[T]) TotalPage() int {
 	return p.pageImpl.Total
 }
 

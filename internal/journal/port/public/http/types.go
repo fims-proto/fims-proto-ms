@@ -11,42 +11,49 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
-type AuditVoucherRequest struct {
-	Auditor string `json:"auditor"`
-}
-
-type LineItemRequest struct {
-	Id            string          `json:"id"`
-	AccountNumber string          `json:"accountNumber"`
-	Summary       string          `json:"summary"`
-	Credit        decimal.Decimal `json:"credit"`
-	Debit         decimal.Decimal `json:"debit"`
-}
-
-type LineItemResponse struct {
-	Id            string          `json:"id"`
-	AccountId     string          `json:"accountId"`
-	AccountNumber string          `json:"accountNumber"`
-	Summary       string          `json:"summary"`
-	Credit        decimal.Decimal `json:"credit"`
-	Debit         decimal.Decimal `json:"debit"`
-}
-
-type CreateVoucherRequest struct {
+type CreateJournalEntryRequest struct {
+	HeaderText         string            `json:"headerText"`
 	AttachmentQuantity int               `json:"attachmentQuantity"`
 	Creator            string            `json:"creator"`
-	VoucherType        string            `json:"voucherType"`
+	JournalType        string            `json:"journalType"`
 	TransactionTime    time.Time         `json:"transactionTime"`
 	LineItems          []LineItemRequest `json:"lineItems"`
 }
 
-type ReviewVoucherRequest struct {
+type LineItemRequest struct {
+	ItemId        string          `json:"itemId"`
+	AccountNumber string          `json:"accountNumber"`
+	Text          string          `json:"text"`
+	Credit        decimal.Decimal `json:"credit"`
+	Debit         decimal.Decimal `json:"debit"`
+}
+
+type AuditJournalEntryRequest struct {
+	Auditor string `json:"auditor"`
+}
+
+type ReviewJournalEntryRequest struct {
 	Reviewer string `json:"reviewer"`
 }
 
-type UpdateVoucherRequest struct {
+type PostJournalEntryRequest struct {
+	Poster string `json:"poster"`
+}
+
+type UpdateJournalEntryRequest struct {
 	TransactionTime time.Time         `json:"transactionTime"`
 	LineItems       []LineItemRequest `json:"lineItems"`
+}
+
+type LineItemResponse struct {
+	ItemId        string          `json:"itemId"`
+	AccountId     string          `json:"accountId"`
+	AccountNumber string          `json:"accountNumber"`
+	Text          string          `json:"text"`
+	Credit        decimal.Decimal `json:"credit"`
+	Debit         decimal.Decimal `json:"debit"`
+	CreatedAt     time.Time       `json:"createdAt"`
+	UpdatedAt     time.Time       `json:"updatedAt"`
 }
 
 type UserResponse struct {
@@ -61,18 +68,21 @@ type PeriodResponse struct {
 	OpeningTime   time.Time `json:"openingTime"`
 	EndingTime    time.Time `json:"endingTime"`
 	IsClosed      bool      `json:"isClosed"`
+	CreatedAt     time.Time `json:"createdAt"`
+	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
-type VoucherResponse struct {
-	Id                 string `json:"id"`
-	SobId              string `json:"sobId"`
-	Period             PeriodResponse
-	Number             string             `json:"number"`
-	Type               string             `json:"type"`
+type JournalEntryResponse struct {
+	SobId              string             `json:"sobId"`
+	EntryId            string             `json:"entryId"`
+	Period             PeriodResponse     `json:"period"`
+	DocumentNumber     string             `json:"documentNumber"`
+	JournalType        string             `json:"journalType"`
 	AttachmentQuantity int                `json:"attachmentQuantity"`
-	Auditor            UserResponse       `json:"auditor"`
 	Creator            UserResponse       `json:"creator"`
+	Auditor            UserResponse       `json:"auditor"`
 	Reviewer           UserResponse       `json:"reviewer"`
+	Poster             UserResponse       `json:"poster"`
 	Credit             decimal.Decimal    `json:"credit"`
 	Debit              decimal.Decimal    `json:"debit"`
 	IsAudited          bool               `json:"isAudited"`

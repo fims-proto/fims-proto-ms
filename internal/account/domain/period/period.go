@@ -1,9 +1,10 @@
 package period
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"time"
 )
 
 type Period struct {

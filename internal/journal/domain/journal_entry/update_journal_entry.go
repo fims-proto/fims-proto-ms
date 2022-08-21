@@ -1,10 +1,11 @@
 package journal_entry
 
 import (
+	"time"
+
 	"github.com/pkg/errors"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/line_item"
-	"time"
 
 	"github.com/google/uuid"
 )

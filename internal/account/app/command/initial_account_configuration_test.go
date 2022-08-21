@@ -2,10 +2,11 @@ package command
 
 import (
 	"context"
+	"testing"
+
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
-	"testing"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 

@@ -3,6 +3,8 @@ package http
 import (
 	"net/http"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/app"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 
@@ -31,15 +33,22 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sobs/ [get]
 func (h Handler) ReadAllSobs(c *gin.Context) {
-	sobs, err := h.app.Queries.ReadSobs.HandleReadAll(c)
+	pageable, err := data.NewPageableFromRequest(c)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	sobsPage, err := h.app.Queries.PagingSobs.Handle(c, pageable)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	resp := make([]SobResponse, len(sobs))
-	for i, sob := range sobs {
-		resp[i] = mapFromSobQuery(sob)
+	sobResponses := make([]SobResponse, len(sobsPage.Content()))
+	for i, sob := range sobsPage.Content() {
+		sobResponses[i] = sobDTOToVO(sob)
 	}
+	resp, _ := data.NewPage(sobResponses, pageable, sobsPage.NumberOfElements())
 	c.JSON(http.StatusOK, resp)
 }
 
@@ -55,7 +64,7 @@ func (h Handler) ReadAllSobs(c *gin.Context) {
 // @Failure 500 {object} Error
 // @Router /sobs/{sobId} [get]
 func (h Handler) ReadSobById(c *gin.Context) {
-	sob, err := h.app.Queries.ReadSobs.HandleReadById(c, uuid.MustParse(c.Param("sobId")))
+	sob, err := h.app.Queries.SobById.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -64,7 +73,7 @@ func (h Handler) ReadSobById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, mapFromSobQuery(sob))
+	c.JSON(http.StatusOK, sobDTOToVO(sob))
 }
 
 // CreateSob godoc
@@ -90,12 +99,12 @@ func (h Handler) CreateSob(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	createdSob, err := h.app.Queries.ReadSobs.HandleReadById(c, cmd.SobId)
+	createdSob, err := h.app.Queries.SobById.Handle(c, cmd.SobId)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusCreated, mapFromSobQuery(createdSob))
+	c.JSON(http.StatusCreated, sobDTOToVO(createdSob))
 }
 
 // UpdateSob godoc
@@ -117,7 +126,7 @@ func (h Handler) UpdateSob(c *gin.Context) {
 		return
 	}
 	cmd := command.UpdateSobCmd{
-		Id:                 uuid.MustParse(c.Param("sobId")),
+		SobId:              uuid.MustParse(c.Param("sobId")),
 		Name:               req.Name,
 		AccountsCodeLength: req.AccountsCodeLength,
 	}

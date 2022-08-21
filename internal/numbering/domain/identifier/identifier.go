@@ -1,4 +1,4 @@
-package domain
+package identifier
 
 import (
 	"github.com/google/uuid"
@@ -11,13 +11,15 @@ type Identifier struct {
 	identifier                string
 }
 
-func NewIdentifier(id, identifierConfigurationId uuid.UUID, identifier string) (*Identifier, error) {
+func New(id, identifierConfigurationId uuid.UUID, identifier string) (*Identifier, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("id cannot be empty")
 	}
+
 	if identifierConfigurationId == uuid.Nil {
 		return nil, errors.New("identifier configuration id cannot be empty")
 	}
+
 	if identifier == "" {
 		return nil, errors.New("identifier cannot be empty")
 	}

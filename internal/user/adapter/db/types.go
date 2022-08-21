@@ -4,56 +4,70 @@ import (
 	"encoding/json"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
-	"github/fims-proto/fims-proto-ms/internal/user/domain"
 )
 
-type user struct {
+type userPO struct {
 	Id        uuid.UUID `gorm:"type:uuid"`
 	Traits    pgtype.JSONB
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
 }
 
-func marshal(u domain.User) (user, error) {
+// table names
+
+func (u userPO) TableName() string {
+	return "users"
+}
+
+// mappers
+
+func userBOToPO(bo user.User) (userPO, error) {
 	var traits pgtype.JSONB
-	if err := traits.Set(u.Traits()); err != nil {
-		return user{}, errors.Wrap(err, "convert json.RawMessage to pgtype.JSONB failed")
+	if err := traits.Set(bo.Traits()); err != nil {
+		return userPO{}, errors.Wrap(err, "convert json.RawMessage to pgtype.JSONB failed")
 	}
-	return user{
-		Id:     u.Id(),
+
+	return userPO{
+		Id:     bo.Id(),
 		Traits: traits,
 	}, nil
 }
 
-func unmarshalToDomain(dbu user) (*domain.User, error) {
+func userPOToBO(po userPO) (*user.User, error) {
 	var traits json.RawMessage
-	marshalJSON, err := dbu.Traits.MarshalJSON()
+	marshalJSON, err := po.Traits.MarshalJSON()
 	if err != nil {
 		return nil, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
 	}
+
 	if err = traits.UnmarshalJSON(marshalJSON); err != nil {
 		return nil, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
 	}
-	return domain.NewUser(dbu.Id, traits)
+
+	return user.New(po.Id, traits)
 }
 
-func unmarshalToQuery(dbu user) (query.User, error) {
+func userPOToDTO(po userPO) (query.User, error) {
 	var traits json.RawMessage
-	marshalJSON, err := dbu.Traits.MarshalJSON()
+	marshalJSON, err := po.Traits.MarshalJSON()
 	if err != nil {
 		return query.User{}, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
 	}
+
 	if err = traits.UnmarshalJSON(marshalJSON); err != nil {
 		return query.User{}, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
 	}
+
 	return query.User{
-		Id:        dbu.Id,
+		Id:        po.Id,
 		Traits:    traits,
-		CreatedAt: dbu.CreatedAt,
-		UpdatedAt: dbu.UpdatedAt,
+		CreatedAt: po.CreatedAt,
+		UpdatedAt: po.UpdatedAt,
 	}, nil
 }

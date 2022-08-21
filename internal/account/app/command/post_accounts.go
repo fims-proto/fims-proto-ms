@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -22,25 +23,25 @@ type PostAccountsRecordCmd struct {
 }
 
 type PostAccountsHandler struct {
-	repo                                   domain.Repository
-	superiorAccountConfigurationsReadModel query.SuperiorAccountConfigurationsReadModel
+	repo      domain.Repository
+	readModel query.AccountReadModel
 }
 
 func NewPostAccountsHandler(
 	repo domain.Repository,
-	superiorAccountConfigurationsReadModel query.SuperiorAccountConfigurationsReadModel,
+	readModel query.AccountReadModel,
 ) PostAccountsHandler {
 	if repo == nil {
 		panic("nil account repo")
 	}
 
-	if superiorAccountConfigurationsReadModel == nil {
-		panic("nil superior account read model")
+	if readModel == nil {
+		panic("nil read model")
 	}
 
 	return PostAccountsHandler{
-		repo:                                   repo,
-		superiorAccountConfigurationsReadModel: superiorAccountConfigurationsReadModel,
+		repo:      repo,
+		readModel: readModel,
 	}
 }
 
@@ -48,13 +49,13 @@ func (h PostAccountsHandler) Handle(ctx context.Context, cmd PostAccountsCmd) er
 	// all involved accounts
 	// prepare all ids and map
 	var accountIds []uuid.UUID
-	var accountsMap = make(map[uuid.UUID]PostAccountsRecordCmd)
+	accountsMap := make(map[uuid.UUID]PostAccountsRecordCmd)
 	for _, record := range cmd.Records {
 		accountIds = append(accountIds, record.AccountId)
 		accountsMap[record.AccountId] = record
 
 		//  read all superior accounts
-		superiorAccountConfigs, err := h.superiorAccountConfigurationsReadModel.SuperiorAccountConfigurations(ctx, record.AccountId)
+		superiorAccountConfigs, err := h.readModel.SuperiorAccountConfigurations(ctx, record.AccountId)
 		if err != nil {
 			return errors.Wrap(err, "failed to post accounts, cannot read superior accounts")
 		}

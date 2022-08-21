@@ -8,7 +8,8 @@ import (
 )
 
 type Queries struct {
-	ReadSobs query.ReadSobsHandler
+	PagingSobs query.PagingSobsHandler
+	SobById    query.SobByIdHandler
 }
 
 type Commands struct {
@@ -27,12 +28,13 @@ func NewApplication() Application {
 }
 
 func (a *Application) Inject(
-	readModel query.SobsReadModel,
 	repo domain.Repository,
+	readModel query.SobReadModel,
 	accountService service.AccountService,
 ) {
 	a.Queries = Queries{
-		ReadSobs: query.NewReadSobsHandler(readModel),
+		PagingSobs: query.NewPagingSobsHandler(readModel),
+		SobById:    query.NewSobByIdHandler(readModel),
 	}
 	a.Commands = Commands{
 		CreateSob: command.NewCreateSobHandler(repo, accountService),

@@ -18,13 +18,14 @@ func NewTenantPostgresRepository(db *gorm.DB) *TenantPostgresRepository {
 	if db == nil {
 		panic("nil db connection")
 	}
+
 	return &TenantPostgresRepository{db: db}
 }
 
-func (t TenantPostgresRepository) ReadById(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
-	dbTenant := tenant{}
+func (t TenantPostgresRepository) TenantById(ctx context.Context, tenantId uuid.UUID) (query.Tenant, error) {
+	po := tenantPO{}
 
-	if err := t.db.WithContext(ctx).First(&dbTenant, "id = ?", tenantId).Error; err != nil {
+	if err := t.db.WithContext(ctx).First(&po, "id = ?", tenantId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return query.Tenant{}, errors.Wrapf(err, "tenant %s does not exist", tenantId)
 		} else {
@@ -32,13 +33,13 @@ func (t TenantPostgresRepository) ReadById(ctx context.Context, tenantId uuid.UU
 		}
 	}
 
-	return unmarshalToQuery(dbTenant), nil
+	return tenantPOToDTO(po), nil
 }
 
-func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
-	dbTenant := tenant{}
+func (t TenantPostgresRepository) TenantBySubdomain(ctx context.Context, subdomain string) (query.Tenant, error) {
+	po := tenantPO{}
 
-	if err := t.db.WithContext(ctx).Where("subdomain = ?", subdomain).First(&dbTenant).Error; err != nil {
+	if err := t.db.WithContext(ctx).Where("subdomain = ?", subdomain).First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return query.Tenant{}, errors.Wrapf(err, "tenant %s does not exist", subdomain)
 		} else {
@@ -46,5 +47,5 @@ func (t TenantPostgresRepository) ReadBySubdomain(ctx context.Context, subdomain
 		}
 	}
 
-	return unmarshalToQuery(dbTenant), nil
+	return tenantPOToDTO(po), nil
 }

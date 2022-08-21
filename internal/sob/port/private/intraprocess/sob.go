@@ -21,5 +21,5 @@ func NewSobInterface(app *app.Application) SobInterface {
 }
 
 func (i SobInterface) ReadById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {
-	return i.app.Queries.ReadSobs.HandleReadById(ctx, sobId)
+	return i.app.Queries.SobById.Handle(ctx, sobId)
 }

@@ -27,15 +27,14 @@ func NewApplication() Application {
 
 func (a *Application) Inject(
 	repo domain.Repository,
-	identifierByIdReadModel query.IdentifierByIdReadModel,
-	resolveIdentConfigReadModel query.ResolveIdentifierConfigurationReadModel,
+	readModel query.NumberingReadModel,
 ) {
 	a.Queries = Queries{
-		IdentifierById: query.NewIdentifierByIdHandler(identifierByIdReadModel),
+		IdentifierById: query.NewIdentifierByIdHandler(readModel),
 	}
 	a.Commands = Commands{
 		CreateIdentifierConfiguration: command.NewCreateIdentifierConfigurationHandler(repo),
-		GenerateNextIdentifier:        command.NewGenerateNextIdentifierHandler(repo, resolveIdentConfigReadModel),
+		GenerateNextIdentifier:        command.NewGenerateNextIdentifierHandler(repo, readModel),
 		Migrate:                       command.NewMigrationHandler(repo),
 	}
 }

@@ -1,12 +1,13 @@
 package db
 
 import (
+	"time"
+
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"

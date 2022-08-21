@@ -2,23 +2,20 @@ package query
 
 import (
 	"context"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/journal/app/service"
 )
 
-type JournalEntryByIdReadModel interface {
-	JournalEntryById(ctx context.Context, entryId uuid.UUID) (JournalEntry, error)
-}
-
 type JournalEntryByIdHandler struct {
-	readModel      JournalEntryByIdReadModel
+	readModel      JournalReadModel
 	accountService service.AccountService
 	userService    service.UserService
 }
 
 func NewJournalEntryByIdHandler(
-	readModel JournalEntryByIdReadModel,
+	readModel JournalReadModel,
 	accountService service.AccountService,
 	userService service.UserService,
 ) JournalEntryByIdHandler {

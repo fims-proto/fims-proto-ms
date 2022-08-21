@@ -6,18 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type IdentifierByIdReadModel interface {
-	IdentifierById(ctx context.Context, id uuid.UUID) (Identifier, error)
-}
-
 type IdentifierByIdHandler struct {
-	readModel IdentifierByIdReadModel
+	readModel NumberingReadModel
 }
 
-func NewIdentifierByIdHandler(readModel IdentifierByIdReadModel) IdentifierByIdHandler {
+func NewIdentifierByIdHandler(readModel NumberingReadModel) IdentifierByIdHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
+
 	return IdentifierByIdHandler{readModel: readModel}
 }
 

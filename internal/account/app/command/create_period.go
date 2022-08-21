@@ -2,12 +2,13 @@ package command
 
 import (
 	"context"
+	"time"
+
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
-	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/service"
 
@@ -31,19 +32,15 @@ type CreatePeriodCmd struct {
 }
 
 type CreatePeriodHandler struct {
-	repo                              domain.Repository
-	numberingService                  service.NumberingService
-	periodByIdReadModel               query.PeriodByIdReadModel
-	allAccountConfigurationsReadModel query.AllAccountConfigurationsReadModel
-	accountsInPeriodReadModel         query.AccountsInPeriodReadModel
+	repo             domain.Repository
+	numberingService service.NumberingService
+	readModel        query.AccountReadModel
 }
 
 func NewCreatePeriodHandler(
 	repo domain.Repository,
 	numberingService service.NumberingService,
-	periodByIdReadModel query.PeriodByIdReadModel,
-	allAccountConfigurationsReadModel query.AllAccountConfigurationsReadModel,
-	accountsInPeriodReadModel query.AccountsInPeriodReadModel,
+	readModel query.AccountReadModel,
 ) CreatePeriodHandler {
 	if repo == nil {
 		panic("nil ledger repo")
@@ -53,24 +50,14 @@ func NewCreatePeriodHandler(
 		panic("nil numbering service")
 	}
 
-	if periodByIdReadModel == nil {
-		panic("nil period read model")
-	}
-
-	if allAccountConfigurationsReadModel == nil {
-		panic("nil period read model")
-	}
-
-	if accountsInPeriodReadModel == nil {
-		panic("nil period read model")
+	if readModel == nil {
+		panic("nil read model")
 	}
 
 	return CreatePeriodHandler{
-		repo:                              repo,
-		numberingService:                  numberingService,
-		periodByIdReadModel:               periodByIdReadModel,
-		allAccountConfigurationsReadModel: allAccountConfigurationsReadModel,
-		accountsInPeriodReadModel:         accountsInPeriodReadModel,
+		repo:             repo,
+		numberingService: numberingService,
+		readModel:        readModel,
 	}
 }
 
@@ -79,7 +66,7 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 	// otherwise using given opening time
 	openingTime := cmd.OpeningTime
 	if cmd.PreviousPeriodId != uuid.Nil {
-		previousPeriod, err := h.periodByIdReadModel.PeriodById(ctx, cmd.PreviousPeriodId)
+		previousPeriod, err := h.readModel.PeriodById(ctx, cmd.PreviousPeriodId)
 		if err != nil {
 			return errors.Wrap(err, "failed to read previous period")
 		}
@@ -98,14 +85,13 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 	}
 
 	return h.repo.CreatePeriod(ctx, p, func() error {
-
 		// create accounts for this period
 		if err = h.createAccountsForPeriod(ctx, *p); err != nil {
 			return errors.Wrap(err, "failed to create accounts for period")
 		}
 
-		// create numbering configuration for vouchers in this period
-		if err = h.numberingService.InitializeIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
+		// create numbering configuration for journal entries in this period
+		if err = h.numberingService.InitializeIdentifierConfigurationForJournal(ctx, cmd.PeriodId); err != nil {
 			return errors.Wrap(err, "failed to create numbering configuration for period")
 		}
 
@@ -115,7 +101,7 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 
 func (h CreatePeriodHandler) createAccountsForPeriod(ctx context.Context, period period.Period) error {
 	// read all account configurations
-	configurations, err := h.allAccountConfigurationsReadModel.AllAccountConfigurations(ctx, period.SobId())
+	configurations, err := h.readModel.AllAccountConfigurations(ctx, period.SobId())
 	if err != nil {
 		return errors.Wrap(err, "failed to create accounts for period")
 	}
@@ -123,7 +109,7 @@ func (h CreatePeriodHandler) createAccountsForPeriod(ctx context.Context, period
 	// read all accounts in previous period if applicable
 	accountsInPreviousPeriod := make(map[uuid.UUID]query.Account) // key: AccountId, value: account
 	if period.PreviousPeriodId() != uuid.Nil {
-		accounts, err := h.accountsInPeriodReadModel.AccountsInPeriod(ctx, period.SobId(), period.PreviousPeriodId())
+		accounts, err := h.readModel.AccountsInPeriod(ctx, period.SobId(), period.PreviousPeriodId())
 		if err != nil {
 			return errors.Wrap(err, "failed to read accounts in previous period")
 		}

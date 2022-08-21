@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
@@ -42,7 +44,7 @@ func NewCreateSobHandler(repo domain.Repository, accountService service.AccountS
 }
 
 func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
-	sob, err := domain.NewSob(
+	sobBO, err := sob.New(
 		cmd.SobId,
 		cmd.Name,
 		cmd.Description,
@@ -55,7 +57,7 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 		return errors.Wrap(err, "create sob failed")
 	}
 
-	if err = h.repo.CreateSob(ctx, sob); err != nil {
+	if err = h.repo.CreateSob(ctx, sobBO); err != nil {
 		return err
 	}
 
@@ -66,7 +68,7 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 	}
 
 	// create period
-	if err = h.accountService.InitializeFirstPeriod(ctx, cmd.SobId, sob.StartingPeriodYear(), sob.StartingPeriodMonth()); err != nil {
+	if err = h.accountService.InitializeFirstPeriod(ctx, cmd.SobId, sobBO.StartingPeriodYear(), sobBO.StartingPeriodMonth()); err != nil {
 		return errors.Wrapf(err, "failed to initialize first period")
 	}
 

@@ -1,9 +1,10 @@
 package db
 
 import (
+	"time"
+
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/line_item"
-	"time"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

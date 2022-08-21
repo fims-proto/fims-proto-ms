@@ -2,6 +2,7 @@ package journal_type
 
 import (
 	"fmt"
+
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 

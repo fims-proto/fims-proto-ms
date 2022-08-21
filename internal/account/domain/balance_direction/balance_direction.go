@@ -11,9 +11,10 @@ func (b BalanceDirection) String() string {
 }
 
 var (
-	Unknown = BalanceDirection{""}
-	Debit   = BalanceDirection{"debit"}
-	Credit  = BalanceDirection{"credit"}
+	Unknown    = BalanceDirection{""}
+	Debit      = BalanceDirection{"debit"}
+	Credit     = BalanceDirection{"credit"}
+	NotDefined = BalanceDirection{"not_defined"}
 )
 
 func FromString(s string) (BalanceDirection, error) {
@@ -22,6 +23,8 @@ func FromString(s string) (BalanceDirection, error) {
 		return Debit, nil
 	case Credit.slug:
 		return Credit, nil
+	case NotDefined.slug:
+		return NotDefined, nil
 	}
 
 	return Unknown, errors.Errorf("unknown balance direction: %s", s)

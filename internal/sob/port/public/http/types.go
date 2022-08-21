@@ -35,7 +35,7 @@ type SobResponse struct {
 	AccountsCodeLength  []int  `json:"accountsCodeLength"`
 }
 
-func mapFromSobQuery(q query.Sob) SobResponse {
+func sobDTOToVO(q query.Sob) SobResponse {
 	return SobResponse{
 		Id:                  q.Id.String(),
 		Name:                q.Name,

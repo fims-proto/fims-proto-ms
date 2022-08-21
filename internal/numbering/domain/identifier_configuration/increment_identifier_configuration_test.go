@@ -1,4 +1,4 @@
-package domain
+package identifier_configuration
 
 import (
 	"sync"
@@ -10,8 +10,8 @@ import (
 
 func TestIdentifierConfiguration_IncrementCounter(t *testing.T) {
 	matcher, _ := NewPropertyMatcher("test", "dummy")
-	config1, _ := NewIdentifierConfiguration(uuid.New(), "dummy", []PropertyMatcher{*matcher}, 0, "", "")
-	config2, _ := NewIdentifierConfiguration(uuid.New(), "dummy", []PropertyMatcher{*matcher}, 0, "", "")
+	config1, _ := New(uuid.New(), "dummy", []PropertyMatcher{*matcher}, 0, "", "")
+	config2, _ := New(uuid.New(), "dummy", []PropertyMatcher{*matcher}, 0, "", "")
 
 	var wg sync.WaitGroup
 	wg.Add(190)

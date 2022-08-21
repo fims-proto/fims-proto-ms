@@ -33,7 +33,7 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /user/{userId} [get]
 func (h Handler) ReadUserById(c *gin.Context) {
-	user, err := h.app.Queries.ReadUsers.HandleReadById(c, uuid.MustParse(c.Param("userId")))
+	user, err := h.app.Queries.UserById.Handle(c, uuid.MustParse(c.Param("userId")))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -42,7 +42,7 @@ func (h Handler) ReadUserById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, mapFromUserQuery(user))
+	c.JSON(http.StatusOK, userDTOToVO(user))
 }
 
 // UpdateUser godoc

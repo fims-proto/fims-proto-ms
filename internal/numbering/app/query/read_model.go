@@ -1,7 +1,13 @@
 package query
 
-import "context"
+import (
+	"context"
 
-type ResolveIdentifierConfigurationReadModel interface {
+	"github.com/google/uuid"
+)
+
+type NumberingReadModel interface {
 	ResolveIdentifierConfiguration(ctx context.Context, targetBusinessObject string, objectsToMatch map[string]string) (IdentifierConfiguration, error)
+
+	IdentifierById(ctx context.Context, id uuid.UUID) (Identifier, error)
 }

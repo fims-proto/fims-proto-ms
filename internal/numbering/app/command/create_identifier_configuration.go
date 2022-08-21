@@ -3,17 +3,19 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain"
 )
 
 type CreateIdentifierConfigurationCmd struct {
-	Id                   uuid.UUID
-	TargetBusinessObject string
-	PropertyMatchers     []struct{ Name, Value string }
-	Prefix               string
-	Suffix               string
+	IdentifierConfigurationId uuid.UUID
+	TargetBusinessObject      string
+	PropertyMatchers          []struct{ Name, Value string }
+	Prefix                    string
+	Suffix                    string
 }
 
 type CreateIdentifierConfigurationHandler struct {
@@ -29,16 +31,16 @@ func NewCreateIdentifierConfigurationHandler(repo domain.Repository) CreateIdent
 }
 
 func (h CreateIdentifierConfigurationHandler) Handle(ctx context.Context, cmd CreateIdentifierConfigurationCmd) error {
-	var propertyMatchers []domain.PropertyMatcher
+	var propertyMatchers []identifier_configuration.PropertyMatcher
 	for _, matcher := range cmd.PropertyMatchers {
-		propertyMatcher, err := domain.NewPropertyMatcher(matcher.Name, matcher.Value)
+		propertyMatcher, err := identifier_configuration.NewPropertyMatcher(matcher.Name, matcher.Value)
 		if err != nil {
 			return errors.Wrap(err, "failed to handle configuration identifier creation")
 		}
 		propertyMatchers = append(propertyMatchers, *propertyMatcher)
 	}
 
-	configuration, err := domain.NewIdentifierConfiguration(cmd.Id, cmd.TargetBusinessObject, propertyMatchers, 0, cmd.Prefix, cmd.Suffix)
+	configuration, err := identifier_configuration.New(cmd.IdentifierConfigurationId, cmd.TargetBusinessObject, propertyMatchers, 0, cmd.Prefix, cmd.Suffix)
 	if err != nil {
 		return errors.Wrap(err, "failed to handle configuration identifier creation")
 	}
