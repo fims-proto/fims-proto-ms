@@ -232,7 +232,7 @@ func (r AccountPostgresRepository) AccountConfigurationsByIds(ctx context.Contex
 	db := readDBFromCtx(ctx)
 
 	var configPOs []accountConfigurationPO
-	if err := db.Find(&configPOs, "WHERE account_id IN ?", accountIds).Error; err != nil {
+	if err := db.Find(&configPOs, "account_id IN ?", accountIds).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to read account configuration")
 	}
 
@@ -253,7 +253,7 @@ func (r AccountPostgresRepository) AccountConfigurationsByNumbers(ctx context.Co
 	db := readDBFromCtx(ctx)
 
 	var configPOs []accountConfigurationPO
-	if err := db.Find(&configPOs, "WHERE sob_id = ? AND account_number IN ?", sobId, accountNumbers).Error; err != nil {
+	if err := db.Find(&configPOs, "sob_id = ? AND account_number IN ?", sobId, accountNumbers).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to read account configuration")
 	}
 
@@ -326,7 +326,7 @@ func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds [
 	db := readDBFromCtx(ctx)
 
 	var periodPOs []periodPO
-	if err := db.Find(&periodPOs, "WHERE period_id IN ?", periodIds).Error; err != nil {
+	if err := db.Find(&periodPOs, "period_id IN ?", periodIds).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to read periods")
 	}
 

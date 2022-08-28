@@ -16,44 +16,44 @@ type Error struct {
 }
 
 type CreateJournalEntryRequest struct {
-	HeaderText         string            `json:"headerText,omitempty"`
-	AttachmentQuantity int               `json:"attachmentQuantity,omitempty"`
-	Creator            string            `json:"creator,omitempty"`
-	JournalType        string            `json:"journalType,omitempty"`
+	HeaderText         string            `json:"headerText"`
+	AttachmentQuantity int               `json:"attachmentQuantity"`
+	Creator            string            `json:"creator"`
+	JournalType        string            `json:"journalType"`
 	TransactionTime    time.Time         `json:"transactionTime"`
-	LineItems          []LineItemRequest `json:"lineItems,omitempty"`
+	LineItems          []LineItemRequest `json:"lineItems"`
 }
 
 type LineItemRequest struct {
-	ItemId        uuid.UUID       `json:"itemId,omitempty"`
-	AccountNumber string          `json:"accountNumber,omitempty"`
-	Text          string          `json:"text,omitempty"`
+	ItemId        uuid.UUID       `json:"itemId"`
+	AccountNumber string          `json:"accountNumber"`
+	Text          string          `json:"text"`
 	Credit        decimal.Decimal `json:"credit"`
 	Debit         decimal.Decimal `json:"debit"`
 }
 
 type AuditJournalEntryRequest struct {
-	Auditor uuid.UUID `json:"auditor,omitempty"`
+	Auditor uuid.UUID `json:"auditor"`
 }
 
 type ReviewJournalEntryRequest struct {
-	Reviewer uuid.UUID `json:"reviewer,omitempty"`
+	Reviewer uuid.UUID `json:"reviewer"`
 }
 
 type PostJournalEntryRequest struct {
-	Poster uuid.UUID `json:"poster,omitempty"`
+	Poster uuid.UUID `json:"poster"`
 }
 
 type UpdateJournalEntryRequest struct {
 	TransactionTime time.Time         `json:"transactionTime"`
-	LineItems       []LineItemRequest `json:"lineItems,omitempty"`
+	LineItems       []LineItemRequest `json:"lineItems"`
 }
 
 type LineItemResponse struct {
-	ItemId        uuid.UUID       `json:"itemId,omitempty"`
-	AccountId     uuid.UUID       `json:"accountId,omitempty"`
-	AccountNumber string          `json:"accountNumber,omitempty"`
-	Text          string          `json:"text,omitempty"`
+	ItemId        uuid.UUID       `json:"itemId"`
+	AccountId     uuid.UUID       `json:"accountId"`
+	AccountNumber string          `json:"accountNumber"`
+	Text          string          `json:"text"`
 	Credit        decimal.Decimal `json:"credit"`
 	Debit         decimal.Decimal `json:"debit"`
 	CreatedAt     time.Time       `json:"createdAt"`
@@ -61,39 +61,40 @@ type LineItemResponse struct {
 }
 
 type UserResponse struct {
-	Id     uuid.UUID `json:"id,omitempty"`
-	Traits any       `json:"traits,omitempty"`
+	Id     uuid.UUID `json:"id"`
+	Traits any       `json:"traits"`
 }
 
 type PeriodResponse struct {
-	Id            uuid.UUID `json:"id,omitempty"`
-	FinancialYear int       `json:"financialYear,omitempty"`
-	Number        int       `json:"number,omitempty"`
+	Id            uuid.UUID `json:"id"`
+	FinancialYear int       `json:"financialYear"`
+	Number        int       `json:"number"`
 	OpeningTime   time.Time `json:"openingTime"`
 	EndingTime    time.Time `json:"endingTime"`
-	IsClosed      bool      `json:"isClosed,omitempty"`
+	IsClosed      bool      `json:"isClosed"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
 type JournalEntryResponse struct {
-	SobId              uuid.UUID          `json:"sobId,omitempty"`
-	EntryId            uuid.UUID          `json:"entryId,omitempty"`
+	SobId              uuid.UUID          `json:"sobId"`
+	EntryId            uuid.UUID          `json:"entryId"`
 	Period             PeriodResponse     `json:"period"`
-	DocumentNumber     string             `json:"documentNumber,omitempty"`
-	JournalType        string             `json:"journalType,omitempty"`
-	AttachmentQuantity int                `json:"attachmentQuantity,omitempty"`
+	HeaderText         string             `json:"headerText"`
+	DocumentNumber     string             `json:"documentNumber"`
+	JournalType        string             `json:"journalType"`
+	AttachmentQuantity int                `json:"attachmentQuantity"`
 	Creator            UserResponse       `json:"creator"`
 	Auditor            UserResponse       `json:"auditor"`
 	Reviewer           UserResponse       `json:"reviewer"`
 	Poster             UserResponse       `json:"poster"`
 	Credit             decimal.Decimal    `json:"credit"`
 	Debit              decimal.Decimal    `json:"debit"`
-	IsAudited          bool               `json:"isAudited,omitempty"`
-	IsPosted           bool               `json:"isPosted,omitempty"`
-	IsReviewed         bool               `json:"isReviewed,omitempty"`
+	IsAudited          bool               `json:"isAudited"`
+	IsPosted           bool               `json:"isPosted"`
+	IsReviewed         bool               `json:"isReviewed"`
 	TransactionTime    time.Time          `json:"transactionTime"`
-	LineItems          []LineItemResponse `json:"lineItems,omitempty"`
+	LineItems          []LineItemResponse `json:"lineItems"`
 	CreatedAt          time.Time          `json:"createdAt"`
 	UpdatedAt          time.Time          `json:"updatedAt"`
 }
@@ -158,6 +159,7 @@ func JournalEntryDTOToVO(q query.JournalEntry) JournalEntryResponse {
 			CreatedAt:     q.Period.CreatedAt,
 			UpdatedAt:     q.Period.UpdatedAt,
 		},
+		HeaderText:         q.HeaderText,
 		JournalType:        q.JournalType,
 		DocumentNumber:     q.DocumentNumber,
 		AttachmentQuantity: q.AttachmentQuantity,

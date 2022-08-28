@@ -1160,6 +1160,9 @@ const docTemplate = `{
                 "entryId": {
                     "type": "string"
                 },
+                "headerText": {
+                    "type": "string"
+                },
                 "isAudited": {
                     "type": "boolean"
                 },
