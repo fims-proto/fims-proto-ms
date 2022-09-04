@@ -923,7 +923,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User ID",
+                        "description": "Updater ID",
                         "name": "userId",
                         "in": "path",
                         "required": true
@@ -961,7 +961,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "User ID",
+                        "description": "Updater ID",
                         "name": "userId",
                         "in": "path",
                         "required": true
@@ -1305,6 +1305,9 @@ const docTemplate = `{
                     }
                 },
                 "transactionTime": {
+                    "type": "string"
+                },
+                "updater": {
                     "type": "string"
                 }
             }

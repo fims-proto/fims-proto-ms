@@ -260,6 +260,7 @@ func (h Handler) UpdateJournalEntry(c *gin.Context) {
 		EntryId:         uuid.MustParse(c.Param("entryId")),
 		LineItems:       items,
 		TransactionTime: req.TransactionTime,
+		Updater:         req.Updater,
 	}
 	if err := h.app.Commands.UpdateJournalEntry.Handle(c, cmd); err != nil {
 		_ = c.Error(err)

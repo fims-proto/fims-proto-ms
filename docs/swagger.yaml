@@ -203,6 +203,8 @@ definitions:
         type: array
       transactionTime:
         type: string
+      updater:
+        type: string
     type: object
   http.UpdateSobRequest:
     properties:
@@ -912,7 +914,7 @@ paths:
       - application/json
       description: Show user by id
       parameters:
-      - description: User ID
+      - description: Updater ID
         in: path
         name: userId
         required: true
@@ -937,7 +939,7 @@ paths:
       - application/json
       description: Update user
       parameters:
-      - description: User ID
+      - description: Updater ID
         in: path
         name: userId
         required: true

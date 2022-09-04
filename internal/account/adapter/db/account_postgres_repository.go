@@ -196,12 +196,12 @@ func (r AccountPostgresRepository) AllAccountConfigurations(ctx context.Context,
 func (r AccountPostgresRepository) SuperiorAccountConfigurations(ctx context.Context, accountId uuid.UUID) ([]query.AccountConfiguration, error) {
 	rawSql := `WITH RECURSIVE res AS (
 		   SELECT *
-		   FROM account_configurations
+		   FROM a_account_configurations
 		   WHERE account_id = ?
 		   UNION
-		   SELECT account_configurations.*
+		   SELECT a_account_configurations.*
 		   FROM res
-		   JOIN account_configurations ON account_configurations.account_id = res.superior_account_id
+		   JOIN a_account_configurations ON a_account_configurations.account_id = res.superior_account_id
 		)
 		SELECT *
 		FROM res

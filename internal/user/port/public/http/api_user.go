@@ -27,7 +27,7 @@ func NewHandler(app *app.Application) Handler {
 // @Tags users
 // @Accept application/json
 // @Produce application/json
-// @Param userId path string true "User ID"
+// @Param userId path string true "Updater ID"
 // @Success 200 {object} UserResponse
 // @Failure 404
 // @Failure 500 {object} Error
@@ -51,7 +51,7 @@ func (h Handler) ReadUserById(c *gin.Context) {
 // @Tags users
 // @Accept application/json
 // @Produce application/json
-// @Param userId path string true "User ID"
+// @Param userId path string true "Updater ID"
 // @Param UpdateUserRequest body UpdateUserRequest true "Update user request"
 // @Success 204
 // @Failure 400 {object} Error

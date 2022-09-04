@@ -19,7 +19,7 @@ type UpdateJournalEntryCmd struct {
 	EntryId         uuid.UUID
 	LineItems       []LineItemCmd
 	TransactionTime time.Time
-	User            uuid.UUID
+	Updater         uuid.UUID
 }
 
 type UpdateJournalEntryHandler struct {
@@ -84,7 +84,7 @@ func (h UpdateJournalEntryHandler) Handle(ctx context.Context, cmd UpdateJournal
 					lineItems = append(lineItems, *lineItem)
 				}
 
-				if err := j.UpdateLineItems(lineItems, cmd.User); err != nil {
+				if err := j.UpdateLineItems(lineItems, cmd.Updater); err != nil {
 					return nil, err
 				}
 			}
@@ -99,7 +99,7 @@ func (h UpdateJournalEntryHandler) Handle(ctx context.Context, cmd UpdateJournal
 					return nil, errors.New("period is closed")
 				}
 
-				if err := j.UpdateTransactionTime(cmd.TransactionTime, period.PeriodId, cmd.User); err != nil {
+				if err := j.UpdateTransactionTime(cmd.TransactionTime, period.PeriodId, cmd.Updater); err != nil {
 					return nil, err
 				}
 			}
