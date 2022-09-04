@@ -5,8 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
+
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"gorm.io/gorm/clause"
@@ -27,32 +28,32 @@ func NewAccountPostgresRepository() *AccountPostgresRepository {
 func (r AccountPostgresRepository) Migrate(ctx context.Context) error {
 	db := readDBFromCtx(ctx)
 
-	return db.AutoMigrate(&accountConfigurationPO{}, &periodPO{}, &accountPO{})
+	return db.AutoMigrate(&accountPO{}, &periodPO{}, &ledgerPO{})
 }
 
-func (r AccountPostgresRepository) InitialAccountConfiguration(ctx context.Context, accountConfigurations []*account_configuration.AccountConfiguration) error {
-	if len(accountConfigurations) == 0 {
-		return errors.New("empty account configuration list")
+func (r AccountPostgresRepository) InitialAccounts(ctx context.Context, accounts []*account.Account) error {
+	if len(accounts) == 0 {
+		return errors.New("empty Account configuration list")
 	}
 
 	db := readDBFromCtx(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
 		// delete all within sob
-		if err := tx.Where("sob_id = ?", accountConfigurations[0].SobId()).Delete(&accountConfigurationPO{}).Error; err != nil {
+		if err := tx.Where("sob_id = ?", accounts[0].SobId()).Delete(&accountPO{}).Error; err != nil {
 			return errors.Wrap(err, "accounts deletion failed")
 		}
 
 		// create all
-		var accountConfigurationPOs []accountConfigurationPO
-		for _, accountConfigurationBO := range accountConfigurations {
-			po, err := accountConfigurationBOToPO(*accountConfigurationBO)
+		var accountPOs []accountPO
+		for _, accountBO := range accounts {
+			po, err := accountBOToPO(*accountBO)
 			if err != nil {
-				return errors.Wrap(err, "failed to map account from BO to PO")
+				return errors.Wrap(err, "failed to map Account from BO to PO")
 			}
-			accountConfigurationPOs = append(accountConfigurationPOs, po)
+			accountPOs = append(accountPOs, po)
 		}
-		return tx.CreateInBatches(&accountConfigurationPOs, 100).Error
+		return tx.CreateInBatches(&accountPOs, 100).Error
 	})
 }
 
@@ -71,48 +72,48 @@ func (r AccountPostgresRepository) CreatePeriod(ctx context.Context, period *per
 	})
 }
 
-func (r AccountPostgresRepository) CreateAccounts(ctx context.Context, accounts []*account.Account) error {
+func (r AccountPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
 	db := readDBFromCtx(ctx)
 
-	var accountPOs []accountPO
-	for _, bo := range accounts {
-		accountPOs = append(accountPOs, accountBOToPO(*bo))
+	var ledgerPOs []ledgerPO
+	for _, bo := range ledgers {
+		ledgerPOs = append(ledgerPOs, ledgerBOToPO(*bo))
 	}
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return tx.Omit("Configuration", "Period").CreateInBatches(&accountPOs, 100).Error
+		return tx.Omit("Account").CreateInBatches(&ledgerPOs, 500).Error
 	})
 }
 
-func (r AccountPostgresRepository) UpdateAccountsByPeriodAndIds(ctx context.Context, periodId uuid.UUID, accountIds []uuid.UUID, updateFn func(accounts []*account.Account) ([]*account.Account, error)) error {
+func (r AccountPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx context.Context, periodId uuid.UUID, accountIds []uuid.UUID, updateFn func(ledgers []*ledger.Ledger) ([]*ledger.Ledger, error)) error {
 	db := readDBFromCtx(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		var accountPOs []accountPO
+		var ledgerPOs []ledgerPO
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
 			Where("period_id = ? AND account_id IN ?", periodId, accountIds).
-			Preload("Configuration").
-			Find(&accountPOs).Error; err != nil {
+			Preload("Account").
+			Find(&ledgerPOs).Error; err != nil {
 			return err
 		}
 
-		var accountBOs []*account.Account
-		for _, vo := range accountPOs {
-			bo, err := accountPOToBO(vo)
+		var ledgerBOs []*ledger.Ledger
+		for _, po := range ledgerPOs {
+			bo, err := ledgerPOToBO(po)
 			if err != nil {
-				return errors.Wrap(err, "failed to map account")
+				return errors.Wrap(err, "failed to map ledger")
 			}
-			accountBOs = append(accountBOs, bo)
+			ledgerBOs = append(ledgerBOs, bo)
 		}
 
-		updatedAccounts, err := updateFn(accountBOs)
+		updatedLedgers, err := updateFn(ledgerBOs)
 		if err != nil {
-			return errors.Wrap(err, "failed to update account in transaction")
+			return errors.Wrap(err, "failed to update ledgers in transaction")
 		}
 
-		var updatedPOs []accountPO
-		for _, updatedAccount := range updatedAccounts {
-			updatedPOs = append(updatedPOs, accountBOToPO(*updatedAccount))
+		var updatedPOs []ledgerPO
+		for _, updatedLedger := range updatedLedgers {
+			updatedPOs = append(updatedPOs, ledgerBOToPO(*updatedLedger))
 		}
 
 		return tx.Save(&updatedPOs).Error
@@ -121,25 +122,61 @@ func (r AccountPostgresRepository) UpdateAccountsByPeriodAndIds(ctx context.Cont
 
 // queries
 
-func (r AccountPostgresRepository) PagingAccountsByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
+func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Ledger], error) {
 	db := readDBFromCtx(ctx)
 
-	var accountPOs []accountPO
+	var ledgerPOS []ledgerPO
 
 	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ? AND period_id = ?", sobId, periodId)
+
+	var count int64
+	if err := db.Model(&ledgerPO{}).Count(&count).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to count ledgers")
+	}
+
+	if err := db.Scopes(data.Paging(pageable)).Preload("Account").Find(&ledgerPOS).Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to find ledgers by sobId %s and periodId %s", sobId, periodId)
+	}
+
+	var ledgerDTOs []query.Ledger
+	for _, po := range ledgerPOS {
+		dto, err := ledgerPOToDTO(po)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to map ledger")
+		}
+		ledgerDTOs = append(ledgerDTOs, dto)
+	}
+
+	return data.NewPage(ledgerDTOs, pageable, int(count))
+}
+
+func (r AccountPostgresRepository) LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Ledger, error) {
+	ledgers, err := r.PagingLedgersByPeriod(ctx, sobId, periodId, data.Unpaged())
+	if err != nil {
+		return nil, err
+	}
+	return ledgers.Content(), nil
+}
+
+func (r AccountPostgresRepository) PagingAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
+	db := readDBFromCtx(ctx)
+
+	var accountPOS []accountPO
+
+	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ?", sobId)
 
 	var count int64
 	if err := db.Model(&accountPO{}).Count(&count).Error; err != nil {
 		return nil, errors.Wrap(err, "failed to count accounts")
 	}
 
-	if err := db.Scopes(data.Paging(pageable)).Preload("Configuration").Find(&accountPOs).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find accounts by sobId %s and periodId %s", sobId, periodId)
+	if err := db.Scopes(data.Paging(pageable)).Find(&accountPOS).Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to find accounts by sobId %s", sobId)
 	}
 
 	var accountDTOs []query.Account
-	for _, vo := range accountPOs {
-		dto, err := accountPOToDTO(vo)
+	for _, po := range accountPOS {
+		dto, err := accountPOToDTO(po)
 		if err != nil {
 			return nil, errors.Wrap(err, "failed to map account")
 		}
@@ -149,59 +186,23 @@ func (r AccountPostgresRepository) PagingAccountsByPeriod(ctx context.Context, s
 	return data.NewPage(accountDTOs, pageable, int(count))
 }
 
-func (r AccountPostgresRepository) AccountsInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Account, error) {
-	accounts, err := r.PagingAccountsByPeriod(ctx, sobId, periodId, data.Unpaged())
+func (r AccountPostgresRepository) AllAccounts(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
+	accounts, err := r.PagingAccounts(ctx, sobId, data.Unpaged())
 	if err != nil {
 		return nil, err
 	}
 	return accounts.Content(), nil
 }
 
-func (r AccountPostgresRepository) PagingAccountConfigurations(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.AccountConfiguration], error) {
-	db := readDBFromCtx(ctx)
-
-	var accountConfigurationPOs []accountConfigurationPO
-
-	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ?", sobId)
-
-	var count int64
-	if err := db.Model(&accountConfigurationPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to count account configurations")
-	}
-
-	if err := db.Scopes(data.Paging(pageable)).Find(&accountConfigurationPOs).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find account configurations by sobId %s", sobId)
-	}
-
-	var configDTOs []query.AccountConfiguration
-	for _, po := range accountConfigurationPOs {
-		dto, err := accountConfigurationPOToDTO(po)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map account configuration")
-		}
-		configDTOs = append(configDTOs, dto)
-	}
-
-	return data.NewPage(configDTOs, pageable, int(count))
-}
-
-func (r AccountPostgresRepository) AllAccountConfigurations(ctx context.Context, sobId uuid.UUID) ([]query.AccountConfiguration, error) {
-	configuration, err := r.PagingAccountConfigurations(ctx, sobId, data.Unpaged())
-	if err != nil {
-		return nil, err
-	}
-	return configuration.Content(), nil
-}
-
-func (r AccountPostgresRepository) SuperiorAccountConfigurations(ctx context.Context, accountId uuid.UUID) ([]query.AccountConfiguration, error) {
+func (r AccountPostgresRepository) SuperiorAccounts(ctx context.Context, accountId uuid.UUID) ([]query.Account, error) {
 	rawSql := `WITH RECURSIVE res AS (
 		   SELECT *
-		   FROM a_account_configurations
+		   FROM a_accounts
 		   WHERE account_id = ?
 		   UNION
-		   SELECT a_account_configurations.*
+		   SELECT a_accounts.*
 		   FROM res
-		   JOIN a_account_configurations ON a_account_configurations.account_id = res.superior_account_id
+		   JOIN a_accounts ON a_accounts.account_id = res.superior_account_id
 		)
 		SELECT *
 		FROM res
@@ -210,64 +211,64 @@ func (r AccountPostgresRepository) SuperiorAccountConfigurations(ctx context.Con
 
 	db := readDBFromCtx(ctx)
 
-	var accountConfigurations []accountConfigurationPO
-	if err := db.Raw(rawSql, accountId, accountId).Scan(&accountConfigurations).Error; err != nil {
+	var accountPOs []accountPO
+	if err := db.Raw(rawSql, accountId, accountId).Scan(&accountPOs).Error; err != nil {
 		return nil, err
 	}
 
-	var acDTOs []query.AccountConfiguration
-	for _, po := range accountConfigurations {
-		dto, err := accountConfigurationPOToDTO(po)
+	var accountDTOs []query.Account
+	for _, po := range accountPOs {
+		dto, err := accountPOToDTO(po)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to map account configuration")
+			return nil, errors.Wrap(err, "failed to map account")
 		}
 
-		acDTOs = append(acDTOs, dto)
+		accountDTOs = append(accountDTOs, dto)
 	}
 
-	return acDTOs, nil
+	return accountDTOs, nil
 }
 
-func (r AccountPostgresRepository) AccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.AccountConfiguration, error) {
+func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
 	db := readDBFromCtx(ctx)
 
-	var configPOs []accountConfigurationPO
-	if err := db.Find(&configPOs, "account_id IN ?", accountIds).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to read account configuration")
+	var accountPOs []accountPO
+	if err := db.Find(&accountPOs, "account_id IN ?", accountIds).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to read account")
 	}
 
-	var configDTOs []query.AccountConfiguration
-	for _, po := range configPOs {
-		dto, err := accountConfigurationPOToDTO(po)
+	var accountDTOs []query.Account
+	for _, po := range accountPOs {
+		dto, err := accountPOToDTO(po)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to map account configuration")
+			return nil, errors.Wrap(err, "failed to map Account configuration")
 		}
 
-		configDTOs = append(configDTOs, dto)
+		accountDTOs = append(accountDTOs, dto)
 	}
 
-	return configDTOs, nil
+	return accountDTOs, nil
 }
 
-func (r AccountPostgresRepository) AccountConfigurationsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.AccountConfiguration, error) {
+func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.Account, error) {
 	db := readDBFromCtx(ctx)
 
-	var configPOs []accountConfigurationPO
-	if err := db.Find(&configPOs, "sob_id = ? AND account_number IN ?", sobId, accountNumbers).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to read account configuration")
+	var accountPOs []accountPO
+	if err := db.Find(&accountPOs, "sob_id = ? AND account_number IN ?", sobId, accountNumbers).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to read account")
 	}
 
-	var configDTOs []query.AccountConfiguration
-	for _, po := range configPOs {
-		dto, err := accountConfigurationPOToDTO(po)
+	var accountDTOs []query.Account
+	for _, po := range accountPOs {
+		dto, err := accountPOToDTO(po)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to map account configuration")
+			return nil, errors.Wrap(err, "failed to map Account configuration")
 		}
 
-		configDTOs = append(configDTOs, dto)
+		accountDTOs = append(accountDTOs, dto)
 	}
 
-	return configDTOs, nil
+	return accountDTOs, nil
 }
 
 func (r AccountPostgresRepository) PagingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {

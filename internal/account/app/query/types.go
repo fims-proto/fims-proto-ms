@@ -8,9 +8,9 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccountConfiguration struct {
+type Account struct {
+	Id                uuid.UUID
 	SobId             uuid.UUID
-	AccountId         uuid.UUID
 	SuperiorAccountId uuid.UUID
 	Title             string
 	AccountNumber     string
@@ -35,7 +35,8 @@ type Period struct {
 	UpdatedAt        time.Time
 }
 
-type Account struct {
+type Ledger struct {
+	Id             uuid.UUID
 	SobId          uuid.UUID
 	AccountId      uuid.UUID
 	PeriodId       uuid.UUID
@@ -43,7 +44,7 @@ type Account struct {
 	EndingBalance  decimal.Decimal
 	PeriodDebit    decimal.Decimal
 	PeriodCredit   decimal.Decimal
-	Configuration  AccountConfiguration
+	Account        Account
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }

@@ -3,74 +3,106 @@ package account
 import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
+	"github/fims-proto/fims-proto-ms/internal/account/domain/account_type"
+	"github/fims-proto/fims-proto-ms/internal/account/domain/balance_direction"
 )
 
 type Account struct {
-	sobId          uuid.UUID
-	accountId      uuid.UUID
-	periodId       uuid.UUID
-	openingBalance decimal.Decimal
-	endingBalance  decimal.Decimal
-	periodDebit    decimal.Decimal
-	periodCredit   decimal.Decimal
-	configuration  account_configuration.AccountConfiguration
+	id                uuid.UUID
+	sobId             uuid.UUID
+	superiorAccountId uuid.UUID
+	title             string
+	accountNumber     string
+	numberHierarchy   []int
+	level             int
+	accountType       account_type.AccountType
+	balanceDirection  balance_direction.BalanceDirection
 }
 
-func New(sobId, accountId, periodId uuid.UUID, openingBalance, endingBalance, periodDebit, periodCredit decimal.Decimal, configuration account_configuration.AccountConfiguration) (*Account, error) {
-	if sobId == uuid.Nil {
-		return nil, errors.New("nil sob id")
-	}
-
-	if accountId == uuid.Nil {
+func New(id, sobId, superiorAccountId uuid.UUID, title, accountNumber string, numberHierarchy []int, level int, accountType, direction string) (*Account, error) {
+	if id == uuid.Nil {
 		return nil, errors.New("nil account id")
 	}
 
-	if periodId == uuid.Nil {
-		return nil, errors.New("nil period id")
+	if sobId == uuid.Nil {
+		return nil, errors.New("nil sob")
+	}
+
+	if superiorAccountId == uuid.Nil && len(numberHierarchy) > 1 {
+		return nil, errors.New("nil superior account id")
+	}
+
+	if title == "" {
+		return nil, errors.New("empty account title")
+	}
+
+	if accountNumber == "" {
+		return nil, errors.New("empty account number")
+	}
+
+	if level < 1 {
+		return nil, errors.Errorf("level %d must >= 1", level)
+	}
+
+	if level != len(numberHierarchy) {
+		return nil, errors.Errorf("level %d not match to number hierarchy %v", level, numberHierarchy)
+	}
+
+	at, err := account_type.FromString(accountType)
+	if err != nil {
+		return nil, err
+	}
+
+	bd, err := balance_direction.FromString(direction)
+	if err != nil {
+		return nil, err
 	}
 
 	return &Account{
-		sobId:          sobId,
-		accountId:      accountId,
-		periodId:       periodId,
-		openingBalance: openingBalance,
-		endingBalance:  endingBalance,
-		periodDebit:    periodDebit,
-		periodCredit:   periodCredit,
-		configuration:  configuration,
+		id:                id,
+		sobId:             sobId,
+		superiorAccountId: superiorAccountId,
+		title:             title,
+		accountNumber:     accountNumber,
+		numberHierarchy:   numberHierarchy,
+		level:             level,
+		accountType:       at,
+		balanceDirection:  bd,
 	}, nil
 }
 
-func (a *Account) SobId() uuid.UUID {
-	return a.sobId
+func (ac Account) Id() uuid.UUID {
+	return ac.id
 }
 
-func (a *Account) AccountId() uuid.UUID {
-	return a.accountId
+func (ac Account) SobId() uuid.UUID {
+	return ac.sobId
 }
 
-func (a *Account) PeriodId() uuid.UUID {
-	return a.periodId
+func (ac Account) SuperiorAccountId() uuid.UUID {
+	return ac.superiorAccountId
 }
 
-func (a *Account) OpeningBalance() decimal.Decimal {
-	return a.openingBalance
+func (ac Account) AccountNumber() string {
+	return ac.accountNumber
 }
 
-func (a *Account) EndingBalance() decimal.Decimal {
-	return a.endingBalance
+func (ac Account) NumberHierarchy() []int {
+	return ac.numberHierarchy
 }
 
-func (a *Account) PeriodDebit() decimal.Decimal {
-	return a.periodDebit
+func (ac Account) Title() string {
+	return ac.title
 }
 
-func (a *Account) PeriodCredit() decimal.Decimal {
-	return a.periodCredit
+func (ac Account) Level() int {
+	return ac.level
 }
 
-func (a *Account) Configuration() account_configuration.AccountConfiguration {
-	return a.configuration
+func (ac Account) AccountType() account_type.AccountType {
+	return ac.accountType
+}
+
+func (ac Account) BalanceDirection() balance_direction.BalanceDirection {
+	return ac.balanceDirection
 }

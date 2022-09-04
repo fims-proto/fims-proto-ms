@@ -7,18 +7,18 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 )
 
-type PagingAccountConfigurationsHandler struct {
+type PagingAccountsHandler struct {
 	readModel AccountReadModel
 }
 
-func NewPagingAccountConfigurationsHandler(readModel AccountReadModel) PagingAccountConfigurationsHandler {
+func NewPagingAccountsHandler(readModel AccountReadModel) PagingAccountsHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 
-	return PagingAccountConfigurationsHandler{readModel: readModel}
+	return PagingAccountsHandler{readModel: readModel}
 }
 
-func (h PagingAccountConfigurationsHandler) Handle(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[AccountConfiguration], error) {
-	return h.readModel.PagingAccountConfigurations(ctx, sobId, pageable)
+func (h PagingAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error) {
+	return h.readModel.PagingAccounts(ctx, sobId, pageable)
 }

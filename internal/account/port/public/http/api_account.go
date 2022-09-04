@@ -21,7 +21,7 @@ func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
-// ReadPagingAccountConfigurations godoc
+// ReadPagingAccounts godoc
 // @Text List all account configurations
 // @Description List all account configurations
 // @Tags accounts
@@ -33,16 +33,16 @@ func NewHandler(app *app.Application) Handler {
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
 // @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
-// @Success 200 {array} AccountConfigurationResponse
+// @Success 200 {array} AccountResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/account-configurations/ [get]
-func (h Handler) ReadPagingAccountConfigurations(c *gin.Context) {
+// @Router /sob/{sobId}/accounts/ [get]
+func (h Handler) ReadPagingAccounts(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
-		func(pageable data.Pageable) (data.Page[query.AccountConfiguration], error) {
-			return h.app.Queries.PagingAccountConfigurations.Handle(c, uuid.MustParse(c.Param("sobId")), pageable)
+		func(pageable data.Pageable) (data.Page[query.Account], error) {
+			return h.app.Queries.PagingAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), pageable)
 		},
-		accountConfigurationDTOToVO,
+		accountDTOToVO,
 	)
 }
 
@@ -59,16 +59,16 @@ func (h Handler) ReadPagingAccountConfigurations(c *gin.Context) {
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
 // @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
-// @Success 200 {array} AccountResponse
+// @Success 200 {array} LedgerResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/accounts/ [get]
 func (h Handler) ReadPagingAccountsByPeriod(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
-		func(pageable data.Pageable) (data.Page[query.Account], error) {
-			return h.app.Queries.PagingAccountsByPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("periodId")), pageable)
+		func(pageable data.Pageable) (data.Page[query.Ledger], error) {
+			return h.app.Queries.PagingLedgersByPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("periodId")), pageable)
 		},
-		accountDTOToVO,
+		ledgerDTOToVO,
 	)
 }
 
@@ -98,7 +98,7 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/account-configurations/", h.ReadPagingAccountConfigurations)
+	r.GET("/sob/:sobId/accounts/", h.ReadPagingAccounts)
 	r.GET("/sob/:sobId/periods/", h.ReadPagingPeriods)
 	r.GET("/sob/:sobId/period/:periodId/accounts/", h.ReadPagingAccountsByPeriod)
 }

@@ -9,7 +9,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
+	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/balance_direction"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/service"
@@ -19,7 +19,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
 )
 
-type accountConfigurationEntry struct {
+type accountEntry struct {
 	number           string
 	level            int
 	title            string
@@ -28,22 +28,22 @@ type accountConfigurationEntry struct {
 	balanceDirection string
 }
 
-type InitialAccountConfigurationHandler struct {
+type InitialAccountsHandler struct {
 	repo       domain.Repository
 	sobService service.SobService
 }
 
-func NewInitialAccountConfigurationHandler(repo domain.Repository, sobService service.SobService) InitialAccountConfigurationHandler {
+func NewInitialAccountHandler(repo domain.Repository, sobService service.SobService) InitialAccountsHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
-	return InitialAccountConfigurationHandler{
+	return InitialAccountsHandler{
 		repo:       repo,
 		sobService: sobService,
 	}
 }
 
-func (h InitialAccountConfigurationHandler) Handle(ctx context.Context, sobId uuid.UUID) error {
+func (h InitialAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID) error {
 	// 0. read sob
 	sob, err := h.sobService.ReadById(ctx, sobId)
 	if err != nil {
@@ -51,21 +51,21 @@ func (h InitialAccountConfigurationHandler) Handle(ctx context.Context, sobId uu
 	}
 
 	// 1. read CSV
-	accountConfigurationEntries, err := h.readFromCSV()
+	accountEntries, err := h.readFromCSV()
 	if err != nil {
 		return err
 	}
 
 	// 2. prepare accounts
-	preparedAccounts, err := h.prepareAccountConfigurations(sobId, accountConfigurationEntries, sob.AccountsCodeLength)
+	preparedAccounts, err := h.prepareAccounts(sobId, accountEntries, sob.AccountsCodeLength)
 	if err != nil {
 		return err
 	}
 
-	return h.repo.InitialAccountConfiguration(ctx, preparedAccounts)
+	return h.repo.InitialAccounts(ctx, preparedAccounts)
 }
 
-func (h InitialAccountConfigurationHandler) readFromCSV() ([]accountConfigurationEntry, error) {
+func (h InitialAccountsHandler) readFromCSV() ([]accountEntry, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get working directory")
@@ -84,7 +84,7 @@ func (h InitialAccountConfigurationHandler) readFromCSV() ([]accountConfiguratio
 		return nil, errors.Wrap(err, "could not read file")
 	}
 
-	var entries []accountConfigurationEntry
+	var entries []accountEntry
 	for {
 		line, err := csvReader.Read()
 		if err == io.EOF {
@@ -101,7 +101,7 @@ func (h InitialAccountConfigurationHandler) readFromCSV() ([]accountConfiguratio
 		if balanceDirection == "" {
 			balanceDirection = balance_direction.NotDefined.String()
 		}
-		entries = append(entries, accountConfigurationEntry{
+		entries = append(entries, accountEntry{
 			number:           line[1],
 			level:            level,
 			title:            line[3],
@@ -114,8 +114,8 @@ func (h InitialAccountConfigurationHandler) readFromCSV() ([]accountConfiguratio
 	return entries, nil
 }
 
-func (h InitialAccountConfigurationHandler) prepareAccountConfigurations(sobId uuid.UUID, accountEntries []accountConfigurationEntry, codeLengthLimits []int) ([]*account_configuration.AccountConfiguration, error) {
-	preparedAccounts := make(map[string]*account_configuration.AccountConfiguration)
+func (h InitialAccountsHandler) prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthLimits []int) ([]*account.Account, error) {
+	preparedAccounts := make(map[string]*account.Account)
 	for i := 0; i < len(codeLengthLimits); i++ {
 		for _, entry := range accountEntries {
 			if entry.level == i+1 {
@@ -132,20 +132,20 @@ func (h InitialAccountConfigurationHandler) prepareAccountConfigurations(sobId u
 					if !ok {
 						return nil, errors.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
 					}
-					superiorAccountId = superiorAccount.AccountId()
+					superiorAccountId = superiorAccount.Id()
 					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
-				account, err := account_configuration.New(sobId, uuid.New(), superiorAccountId, entry.title, entry.number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
+				domainAccount, err := account.New(uuid.New(), sobId, superiorAccountId, entry.title, entry.number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
 				if err != nil {
 					return nil, errors.Wrapf(err, "dataload failed on account %s", entry.number)
 				}
-				preparedAccounts[entry.number] = account
+				preparedAccounts[entry.number] = domainAccount
 			}
 		}
 	}
 
 	// to slice
-	accounts := make([]*account_configuration.AccountConfiguration, len(preparedAccounts))
+	accounts := make([]*account.Account, len(preparedAccounts))
 	i := 0
 	for _, v := range preparedAccounts {
 		accounts[i] = v

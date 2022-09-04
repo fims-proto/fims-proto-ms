@@ -4,8 +4,9 @@ import (
 	"context"
 	"testing"
 
+	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
+
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/service"
@@ -27,14 +28,14 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 	}
 	type args struct {
 		sobId            uuid.UUID
-		accountEntries   []accountConfigurationEntry
+		accountEntries   []accountEntry
 		codeLengthLimits []int
 	}
 	tests := []struct {
 		name    string
 		fields  fields
 		args    args
-		want    []*account_configuration.AccountConfiguration
+		want    []*account.Account
 		wantErr bool
 	}{
 		{
@@ -45,7 +46,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 			},
 			args: args{
 				sobId: sobId,
-				accountEntries: []accountConfigurationEntry{
+				accountEntries: []accountEntry{
 					{
 						number:           "1001",
 						level:            1,
@@ -113,56 +114,56 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 				},
 				codeLengthLimits: []int{4, 3, 3},
 			},
-			want:    []*account_configuration.AccountConfiguration{},
+			want:    []*account.Account{},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := InitialAccountConfigurationHandler{
+			h := InitialAccountsHandler{
 				repo:       tt.fields.repo,
 				sobService: tt.fields.sobService,
 			}
-			got, err := h.prepareAccountConfigurations(tt.args.sobId, tt.args.accountEntries, tt.args.codeLengthLimits)
+			got, err := h.prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.codeLengthLimits)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("prepareAccounts() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			assert.Equal(t, 8, len(got))
-			for _, accountConfiguration := range got {
-				switch accountConfiguration.Title() {
+			for _, account := range got {
+				switch account.Title() {
 				case "库存现金":
-					assert.Equal(t, "1001", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{1001}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 1, accountConfiguration.Level())
+					assert.Equal(t, "1001", account.AccountNumber())
+					assert.EqualValues(t, []int{1001}, account.NumberHierarchy())
+					assert.Equal(t, 1, account.Level())
 				case "银行存款":
-					assert.Equal(t, "1002", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{1002}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 1, accountConfiguration.Level())
+					assert.Equal(t, "1002", account.AccountNumber())
+					assert.EqualValues(t, []int{1002}, account.NumberHierarchy())
+					assert.Equal(t, 1, account.Level())
 				case "中国银行存款":
-					assert.Equal(t, "1002001", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{1002, 1}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 2, accountConfiguration.Level())
+					assert.Equal(t, "1002001", account.AccountNumber())
+					assert.EqualValues(t, []int{1002, 1}, account.NumberHierarchy())
+					assert.Equal(t, 2, account.Level())
 				case "招商银行存款":
-					assert.Equal(t, "1002002", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{1002, 2}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 2, accountConfiguration.Level())
+					assert.Equal(t, "1002002", account.AccountNumber())
+					assert.EqualValues(t, []int{1002, 2}, account.NumberHierarchy())
+					assert.Equal(t, 2, account.Level())
 				case "管理费用":
-					assert.Equal(t, "6602", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{6602}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 1, accountConfiguration.Level())
+					assert.Equal(t, "6602", account.AccountNumber())
+					assert.EqualValues(t, []int{6602}, account.NumberHierarchy())
+					assert.Equal(t, 1, account.Level())
 				case "办公费":
-					assert.Equal(t, "6602001", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{6602, 1}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 2, accountConfiguration.Level())
+					assert.Equal(t, "6602001", account.AccountNumber())
+					assert.EqualValues(t, []int{6602, 1}, account.NumberHierarchy())
+					assert.Equal(t, 2, account.Level())
 				case "办公室租金":
-					assert.Equal(t, "6602001001", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{6602, 1, 1}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 3, accountConfiguration.Level())
+					assert.Equal(t, "6602001001", account.AccountNumber())
+					assert.EqualValues(t, []int{6602, 1, 1}, account.NumberHierarchy())
+					assert.Equal(t, 3, account.Level())
 				case "文具费用":
-					assert.Equal(t, "6602001002", accountConfiguration.AccountNumber())
-					assert.EqualValues(t, []int{6602, 1, 2}, accountConfiguration.NumberHierarchy())
-					assert.Equal(t, 3, accountConfiguration.Level())
+					assert.Equal(t, "6602001002", account.AccountNumber())
+					assert.EqualValues(t, []int{6602, 1, 2}, account.NumberHierarchy())
+					assert.Equal(t, 3, account.Level())
 				}
 			}
 		})
@@ -171,7 +172,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 
 type mockRepo struct{}
 
-func (m mockRepo) InitialAccountConfiguration(context.Context, []*account_configuration.AccountConfiguration) error {
+func (m mockRepo) InitialAccounts(context.Context, []*account.Account) error {
 	panic("implement me")
 }
 
@@ -179,11 +180,11 @@ func (m mockRepo) CreatePeriod(context.Context, *period.Period, func() error) er
 	panic("implement me")
 }
 
-func (m mockRepo) CreateAccounts(context.Context, []*account.Account) error {
+func (m mockRepo) CreateLedgers(context.Context, []*ledger.Ledger) error {
 	panic("implement me")
 }
 
-func (m mockRepo) UpdateAccountsByPeriodAndIds(context.Context, uuid.UUID, []uuid.UUID, func(accounts []*account.Account) ([]*account.Account, error)) error {
+func (m mockRepo) UpdateLedgersByPeriodAndAccountIds(context.Context, uuid.UUID, []uuid.UUID, func(accounts []*ledger.Ledger) ([]*ledger.Ledger, error)) error {
 	panic("implement me")
 }
 

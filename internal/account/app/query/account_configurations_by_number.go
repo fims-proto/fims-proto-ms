@@ -6,18 +6,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type AccountConfigurationsByNumbersHandler struct {
+type AccountsByNumbersHandler struct {
 	readModel AccountReadModel
 }
 
-func NewAccountConfigurationsByNumbersHandler(readModel AccountReadModel) AccountConfigurationsByNumbersHandler {
+func NewAccountsByNumbersHandler(readModel AccountReadModel) AccountsByNumbersHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 
-	return AccountConfigurationsByNumbersHandler{readModel: readModel}
+	return AccountsByNumbersHandler{readModel: readModel}
 }
 
-func (h AccountConfigurationsByNumbersHandler) Handle(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]AccountConfiguration, error) {
-	return h.readModel.AccountConfigurationsByNumbers(ctx, sobId, accountNumbers)
+func (h AccountsByNumbersHandler) Handle(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]Account, error) {
+	return h.readModel.AccountsByNumbers(ctx, sobId, accountNumbers)
 }

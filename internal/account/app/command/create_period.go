@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
+
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/service"
@@ -79,14 +80,14 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 		openingTime = previousPeriod.EndingTime
 	}
 
-	p, err := period.New(cmd.SobId, cmd.PeriodId, cmd.PreviousPeriodId, cmd.FinancialYear, cmd.Number, openingTime, cmd.EndingTime, false)
+	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.PreviousPeriodId, cmd.FinancialYear, cmd.Number, openingTime, cmd.EndingTime, false)
 	if err != nil {
 		return errors.Wrap(err, "failed to create period domain model")
 	}
 
 	return h.repo.CreatePeriod(ctx, p, func() error {
 		// create accounts for this period
-		if err = h.createAccountsForPeriod(ctx, *p); err != nil {
+		if err = h.createLedgersForPeriod(ctx, *p); err != nil {
 			return errors.Wrap(err, "failed to create accounts for period")
 		}
 
@@ -99,17 +100,17 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 	})
 }
 
-func (h CreatePeriodHandler) createAccountsForPeriod(ctx context.Context, period period.Period) error {
+func (h CreatePeriodHandler) createLedgersForPeriod(ctx context.Context, period period.Period) error {
 	// read all account configurations
-	configurations, err := h.readModel.AllAccountConfigurations(ctx, period.SobId())
+	configurations, err := h.readModel.AllAccounts(ctx, period.SobId())
 	if err != nil {
 		return errors.Wrap(err, "failed to create accounts for period")
 	}
 
 	// read all accounts in previous period if applicable
-	accountsInPreviousPeriod := make(map[uuid.UUID]query.Account) // key: AccountId, value: account
+	accountsInPreviousPeriod := make(map[uuid.UUID]query.Ledger) // key: Id, value: account
 	if period.PreviousPeriodId() != uuid.Nil {
-		accounts, err := h.readModel.AccountsInPeriod(ctx, period.SobId(), period.PreviousPeriodId())
+		accounts, err := h.readModel.LedgersInPeriod(ctx, period.SobId(), period.PreviousPeriodId())
 		if err != nil {
 			return errors.Wrap(err, "failed to read accounts in previous period")
 		}
@@ -120,35 +121,26 @@ func (h CreatePeriodHandler) createAccountsForPeriod(ctx context.Context, period
 	}
 
 	// create accounts based on configuration
-	var accounts []*account.Account
+	var ledgers []*ledger.Ledger
 	for _, configuration := range configurations {
 		// move previous ending balance to opening balance
 		openingBalance := decimal.Zero
-		previousAccount, ok := accountsInPreviousPeriod[configuration.AccountId]
+		previousAccount, ok := accountsInPreviousPeriod[configuration.Id]
 		if ok {
 			openingBalance = previousAccount.EndingBalance
 		}
 
-		accountConfiguration, err := account_configuration.New(
-			configuration.SobId,
-			configuration.AccountId,
-			configuration.SuperiorAccountId,
-			configuration.Title,
-			configuration.AccountNumber,
-			configuration.NumberHierarchy,
-			configuration.Level,
-			configuration.AccountType,
-			configuration.BalanceDirection,
-		)
+		accountConfiguration, err := account.New(configuration.Id, configuration.SobId, configuration.SuperiorAccountId, configuration.Title, configuration.AccountNumber, configuration.NumberHierarchy, configuration.Level, configuration.AccountType, configuration.BalanceDirection)
 		if err != nil {
 			// should not happen
 			return errors.Wrap(err, "should not happen, failed to create account configuration")
 		}
 
-		domainAccount, err := account.New(
+		domainLedger, err := ledger.New(
+			uuid.New(),
 			configuration.SobId,
-			configuration.AccountId,
-			period.PeriodId(),
+			configuration.Id,
+			period.Id(),
 			openingBalance,
 			decimal.Zero,
 			decimal.Zero,
@@ -159,8 +151,8 @@ func (h CreatePeriodHandler) createAccountsForPeriod(ctx context.Context, period
 			return errors.Wrap(err, "should not happen, failed to create account")
 		}
 
-		accounts = append(accounts, domainAccount)
+		ledgers = append(ledgers, domainLedger)
 	}
 
-	return h.repo.CreateAccounts(ctx, accounts)
+	return h.repo.CreateLedgers(ctx, ledgers)
 }

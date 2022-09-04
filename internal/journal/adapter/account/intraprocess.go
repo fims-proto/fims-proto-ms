@@ -31,19 +31,19 @@ func (i IntraProcessAdapter) ValidateExistenceAndGetId(ctx context.Context, sobI
 	}
 	accountConfigsMap := make(map[string]uuid.UUID)
 	for _, config := range accountConfigurations {
-		accountConfigsMap[config.AccountNumber] = config.AccountId
+		accountConfigsMap[config.AccountNumber] = config.Id
 	}
 	return accountConfigsMap, nil
 }
 
-func (i IntraProcessAdapter) ReadAccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.AccountConfiguration, error) {
+func (i IntraProcessAdapter) ReadAccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
 	accountConfigurations, err := i.accountInterface.ReadAccountConfigurationsByIds(ctx, accountIds)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read account configuration")
 	}
-	accountConfigsMap := make(map[uuid.UUID]query.AccountConfiguration)
+	accountConfigsMap := make(map[uuid.UUID]query.Account)
 	for _, config := range accountConfigurations {
-		accountConfigsMap[config.AccountId] = config
+		accountConfigsMap[config.Id] = config
 	}
 	return accountConfigsMap, nil
 }

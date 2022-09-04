@@ -10,56 +10,57 @@ import (
 )
 
 type Error struct {
-	Message string `json:"message,omitempty"`
-	Slug    string `json:"slug,omitempty"`
+	Message string `json:"message"`
+	Slug    string `json:"slug"`
 }
 
-type AccountConfigurationResponse struct {
-	SobId             uuid.UUID `json:"sobId,omitempty"`
-	AccountId         uuid.UUID `json:"accountId,omitempty"`
-	SuperiorAccountId uuid.UUID `json:"superiorAccountId,omitempty"`
-	Title             string    `json:"title,omitempty"`
-	AccountNumber     string    `json:"accountNumber,omitempty"`
-	NumberHierarchy   []int     `json:"numberHierarchy,omitempty"`
-	Level             int       `json:"level,omitempty"`
-	AccountType       string    `json:"accountType,omitempty"`
-	BalanceDirection  string    `json:"balanceDirection,omitempty"`
+type AccountResponse struct {
+	Id                uuid.UUID `json:"id"`
+	SobId             uuid.UUID `json:"sobId"`
+	SuperiorAccountId uuid.UUID `json:"superiorAccountId"`
+	Title             string    `json:"title"`
+	AccountNumber     string    `json:"accountNumber"`
+	NumberHierarchy   []int     `json:"numberHierarchy"`
+	Level             int       `json:"level"`
+	AccountType       string    `json:"accountType"`
+	BalanceDirection  string    `json:"balanceDirection"`
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
 }
 
 type PeriodResponse struct {
-	SobId            uuid.UUID `json:"sobId,omitempty"`
-	PeriodId         uuid.UUID `json:"periodId,omitempty"`
-	PreviousPeriodId uuid.UUID `json:"previousPeriodId,omitempty"`
-	FinancialYear    int       `json:"financialYear,omitempty"`
-	Number           int       `json:"number,omitempty"`
+	Id               uuid.UUID `json:"id"`
+	SobId            uuid.UUID `json:"sobId"`
+	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
+	FinancialYear    int       `json:"financialYear"`
+	Number           int       `json:"number"`
 	OpeningTime      time.Time `json:"openingTime"`
 	EndingTime       time.Time `json:"endingTime"`
-	IsClosed         bool      `json:"isClosed,omitempty"`
+	IsClosed         bool      `json:"isClosed"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
 
-type AccountResponse struct {
-	SobId          uuid.UUID                    `json:"sobId,omitempty"`
-	AccountId      uuid.UUID                    `json:"accountId,omitempty"`
-	PeriodId       uuid.UUID                    `json:"periodId"`
-	OpeningBalance decimal.Decimal              `json:"openingBalance"`
-	EndingBalance  decimal.Decimal              `json:"endingBalance"`
-	PeriodDebit    decimal.Decimal              `json:"periodDebit"`
-	PeriodCredit   decimal.Decimal              `json:"periodCredit"`
-	Configuration  AccountConfigurationResponse `json:"configuration"`
-	CreatedAt      time.Time                    `json:"createdAt"`
-	UpdatedAt      time.Time                    `json:"updatedAt"`
+type LedgerResponse struct {
+	Id             uuid.UUID       `json:"id"`
+	SobId          uuid.UUID       `json:"sobId"`
+	AccountId      uuid.UUID       `json:"accountId"`
+	PeriodId       uuid.UUID       `json:"periodId"`
+	OpeningBalance decimal.Decimal `json:"openingBalance"`
+	EndingBalance  decimal.Decimal `json:"endingBalance"`
+	PeriodDebit    decimal.Decimal `json:"periodDebit"`
+	PeriodCredit   decimal.Decimal `json:"periodCredit"`
+	Account        AccountResponse `json:"account"`
+	CreatedAt      time.Time       `json:"createdAt"`
+	UpdatedAt      time.Time       `json:"updatedAt"`
 }
 
 // mapper
 
-func accountConfigurationDTOToVO(dto query.AccountConfiguration) AccountConfigurationResponse {
-	return AccountConfigurationResponse{
+func accountDTOToVO(dto query.Account) AccountResponse {
+	return AccountResponse{
+		Id:                dto.Id,
 		SobId:             dto.SobId,
-		AccountId:         dto.AccountId,
 		SuperiorAccountId: dto.SuperiorAccountId,
 		Title:             dto.Title,
 		AccountNumber:     dto.AccountNumber,
@@ -74,8 +75,8 @@ func accountConfigurationDTOToVO(dto query.AccountConfiguration) AccountConfigur
 
 func periodDTOToVO(dto query.Period) PeriodResponse {
 	return PeriodResponse{
+		Id:               dto.PeriodId,
 		SobId:            dto.SobId,
-		PeriodId:         dto.PeriodId,
 		PreviousPeriodId: dto.PreviousPeriodId,
 		FinancialYear:    dto.FinancialYear,
 		Number:           dto.Number,
@@ -87,8 +88,9 @@ func periodDTOToVO(dto query.Period) PeriodResponse {
 	}
 }
 
-func accountDTOToVO(dto query.Account) AccountResponse {
-	return AccountResponse{
+func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
+	return LedgerResponse{
+		Id:             dto.Id,
 		SobId:          dto.SobId,
 		AccountId:      dto.AccountId,
 		PeriodId:       dto.PeriodId,
@@ -96,7 +98,7 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		EndingBalance:  dto.EndingBalance,
 		PeriodDebit:    dto.PeriodDebit,
 		PeriodCredit:   dto.PeriodCredit,
-		Configuration:  accountConfigurationDTOToVO(dto.Configuration),
+		Account:        accountDTOToVO(dto.Account),
 		CreatedAt:      dto.CreatedAt,
 		UpdatedAt:      dto.UpdatedAt,
 	}

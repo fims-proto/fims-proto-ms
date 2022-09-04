@@ -21,15 +21,15 @@ func NewAccountInterface(app *app.Application) AccountInterface {
 }
 
 func (i AccountInterface) InitializeAccountConfigurations(ctx context.Context, sobId uuid.UUID) error {
-	return i.app.Commands.InitialAccountConfigurations.Handle(ctx, sobId)
+	return i.app.Commands.InitialAccounts.Handle(ctx, sobId)
 }
 
-func (i AccountInterface) ReadAccountConfigurationsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.AccountConfiguration, error) {
-	return i.app.Queries.AccountConfigurationsByNumbers.Handle(ctx, sobId, accountNumbers)
+func (i AccountInterface) ReadAccountConfigurationsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.Account, error) {
+	return i.app.Queries.AccountsByNumbers.Handle(ctx, sobId, accountNumbers)
 }
 
-func (i AccountInterface) ReadAccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.AccountConfiguration, error) {
-	return i.app.Queries.AccountConfigurationsByIds.Handle(ctx, accountIds)
+func (i AccountInterface) ReadAccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
+	return i.app.Queries.AccountsByIds.Handle(ctx, accountIds)
 }
 
 func (i AccountInterface) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {

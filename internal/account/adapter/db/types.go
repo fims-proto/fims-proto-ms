@@ -3,10 +3,11 @@ package db
 import (
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
+
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account_configuration"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
 
 	"github.com/google/uuid"
@@ -14,12 +15,12 @@ import (
 	"github.com/pkg/errors"
 )
 
-type accountConfigurationPO struct {
-	SobId             uuid.UUID `gorm:"type:uuid;uniqueIndex:accountConfigurations_sobid_number_key"`
-	AccountId         uuid.UUID `gorm:"type:uuid;primaryKey"`
+type accountPO struct {
+	Id                uuid.UUID `gorm:"type:uuid"`
+	SobId             uuid.UUID `gorm:"type:uuid;uniqueIndex:accounts_sobid_number_key"`
 	SuperiorAccountId uuid.UUID `gorm:"type:uuid"`
 	Title             string
-	AccountNumber     string           `gorm:"uniqueIndex:accountConfigurations_sobid_number_key"`
+	AccountNumber     string           `gorm:"uniqueIndex:accounts_sobid_number_key"`
 	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[]"`
 	Level             int
 	AccountType       string
@@ -29,8 +30,8 @@ type accountConfigurationPO struct {
 }
 
 type periodPO struct {
+	Id               uuid.UUID `gorm:"type:uuid"`
 	SobId            uuid.UUID `gorm:"type:uuid;uniqueIndex:periods_sobid_year_number_key"`
-	PeriodId         uuid.UUID `gorm:"type:uuid;primaryKey"`
 	PreviousPeriodId uuid.UUID `gorm:"type:uuid"`
 	FinancialYear    int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
 	Number           int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
@@ -41,7 +42,8 @@ type periodPO struct {
 	UpdatedAt        time.Time
 }
 
-type accountPO struct {
+type ledgerPO struct {
+	Id             uuid.UUID `gorm:"type:uuid"`
 	SobId          uuid.UUID `gorm:"type:uuid"`
 	AccountId      uuid.UUID `gorm:"type:uuid;primaryKey"`
 	PeriodId       uuid.UUID `gorm:"type:uuid;primaryKey"`
@@ -49,8 +51,8 @@ type accountPO struct {
 	EndingBalance  decimal.Decimal
 	PeriodDebit    decimal.Decimal
 	PeriodCredit   decimal.Decimal
-	Configuration  accountConfigurationPO `gorm:"foreignKey:AccountId"`
-	CreatedAt      time.Time              `gorm:"<-:create"`
+	Account        accountPO `gorm:"foreignKey:Id"`
+	CreatedAt      time.Time `gorm:"<-:create"`
 	UpdatedAt      time.Time
 }
 
@@ -60,24 +62,24 @@ func (a accountPO) TableName() string {
 	return "a_accounts"
 }
 
-func (a accountConfigurationPO) TableName() string {
-	return "a_account_configurations"
-}
-
 func (p periodPO) TableName() string {
 	return "a_periods"
 }
 
+func (a ledgerPO) TableName() string {
+	return "a_ledgers"
+}
+
 // mappers
 
-func accountConfigurationBOToPO(bo account_configuration.AccountConfiguration) (accountConfigurationPO, error) {
+func accountBOToPO(bo account.Account) (accountPO, error) {
 	var int4array pgtype.Int4Array
 	if err := int4array.Set(bo.NumberHierarchy()); err != nil {
-		return accountConfigurationPO{}, errors.Wrap(err, "convert []int to Int4Array failed")
+		return accountPO{}, errors.Wrap(err, "convert []int to Int4Array failed")
 	}
-	return accountConfigurationPO{
+	return accountPO{
+		Id:                bo.Id(),
 		SobId:             bo.SobId(),
-		AccountId:         bo.AccountId(),
 		SuperiorAccountId: bo.SuperiorAccountId(),
 		Title:             bo.Title(),
 		AccountNumber:     bo.AccountNumber(),
@@ -88,34 +90,24 @@ func accountConfigurationBOToPO(bo account_configuration.AccountConfiguration) (
 	}, nil
 }
 
-func accountConfigurationPOToBO(po accountConfigurationPO) (*account_configuration.AccountConfiguration, error) {
+func accountPOToBO(po accountPO) (*account.Account, error) {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
 		return nil, errors.Wrap(err, "assign Int4Array to []int failed")
 	}
 
-	return account_configuration.New(
-		po.SobId,
-		po.AccountId,
-		po.SuperiorAccountId,
-		po.Title,
-		po.AccountNumber,
-		numberHierarchy,
-		po.Level,
-		po.AccountType,
-		po.BalanceDirection,
-	)
+	return account.New(po.Id, po.SobId, po.SuperiorAccountId, po.Title, po.AccountNumber, numberHierarchy, po.Level, po.AccountType, po.BalanceDirection)
 }
 
-func accountConfigurationPOToDTO(po accountConfigurationPO) (query.AccountConfiguration, error) {
+func accountPOToDTO(po accountPO) (query.Account, error) {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
-		return query.AccountConfiguration{}, errors.Wrap(err, "assign Int4Array to []int failed")
+		return query.Account{}, errors.Wrap(err, "assign Int4Array to []int failed")
 	}
 
-	return query.AccountConfiguration{
+	return query.Account{
 		SobId:             po.SobId,
-		AccountId:         po.AccountId,
+		Id:                po.Id,
 		SuperiorAccountId: po.SuperiorAccountId,
 		Title:             po.Title,
 		AccountNumber:     po.AccountNumber,
@@ -129,7 +121,7 @@ func accountConfigurationPOToDTO(po accountConfigurationPO) (query.AccountConfig
 func periodBOToPO(bo period.Period) periodPO {
 	return periodPO{
 		SobId:            bo.SobId(),
-		PeriodId:         bo.PeriodId(),
+		Id:               bo.Id(),
 		PreviousPeriodId: bo.PreviousPeriodId(),
 		FinancialYear:    bo.FinancialYear(),
 		Number:           bo.Number(),
@@ -142,7 +134,7 @@ func periodBOToPO(bo period.Period) periodPO {
 func periodPOToDTO(po periodPO) query.Period {
 	return query.Period{
 		SobId:            po.SobId,
-		PeriodId:         po.PeriodId,
+		PeriodId:         po.Id,
 		PreviousPeriodId: po.PreviousPeriodId,
 		FinancialYear:    po.FinancialYear,
 		Number:           po.Number,
@@ -154,8 +146,9 @@ func periodPOToDTO(po periodPO) query.Period {
 	}
 }
 
-func accountBOToPO(bo account.Account) accountPO {
-	return accountPO{
+func ledgerBOToPO(bo ledger.Ledger) ledgerPO {
+	return ledgerPO{
+		Id:             bo.Id(),
 		SobId:          bo.SobId(),
 		AccountId:      bo.AccountId(),
 		PeriodId:       bo.PeriodId(),
@@ -166,13 +159,14 @@ func accountBOToPO(bo account.Account) accountPO {
 	}
 }
 
-func accountPOToBO(po accountPO) (*account.Account, error) {
-	configuration, err := accountConfigurationPOToBO(po.Configuration)
+func ledgerPOToBO(po ledgerPO) (*ledger.Ledger, error) {
+	accountBO, err := accountPOToBO(po.Account)
 	if err != nil {
 		return nil, err
 	}
 
-	return account.New(
+	return ledger.New(
+		po.Id,
 		po.SobId,
 		po.AccountId,
 		po.PeriodId,
@@ -180,17 +174,17 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		po.EndingBalance,
 		po.PeriodDebit,
 		po.PeriodCredit,
-		*configuration,
+		*accountBO,
 	)
 }
 
-func accountPOToDTO(po accountPO) (query.Account, error) {
-	configuration, err := accountConfigurationPOToDTO(po.Configuration)
+func ledgerPOToDTO(po ledgerPO) (query.Ledger, error) {
+	accountDTO, err := accountPOToDTO(po.Account)
 	if err != nil {
-		return query.Account{}, err
+		return query.Ledger{}, err
 	}
 
-	return query.Account{
+	return query.Ledger{
 		SobId:          po.SobId,
 		AccountId:      po.AccountId,
 		PeriodId:       po.PeriodId,
@@ -198,7 +192,7 @@ func accountPOToDTO(po accountPO) (query.Account, error) {
 		EndingBalance:  po.EndingBalance,
 		PeriodDebit:    po.PeriodDebit,
 		PeriodCredit:   po.PeriodCredit,
-		Configuration:  configuration,
+		Account:        accountDTO,
 		CreatedAt:      po.CreatedAt,
 		UpdatedAt:      po.UpdatedAt,
 	}, nil

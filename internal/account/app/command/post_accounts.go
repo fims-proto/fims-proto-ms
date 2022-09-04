@@ -3,12 +3,13 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 	"github/fims-proto/fims-proto-ms/internal/account/domain"
-	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 )
 
 type PostAccountsCmd struct {
@@ -55,14 +56,14 @@ func (h PostAccountsHandler) Handle(ctx context.Context, cmd PostAccountsCmd) er
 		accountsMap[record.AccountId] = record
 
 		//  read all superior accounts
-		superiorAccountConfigs, err := h.readModel.SuperiorAccountConfigurations(ctx, record.AccountId)
+		superiorAccountConfigs, err := h.readModel.SuperiorAccounts(ctx, record.AccountId)
 		if err != nil {
 			return errors.Wrap(err, "failed to post accounts, cannot read superior accounts")
 		}
 
 		for _, superiorAccount := range superiorAccountConfigs {
 			superiorRecord := PostAccountsRecordCmd{
-				AccountId: superiorAccount.AccountId,
+				AccountId: superiorAccount.Id,
 				Debit:     record.Debit,
 				Credit:    record.Credit,
 			}
@@ -71,11 +72,11 @@ func (h PostAccountsHandler) Handle(ctx context.Context, cmd PostAccountsCmd) er
 		}
 	}
 
-	return h.repo.UpdateAccountsByPeriodAndIds(
+	return h.repo.UpdateLedgersByPeriodAndAccountIds(
 		ctx,
 		cmd.PeriodId,
 		accountIds,
-		func(accounts []*account.Account) ([]*account.Account, error) {
+		func(accounts []*ledger.Ledger) ([]*ledger.Ledger, error) {
 			for _, domainAccount := range accounts {
 				record, ok := accountsMap[domainAccount.AccountId()]
 				if !ok {

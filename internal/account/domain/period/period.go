@@ -8,8 +8,8 @@ import (
 )
 
 type Period struct {
+	id               uuid.UUID
 	sobId            uuid.UUID
-	periodId         uuid.UUID
 	previousPeriodId uuid.UUID
 	financialYear    int
 	number           int
@@ -18,12 +18,12 @@ type Period struct {
 	isClosed         bool
 }
 
-func New(sobId, periodId, previousPeriodId uuid.UUID, financialYear, number int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
+func New(id, sobId, previousPeriodId uuid.UUID, financialYear, number int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
 	if sobId == uuid.Nil {
 		return nil, errors.New("nil sob id")
 	}
 
-	if periodId == uuid.Nil {
+	if id == uuid.Nil {
 		return nil, errors.New("nil period id")
 	}
 
@@ -48,8 +48,8 @@ func New(sobId, periodId, previousPeriodId uuid.UUID, financialYear, number int,
 	}
 
 	return &Period{
+		id:               id,
 		sobId:            sobId,
-		periodId:         periodId,
 		previousPeriodId: previousPeriodId,
 		financialYear:    financialYear,
 		number:           number,
@@ -59,12 +59,12 @@ func New(sobId, periodId, previousPeriodId uuid.UUID, financialYear, number int,
 	}, nil
 }
 
-func (p Period) SobId() uuid.UUID {
-	return p.sobId
+func (p Period) Id() uuid.UUID {
+	return p.id
 }
 
-func (p Period) PeriodId() uuid.UUID {
-	return p.periodId
+func (p Period) SobId() uuid.UUID {
+	return p.sobId
 }
 
 func (p Period) PreviousPeriodId() uuid.UUID {

@@ -1,9 +1,7 @@
 basePath: /fims/api/v1
 definitions:
-  http.AccountConfigurationResponse:
+  http.AccountResponse:
     properties:
-      accountId:
-        type: string
       accountNumber:
         type: string
       accountType:
@@ -11,6 +9,8 @@ definitions:
       balanceDirection:
         type: string
       createdAt:
+        type: string
+      id:
         type: string
       level:
         type: integer
@@ -23,29 +23,6 @@ definitions:
       superiorAccountId:
         type: string
       title:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  http.AccountResponse:
-    properties:
-      accountId:
-        type: string
-      configuration:
-        $ref: '#/definitions/http.AccountConfigurationResponse'
-      createdAt:
-        type: string
-      endingBalance:
-        type: number
-      openingBalance:
-        type: number
-      periodCredit:
-        type: number
-      periodDebit:
-        type: number
-      periodId:
-        type: string
-      sobId:
         type: string
       updatedAt:
         type: string
@@ -130,6 +107,31 @@ definitions:
       sobId:
         type: string
       transactionTime:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.LedgerResponse:
+    properties:
+      account:
+        $ref: '#/definitions/http.AccountResponse'
+      accountId:
+        type: string
+      createdAt:
+        type: string
+      endingBalance:
+        type: number
+      id:
+        type: string
+      openingBalance:
+        type: number
+      periodCredit:
+        type: number
+      periodDebit:
+        type: number
+      periodId:
+        type: string
+      sobId:
         type: string
       updatedAt:
         type: string
@@ -235,13 +237,13 @@ definitions:
         type: string
       financialYear:
         type: integer
+      id:
+        type: string
       isClosed:
         type: boolean
       number:
         type: integer
       openingTime:
-        type: string
-      periodId:
         type: string
       previousPeriodId:
         type: string
@@ -318,7 +320,7 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
-  /sob/{sobId}/account-configurations/:
+  /sob/{sobId}/accounts/:
     get:
       consumes:
       - application/json
@@ -360,7 +362,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.AccountConfigurationResponse'
+              $ref: '#/definitions/http.AccountResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -745,7 +747,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.AccountResponse'
+              $ref: '#/definitions/http.LedgerResponse'
             type: array
         "500":
           description: Internal Server Error

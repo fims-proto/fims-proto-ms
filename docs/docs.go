@@ -20,7 +20,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sob/{sobId}/account-configurations/": {
+        "/sob/{sobId}/accounts/": {
             "get": {
                 "description": "List all account configurations",
                 "consumes": [
@@ -81,7 +81,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.AccountConfigurationResponse"
+                                "$ref": "#/definitions/http.AccountResponse"
                             }
                         }
                     },
@@ -660,7 +660,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.AccountResponse"
+                                "$ref": "#/definitions/http.LedgerResponse"
                             }
                         }
                     },
@@ -997,12 +997,9 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "http.AccountConfigurationResponse": {
+        "http.AccountResponse": {
             "type": "object",
             "properties": {
-                "accountId": {
-                    "type": "string"
-                },
                 "accountNumber": {
                     "type": "string"
                 },
@@ -1013,6 +1010,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "createdAt": {
+                    "type": "string"
+                },
+                "id": {
                     "type": "string"
                 },
                 "level": {
@@ -1031,41 +1031,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountId": {
-                    "type": "string"
-                },
-                "configuration": {
-                    "$ref": "#/definitions/http.AccountConfigurationResponse"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingBalance": {
-                    "type": "number"
-                },
-                "openingBalance": {
-                    "type": "number"
-                },
-                "periodCredit": {
-                    "type": "number"
-                },
-                "periodDebit": {
-                    "type": "number"
-                },
-                "periodId": {
-                    "type": "string"
-                },
-                "sobId": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1194,6 +1159,44 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transactionTime": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.LedgerResponse": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/http.AccountResponse"
+                },
+                "accountId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingBalance": {
+                    "type": "number"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "openingBalance": {
+                    "type": "number"
+                },
+                "periodCredit": {
+                    "type": "number"
+                },
+                "periodDebit": {
+                    "type": "number"
+                },
+                "periodId": {
+                    "type": "string"
+                },
+                "sobId": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1357,6 +1360,9 @@ const docTemplate = `{
                 "financialYear": {
                     "type": "integer"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "isClosed": {
                     "type": "boolean"
                 },
@@ -1364,9 +1370,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "openingTime": {
-                    "type": "string"
-                },
-                "periodId": {
                     "type": "string"
                 },
                 "previousPeriodId": {

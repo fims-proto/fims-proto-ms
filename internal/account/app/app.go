@@ -8,20 +8,20 @@ import (
 )
 
 type Queries struct {
-	PagingAccountConfigurations    query.PagingAccountConfigurationsHandler
-	AccountConfigurationsByIds     query.AccountConfigurationsByIdsHandler
-	AccountConfigurationsByNumbers query.AccountConfigurationsByNumbersHandler
-	PagingPeriods                  query.PagingPeriodsHandler
-	PeriodByTime                   query.PeriodByTimeHandler
-	PeriodsByIds                   query.PeriodsByIdsHandler
-	PagingAccountsByPeriod         query.PagingAccountsByPeriodHandler
+	PagingAccounts        query.PagingAccountsHandler
+	AccountsByIds         query.AccountsByIdsHandler
+	AccountsByNumbers     query.AccountsByNumbersHandler
+	PagingPeriods         query.PagingPeriodsHandler
+	PeriodByTime          query.PeriodByTimeHandler
+	PeriodsByIds          query.PeriodsByIdsHandler
+	PagingLedgersByPeriod query.PagingLedgersByPeriodHandler
 }
 
 type Commands struct {
-	InitialAccountConfigurations command.InitialAccountConfigurationHandler
-	CreatePeriod                 command.CreatePeriodHandler
-	PostAccounts                 command.PostAccountsHandler
-	Migrate                      command.MigrationHandler
+	InitialAccounts command.InitialAccountsHandler
+	CreatePeriod    command.CreatePeriodHandler
+	PostAccounts    command.PostAccountsHandler
+	Migrate         command.MigrationHandler
 }
 
 type Application struct {
@@ -40,16 +40,16 @@ func (a *Application) Inject(
 	numberingService service.NumberingService,
 ) {
 	a.Queries = Queries{
-		PagingAccountConfigurations:    query.NewPagingAccountConfigurationsHandler(readModel),
-		AccountConfigurationsByNumbers: query.NewAccountConfigurationsByNumbersHandler(readModel),
-		AccountConfigurationsByIds:     query.NewAccountConfigurationsByIdsHandler(readModel),
-		PagingPeriods:                  query.NewPagingPeriodsHandler(readModel),
-		PeriodByTime:                   query.NewPeriodByTimeHandler(readModel),
-		PeriodsByIds:                   query.NewPeriodsByIdsHandler(readModel),
-		PagingAccountsByPeriod:         query.NewPagingAccountsByPeriodHandler(readModel),
+		PagingAccounts:        query.NewPagingAccountsHandler(readModel),
+		AccountsByNumbers:     query.NewAccountsByNumbersHandler(readModel),
+		AccountsByIds:         query.NewAccountsByIdsHandler(readModel),
+		PagingPeriods:         query.NewPagingPeriodsHandler(readModel),
+		PeriodByTime:          query.NewPeriodByTimeHandler(readModel),
+		PeriodsByIds:          query.NewPeriodsByIdsHandler(readModel),
+		PagingLedgersByPeriod: query.NewPagingLedgersByPeriodHandler(readModel),
 	}
 	a.Commands = Commands{
-		InitialAccountConfigurations: command.NewInitialAccountConfigurationHandler(repo, sobService),
+		InitialAccounts: command.NewInitialAccountHandler(repo, sobService),
 		CreatePeriod: command.NewCreatePeriodHandler(
 			repo,
 			numberingService,

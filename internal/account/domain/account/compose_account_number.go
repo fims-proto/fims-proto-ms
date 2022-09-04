@@ -1,4 +1,4 @@
-package account_configuration
+package account
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 	"github.com/pkg/errors"
 )
 
-func (ac AccountConfiguration) ComposeAccountNumber(codeLengths []int) (string, error) {
+func (ac Account) ComposeAccountNumber(codeLengths []int) (string, error) {
 	if len(ac.numberHierarchy) > len(codeLengths) {
 		return "", errors.Errorf("account number hierarchy %d exceeds max depth %d", len(ac.numberHierarchy), len(codeLengths))
 	}
