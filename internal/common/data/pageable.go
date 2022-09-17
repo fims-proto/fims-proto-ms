@@ -8,7 +8,6 @@ type Pageable interface {
 	Size() int
 	Offset() int
 	Sorts() []Sort
-	Chooses() []Choose
 	Filters() []Filter
 }
 
@@ -17,11 +16,10 @@ type pageRequest struct {
 	size    int
 	offset  int
 	sorts   []Sort
-	chooses []Choose
 	filters []Filter
 }
 
-func newPageRequest(page, size int, sorts []Sort, chooses []Choose, filters []Filter) (Pageable, error) {
+func newPageRequest(page, size int, sorts []Sort, filters []Filter) (Pageable, error) {
 	if page < 1 {
 		return nil, errors.New("zero page number. page number starts with 1")
 	}
@@ -36,7 +34,6 @@ func newPageRequest(page, size int, sorts []Sort, chooses []Choose, filters []Fi
 		size:    size,
 		offset:  offset,
 		sorts:   sorts,
-		chooses: chooses,
 		filters: filters,
 	}, nil
 }
@@ -59,10 +56,6 @@ func (p pageRequest) Offset() int {
 
 func (p pageRequest) Sorts() []Sort {
 	return p.sorts
-}
-
-func (p pageRequest) Chooses() []Choose {
-	return p.chooses
 }
 
 func (p pageRequest) Filters() []Filter {
@@ -92,10 +85,6 @@ func (u unpaged) Offset() int {
 }
 
 func (u unpaged) Sorts() []Sort {
-	return nil
-}
-
-func (u unpaged) Chooses() []Choose {
 	return nil
 }
 

@@ -5,11 +5,15 @@ import (
 	"strings"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/sortable"
+
 	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
 
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
-	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"gorm.io/gorm/clause"
 
 	"github.com/google/uuid"
@@ -122,72 +126,48 @@ func (r AccountPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx contex
 
 // queries
 
-func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageable data.Pageable) (data.Page[query.Ledger], error) {
-	db := readDBFromCtx(ctx)
+func (r AccountPostgresRepository) SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Account], error) {
+	addSobFilter(sobId, "account.sobId", pageRequest)
+	return datav3.SearchEntities(pageRequest, &accountPO{}, accountPOToDTO, resolveEntity, readDBFromCtx(ctx))
+}
 
-	var ledgerPOS []ledgerPO
+func (r AccountPostgresRepository) SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Period], error) {
+	addSobFilter(sobId, "period.sobId", pageRequest)
+	return datav3.SearchEntities(pageRequest, &periodPO{}, periodPOToDTO, resolveEntity, readDBFromCtx(ctx))
+}
 
-	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ? AND period_id = ?", sobId, periodId)
+func (r AccountPostgresRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
+	addSobFilter(sobId, "ledger.sobId", pageRequest)
+	return datav3.SearchEntities(pageRequest, &ledgerPO{}, ledgerPOToDTO, resolveEntity, readDBFromCtx(ctx).Preload("Account"))
+}
 
-	var count int64
-	if err := db.Model(&ledgerPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to count ledgers")
-	}
-
-	if err := db.Scopes(data.Paging(pageable)).Preload("Account").Find(&ledgerPOS).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find ledgers by sobId %s and periodId %s", sobId, periodId)
-	}
-
-	var ledgerDTOs []query.Ledger
-	for _, po := range ledgerPOS {
-		dto, err := ledgerPOToDTO(po)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map ledger")
-		}
-		ledgerDTOs = append(ledgerDTOs, dto)
-	}
-
-	return data.NewPage(ledgerDTOs, pageable, int(count))
+func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
+	periodIdFilter, _ := filterable.NewFilter("ledger.periodId", "eq", periodId)
+	pageRequest.AddFilter(periodIdFilter)
+	return r.SearchLedgers(ctx, sobId, pageRequest)
 }
 
 func (r AccountPostgresRepository) LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Ledger, error) {
-	ledgers, err := r.PagingLedgersByPeriod(ctx, sobId, periodId, data.Unpaged())
+	periodIdFilter, _ := filterable.NewFilter("ledger.periodId", "eq", periodId)
+	pageRequest := datav3.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(periodIdFilter),
+	)
+	ledgers, err := r.SearchLedgers(ctx, sobId, pageRequest)
 	if err != nil {
 		return nil, err
 	}
+
 	return ledgers.Content(), nil
 }
 
-func (r AccountPostgresRepository) PagingAccounts(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Account], error) {
-	db := readDBFromCtx(ctx)
-
-	var accountPOS []accountPO
-
-	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ?", sobId)
-
-	var count int64
-	if err := db.Model(&accountPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to count accounts")
-	}
-
-	if err := db.Scopes(data.Paging(pageable)).Find(&accountPOS).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find accounts by sobId %s", sobId)
-	}
-
-	var accountDTOs []query.Account
-	for _, po := range accountPOS {
-		dto, err := accountPOToDTO(po)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map account")
-		}
-		accountDTOs = append(accountDTOs, dto)
-	}
-
-	return data.NewPage(accountDTOs, pageable, int(count))
-}
-
 func (r AccountPostgresRepository) AllAccounts(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
-	accounts, err := r.PagingAccounts(ctx, sobId, data.Unpaged())
+	accounts, err := r.SearchAccounts(
+		ctx,
+		sobId,
+		datav3.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.Unfiltered()),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -230,69 +210,64 @@ func (r AccountPostgresRepository) SuperiorAccounts(ctx context.Context, account
 }
 
 func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
-	db := readDBFromCtx(ctx)
-
-	var accountPOs []accountPO
-	if err := db.Find(&accountPOs, "account_id IN ?", accountIds).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to read account")
+	accountIdFilter, _ := filterable.NewFilter("accountId", "in", accountIds)
+	pageRequest := datav3.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(accountIdFilter),
+	)
+	accounts, err := r.SearchAccounts(ctx, uuid.Nil, pageRequest)
+	if err != nil {
+		return nil, err
 	}
-
-	var accountDTOs []query.Account
-	for _, po := range accountPOs {
-		dto, err := accountPOToDTO(po)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map Account configuration")
-		}
-
-		accountDTOs = append(accountDTOs, dto)
-	}
-
-	return accountDTOs, nil
+	return accounts.Content(), nil
 }
 
 func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.Account, error) {
-	db := readDBFromCtx(ctx)
-
-	var accountPOs []accountPO
-	if err := db.Find(&accountPOs, "sob_id = ? AND account_number IN ?", sobId, accountNumbers).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to read account")
+	accountIdFilter, _ := filterable.NewFilter("accountNumber", "in", accountNumbers)
+	pageRequest := datav3.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(accountIdFilter),
+	)
+	accounts, err := r.SearchAccounts(ctx, sobId, pageRequest)
+	if err != nil {
+		return nil, err
 	}
-
-	var accountDTOs []query.Account
-	for _, po := range accountPOs {
-		dto, err := accountPOToDTO(po)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map Account configuration")
-		}
-
-		accountDTOs = append(accountDTOs, dto)
-	}
-
-	return accountDTOs, nil
+	return accounts.Content(), nil
 }
 
-func (r AccountPostgresRepository) PagingPeriods(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.Period], error) {
-	db := readDBFromCtx(ctx)
-
-	var periodPOs []periodPO
-
-	db = db.Scopes(data.Filtering(pageable)).Where("sob_id = ?", sobId)
-
-	var count int64
-	if err := db.Model(&periodPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to count periods")
+func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
+	periodIdFilter, _ := filterable.NewFilter("period.id", "eq", periodId)
+	pageRequest := datav3.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(periodIdFilter),
+	)
+	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
+	if err != nil {
+		return query.Period{}, err
+	}
+	if periods.NumberOfElements() != 1 {
+		return query.Period{}, errors.Errorf("period not found by id: %s", periodId)
 	}
 
-	if err := db.Scopes(data.Paging(pageable)).Find(&periodPOs).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find periods by sobId %s", sobId)
+	return periods.Content()[0], nil
+}
+
+func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
+	periodIdFilter, _ := filterable.NewFilter("period.id", "in", periodIds)
+	pageRequest := datav3.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(periodIdFilter),
+	)
+	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
+	if err != nil {
+		return nil, err
 	}
 
-	var periodDTOs []query.Period
-	for _, po := range periodPOs {
-		periodDTOs = append(periodDTOs, periodPOToDTO(po))
-	}
-
-	return data.NewPage(periodDTOs, pageable, int(count))
+	return periods.Content(), nil
 }
 
 func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
@@ -309,36 +284,29 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(periodPOs))
 	}
 
-	return periodPOToDTO(periodPOs[0]), nil
+	return periodPOToDTO(periodPOs[0])
 }
 
-func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
-	db := readDBFromCtx(ctx)
-
-	po := periodPO{}
-	if err := db.First(&po, "id = ?", periodId).Error; err != nil {
-		return query.Period{}, errors.Wrap(err, "failed to find period by id")
+func addSobFilter(sobId uuid.UUID, fieldName string, pageRequest datav3.PageRequest) {
+	if sobId != uuid.Nil {
+		sobIdFilter, _ := filterable.NewFilter(fieldName, "eq", sobId.String())
+		pageRequest.AddFilter(sobIdFilter)
 	}
-
-	return periodPOToDTO(po), nil
-}
-
-func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
-	db := readDBFromCtx(ctx)
-
-	var periodPOs []periodPO
-	if err := db.Find(&periodPOs, "period_id IN ?", periodIds).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to read periods")
-	}
-
-	var periodDTOs []query.Period
-	for _, po := range periodPOs {
-		periodDTOs = append(periodDTOs, periodPOToDTO(po))
-	}
-
-	return periodDTOs, nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {
 	return ctx.Value("db").(*gorm.DB)
+}
+
+func resolveEntity(entity string) (string, error) {
+	switch entity {
+	case "account":
+		return accountPO{}.TableName(), nil
+	case "period":
+		return periodPO{}.TableName(), nil
+	case "ledger":
+		return ledgerPO{}.TableName(), nil
+	default:
+		return "", errors.Errorf("invalid entity name %s", entity)
+	}
 }

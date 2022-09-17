@@ -1357,7 +1357,7 @@ const docTemplate = `{
                 "endingTime": {
                     "type": "string"
                 },
-                "financialYear": {
+                "fiscalYear": {
                     "type": "integer"
                 },
                 "id": {
@@ -1366,11 +1366,11 @@ const docTemplate = `{
                 "isClosed": {
                     "type": "boolean"
                 },
-                "number": {
-                    "type": "integer"
-                },
                 "openingTime": {
                     "type": "string"
+                },
+                "periodNumber": {
+                    "type": "integer"
                 },
                 "previousPeriodId": {
                     "type": "string"

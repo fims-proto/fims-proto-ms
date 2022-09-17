@@ -33,8 +33,8 @@ type periodPO struct {
 	Id               uuid.UUID `gorm:"type:uuid"`
 	SobId            uuid.UUID `gorm:"type:uuid;uniqueIndex:periods_sobid_year_number_key"`
 	PreviousPeriodId uuid.UUID `gorm:"type:uuid"`
-	FinancialYear    int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
-	Number           int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
+	FiscalYear       int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
+	PeriodNumber     int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
 	OpeningTime      time.Time
 	EndingTime       time.Time
 	IsClosed         bool
@@ -123,27 +123,27 @@ func periodBOToPO(bo period.Period) periodPO {
 		SobId:            bo.SobId(),
 		Id:               bo.Id(),
 		PreviousPeriodId: bo.PreviousPeriodId(),
-		FinancialYear:    bo.FinancialYear(),
-		Number:           bo.Number(),
+		FiscalYear:       bo.FinancialYear(),
+		PeriodNumber:     bo.PeriodNumber(),
 		OpeningTime:      bo.OpeningTime(),
 		EndingTime:       bo.EndingTime(),
 		IsClosed:         bo.IsClosed(),
 	}
 }
 
-func periodPOToDTO(po periodPO) query.Period {
+func periodPOToDTO(po periodPO) (query.Period, error) {
 	return query.Period{
 		SobId:            po.SobId,
 		PeriodId:         po.Id,
 		PreviousPeriodId: po.PreviousPeriodId,
-		FinancialYear:    po.FinancialYear,
-		Number:           po.Number,
+		FiscalYear:       po.FiscalYear,
+		PeriodNumber:     po.PeriodNumber,
 		OpeningTime:      po.OpeningTime,
 		EndingTime:       po.EndingTime,
 		IsClosed:         po.IsClosed,
 		CreatedAt:        po.CreatedAt,
 		UpdatedAt:        po.UpdatedAt,
-	}
+	}, nil
 }
 
 func ledgerBOToPO(bo ledger.Ledger) ledgerPO {

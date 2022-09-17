@@ -1,41 +1,26 @@
-package data
+package filterable
 
 import (
 	"fmt"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/field"
 	"gorm.io/gorm"
 )
 
-func Paging(pageable Pageable) func(db *gorm.DB) *gorm.DB {
+func Filtering(f Filterable, resolveEntity func(entity string) (string, error)) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
-		// paging
-		if pageable.IsPaged() {
-			db = db.Offset(pageable.Offset()).Limit(pageable.Size())
-		}
-
-		// sort
-		if pageable.Sorts() != nil {
-			var orderStr []string
-			for _, sort := range pageable.Sorts() {
-				orderStr = append(orderStr, strings.Join([]string{sort.Field(), sort.Order()}, " "))
-			}
-			db = db.Order(strings.Join(orderStr, ","))
-		}
-
-		return db
-	}
-}
-
-func Filtering(pageable Pageable) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		// filter
-		if pageable.Filters() != nil {
+		if f.IsFiltered() {
 			var whereStr []string
 			var args []any
-			for _, filter := range pageable.Filters() {
+			for _, filter := range f.Filters() {
 				// field
-				whereStr = append(whereStr, filter.Field())
+				fieldName, err := field.ToColumn(filter.Field(), resolveEntity)
+				if err != nil {
+					_ = db.AddError(err)
+					return db
+				}
+				whereStr = append(whereStr, fieldName)
 
 				// operator and variable placeholder, and args
 				switch filter.Operator() {

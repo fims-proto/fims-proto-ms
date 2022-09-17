@@ -12,13 +12,13 @@ type Period struct {
 	sobId            uuid.UUID
 	previousPeriodId uuid.UUID
 	financialYear    int
-	number           int
+	periodNumber     int
 	openingTime      time.Time
 	endingTime       time.Time
 	isClosed         bool
 }
 
-func New(id, sobId, previousPeriodId uuid.UUID, financialYear, number int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
+func New(id, sobId, previousPeriodId uuid.UUID, financialYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
 	if sobId == uuid.Nil {
 		return nil, errors.New("nil sob id")
 	}
@@ -31,8 +31,8 @@ func New(id, sobId, previousPeriodId uuid.UUID, financialYear, number int, openi
 		return nil, errors.Errorf("invalid financial year %d", financialYear)
 	}
 
-	if number < 1 {
-		return nil, errors.Errorf("invalid period number %d", number)
+	if periodNumber < 1 {
+		return nil, errors.Errorf("invalid period number %d", periodNumber)
 	}
 
 	if openingTime.IsZero() {
@@ -52,7 +52,7 @@ func New(id, sobId, previousPeriodId uuid.UUID, financialYear, number int, openi
 		sobId:            sobId,
 		previousPeriodId: previousPeriodId,
 		financialYear:    financialYear,
-		number:           number,
+		periodNumber:     periodNumber,
 		openingTime:      openingTime,
 		endingTime:       endingTime,
 		isClosed:         isClosed,
@@ -75,8 +75,8 @@ func (p Period) FinancialYear() int {
 	return p.financialYear
 }
 
-func (p Period) Number() int {
-	return p.number
+func (p Period) PeriodNumber() int {
+	return p.periodNumber
 }
 
 func (p Period) OpeningTime() time.Time {

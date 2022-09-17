@@ -108,8 +108,8 @@ func enrichPeriod(ctx context.Context, service service.AccountService, entries [
 		}
 		entries[i].Period = Period{
 			PeriodId:      period.PeriodId,
-			FinancialYear: period.FinancialYear,
-			Number:        period.Number,
+			FinancialYear: period.FiscalYear,
+			Number:        period.PeriodNumber,
 			OpeningTime:   period.OpeningTime,
 			EndingTime:    period.EndingTime,
 			IsClosed:      period.IsClosed,

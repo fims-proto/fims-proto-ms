@@ -3,8 +3,9 @@ package query
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/common/data"
 )
 
 type PagingAccountsHandler struct {
@@ -19,6 +20,6 @@ func NewPagingAccountsHandler(readModel AccountReadModel) PagingAccountsHandler 
 	return PagingAccountsHandler{readModel: readModel}
 }
 
-func (h PagingAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[Account], error) {
-	return h.readModel.PagingAccounts(ctx, sobId, pageable)
+func (h PagingAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Account], error) {
+	return h.readModel.SearchAccounts(ctx, sobId, pageRequest)
 }

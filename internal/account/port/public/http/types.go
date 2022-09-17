@@ -32,8 +32,8 @@ type PeriodResponse struct {
 	Id               uuid.UUID `json:"id"`
 	SobId            uuid.UUID `json:"sobId"`
 	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
-	FinancialYear    int       `json:"financialYear"`
-	Number           int       `json:"number"`
+	FiscalYear       int       `json:"fiscalYear"`
+	PeriodNumber     int       `json:"periodNumber"`
 	OpeningTime      time.Time `json:"openingTime"`
 	EndingTime       time.Time `json:"endingTime"`
 	IsClosed         bool      `json:"isClosed"`
@@ -78,8 +78,8 @@ func periodDTOToVO(dto query.Period) PeriodResponse {
 		Id:               dto.PeriodId,
 		SobId:            dto.SobId,
 		PreviousPeriodId: dto.PreviousPeriodId,
-		FinancialYear:    dto.FinancialYear,
-		Number:           dto.Number,
+		FiscalYear:       dto.FiscalYear,
+		PeriodNumber:     dto.PeriodNumber,
 		OpeningTime:      dto.OpeningTime,
 		EndingTime:       dto.EndingTime,
 		IsClosed:         dto.IsClosed,

@@ -1350,7 +1350,7 @@
                 "endingTime": {
                     "type": "string"
                 },
-                "financialYear": {
+                "fiscalYear": {
                     "type": "integer"
                 },
                 "id": {
@@ -1359,11 +1359,11 @@
                 "isClosed": {
                     "type": "boolean"
                 },
-                "number": {
-                    "type": "integer"
-                },
                 "openingTime": {
                     "type": "string"
+                },
+                "periodNumber": {
+                    "type": "integer"
                 },
                 "previousPeriodId": {
                     "type": "string"

@@ -26,8 +26,8 @@ type Period struct {
 	SobId            uuid.UUID
 	PeriodId         uuid.UUID
 	PreviousPeriodId uuid.UUID
-	FinancialYear    int
-	Number           int
+	FiscalYear       int
+	PeriodNumber     int
 	OpeningTime      time.Time
 	EndingTime       time.Time
 	IsClosed         bool

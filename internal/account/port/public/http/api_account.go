@@ -2,7 +2,7 @@ package http
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
-	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app"
 
@@ -37,16 +37,16 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/accounts/ [get]
 func (h Handler) ReadPagingAccounts(c *gin.Context) {
-	data.PagingResponseProcessor(
+	datav3.PagingResponseProcessor(
 		c,
-		func(pageable data.Pageable) (data.Page[query.Account], error) {
-			return h.app.Queries.PagingAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), pageable)
+		func(pageRequest datav3.PageRequest) (datav3.Page[query.Account], error) {
+			return h.app.Queries.PagingAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
 		accountDTOToVO,
 	)
 }
 
-// ReadPagingAccountsByPeriod godoc
+// ReadPagingLodgersByPeriod godoc
 // @Text List accounts in period
 // @Description List accounts in period
 // @Tags accounts
@@ -62,11 +62,11 @@ func (h Handler) ReadPagingAccounts(c *gin.Context) {
 // @Success 200 {array} LedgerResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/accounts/ [get]
-func (h Handler) ReadPagingAccountsByPeriod(c *gin.Context) {
-	data.PagingResponseProcessor(
+func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
+	datav3.PagingResponseProcessor(
 		c,
-		func(pageable data.Pageable) (data.Page[query.Ledger], error) {
-			return h.app.Queries.PagingLedgersByPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("periodId")), pageable)
+		func(pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
+			return h.app.Queries.PagingLedgersByPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("periodId")), pageRequest)
 		},
 		ledgerDTOToVO,
 	)
@@ -88,10 +88,10 @@ func (h Handler) ReadPagingAccountsByPeriod(c *gin.Context) {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/periods/ [get]
 func (h Handler) ReadPagingPeriods(c *gin.Context) {
-	data.PagingResponseProcessor(
+	datav3.PagingResponseProcessor(
 		c,
-		func(pageable data.Pageable) (data.Page[query.Period], error) {
-			return h.app.Queries.PagingPeriods.Handle(c, uuid.MustParse(c.Param("sobId")), pageable)
+		func(pageRequest datav3.PageRequest) (datav3.Page[query.Period], error) {
+			return h.app.Queries.PagingPeriods.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
 		periodDTOToVO,
 	)
@@ -100,5 +100,5 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/accounts/", h.ReadPagingAccounts)
 	r.GET("/sob/:sobId/periods/", h.ReadPagingPeriods)
-	r.GET("/sob/:sobId/period/:periodId/accounts/", h.ReadPagingAccountsByPeriod)
+	r.GET("/sob/:sobId/period/:periodId/accounts/", h.ReadPagingLodgersByPeriod)
 }

@@ -3,8 +3,9 @@ package query
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/common/data"
 )
 
 type PagingLedgersByPeriodHandler struct {
@@ -19,6 +20,6 @@ func NewPagingLedgersByPeriodHandler(readModel AccountReadModel) PagingLedgersBy
 	return PagingLedgersByPeriodHandler{readModel: readModel}
 }
 
-func (h PagingLedgersByPeriodHandler) Handle(ctx context.Context, sobId, periodId uuid.UUID, pageable data.Pageable) (data.Page[Ledger], error) {
-	return h.readModel.PagingLedgersByPeriod(ctx, sobId, periodId, pageable)
+func (h PagingLedgersByPeriodHandler) Handle(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Ledger], error) {
+	return h.readModel.PagingLedgersByPeriod(ctx, sobId, periodId, pageRequest)
 }

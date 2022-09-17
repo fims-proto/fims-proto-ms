@@ -1,4 +1,4 @@
-package data
+package datav3
 
 import (
 	"net/http"
@@ -6,9 +6,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/sortable"
 )
 
-func NewPageableFromRequest(c *gin.Context) (Pageable, error) {
+func NewPageRequestFromQuery(c *gin.Context) (PageRequest, error) {
 	page, err := strconv.ParseInt(c.DefaultQuery("$page", "1"), 0, 0)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to parse page query parameter")
@@ -19,32 +22,37 @@ func NewPageableFromRequest(c *gin.Context) (Pageable, error) {
 		return nil, errors.Wrap(err, "failed to parse page query parameter")
 	}
 
+	p, err := pageable.NewPageableFromQuery(int(page), int(size))
+	if err != nil {
+		return nil, err
+	}
+
 	sort := c.Query("$sort")
-	sorts, err := newSortsFromQuery(sort)
+	sorts, err := sortable.NewSortableFromQuery(sort)
 	if err != nil {
 		return nil, err
 	}
 
 	filter := c.Query("$filter")
-	filters, err := newFiltersFromQuery(filter)
+	filters, err := filterable.NewFilterableFromQuery(filter)
 	if err != nil {
 		return nil, err
 	}
 
-	return newPageRequest(int(page), int(size), sorts, filters)
+	return NewPageRequest(p, sorts, filters), nil
 }
 
 func PagingResponseProcessor[DTO any, VO any](
 	c *gin.Context,
-	provider func(Pageable) (Page[DTO], error),
+	provider func(request PageRequest) (Page[DTO], error),
 	converter func(DTO) VO,
 ) {
-	pageable, err := NewPageableFromRequest(c)
+	r, err := NewPageRequestFromQuery(c)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	dataPage, err := provider(pageable)
+	dataPage, err := provider(r)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -53,6 +61,6 @@ func PagingResponseProcessor[DTO any, VO any](
 	for i, vo := range dataPage.Content() {
 		vos[i] = converter(vo)
 	}
-	resp, _ := NewPage(vos, pageable, dataPage.NumberOfElements())
+	resp, _ := NewPage(vos, r, dataPage.NumberOfElements())
 	c.JSON(http.StatusOK, resp)
 }
