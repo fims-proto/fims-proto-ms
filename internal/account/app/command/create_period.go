@@ -88,7 +88,7 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 	return h.repo.CreatePeriod(ctx, p, func() error {
 		// create accounts for this period
 		if err = h.createLedgersForPeriod(ctx, *p); err != nil {
-			return errors.Wrap(err, "failed to create accounts for period")
+			return errors.Wrap(err, "failed to create ledgers for period")
 		}
 
 		// create numbering configuration for journal entries in this period
@@ -101,51 +101,61 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 }
 
 func (h CreatePeriodHandler) createLedgersForPeriod(ctx context.Context, period period.Period) error {
-	// read all account configurations
-	configurations, err := h.readModel.AllAccounts(ctx, period.SobId())
+	// read all accounts
+	accounts, err := h.readModel.AllAccounts(ctx, period.SobId())
 	if err != nil {
-		return errors.Wrap(err, "failed to create accounts for period")
+		return errors.Wrap(err, "failed to create ledgers for period")
 	}
 
-	// read all accounts in previous period if applicable
-	accountsInPreviousPeriod := make(map[uuid.UUID]query.Ledger) // key: Id, value: account
+	// read all ledgers in previous period if applicable
+	ledgersInPreviousPeriod := make(map[uuid.UUID]query.Ledger) // key: Id, value: account
 	if period.PreviousPeriodId() != uuid.Nil {
-		accounts, err := h.readModel.LedgersInPeriod(ctx, period.SobId(), period.PreviousPeriodId())
+		ledgers, err := h.readModel.LedgersInPeriod(ctx, period.SobId(), period.PreviousPeriodId())
 		if err != nil {
-			return errors.Wrap(err, "failed to read accounts in previous period")
+			return errors.Wrap(err, "failed to read ledgers in previous period")
 		}
 
-		for _, previousAccount := range accounts {
-			accountsInPreviousPeriod[previousAccount.AccountId] = previousAccount
+		for _, previousLedger := range ledgers {
+			ledgersInPreviousPeriod[previousLedger.AccountId] = previousLedger
 		}
 	}
 
-	// create accounts based on configuration
+	// create ledgers based on accounts
 	var ledgers []*ledger.Ledger
-	for _, configuration := range configurations {
+	for _, accountDTO := range accounts {
 		// move previous ending balance to opening balance
 		openingBalance := decimal.Zero
-		previousAccount, ok := accountsInPreviousPeriod[configuration.Id]
+		previousLedger, ok := ledgersInPreviousPeriod[accountDTO.Id]
 		if ok {
-			openingBalance = previousAccount.EndingBalance
+			openingBalance = previousLedger.EndingBalance
 		}
 
-		accountConfiguration, err := account.New(configuration.Id, configuration.SobId, configuration.SuperiorAccountId, configuration.Title, configuration.AccountNumber, configuration.NumberHierarchy, configuration.Level, configuration.AccountType, configuration.BalanceDirection)
+		accountBO, err := account.New(
+			accountDTO.Id,
+			accountDTO.SobId,
+			accountDTO.SuperiorAccountId,
+			accountDTO.Title,
+			accountDTO.AccountNumber,
+			accountDTO.NumberHierarchy,
+			accountDTO.Level,
+			accountDTO.AccountType,
+			accountDTO.BalanceDirection,
+		)
 		if err != nil {
 			// should not happen
-			return errors.Wrap(err, "should not happen, failed to create account configuration")
+			return errors.Wrap(err, "should not happen, failed to create account")
 		}
 
 		domainLedger, err := ledger.New(
 			uuid.New(),
-			configuration.SobId,
-			configuration.Id,
+			accountDTO.SobId,
+			accountDTO.Id,
 			period.Id(),
 			openingBalance,
 			decimal.Zero,
 			decimal.Zero,
 			decimal.Zero,
-			*accountConfiguration,
+			*accountBO,
 		)
 		if err != nil {
 			return errors.Wrap(err, "should not happen, failed to create account")

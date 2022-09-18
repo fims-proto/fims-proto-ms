@@ -31,7 +31,12 @@ func NewFilterableFromQuery(filter string) (Filterable, error) {
 		valuesString := strings.Join(components[2:], " ")
 		values := commaSep.Split(valuesString, -1)
 
-		f, err := NewFilter(field, opt, removeSingleQuote(values))
+		cleanValues := removeSingleQuote(values)
+		sliceAny := make([]any, len(cleanValues))
+		for i, v := range cleanValues {
+			sliceAny[i] = v
+		}
+		f, err := NewFilter(field, opt, sliceAny...)
 		if err != nil {
 			return nil, err
 		}

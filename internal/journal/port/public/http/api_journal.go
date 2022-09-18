@@ -33,7 +33,6 @@ func NewHandler(app *app.Application) Handler {
 // @Param $page query int false "page number" default(1)
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)"
 // @Success 200 {array} JournalEntryResponse
 // @Failure 500 {object} Error

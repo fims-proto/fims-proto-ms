@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/schema"
 )
 
 var (
@@ -11,19 +13,15 @@ var (
 	matchAllCap   = regexp.MustCompile(`([a-z\d])([A-Z])`)
 )
 
-func ToColumn(f Field, resolveEntity func(entity string) (string, error)) (string, error) {
+func ToColumn(f Field, targetSchema schema.Schema) (string, error) {
 	snake := matchFirstCap.ReplaceAllString(f.Name(), "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
-	fieldName := strings.ToLower(snake)
+	snake = strings.ToLower(snake)
 
-	if f.Entity() == "" {
-		return fieldName, nil
-	}
-
-	entity, err := resolveEntity(f.Entity())
+	entity, err := targetSchema.ResolveAssociation(f.Entity())
 	if err != nil {
 		return "", err
 	}
 
-	return fmt.Sprintf("%s.%s", entity, fieldName), nil
+	return fmt.Sprintf(`"%s"."%s"`, entity, snake), nil
 }

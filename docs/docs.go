@@ -63,12 +63,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "choose only field(s)",
-                        "name": "$choose",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
                         "example": "title eq 'something' and amount lt 10",
                         "description": "filter on field(s)",
                         "name": "$filter",
@@ -133,12 +127,6 @@ const docTemplate = `{
                         "example": "updatedAt desc,createdAt",
                         "description": "sort on field(s)",
                         "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "choose only field(s)",
-                        "name": "$choose",
                         "in": "query"
                     },
                     {
@@ -592,7 +580,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/period/{periodId}/accounts/": {
+        "/sob/{sobId}/period/{periodId}/ledgers/": {
             "get": {
                 "description": "List accounts in period",
                 "consumes": [
@@ -638,12 +626,6 @@ const docTemplate = `{
                         "example": "updatedAt desc,createdAt",
                         "description": "sort on field(s)",
                         "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "choose only field(s)",
-                        "name": "$choose",
                         "in": "query"
                     },
                     {
@@ -712,12 +694,6 @@ const docTemplate = `{
                         "example": "updatedAt desc,createdAt",
                         "description": "sort on field(s)",
                         "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "choose only field(s)",
-                        "name": "$choose",
                         "in": "query"
                     },
                     {

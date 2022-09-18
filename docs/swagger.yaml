@@ -346,10 +346,6 @@ paths:
         in: query
         name: $sort
         type: string
-      - description: choose only field(s)
-        in: query
-        name: $choose
-        type: string
       - description: filter on field(s)
         example: title eq 'something' and amount lt 10
         in: query
@@ -395,10 +391,6 @@ paths:
         example: updatedAt desc,createdAt
         in: query
         name: $sort
-        type: string
-      - description: choose only field(s)
-        in: query
-        name: $choose
         type: string
       - description: filter on field(s)
         in: query
@@ -700,7 +692,7 @@ paths:
             $ref: '#/definitions/internal_journal_port_public_http.Error'
       tags:
       - journals
-  /sob/{sobId}/period/{periodId}/accounts/:
+  /sob/{sobId}/period/{periodId}/ledgers/:
     get:
       consumes:
       - application/json
@@ -730,10 +722,6 @@ paths:
         example: updatedAt desc,createdAt
         in: query
         name: $sort
-        type: string
-      - description: choose only field(s)
-        in: query
-        name: $choose
         type: string
       - description: filter on field(s)
         example: title eq 'something' and amount lt 10
@@ -780,10 +768,6 @@ paths:
         example: updatedAt desc,createdAt
         in: query
         name: $sort
-        type: string
-      - description: choose only field(s)
-        in: query
-        name: $choose
         type: string
       - description: filter on field(s)
         example: title eq 'something' and amount lt 10

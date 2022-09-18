@@ -31,7 +31,6 @@ func NewHandler(app *app.Application) Handler {
 // @Param $page query int false "page number" default(1)
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} AccountResponse
 // @Failure 500 {object} Error
@@ -57,11 +56,10 @@ func (h Handler) ReadPagingAccounts(c *gin.Context) {
 // @Param $page query int false "page number" default(1)
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} LedgerResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/period/{periodId}/accounts/ [get]
+// @Router /sob/{sobId}/period/{periodId}/ledgers/ [get]
 func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
 	datav3.PagingResponseProcessor(
 		c,
@@ -82,7 +80,6 @@ func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
 // @Param $page query int false "page number" default(1)
 // @Param $size query int false "page size" default(40)
 // @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $choose query string false "choose only field(s)"
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} PeriodResponse
 // @Failure 500 {object} Error
@@ -100,5 +97,5 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/accounts/", h.ReadPagingAccounts)
 	r.GET("/sob/:sobId/periods/", h.ReadPagingPeriods)
-	r.GET("/sob/:sobId/period/:periodId/accounts/", h.ReadPagingLodgersByPeriod)
+	r.GET("/sob/:sobId/period/:periodId/ledgers/", h.ReadPagingLodgersByPeriod)
 }

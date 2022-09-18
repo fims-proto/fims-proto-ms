@@ -4,18 +4,20 @@ import (
 	"fmt"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/schema"
+
 	"github/fims-proto/fims-proto-ms/internal/common/datav3/field"
 	"gorm.io/gorm"
 )
 
-func Filtering(f Filterable, resolveEntity func(entity string) (string, error)) func(db *gorm.DB) *gorm.DB {
+func Filtering(f Filterable, targetSchema schema.Schema) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if f.IsFiltered() {
 			var whereStr []string
 			var args []any
 			for _, filter := range f.Filters() {
 				// field
-				fieldName, err := field.ToColumn(filter.Field(), resolveEntity)
+				fieldName, err := field.ToColumn(filter.Field(), targetSchema)
 				if err != nil {
 					_ = db.AddError(err)
 					return db

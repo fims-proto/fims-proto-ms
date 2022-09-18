@@ -127,28 +127,28 @@ func (r AccountPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx contex
 // queries
 
 func (r AccountPostgresRepository) SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Account], error) {
-	addSobFilter(sobId, "account.sobId", pageRequest)
-	return datav3.SearchEntities(pageRequest, &accountPO{}, accountPOToDTO, resolveEntity, readDBFromCtx(ctx))
+	addSobFilter(sobId, pageRequest)
+	return datav3.SearchEntities(ctx, pageRequest, accountPO{}, accountPOToDTO, readDBFromCtx(ctx))
 }
 
 func (r AccountPostgresRepository) SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Period], error) {
-	addSobFilter(sobId, "period.sobId", pageRequest)
-	return datav3.SearchEntities(pageRequest, &periodPO{}, periodPOToDTO, resolveEntity, readDBFromCtx(ctx))
+	addSobFilter(sobId, pageRequest)
+	return datav3.SearchEntities(ctx, pageRequest, periodPO{}, periodPOToDTO, readDBFromCtx(ctx))
 }
 
 func (r AccountPostgresRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
-	addSobFilter(sobId, "ledger.sobId", pageRequest)
-	return datav3.SearchEntities(pageRequest, &ledgerPO{}, ledgerPOToDTO, resolveEntity, readDBFromCtx(ctx).Preload("Account"))
+	addSobFilter(sobId, pageRequest)
+	return datav3.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, readDBFromCtx(ctx).Joins("Account"))
 }
 
 func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
-	periodIdFilter, _ := filterable.NewFilter("ledger.periodId", "eq", periodId)
+	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
 	pageRequest.AddFilter(periodIdFilter)
 	return r.SearchLedgers(ctx, sobId, pageRequest)
 }
 
 func (r AccountPostgresRepository) LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Ledger, error) {
-	periodIdFilter, _ := filterable.NewFilter("ledger.periodId", "eq", periodId)
+	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
 	pageRequest := datav3.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
@@ -238,7 +238,7 @@ func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId 
 }
 
 func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
-	periodIdFilter, _ := filterable.NewFilter("period.id", "eq", periodId)
+	periodIdFilter, _ := filterable.NewFilter("id", "eq", periodId)
 	pageRequest := datav3.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
@@ -256,7 +256,7 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 }
 
 func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
-	periodIdFilter, _ := filterable.NewFilter("period.id", "in", periodIds)
+	periodIdFilter, _ := filterable.NewFilter("id", "in", periodIds)
 	pageRequest := datav3.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
@@ -287,26 +287,13 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 	return periodPOToDTO(periodPOs[0])
 }
 
-func addSobFilter(sobId uuid.UUID, fieldName string, pageRequest datav3.PageRequest) {
+func addSobFilter(sobId uuid.UUID, pageRequest datav3.PageRequest) {
 	if sobId != uuid.Nil {
-		sobIdFilter, _ := filterable.NewFilter(fieldName, "eq", sobId.String())
+		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
 		pageRequest.AddFilter(sobIdFilter)
 	}
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {
 	return ctx.Value("db").(*gorm.DB)
-}
-
-func resolveEntity(entity string) (string, error) {
-	switch entity {
-	case "account":
-		return accountPO{}.TableName(), nil
-	case "period":
-		return periodPO{}.TableName(), nil
-	case "ledger":
-		return ledgerPO{}.TableName(), nil
-	default:
-		return "", errors.Errorf("invalid entity name %s", entity)
-	}
 }

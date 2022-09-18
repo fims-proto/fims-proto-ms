@@ -6,8 +6,6 @@ type Filterable interface {
 	AddFilter(f Filter)
 }
 
-type unfiltered struct{}
-
 type filterableImpl struct {
 	filters []Filter
 }
@@ -15,7 +13,7 @@ type filterableImpl struct {
 // new
 
 func Unfiltered() Filterable {
-	return unfiltered{}
+	return New()
 }
 
 func New(filters ...Filter) Filterable {
@@ -24,20 +22,8 @@ func New(filters ...Filter) Filterable {
 
 // impl
 
-func (u unfiltered) IsFiltered() bool {
-	return false
-}
-
-func (u unfiltered) Filters() []Filter {
-	return nil
-}
-
-func (u unfiltered) AddFilter(Filter) {
-	panic("cannot add filter into unfiltered")
-}
-
 func (f *filterableImpl) IsFiltered() bool {
-	return true
+	return len(f.filters) > 0
 }
 
 func (f *filterableImpl) Filters() []Filter {

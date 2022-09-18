@@ -5,8 +5,6 @@ type Sortable interface {
 	Sorts() []Sort
 }
 
-type unsorted struct{}
-
 type sortableImpl struct {
 	sorts []Sort
 }
@@ -14,25 +12,17 @@ type sortableImpl struct {
 // new
 
 func Unsorted() Sortable {
-	return unsorted{}
+	return New()
 }
 
-func New(sorts []Sort) Sortable {
+func New(sorts ...Sort) Sortable {
 	return sortableImpl{sorts: sorts}
 }
 
 // impl
 
-func (u unsorted) IsSorted() bool {
-	return false
-}
-
-func (u unsorted) Sorts() []Sort {
-	return nil
-}
-
 func (s sortableImpl) IsSorted() bool {
-	return true
+	return len(s.sorts) > 0
 }
 
 func (s sortableImpl) Sorts() []Sort {

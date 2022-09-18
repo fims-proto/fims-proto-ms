@@ -33,5 +33,5 @@ func NewSortableFromQuery(sort string) (Sortable, error) {
 		sorts = append(sorts, sort)
 	}
 
-	return New(sorts), nil
+	return New(sorts...), nil
 }

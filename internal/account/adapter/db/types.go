@@ -1,6 +1,7 @@
 package db
 
 import (
+	"strings"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
@@ -51,7 +52,7 @@ type ledgerPO struct {
 	EndingBalance  decimal.Decimal
 	PeriodDebit    decimal.Decimal
 	PeriodCredit   decimal.Decimal
-	Account        accountPO `gorm:"foreignKey:Id"`
+	Account        accountPO `gorm:"foreignKey:AccountId"`
 	CreatedAt      time.Time `gorm:"<-:create"`
 	UpdatedAt      time.Time
 }
@@ -66,8 +67,34 @@ func (p periodPO) TableName() string {
 	return "a_periods"
 }
 
-func (a ledgerPO) TableName() string {
+func (l ledgerPO) TableName() string {
 	return "a_ledgers"
+}
+
+// schemas
+
+func (a accountPO) ResolveAssociation(entity string) (string, error) {
+	if entity == "" {
+		return a.TableName(), nil
+	}
+	return "", errors.Errorf("accountPO doesn't have association named %s", entity)
+}
+
+func (p periodPO) ResolveAssociation(entity string) (string, error) {
+	if entity == "" {
+		return p.TableName(), nil
+	}
+	return "", errors.Errorf("periodPO doesn't have association named %s", entity)
+}
+
+func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
+	if entity == "" {
+		return l.TableName(), nil
+	}
+	if strings.ToLower(entity) == "account" {
+		return "Account", nil
+	}
+	return "", errors.Errorf("ledgerPO doesn't have association named %s", entity)
 }
 
 // mappers
