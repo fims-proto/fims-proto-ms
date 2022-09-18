@@ -1,9 +1,9 @@
 package http
 
 import (
+	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/journal/app/query"
 	"net/http"
-
-	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github/fims-proto/fims-proto-ms/internal/journal/app"
 	"github/fims-proto/fims-proto-ms/internal/journal/app/command"
@@ -38,22 +38,13 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/journal-entries/ [get]
 func (h Handler) ReadAllJournalEntries(c *gin.Context) {
-	pageable, err := data.NewPageableFromRequest(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-	page, err := h.app.Queries.PagingJournalEntries.Handle(c, uuid.MustParse(c.Param("sobId")), pageable)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	entries := make([]JournalEntryResponse, len(page.Content()))
-	for i, entry := range page.Content() {
-		entries[i] = JournalEntryDTOToVO(entry)
-	}
-	res, _ := data.NewPage(entries, pageable, page.NumberOfElements())
-	c.JSON(http.StatusOK, res)
+	datav3.PagingResponseProcessor(
+		c,
+		func(pageRequest datav3.PageRequest) (datav3.Page[query.JournalEntry], error) {
+			return h.app.Queries.PagingJournalEntries.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
+		},
+		JournalEntryDTOToVO,
+	)
 }
 
 // ReadJournalEntryById godoc

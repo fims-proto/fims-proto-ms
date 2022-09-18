@@ -2,10 +2,12 @@ package db
 
 import (
 	"context"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/datav3/sortable"
 
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
-
-	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -71,39 +73,28 @@ func (r JournalEntryPostgresRepository) UpdateJournalEntry(ctx context.Context, 
 
 // queries
 
-func (r JournalEntryPostgresRepository) JournalEntryById(ctx context.Context, entryId uuid.UUID) (query.JournalEntry, error) {
-	db := readDBFromCtx(ctx)
-
-	po := journalEntryPO{}
-	if err := db.Preload("LineItems").First(&po, "entry_id = ?", entryId).Error; err != nil {
-		return query.JournalEntry{}, errors.Wrap(err, "failed find journal entry by id")
+func (r JournalEntryPostgresRepository) SearchJournalEntries(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.JournalEntry], error) {
+	if sobId != uuid.Nil {
+		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
+		pageRequest.AddFilter(sobIdFilter)
 	}
-
-	return journalEntryPOToDTO(po), nil
+	return datav3.SearchEntities(ctx, pageRequest, journalEntryPO{}, journalEntryPOToDTO, readDBFromCtx(ctx).Preload("LineItems"))
 }
 
-func (r JournalEntryPostgresRepository) PagingJournalEntries(ctx context.Context, sobId uuid.UUID, pageable data.Pageable) (data.Page[query.JournalEntry], error) {
-	db := readDBFromCtx(ctx)
+func (r JournalEntryPostgresRepository) JournalEntryById(ctx context.Context, entryId uuid.UUID) (query.JournalEntry, error) {
+	entryIdFilter, _ := filterable.NewFilter("entryId", "eq", entryId)
+	pageRequest := datav3.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.New(entryIdFilter))
 
-	var journalEntryPOs []journalEntryPO
-
-	db.Scopes(data.Filtering(pageable)).Where("sob_id = ?", sobId)
-
-	var count int64
-	if err := db.Model(&journalEntryPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "count journal entries failed")
+	journalEntries, err := r.SearchJournalEntries(ctx, uuid.Nil, pageRequest)
+	if err != nil {
+		return query.JournalEntry{}, err
 	}
 
-	if err := db.Scopes(data.Paging(pageable)).Preload("LineItems").Find(&journalEntryPOs).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find journal entries by sobId %s", sobId)
+	if journalEntries.NumberOfElements() != 1 {
+		return query.JournalEntry{}, errors.Errorf("journal entry not found by id: %s", entryId)
 	}
 
-	var journalEntryDTOs []query.JournalEntry
-	for _, po := range journalEntryPOs {
-		journalEntryDTOs = append(journalEntryDTOs, journalEntryPOToDTO(po))
-	}
-
-	return data.NewPage(journalEntryDTOs, pageable, int(count))
+	return journalEntries.Content()[0], nil
 }
 
 func readDBFromCtx(ctx context.Context) *gorm.DB {

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"strings"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
@@ -54,6 +55,18 @@ func (j journalEntryPO) TableName() string {
 
 func (l lineItemPO) TableName() string {
 	return "a_line_items"
+}
+
+// schemas
+
+func (j journalEntryPO) ResolveAssociation(entity string) (string, error) {
+	if entity == "" {
+		return j.TableName(), nil
+	}
+	if strings.ToLower(entity) == strings.ToLower("LineItems") {
+		return "LineItems", nil
+	}
+	return "", errors.Errorf("journalEntryPO doesn't have association named %s", entity)
 }
 
 // mappers
@@ -117,7 +130,7 @@ func journalEntryPOToBO(po journalEntryPO) (*journal_entry.JournalEntry, error) 
 	)
 }
 
-func journalEntryPOToDTO(po journalEntryPO) query.JournalEntry {
+func journalEntryPOToDTO(po journalEntryPO) (query.JournalEntry, error) {
 	var itemDTOs []query.LineItem
 	for _, item := range po.LineItems {
 		itemDTOs = append(itemDTOs, lineItemPOToDTO(item))
@@ -144,7 +157,7 @@ func journalEntryPOToDTO(po journalEntryPO) query.JournalEntry {
 		LineItems:          itemDTOs,
 		CreatedAt:          po.CreatedAt,
 		UpdatedAt:          po.UpdatedAt,
-	}
+	}, nil
 }
 
 func lineItemBOToPO(bo line_item.LineItem, entryId uuid.UUID) lineItemPO {
