@@ -63,7 +63,7 @@ func (j journalEntryPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return j.TableName(), nil
 	}
-	if strings.ToLower(entity) == strings.ToLower("LineItems") {
+	if strings.EqualFold(entity, "LineItems") {
 		return "LineItems", nil
 	}
 	return "", errors.Errorf("journalEntryPO doesn't have association named %s", entity)

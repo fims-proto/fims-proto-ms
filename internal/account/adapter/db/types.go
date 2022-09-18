@@ -91,7 +91,7 @@ func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return l.TableName(), nil
 	}
-	if strings.ToLower(entity) == "account" {
+	if strings.EqualFold(entity, "account") {
 		return "Account", nil
 	}
 	return "", errors.Errorf("ledgerPO doesn't have association named %s", entity)
