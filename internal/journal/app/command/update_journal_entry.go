@@ -99,7 +99,7 @@ func (h UpdateJournalEntryHandler) Handle(ctx context.Context, cmd UpdateJournal
 					return nil, errors.New("period is closed")
 				}
 
-				if err := j.UpdateTransactionTime(cmd.TransactionTime, period.PeriodId, cmd.Updater); err != nil {
+				if err := j.UpdateTransactionTime(cmd.TransactionTime, period.Id, cmd.Updater); err != nil {
 					return nil, err
 				}
 			}

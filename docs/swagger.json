@@ -716,6 +716,43 @@
                 }
             }
         },
+        "/sob/{sobId}/periods/open-period": {
+            "get": {
+                "description": "Open period in SoB",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/internal_account_port_public_http.PeriodResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sobs/": {
             "get": {
                 "description": "List all sobs",

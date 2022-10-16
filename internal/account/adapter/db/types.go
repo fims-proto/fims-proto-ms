@@ -161,7 +161,7 @@ func periodBOToPO(bo period.Period) periodPO {
 func periodPOToDTO(po periodPO) (query.Period, error) {
 	return query.Period{
 		SobId:            po.SobId,
-		PeriodId:         po.Id,
+		Id:               po.Id,
 		PreviousPeriodId: po.PreviousPeriodId,
 		FiscalYear:       po.FiscalYear,
 		PeriodNumber:     po.PeriodNumber,
@@ -212,6 +212,7 @@ func ledgerPOToDTO(po ledgerPO) (query.Ledger, error) {
 	}
 
 	return query.Ledger{
+		Id:             po.Id,
 		SobId:          po.SobId,
 		AccountId:      po.AccountId,
 		PeriodId:       po.PeriodId,

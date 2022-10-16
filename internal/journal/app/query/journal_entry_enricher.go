@@ -107,7 +107,7 @@ func enrichPeriod(ctx context.Context, service service.AccountService, entries [
 			return nil, errors.Errorf("period not found by id: %s", entries[i].Period.PeriodId)
 		}
 		entries[i].Period = Period{
-			PeriodId:      period.PeriodId,
+			PeriodId:      period.Id,
 			FinancialYear: period.FiscalYear,
 			Number:        period.PeriodNumber,
 			OpeningTime:   period.OpeningTime,

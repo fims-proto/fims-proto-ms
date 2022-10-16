@@ -789,6 +789,30 @@ paths:
             $ref: '#/definitions/internal_account_port_public_http.Error'
       tags:
       - accounts
+  /sob/{sobId}/periods/open-period:
+    get:
+      consumes:
+      - application/json
+      description: Open period in SoB
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/internal_account_port_public_http.PeriodResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_account_port_public_http.Error'
+      tags:
+      - accounts
   /sobs/:
     get:
       consumes:

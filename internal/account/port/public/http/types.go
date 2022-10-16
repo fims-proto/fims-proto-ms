@@ -75,7 +75,7 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 
 func periodDTOToVO(dto query.Period) PeriodResponse {
 	return PeriodResponse{
-		Id:               dto.PeriodId,
+		Id:               dto.Id,
 		SobId:            dto.SobId,
 		PreviousPeriodId: dto.PreviousPeriodId,
 		FiscalYear:       dto.FiscalYear,

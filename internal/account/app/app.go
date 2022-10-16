@@ -11,6 +11,7 @@ type Queries struct {
 	PagingAccounts        query.PagingAccountsHandler
 	AccountsByIds         query.AccountsByIdsHandler
 	AccountsByNumbers     query.AccountsByNumbersHandler
+	OpenPeriod            query.OpenPeriodHandler
 	PagingPeriods         query.PagingPeriodsHandler
 	PeriodByTime          query.PeriodByTimeHandler
 	PeriodsByIds          query.PeriodsByIdsHandler
@@ -43,6 +44,7 @@ func (a *Application) Inject(
 		PagingAccounts:        query.NewPagingAccountsHandler(readModel),
 		AccountsByNumbers:     query.NewAccountsByNumbersHandler(readModel),
 		AccountsByIds:         query.NewAccountsByIdsHandler(readModel),
+		OpenPeriod:            query.NewOpenPeriodHandler(readModel),
 		PagingPeriods:         query.NewPagingPeriodsHandler(readModel),
 		PeriodByTime:          query.NewPeriodByTimeHandler(readModel),
 		PeriodsByIds:          query.NewPeriodsByIdsHandler(readModel),

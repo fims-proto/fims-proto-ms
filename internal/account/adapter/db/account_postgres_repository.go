@@ -237,6 +237,25 @@ func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId 
 	return accounts.Content(), nil
 }
 
+func (r AccountPostgresRepository) OpenPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
+	sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId)
+	isClosedFilter, _ := filterable.NewFilter("isClosed", "eq", false)
+	pageRequest := data.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(sobIdFilter, isClosedFilter),
+	)
+	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
+	if err != nil {
+		return query.Period{}, err
+	}
+	if periods.NumberOfElements() != 1 {
+		return query.Period{}, errors.Errorf("open period not found by sob id: %s", sobId)
+	}
+
+	return periods.Content()[0], nil
+}
+
 func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
 	periodIdFilter, _ := filterable.NewFilter("id", "eq", periodId)
 	pageRequest := data.NewPageRequest(

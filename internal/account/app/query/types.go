@@ -23,8 +23,8 @@ type Account struct {
 }
 
 type Period struct {
+	Id               uuid.UUID
 	SobId            uuid.UUID
-	PeriodId         uuid.UUID
 	PreviousPeriodId uuid.UUID
 	FiscalYear       int
 	PeriodNumber     int

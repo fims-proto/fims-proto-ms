@@ -59,7 +59,7 @@ func (i IntraProcessAdapter) ReadPeriodsByIds(ctx context.Context, periodIds []u
 	}
 	periodsMap := make(map[uuid.UUID]query.Period)
 	for _, period := range periods {
-		periodsMap[period.PeriodId] = period
+		periodsMap[period.Id] = period
 	}
 	return periodsMap, nil
 }

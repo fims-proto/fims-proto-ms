@@ -22,6 +22,7 @@ type AccountReadModel interface {
 	LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]Ledger, error)
 	PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[Ledger], error)
 
+	OpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	PeriodById(ctx context.Context, periodId uuid.UUID) (Period, error)
 	PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error)
 	PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]Period, error)

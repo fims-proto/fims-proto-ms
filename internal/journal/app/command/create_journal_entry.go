@@ -98,7 +98,7 @@ func (h CreateJournalEntryHandler) Handle(ctx context.Context, cmd CreateJournal
 	}
 
 	// get document number
-	identifier, err := h.numberingService.GenerateIdentifier(ctx, period.PeriodId, cmd.JournalType)
+	identifier, err := h.numberingService.GenerateIdentifier(ctx, period.Id, cmd.JournalType)
 	if err != nil {
 		return errors.Wrap(err, "unable to generate next number")
 	}
@@ -106,7 +106,7 @@ func (h CreateJournalEntryHandler) Handle(ctx context.Context, cmd CreateJournal
 	newEntry, err := journal_entry.New(
 		cmd.SobId,
 		cmd.EntryId,
-		period.PeriodId,
+		period.Id,
 		cmd.HeaderText,
 		cmd.JournalType,
 		identifier,
