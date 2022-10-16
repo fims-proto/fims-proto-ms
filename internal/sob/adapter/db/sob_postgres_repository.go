@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github.com/google/uuid"
@@ -71,32 +72,8 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 
 // Queries
 
-func (r SobPostgresRepository) PagingSobs(ctx context.Context, pageable data.Pageable) (data.Page[query.Sob], error) {
-	db := readDBFromCtx(ctx)
-
-	var sobPOs []sobPO
-
-	db = db.Scopes(data.Filtering(pageable))
-
-	var count int64
-	if err := db.Model(&sobPO{}).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to count sobs")
-	}
-
-	if err := db.Scopes(data.Paging(pageable)).Find(&sobPOs).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to find sobs")
-	}
-
-	var querySobs []query.Sob
-	for _, dbSob := range sobPOs {
-		querySob, err := sobPOToDTO(dbSob)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to unmarshal sob")
-		}
-		querySobs = append(querySobs, querySob)
-	}
-
-	return data.NewPage(querySobs, pageable, int(count))
+func (r SobPostgresRepository) SearchSobs(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.Sob], error) {
+	return data.SearchEntities(ctx, pageRequest, sobPO{}, sobPOToDTO, readDBFromCtx(ctx))
 }
 
 func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {

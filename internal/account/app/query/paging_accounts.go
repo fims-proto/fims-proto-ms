@@ -3,7 +3,7 @@ package query
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github.com/google/uuid"
 )
@@ -20,6 +20,6 @@ func NewPagingAccountsHandler(readModel AccountReadModel) PagingAccountsHandler 
 	return PagingAccountsHandler{readModel: readModel}
 }
 
-func (h PagingAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Account], error) {
+func (h PagingAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Account], error) {
 	return h.readModel.SearchAccounts(ctx, sobId, pageRequest)
 }

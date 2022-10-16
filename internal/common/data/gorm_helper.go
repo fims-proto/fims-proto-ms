@@ -1,69 +1,47 @@
 package data
 
 import (
-	"fmt"
-	"strings"
+	"context"
 
+	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/schema"
+	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 	"gorm.io/gorm"
 )
 
-func Paging(pageable Pageable) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		// paging
-		if pageable.IsPaged() {
-			db = db.Offset(pageable.Offset()).Limit(pageable.Size())
-		}
+func SearchEntities[PO schema.Schema, DTO any](
+	ctx context.Context,
+	r PageRequest,
+	po PO,
+	convert func(po PO) (DTO, error),
+	db *gorm.DB,
+) (Page[DTO], error) {
+	var persistentObjects []PO
+	tx := db.Scopes(filterable.Filtering(r, po)).WithContext(ctx) // new session
 
-		// sort
-		if pageable.Sorts() != nil {
-			var orderStr []string
-			for _, sort := range pageable.Sorts() {
-				orderStr = append(orderStr, strings.Join([]string{sort.Field(), sort.Order()}, " "))
-			}
-			db = db.Order(strings.Join(orderStr, ","))
-		}
-
-		return db
+	var count int64
+	if err := tx.Model(&po).Count(&count).Error; err != nil {
+		return nil, errors.Wrap(err, "failed to count entities")
 	}
-}
 
-func Filtering(pageable Pageable) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		// filter
-		if pageable.Filters() != nil {
-			var whereStr []string
-			var args []any
-			for _, filter := range pageable.Filters() {
-				// field
-				whereStr = append(whereStr, filter.Field())
-
-				// operator and variable placeholder, and args
-				switch filter.Operator() {
-				case OptBt:
-					whereStr = append(whereStr, filter.Operator().String())
-					whereStr = append(whereStr, "? AND ?")
-					args = append(args, filter.Values()[0], filter.Values()[1])
-				case OptIn:
-					whereStr = append(whereStr, filter.Operator().String())
-					whereStr = append(whereStr, "?")
-					args = append(args, filter.Values())
-				case OptStartsWith:
-					whereStr = append(whereStr, "LIKE")
-					whereStr = append(whereStr, "?")
-					args = append(args, fmt.Sprintf("%s%%", filter.Values()[0]))
-				default:
-					whereStr = append(whereStr, filter.Operator().String())
-					whereStr = append(whereStr, "?")
-					args = append(args, filter.Values()[0])
-				}
-
-				whereStr = append(whereStr, "AND")
-			}
-			whereStr = whereStr[0 : len(whereStr)-1] // remove last AND
-
-			db = db.Where(strings.Join(whereStr, " "), args...)
-		}
-
-		return db
+	if err := tx.
+		Scopes(pageable.Paging(r)).
+		Scopes(sortable.Sorting(r, po)).
+		Find(&persistentObjects).
+		Error; err != nil {
+		return nil, errors.Wrapf(err, "failed to search entities")
 	}
+
+	var dataTransferObjects []DTO
+	for _, persistentObject := range persistentObjects {
+		dto, err := convert(persistentObject)
+		if err != nil {
+			return nil, errors.Wrap(err, "failed to map entity to DTO")
+		}
+		dataTransferObjects = append(dataTransferObjects, dto)
+	}
+
+	return NewPage(dataTransferObjects, r, int(count))
 }

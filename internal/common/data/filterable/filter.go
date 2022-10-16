@@ -2,7 +2,7 @@ package filterable
 
 import (
 	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/field"
+	"github/fims-proto/fims-proto-ms/internal/common/data/field"
 )
 
 type Filter interface {

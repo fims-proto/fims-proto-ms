@@ -2,7 +2,7 @@ package http
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/account/app/query"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app"
 
@@ -36,9 +36,9 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/accounts/ [get]
 func (h Handler) ReadPagingAccounts(c *gin.Context) {
-	datav3.PagingResponseProcessor(
+	data.PagingResponseProcessor(
 		c,
-		func(pageRequest datav3.PageRequest) (datav3.Page[query.Account], error) {
+		func(pageRequest data.PageRequest) (data.Page[query.Account], error) {
 			return h.app.Queries.PagingAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
 		accountDTOToVO,
@@ -61,9 +61,9 @@ func (h Handler) ReadPagingAccounts(c *gin.Context) {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/period/{periodId}/ledgers/ [get]
 func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
-	datav3.PagingResponseProcessor(
+	data.PagingResponseProcessor(
 		c,
-		func(pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
+		func(pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
 			return h.app.Queries.PagingLedgersByPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("periodId")), pageRequest)
 		},
 		ledgerDTOToVO,
@@ -85,9 +85,9 @@ func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/periods/ [get]
 func (h Handler) ReadPagingPeriods(c *gin.Context) {
-	datav3.PagingResponseProcessor(
+	data.PagingResponseProcessor(
 		c,
-		func(pageRequest datav3.PageRequest) (datav3.Page[query.Period], error) {
+		func(pageRequest data.PageRequest) (data.Page[query.Period], error) {
 			return h.app.Queries.PagingPeriods.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
 		periodDTOToVO,

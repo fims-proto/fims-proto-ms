@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/schema"
+	"github/fims-proto/fims-proto-ms/internal/common/data/schema"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/field"
+	"github/fims-proto/fims-proto-ms/internal/common/data/field"
 	"gorm.io/gorm"
 )
 

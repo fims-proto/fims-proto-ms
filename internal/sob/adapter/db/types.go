@@ -29,6 +29,15 @@ func (s sobPO) TableName() string {
 	return "a_sobs"
 }
 
+// schemas
+
+func (s sobPO) ResolveAssociation(entity string) (string, error) {
+	if entity == "" {
+		return s.TableName(), nil
+	}
+	return "", errors.Errorf("sobPO doesn't have association named %s", entity)
+}
+
 // mappers
 
 func sobBOToPO(bo sob.Sob) (sobPO, error) {

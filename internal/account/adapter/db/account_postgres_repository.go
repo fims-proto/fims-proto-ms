@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/filterable"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/pageable"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/sortable"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 
 	"github/fims-proto/fims-proto-ms/internal/account/domain/ledger"
 
@@ -126,22 +126,22 @@ func (r AccountPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx contex
 
 // queries
 
-func (r AccountPostgresRepository) SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Account], error) {
+func (r AccountPostgresRepository) SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Account], error) {
 	addSobFilter(sobId, pageRequest)
-	return datav3.SearchEntities(ctx, pageRequest, accountPO{}, accountPOToDTO, readDBFromCtx(ctx))
+	return data.SearchEntities(ctx, pageRequest, accountPO{}, accountPOToDTO, readDBFromCtx(ctx))
 }
 
-func (r AccountPostgresRepository) SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Period], error) {
+func (r AccountPostgresRepository) SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Period], error) {
 	addSobFilter(sobId, pageRequest)
-	return datav3.SearchEntities(ctx, pageRequest, periodPO{}, periodPOToDTO, readDBFromCtx(ctx))
+	return data.SearchEntities(ctx, pageRequest, periodPO{}, periodPOToDTO, readDBFromCtx(ctx))
 }
 
-func (r AccountPostgresRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
+func (r AccountPostgresRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
 	addSobFilter(sobId, pageRequest)
-	return datav3.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, readDBFromCtx(ctx).Joins("Account"))
+	return data.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, readDBFromCtx(ctx).Joins("Account"))
 }
 
-func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.Ledger], error) {
+func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
 	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
 	pageRequest.AddFilter(periodIdFilter)
 	return r.SearchLedgers(ctx, sobId, pageRequest)
@@ -149,7 +149,7 @@ func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, so
 
 func (r AccountPostgresRepository) LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Ledger, error) {
 	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
-	pageRequest := datav3.NewPageRequest(
+	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
 		filterable.New(periodIdFilter),
@@ -166,7 +166,7 @@ func (r AccountPostgresRepository) AllAccounts(ctx context.Context, sobId uuid.U
 	accounts, err := r.SearchAccounts(
 		ctx,
 		sobId,
-		datav3.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.Unfiltered()),
+		data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.Unfiltered()),
 	)
 	if err != nil {
 		return nil, err
@@ -211,7 +211,7 @@ func (r AccountPostgresRepository) SuperiorAccounts(ctx context.Context, account
 
 func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
 	accountIdFilter, _ := filterable.NewFilter("accountId", "in", accountIds)
-	pageRequest := datav3.NewPageRequest(
+	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
 		filterable.New(accountIdFilter),
@@ -225,7 +225,7 @@ func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds
 
 func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.Account, error) {
 	accountIdFilter, _ := filterable.NewFilter("accountNumber", "in", accountNumbers)
-	pageRequest := datav3.NewPageRequest(
+	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
 		filterable.New(accountIdFilter),
@@ -239,7 +239,7 @@ func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId 
 
 func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
 	periodIdFilter, _ := filterable.NewFilter("id", "eq", periodId)
-	pageRequest := datav3.NewPageRequest(
+	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
 		filterable.New(periodIdFilter),
@@ -257,7 +257,7 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 
 func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
 	periodIdFilter, _ := filterable.NewFilter("id", "in", periodIds)
-	pageRequest := datav3.NewPageRequest(
+	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
 		filterable.New(periodIdFilter),
@@ -287,7 +287,7 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 	return periodPOToDTO(periodPOs[0])
 }
 
-func addSobFilter(sobId uuid.UUID, pageRequest datav3.PageRequest) {
+func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
 	if sobId != uuid.Nil {
 		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
 		pageRequest.AddFilter(sobIdFilter)

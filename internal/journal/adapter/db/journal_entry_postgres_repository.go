@@ -3,10 +3,10 @@ package db
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/filterable"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/pageable"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/sortable"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 
 	"github/fims-proto/fims-proto-ms/internal/journal/domain/journal_entry"
 
@@ -74,17 +74,17 @@ func (r JournalEntryPostgresRepository) UpdateJournalEntry(ctx context.Context, 
 
 // queries
 
-func (r JournalEntryPostgresRepository) SearchJournalEntries(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[query.JournalEntry], error) {
+func (r JournalEntryPostgresRepository) SearchJournalEntries(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.JournalEntry], error) {
 	if sobId != uuid.Nil {
 		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
 		pageRequest.AddFilter(sobIdFilter)
 	}
-	return datav3.SearchEntities(ctx, pageRequest, journalEntryPO{}, journalEntryPOToDTO, readDBFromCtx(ctx).Preload("LineItems"))
+	return data.SearchEntities(ctx, pageRequest, journalEntryPO{}, journalEntryPOToDTO, readDBFromCtx(ctx).Preload("LineItems"))
 }
 
 func (r JournalEntryPostgresRepository) JournalEntryById(ctx context.Context, entryId uuid.UUID) (query.JournalEntry, error) {
 	entryIdFilter, _ := filterable.NewFilter("entryId", "eq", entryId)
-	pageRequest := datav3.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.New(entryIdFilter))
+	pageRequest := data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.New(entryIdFilter))
 
 	journalEntries, err := r.SearchJournalEntries(ctx, uuid.Nil, pageRequest)
 	if err != nil {

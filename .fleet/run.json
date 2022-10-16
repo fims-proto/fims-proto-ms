@@ -1,0 +1,10 @@
+{
+    "configurations": [
+      {
+        "name": "fims-proto-ms",
+        "type": "go",
+        "goExecPath": "/usr/local/bin/go",
+        "buildTargets": ["$PROJECT_DIR$/cmd/main.go"],
+      }
+    ]
+}

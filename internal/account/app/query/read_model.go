@@ -4,15 +4,15 @@ import (
 	"context"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github.com/google/uuid"
 )
 
 type AccountReadModel interface {
-	SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Account], error)
-	SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Ledger], error)
-	SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Period], error)
+	SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Account], error)
+	SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Ledger], error)
+	SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Period], error)
 
 	AllAccounts(ctx context.Context, sobId uuid.UUID) ([]Account, error)
 	AccountsByIds(ctx context.Context, accountIds []uuid.UUID) ([]Account, error)
@@ -20,7 +20,7 @@ type AccountReadModel interface {
 	SuperiorAccounts(ctx context.Context, accountId uuid.UUID) ([]Account, error)
 
 	LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]Ledger, error)
-	PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[Ledger], error)
+	PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[Ledger], error)
 
 	PeriodById(ctx context.Context, periodId uuid.UUID) (Period, error)
 	PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error)

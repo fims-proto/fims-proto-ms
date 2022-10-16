@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/app"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
@@ -33,23 +34,13 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sobs/ [get]
 func (h Handler) ReadAllSobs(c *gin.Context) {
-	pageable, err := data.NewPageableFromRequest(c)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	sobsPage, err := h.app.Queries.PagingSobs.Handle(c, pageable)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	sobResponses := make([]SobResponse, len(sobsPage.Content()))
-	for i, sob := range sobsPage.Content() {
-		sobResponses[i] = sobDTOToVO(sob)
-	}
-	resp, _ := data.NewPage(sobResponses, pageable, sobsPage.NumberOfElements())
-	c.JSON(http.StatusOK, resp)
+	data.PagingResponseProcessor(
+		c,
+		func(pageRequest data.PageRequest) (data.Page[query.Sob], error) {
+			return h.app.Queries.PagingSobs.Handle(c, pageRequest)
+		},
+		sobDTOToVO,
+	)
 }
 
 // ReadSobById godoc

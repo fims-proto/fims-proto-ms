@@ -3,7 +3,7 @@ package query
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -30,7 +30,7 @@ func NewPagingJournalEntriesHandler(readModel JournalReadModel, userService serv
 	}
 }
 
-func (h PagingJournalEntriesHandler) Handle(ctx context.Context, sobId uuid.UUID, pageRequest datav3.PageRequest) (datav3.Page[JournalEntry], error) {
+func (h PagingJournalEntriesHandler) Handle(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[JournalEntry], error) {
 	entriesPage, err := h.readModel.SearchJournalEntries(ctx, sobId, pageRequest)
 	if err != nil {
 		return nil, err
@@ -43,5 +43,5 @@ func (h PagingJournalEntriesHandler) Handle(ctx context.Context, sobId uuid.UUID
 		return nil, errors.Wrap(err, "failed to enrich user in journal entry")
 	}
 
-	return datav3.NewPage(journalEntries, pageRequest, entriesPage.NumberOfElements())
+	return data.NewPage(journalEntries, pageRequest, entriesPage.NumberOfElements())
 }

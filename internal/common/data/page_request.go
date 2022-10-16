@@ -1,9 +1,9 @@
-package datav3
+package data
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/filterable"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/pageable"
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/sortable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
+	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 )
 
 type PageRequest interface {

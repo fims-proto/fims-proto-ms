@@ -18,6 +18,6 @@ func NewPagingSobsHandler(readModel SobReadModel) PagingSobsHandler {
 	return PagingSobsHandler{readModel: readModel}
 }
 
-func (h PagingSobsHandler) Handle(ctx context.Context, pageable data.Pageable) (data.Page[Sob], error) {
-	return h.readModel.PagingSobs(ctx, pageable)
+func (h PagingSobsHandler) Handle(ctx context.Context, pageRequest data.PageRequest) (data.Page[Sob], error) {
+	return h.readModel.SearchSobs(ctx, pageRequest)
 }

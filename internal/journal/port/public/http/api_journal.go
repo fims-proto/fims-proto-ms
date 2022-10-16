@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/journal/app/query"
 
 	"github/fims-proto/fims-proto-ms/internal/journal/app"
@@ -39,9 +39,9 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/journal-entries/ [get]
 func (h Handler) ReadAllJournalEntries(c *gin.Context) {
-	datav3.PagingResponseProcessor(
+	data.PagingResponseProcessor(
 		c,
-		func(pageRequest datav3.PageRequest) (datav3.Page[query.JournalEntry], error) {
+		func(pageRequest data.PageRequest) (data.Page[query.JournalEntry], error) {
 			return h.app.Queries.PagingJournalEntries.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
 		JournalEntryDTOToVO,

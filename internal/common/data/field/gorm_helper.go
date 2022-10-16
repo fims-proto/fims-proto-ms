@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/common/datav3/schema"
+	"github/fims-proto/fims-proto-ms/internal/common/data/schema"
 )
 
 var (
