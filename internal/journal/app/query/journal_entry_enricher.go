@@ -31,7 +31,7 @@ func enrichLineItemAccountNumber(ctx context.Context, service service.AccountSer
 		}
 	}
 
-	accountConfigs, err := service.ReadAccountConfigurationsByIds(ctx, toKeySlice[uuid.UUID, void](accountSet))
+	accountConfigs, err := service.ReadAccountsByIds(ctx, toKeySlice[uuid.UUID, void](accountSet))
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read accounts by Ids")
 	}

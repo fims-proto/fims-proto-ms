@@ -210,7 +210,7 @@ func (r AccountPostgresRepository) SuperiorAccounts(ctx context.Context, account
 }
 
 func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
-	accountIdFilter, _ := filterable.NewFilter("accountId", "in", accountIds)
+	accountIdFilter, _ := filterable.NewFilter("id", "in", accountIds...)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
@@ -224,7 +224,7 @@ func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds
 }
 
 func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.Account, error) {
-	accountIdFilter, _ := filterable.NewFilter("accountNumber", "in", accountNumbers)
+	accountIdFilter, _ := filterable.NewFilter("accountNumber", "in", accountNumbers...)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
@@ -275,7 +275,7 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 }
 
 func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
-	periodIdFilter, _ := filterable.NewFilter("id", "in", periodIds)
+	periodIdFilter, _ := filterable.NewFilter("id", "in", periodIds...)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),

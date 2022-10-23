@@ -19,7 +19,7 @@ type filterImpl struct {
 
 // new
 
-func NewFilter(fieldName, operator string, values ...any) (Filter, error) {
+func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
 	f, err := field.New(fieldName)
 	if err != nil {
 		return nil, err
@@ -41,10 +41,15 @@ func NewFilter(fieldName, operator string, values ...any) (Filter, error) {
 		}
 	}
 
+	sliceAny := make([]any, len(values))
+	for i, v := range values {
+		sliceAny[i] = v
+	}
+
 	return filterImpl{
 		field:    f,
 		operator: o,
-		values:   values,
+		values:   sliceAny,
 	}, nil
 }
 

@@ -35,31 +35,31 @@ func SyncLogger() {
 	_ = logger.Sync()
 }
 
-func InfoWithoutCxt(template string, fmtArgs ...interface{}) {
+func InfoWithoutCxt(template string, fmtArgs ...any) {
 	info(context.Background(), template, fmtArgs...)
 }
 
-func DebugWithoutCxt(template string, fmtArgs ...interface{}) {
+func DebugWithoutCxt(template string, fmtArgs ...any) {
 	debug(context.Background(), template, fmtArgs...)
 }
 
-func ErrWithoutCxt(err error, template string, fmtArgs ...interface{}) {
+func ErrWithoutCxt(err error, template string, fmtArgs ...any) {
 	errLog(context.Background(), err, template, fmtArgs...)
 }
 
-func Info(ctx context.Context, template string, fmtArgs ...interface{}) {
+func Info(ctx context.Context, template string, fmtArgs ...any) {
 	info(ctx, template, fmtArgs...)
 }
 
-func Debug(ctx context.Context, template string, fmtArgs ...interface{}) {
+func Debug(ctx context.Context, template string, fmtArgs ...any) {
 	debug(ctx, template, fmtArgs...)
 }
 
-func Err(ctx context.Context, err error, template string, fmtArgs ...interface{}) {
+func Err(ctx context.Context, err error, template string, fmtArgs ...any) {
 	errLog(ctx, err, template, fmtArgs...)
 }
 
-func info(ctx context.Context, template string, fmtArgs ...interface{}) {
+func info(ctx context.Context, template string, fmtArgs ...any) {
 	if logger != nil && logger.Core().Enabled(zap.InfoLevel) {
 		logger.Info(
 			getMessage(template, fmtArgs),
@@ -67,7 +67,7 @@ func info(ctx context.Context, template string, fmtArgs ...interface{}) {
 	}
 }
 
-func debug(ctx context.Context, template string, fmtArgs ...interface{}) {
+func debug(ctx context.Context, template string, fmtArgs ...any) {
 	if logger != nil && logger.Core().Enabled(zap.DebugLevel) {
 		logger.Debug(
 			getMessage(template, fmtArgs),
@@ -75,7 +75,7 @@ func debug(ctx context.Context, template string, fmtArgs ...interface{}) {
 	}
 }
 
-func errLog(ctx context.Context, err error, template string, fmtArgs ...interface{}) {
+func errLog(ctx context.Context, err error, template string, fmtArgs ...any) {
 	if logger != nil && logger.Core().Enabled(zap.ErrorLevel) {
 		logger.Error(
 			getMessage(template, fmtArgs),
@@ -85,7 +85,7 @@ func errLog(ctx context.Context, err error, template string, fmtArgs ...interfac
 }
 
 // getMessage format with Sprint, Sprintf, or neither.
-func getMessage(template string, fmtArgs []interface{}) string {
+func getMessage(template string, fmtArgs []any) string {
 	if len(fmtArgs) == 0 {
 		return template
 	}

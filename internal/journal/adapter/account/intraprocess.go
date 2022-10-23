@@ -25,27 +25,27 @@ func NewIntraProcessAdapter(accountInterface accountPort.AccountInterface) Intra
 }
 
 func (i IntraProcessAdapter) ValidateExistenceAndGetId(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error) {
-	accountConfigurations, err := i.accountInterface.ReadAccountConfigurationsByNumbers(ctx, sobId, accountNumbers)
+	accounts, err := i.accountInterface.ReadAccountsByNumbers(ctx, sobId, accountNumbers)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to validate existence")
 	}
-	accountConfigsMap := make(map[string]uuid.UUID)
-	for _, config := range accountConfigurations {
-		accountConfigsMap[config.AccountNumber] = config.Id
+	accountsMap := make(map[string]uuid.UUID)
+	for _, config := range accounts {
+		accountsMap[config.AccountNumber] = config.Id
 	}
-	return accountConfigsMap, nil
+	return accountsMap, nil
 }
 
-func (i IntraProcessAdapter) ReadAccountConfigurationsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
-	accountConfigurations, err := i.accountInterface.ReadAccountConfigurationsByIds(ctx, accountIds)
+func (i IntraProcessAdapter) ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]query.Account, error) {
+	accounts, err := i.accountInterface.ReadAccountsByIds(ctx, accountIds)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read account configuration")
 	}
-	accountConfigsMap := make(map[uuid.UUID]query.Account)
-	for _, config := range accountConfigurations {
-		accountConfigsMap[config.Id] = config
+	accountsMap := make(map[uuid.UUID]query.Account)
+	for _, config := range accounts {
+		accountsMap[config.Id] = config
 	}
-	return accountConfigsMap, nil
+	return accountsMap, nil
 }
 
 func (i IntraProcessAdapter) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (query.Period, error) {

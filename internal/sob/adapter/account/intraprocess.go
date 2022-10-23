@@ -20,7 +20,7 @@ func NewIntraProcessAdapter(accountInterface accountPort.AccountInterface) Intra
 }
 
 func (i IntraProcessAdapter) InitializeAccounts(ctx context.Context, sobId uuid.UUID) error {
-	return i.accountInterface.InitializeAccountConfigurations(ctx, sobId)
+	return i.accountInterface.InitializeAccounts(ctx, sobId)
 }
 
 func (i IntraProcessAdapter) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error {
