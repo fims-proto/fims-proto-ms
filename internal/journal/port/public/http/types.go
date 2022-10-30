@@ -45,6 +45,7 @@ type PostJournalEntryRequest struct {
 }
 
 type UpdateJournalEntryRequest struct {
+	HeaderText      string            `json:"headerText"`
 	TransactionTime time.Time         `json:"transactionTime"`
 	LineItems       []LineItemRequest `json:"lineItems"`
 	Updater         uuid.UUID         `json:"updater"`

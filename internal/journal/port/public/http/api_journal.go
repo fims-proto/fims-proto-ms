@@ -249,6 +249,7 @@ func (h Handler) UpdateJournalEntry(c *gin.Context) {
 	}
 	cmd := command.UpdateJournalEntryCmd{
 		EntryId:         uuid.MustParse(c.Param("entryId")),
+		HeaderText:      req.HeaderText,
 		LineItems:       items,
 		TransactionTime: req.TransactionTime,
 		Updater:         req.Updater,

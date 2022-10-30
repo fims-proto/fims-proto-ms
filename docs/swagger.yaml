@@ -199,6 +199,8 @@ definitions:
     type: object
   http.UpdateJournalEntryRequest:
     properties:
+      headerText:
+        type: string
       lineItems:
         items:
           $ref: '#/definitions/http.LineItemRequest'

@@ -1314,6 +1314,9 @@ const docTemplate = `{
         "http.UpdateJournalEntryRequest": {
             "type": "object",
             "properties": {
+                "headerText": {
+                    "type": "string"
+                },
                 "lineItems": {
                     "type": "array",
                     "items": {

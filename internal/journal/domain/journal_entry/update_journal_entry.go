@@ -62,3 +62,16 @@ func (d *JournalEntry) UpdateTransactionTime(transactionTime time.Time, periodId
 	d.transactionTime = transactionTime
 	return nil
 }
+
+func (d *JournalEntry) UpdateHeaderText(headerText string, user uuid.UUID) error {
+	if err := d.checkUpdatePossible(user); err != nil {
+		return errors.Wrap(err, "update not allowed")
+	}
+
+	if headerText == "" {
+		return errors.New("header text cannot be empty")
+	}
+
+	d.headerText = headerText
+	return nil
+}

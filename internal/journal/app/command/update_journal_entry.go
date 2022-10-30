@@ -17,6 +17,7 @@ import (
 
 type UpdateJournalEntryCmd struct {
 	EntryId         uuid.UUID
+	HeaderText      string
 	LineItems       []LineItemCmd
 	TransactionTime time.Time
 	Updater         uuid.UUID
@@ -102,6 +103,10 @@ func (h UpdateJournalEntryHandler) Handle(ctx context.Context, cmd UpdateJournal
 				if err := j.UpdateTransactionTime(cmd.TransactionTime, period.Id, cmd.Updater); err != nil {
 					return nil, err
 				}
+			}
+
+			if err := j.UpdateHeaderText(cmd.HeaderText, cmd.Updater); err != nil {
+				return nil, err
 			}
 
 			return j, nil
