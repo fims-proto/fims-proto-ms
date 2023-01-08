@@ -1,0 +1,45 @@
+{
+  "voucher-emptyId": "凭证 ID 不能为空",
+  "voucher-emptySobId": "凭证账套 ID 不能为空",
+  "voucher-emptyPeriodId": "凭证账期 ID 不能为空",
+  "voucher-emptyNumber": "凭证号不能为空",
+  "voucher-emptyCreator": "凭证制单人不能为空",
+  "voucher-emptyReviewer": "凭证复核人不能为空",
+  "voucher-emptyAuditor": "凭证审核人不能为空",
+  "voucher-invalidPostStatus": "凭证登账状态异常",
+  "voucher-emptyLineItem": "凭证行项目不能为空",
+  "voucher-notBalanced": "凭证借贷不平衡",
+  "voucher-zeroTransactionTime": "凭证交易日期不能为空",
+  "voucher-futureTransactionTime": "凭证交易日期 {0} 不能在未来",
+  "voucher-type-notSupported": "不支持凭证类型 {0}",
+
+  "voucher-lineItem-emptyId": "凭证行项目 ID 不能为空",
+  "voucher-lineItem-emptyAccountId": "凭证行项目科目 ID 不能为空",
+  "voucher-lineItem-emptySummary": "凭证行项目摘要不能为空",
+  "voucher-lineItem-emptyDebitCredit": "凭证行项目金额不能为空",
+  "voucher-lineItem-debitCreditCoExist": "凭证行项目借贷金额不能同时记录",
+
+  "voucher-update-audited": "凭证已被审核，不能更新",
+  "voucher-update-reviewed": "凭证已被复核，不能更新",
+  "voucher-update-zeroTransactionTime": "凭证交易日期不能为空",
+
+  "voucher-audit-emptyAuditor": "审核人不能为空",
+  "voucher-audit-repeatAudit": "凭证已被审核，不能重复审核",
+  "voucher-audit-auditorSameAsCreator": "审核人和制单人不能相同",
+  "voucher-audit-auditorSameAsReviewer": "审核人和复核人不能相同",
+  "voucher-cancelAudit-notAudited": "凭证还未被审核",
+  "voucher-cancelAudit-differentCancelAuditor": "取消审核须由审核人本人操作",
+  "voucher-cancelAudit-posted": "凭证已登账，不能取消审核",
+
+  "voucher-review-emptyReviewer": "复核人不能为空",
+  "voucher-review-repeatReview": "凭证已被复核，不能重复复核",
+  "voucher-review-reviewerSameAsCreator": "复核人和制单人不能相同",
+  "voucher-review-reviewerSameAsAuditor": "复核人和审核人不能相同",
+  "voucher-cancelReview-notReviewed": "凭证还未被复核",
+  "voucher-cancelReview-differentCancelReviewer": "取消复核须由复核人本人操作",
+  "voucher-cancelReview-posted": "凭证已登账，不能取消复核",
+
+  "voucher-post-repeatPost": "凭证已登账，不能重复登账",
+  "voucher-post-notAudited": "凭证尚未审核",
+  "voucher-post-notReviewed": "凭证尚未复核"
+}

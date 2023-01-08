@@ -1,13 +1,14 @@
 package db
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 	"time"
+
+	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 	"github.com/google/uuid"
 )
 
-type tenant struct {
+type tenantPO struct {
 	Id        uuid.UUID `gorm:"type:uuid"`
 	Subdomain string
 	DSN       string
@@ -15,10 +16,18 @@ type tenant struct {
 	UpdatedAt time.Time
 }
 
-func unmarshallToQuery(t *tenant) query.Tenant {
+// table names
+
+func (t tenantPO) TableName() string {
+	return "tenants"
+}
+
+// mappers
+
+func tenantPOToDTO(po tenantPO) query.Tenant {
 	return query.Tenant{
-		TenantId:  t.Id,
-		Subdomain: t.Subdomain,
-		DSN:       t.DSN,
+		TenantId:  po.Id,
+		Subdomain: po.Subdomain,
+		DSN:       po.DSN,
 	}
 }

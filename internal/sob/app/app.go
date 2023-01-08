@@ -3,11 +3,13 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/service"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 )
 
 type Queries struct {
-	ReadSobs query.ReadSobsHandler
+	PagingSobs query.PagingSobsHandler
+	SobById    query.SobByIdHandler
 }
 
 type Commands struct {
@@ -27,13 +29,15 @@ func NewApplication() Application {
 
 func (a *Application) Inject(
 	repo domain.Repository,
-	readModel query.SobsReadModel,
+	readModel query.SobReadModel,
+	accountService service.AccountService,
 ) {
 	a.Queries = Queries{
-		ReadSobs: query.NewReadSobsHandler(readModel),
+		PagingSobs: query.NewPagingSobsHandler(readModel),
+		SobById:    query.NewSobByIdHandler(readModel),
 	}
 	a.Commands = Commands{
-		CreateSob: command.NewCreateSobHandler(repo),
+		CreateSob: command.NewCreateSobHandler(repo, accountService),
 		UpdateSob: command.NewUpdateSobHandler(repo),
 		Migrate:   command.NewMigrationHandler(repo),
 	}

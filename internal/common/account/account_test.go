@@ -9,15 +9,15 @@ import (
 )
 
 func TestAccountType(t *testing.T) {
-	accountType, err := NewAccountType("ASSETS")
+	accountType, err := NewAccountType("assets")
 	require.NoError(t, err)
 	assert.Equal(t, Assets, accountType)
-	assert.Equal(t, "ASSETS", accountType.String())
+	assert.Equal(t, "assets", accountType.String())
 }
 
 func TestNewDirectionFromString(t *testing.T) {
-	direction, err := NewDirection("DEBIT")
+	direction, err := NewDirection("debit")
 	require.NoError(t, err)
 	assert.Equal(t, Debit, direction)
-	assert.Equal(t, "DEBIT", direction.String())
+	assert.Equal(t, "debit", direction.String())
 }

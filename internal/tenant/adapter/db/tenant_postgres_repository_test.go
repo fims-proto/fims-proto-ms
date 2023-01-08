@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -39,7 +40,7 @@ func TestAdapter_PostgresRepository_ReadByUUID(t *testing.T) {
 
 	// WHEN
 	repo := NewTenantPostgresRepository(db)
-	tenant, err := repo.ReadByUUID(context.Background(), tenantId)
+	tenant, err := repo.TenantById(context.Background(), tenantId)
 
 	// THEN
 	assert.NoError(t, err)
@@ -74,7 +75,7 @@ func TestAdapter_PostgresRepository_ReadBySubdomain(t *testing.T) {
 
 	// WHEN
 	repo := NewTenantPostgresRepository(db)
-	tenant, err := repo.ReadBySubdomain(context.Background(), "local_domain")
+	tenant, err := repo.TenantBySubdomain(context.Background(), "local_domain")
 
 	// THEN
 	assert.NoError(t, err)

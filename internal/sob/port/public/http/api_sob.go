@@ -1,9 +1,13 @@
 package http
 
 import (
+	"net/http"
+
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/app"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -21,7 +25,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 // ReadAllSobs godoc
-// @Summary List all sobs
+// @Text List all sobs
 // @Description List all sobs
 // @Tags sobs
 // @Accept application/json
@@ -30,20 +34,17 @@ func NewHandler(app *app.Application) Handler {
 // @Failure 500 {object} Error
 // @Router /sobs/ [get]
 func (h Handler) ReadAllSobs(c *gin.Context) {
-	sobs, err := h.app.Queries.ReadSobs.HandleReadAll(c)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
-		return
-	}
-	var resp []SobResponse
-	for _, sob := range sobs {
-		resp = append(resp, mapFromSobQuery(sob))
-	}
-	c.JSON(http.StatusOK, resp)
+	data.PagingResponseProcessor(
+		c,
+		func(pageRequest data.PageRequest) (data.Page[query.Sob], error) {
+			return h.app.Queries.PagingSobs.Handle(c, pageRequest)
+		},
+		sobDTOToVO,
+	)
 }
 
 // ReadSobById godoc
-// @Summary Show sob by id
+// @Text Show sob by id
 // @Description Show sob by id
 // @Tags sobs
 // @Accept application/json
@@ -54,20 +55,20 @@ func (h Handler) ReadAllSobs(c *gin.Context) {
 // @Failure 500 {object} Error
 // @Router /sobs/{sobId} [get]
 func (h Handler) ReadSobById(c *gin.Context) {
-	sob, err := h.app.Queries.ReadSobs.HandleReadById(c, uuid.MustParse(c.Param("sobId")))
+	sob, err := h.app.Queries.SobById.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	if sob.Id == uuid.Nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, mapFromSobQuery(sob))
+	c.JSON(http.StatusOK, sobDTOToVO(sob))
 }
 
 // CreateSob godoc
-// @Summary Create sob
+// @Text Create sob
 // @Description Create sob
 // @Tags sobs
 // @Accept application/json
@@ -80,24 +81,25 @@ func (h Handler) ReadSobById(c *gin.Context) {
 func (h Handler) CreateSob(c *gin.Context) {
 	var req CreateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	createdId, err := h.app.Commands.CreateSob.Handle(c, req.mapToCommand())
+	cmd := req.mapToCommand()
+	err := h.app.Commands.CreateSob.Handle(c, cmd)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
-	createdSob, err := h.app.Queries.ReadSobs.HandleReadById(c, createdId)
+	createdSob, err := h.app.Queries.SobById.Handle(c, cmd.SobId)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusCreated, createdSob)
+	c.JSON(http.StatusCreated, sobDTOToVO(createdSob))
 }
 
 // UpdateSob godoc
-// @Summary Update sob
+// @Text Update sob
 // @Description Update sob
 // @Tags sobs
 // @Accept application/json
@@ -111,33 +113,19 @@ func (h Handler) CreateSob(c *gin.Context) {
 func (h Handler) UpdateSob(c *gin.Context) {
 	var req UpdateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, wrapErr(err))
+		c.JSON(http.StatusBadRequest, err)
 		return
 	}
 	cmd := command.UpdateSobCmd{
-		Id:                 uuid.MustParse(c.Param("sobId")),
+		SobId:              uuid.MustParse(c.Param("sobId")),
 		Name:               req.Name,
 		AccountsCodeLength: req.AccountsCodeLength,
 	}
 	if err := h.app.Commands.UpdateSob.Handle(c, cmd); err != nil {
-		c.JSON(http.StatusInternalServerError, wrapErr(err))
+		_ = c.Error(err)
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func wrapErr(e error) Error {
-	var slug string
-	se, ok := e.(slugErr)
-	if ok {
-		slug = se.Slug()
-	} else {
-		slug = "unknown-error"
-	}
-	return Error{
-		Slug:    slug,
-		Message: e.Error(),
-	}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

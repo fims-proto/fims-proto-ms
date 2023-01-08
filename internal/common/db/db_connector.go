@@ -3,6 +3,8 @@ package db
 import (
 	"time"
 
+	"gorm.io/gorm/schema"
+
 	"github.com/spf13/viper"
 
 	"gorm.io/gorm/logger"
@@ -19,7 +21,7 @@ func NewConnector() Connector {
 }
 
 func (d Connector) Open(dsn string) (*gorm.DB, error) {
-	db, err := retry(4, 5*time.Second, func() (interface{}, error) {
+	db, err := retry(4, 5*time.Second, func() (any, error) {
 		return d.open(dsn)
 	})
 	if err != nil {
@@ -34,6 +36,9 @@ func (d Connector) open(dsn string) (*gorm.DB, error) {
 		logLevel = logger.Info
 	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: "a_",
+		},
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {

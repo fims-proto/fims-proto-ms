@@ -2,8 +2,9 @@ package ginmiddleware
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/common/log"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"

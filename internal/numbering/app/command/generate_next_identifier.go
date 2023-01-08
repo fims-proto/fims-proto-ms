@@ -1,0 +1,66 @@
+package command
+
+import (
+	"context"
+
+	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
+	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
+
+	"github.com/google/uuid"
+	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
+	"github/fims-proto/fims-proto-ms/internal/numbering/domain"
+)
+
+type GenerateNextIdentifierCmd struct {
+	IdentifierId         uuid.UUID
+	TargetBusinessObject string
+	ObjectsToMatch       map[string]string
+}
+
+type GenerateNextIdentifierHandler struct {
+	repo      domain.Repository
+	readModel query.NumberingReadModel
+}
+
+func NewGenerateNextIdentifierHandler(repo domain.Repository, readModel query.NumberingReadModel) GenerateNextIdentifierHandler {
+	if repo == nil {
+		panic("nil numbering repo")
+	}
+
+	if readModel == nil {
+		panic("nil ResolveIdentifierConfigurationReadModel")
+	}
+
+	return GenerateNextIdentifierHandler{
+		repo:      repo,
+		readModel: readModel,
+	}
+}
+
+func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateNextIdentifierCmd) error {
+	configuration, err := h.readModel.ResolveIdentifierConfiguration(ctx, cmd.TargetBusinessObject, cmd.ObjectsToMatch)
+	if err != nil {
+		return errors.Wrap(err, "failed to handle generate identifier")
+	}
+
+	return h.repo.UpdateIdentifierConfiguration(
+		ctx,
+		configuration.Id,
+		func(config *identifier_configuration.IdentifierConfiguration) (*identifier_configuration.IdentifierConfiguration, error) {
+			config.IncrementCounter()
+
+			identifierBO, err := identifier.New(cmd.IdentifierId, config.Id(), config.Stringify())
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create identifier domain entity")
+			}
+
+			err = h.repo.CreateIdentifier(ctx, identifierBO)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to create identifier")
+			}
+
+			return config, nil
+		},
+	)
+}

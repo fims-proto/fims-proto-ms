@@ -3,17 +3,19 @@ package app
 import "github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 type Queries struct {
-	ReadTenants query.ReadTenantsHandler
+	TenantById        query.TenantByIdHandler
+	TenantBySubdomain query.TenantBySubdomainHandler
 }
 
 type Application struct {
 	Queries Queries
 }
 
-func NewApplication(readModel query.TenantsReadModel) Application {
+func NewApplication(readModel query.TenantReadModel) Application {
 	return Application{
 		Queries{
-			ReadTenants: query.NewReadTenantsHandler(readModel),
+			TenantById:        query.NewTenantByIdHandler(readModel),
+			TenantBySubdomain: query.NewTenantBySubdomain(readModel),
 		},
 	}
 }

@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/sob/app"
 	"net/http"
+
+	"github/fims-proto/fims-proto-ms/internal/sob/app"
 
 	"github.com/gin-gonic/gin"
 )

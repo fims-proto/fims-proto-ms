@@ -2,7 +2,9 @@ package command
 
 import (
 	"context"
-	"github/fims-proto/fims-proto-ms/internal/common/log"
+
+	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
@@ -10,7 +12,7 @@ import (
 )
 
 type UpdateSobCmd struct {
-	Id                 uuid.UUID
+	SobId              uuid.UUID
 	Name               string
 	AccountsCodeLength []int
 }
@@ -26,19 +28,11 @@ func NewUpdateSobHandler(repo domain.Repository) UpdateSobHandler {
 	return UpdateSobHandler{repo: repo}
 }
 
-func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) (err error) {
-	log.Info(ctx, "handle updating sob")
-	log.Debug(ctx, "handle updating sob, cmd: %+v", cmd)
-	defer func() {
-		if err != nil {
-			log.Err(ctx, err, "handle updating failed")
-		}
-	}()
-
+func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) error {
 	return h.repo.UpdateSob(
 		ctx,
-		cmd.Id,
-		func(s *domain.Sob) (*domain.Sob, error) {
+		cmd.SobId,
+		func(s *sob.Sob) (*sob.Sob, error) {
 			if cmd.Name != "" {
 				if err := s.UpdateName(cmd.Name); err != nil {
 					return nil, errors.Wrap(err, "sob name updating failed")

@@ -2,9 +2,10 @@ package tenantmanager
 
 import (
 	"context"
+	"sync"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"

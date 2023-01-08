@@ -1,46 +1,43 @@
 package http
 
 import (
+	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 )
 
-type slugErr interface {
-	Slug() string
-}
-
 type Error struct {
-	Message string
-	Slug    string
+	Message string `json:"message,omitempty"`
+	Slug    string `json:"slug,omitempty"`
 }
 
 type CreateSobRequest struct {
-	Name                string
-	Description         string
-	BaseCurrency        string
-	StartingPeriodYear  int
-	StartingPeriodMonth int
-	AccountsCodeLength  []int
+	Name                string `json:"name,omitempty"`
+	Description         string `json:"description,omitempty"`
+	BaseCurrency        string `json:"baseCurrency,omitempty"`
+	StartingPeriodYear  int    `json:"startingPeriodYear,omitempty"`
+	StartingPeriodMonth int    `json:"startingPeriodMonth,omitempty"`
+	AccountsCodeLength  []int  `json:"accountsCodeLength,omitempty"`
 }
 
 type UpdateSobRequest struct {
-	Name               string
-	AccountsCodeLength []int
+	Name               string `json:"name,omitempty"`
+	AccountsCodeLength []int  `json:"accountsCodeLength,omitempty"`
 }
 
 type SobResponse struct {
-	Id                  string
-	Name                string
-	Description         string
-	BaseCurrency        string
-	StartingPeriodYear  int
-	StartingPeriodMonth int
-	AccountsCodeLength  []int
+	Id                  uuid.UUID `json:"id,omitempty"`
+	Name                string    `json:"name,omitempty"`
+	Description         string    `json:"description,omitempty"`
+	BaseCurrency        string    `json:"baseCurrency,omitempty"`
+	StartingPeriodYear  int       `json:"startingPeriodYear,omitempty"`
+	StartingPeriodMonth int       `json:"startingPeriodMonth,omitempty"`
+	AccountsCodeLength  []int     `json:"accountsCodeLength,omitempty"`
 }
 
-func mapFromSobQuery(q query.Sob) SobResponse {
+func sobDTOToVO(q query.Sob) SobResponse {
 	return SobResponse{
-		Id:                  q.Id.String(),
+		Id:                  q.Id,
 		Name:                q.Name,
 		Description:         q.Description,
 		BaseCurrency:        q.BaseCurrency,
@@ -52,6 +49,7 @@ func mapFromSobQuery(q query.Sob) SobResponse {
 
 func (r CreateSobRequest) mapToCommand() command.CreateSobCmd {
 	return command.CreateSobCmd{
+		SobId:               uuid.New(),
 		Name:                r.Name,
 		Description:         r.Description,
 		BaseCurrency:        r.BaseCurrency,
