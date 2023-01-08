@@ -178,15 +178,15 @@ func (r AccountPostgresRepository) SuperiorAccounts(ctx context.Context, account
 	rawSql := `WITH RECURSIVE res AS (
 		   SELECT *
 		   FROM a_accounts
-		   WHERE account_id = ?
+		   WHERE id = ?
 		   UNION
 		   SELECT a_accounts.*
 		   FROM res
-		   JOIN a_accounts ON a_accounts.account_id = res.superior_account_id
+		   JOIN a_accounts ON a_accounts.id = res.superior_account_id
 		)
 		SELECT *
 		FROM res
-		WHERE account_id != ?`
+		WHERE id != ?`
 	rawSql = strings.Join(strings.Fields(rawSql), " ") // normalize whitespaces
 
 	db := readDBFromCtx(ctx)
