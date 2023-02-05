@@ -13,5 +13,5 @@ type SobService interface {
 }
 
 type NumberingService interface {
-	InitializeIdentifierConfigurationForJournal(ctx context.Context, periodId uuid.UUID) error
+	InitializeIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error
 }

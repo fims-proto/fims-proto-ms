@@ -17,14 +17,14 @@ func NewIntraProcessAdapter(numberingInterface numberingPort.NumberingInterface)
 	return IntraProcessAdapter{numberingInterface: numberingInterface}
 }
 
-func (i IntraProcessAdapter) InitializeIdentifierConfigurationForJournal(ctx context.Context, periodId uuid.UUID) error {
+func (i IntraProcessAdapter) InitializeIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error {
 	cmd := command.CreateIdentifierConfigurationCmd{
 		IdentifierConfigurationId: uuid.New(),
-		TargetBusinessObject:      "journal",
+		TargetBusinessObject:      "voucher",
 		PropertyMatchers: []struct{ Name, Value string }{
 			{
-				Name:  "journal_type",
-				Value: "general_journal",
+				Name:  "voucher_type",
+				Value: "general_voucher",
 			},
 			{
 				Name:  "period_id",

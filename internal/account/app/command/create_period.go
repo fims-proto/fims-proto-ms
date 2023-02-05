@@ -91,8 +91,8 @@ func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) er
 			return errors.Wrap(err, "failed to create ledgers for period")
 		}
 
-		// create numbering configuration for journal entries in this period
-		if err = h.numberingService.InitializeIdentifierConfigurationForJournal(ctx, cmd.PeriodId); err != nil {
+		// create numbering configuration for voucher entries in this period
+		if err = h.numberingService.InitializeIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
 			return errors.Wrap(err, "failed to create numbering configuration for period")
 		}
 

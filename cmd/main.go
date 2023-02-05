@@ -48,13 +48,13 @@ import (
 	tenantService "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
 	tenantIntraPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
 
-	journalAccountAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/account"
-	journalAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/db"
-	journalNumberingAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/numbering"
-	journalUserAdapter "github/fims-proto/fims-proto-ms/internal/journal/adapter/user"
-	journalApp "github/fims-proto/fims-proto-ms/internal/journal/app"
-	journalPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/journal/port/private/http"
-	journalPublicHttpPort "github/fims-proto/fims-proto-ms/internal/journal/port/public/http"
+	voucherAccountAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
+	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
+	voucherNumberingAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/numbering"
+	voucherUserAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/user"
+	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
+	voucherPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
+	voucherPublicHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -97,14 +97,14 @@ func main() {
 	// repositories
 	sobRepository := sobAdapter.NewSobPostgresRepository()
 	accountRepository := accountAdapter.NewAccountPostgresRepository()
-	journalRepository := journalAdapter.NewJournalEntryPostgresRepository()
+	voucherRepository := voucherAdapter.NewVoucherPostgresRepository()
 	numberingRepository := numberingAdapter.NewNumberingPostgresRepository()
 	userRepository := userAdapter.NewUserPostgresRepository()
 
 	// application - will be passed by reference, in order to make injection work
 	sobApplication := sobApp.NewApplication()
 	accountApplication := accountApp.NewApplication()
-	journalApplication := journalApp.NewApplication()
+	voucherApplication := voucherApp.NewApplication()
 	numberingApplication := numberingApp.NewApplication()
 	userApplication := userApp.NewApplication()
 
@@ -131,15 +131,15 @@ func main() {
 		numberingServiceForAccount,
 	)
 
-	accountServiceForJournal := journalAccountAdapter.NewIntraProcessAdapter(accountInterface)
-	numberingServiceForJournal := journalNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
-	userServiceForJournal := journalUserAdapter.NewIntraProcessAdapter(userInterface)
-	journalApplication.Inject(
-		journalRepository,
-		journalRepository,
-		accountServiceForJournal,
-		userServiceForJournal,
-		numberingServiceForJournal,
+	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	numberingServiceForVoucher := voucherNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
+	userServiceForVoucher := voucherUserAdapter.NewIntraProcessAdapter(userInterface)
+	voucherApplication.Inject(
+		voucherRepository,
+		voucherRepository,
+		accountServiceForVoucher,
+		userServiceForVoucher,
+		numberingServiceForVoucher,
 	)
 
 	numberingApplication.Inject(
@@ -162,7 +162,7 @@ func main() {
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
 	accountPublicHttpPort.InitRouter(accountPublicHttpPort.NewHandler(&accountApplication), publicApiRouter)
-	journalPublicHttpPort.InitRouter(journalPublicHttpPort.NewHandler(&journalApplication), publicApiRouter)
+	voucherPublicHttpPort.InitRouter(voucherPublicHttpPort.NewHandler(&voucherApplication), publicApiRouter)
 	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
 
 	// private http API, should have different authentication method then public API
@@ -170,7 +170,7 @@ func main() {
 	sobPrivateHttpPort.InitRouter(sobPrivateHttpPort.NewHandler(&sobApplication), privateApiRouter)
 	numberingPrivateHttpPort.InitRouter(numberingPrivateHttpPort.NewHandler(&numberingApplication), privateApiRouter)
 	accountPrivateHttpPort.InitRouter(accountPrivateHttpPort.NewHandler(&accountApplication), privateApiRouter)
-	journalPrivateHttpPort.InitRouter(journalPrivateHttpPort.NewHandler(&journalApplication), privateApiRouter)
+	voucherPrivateHttpPort.InitRouter(voucherPrivateHttpPort.NewHandler(&voucherApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
 	if strings.HasPrefix(viper.GetString("profile"), "dev") {
