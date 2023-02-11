@@ -1388,9 +1388,6 @@ const docTemplate = `{
                 "periodNumber": {
                     "type": "integer"
                 },
-                "previousPeriodId": {
-                    "type": "string"
-                },
                 "sobId": {
                     "type": "string"
                 },
@@ -1458,7 +1455,7 @@ const docTemplate = `{
                 "endingTime": {
                     "type": "string"
                 },
-                "financialYear": {
+                "fiscalYear": {
                     "type": "integer"
                 },
                 "id": {

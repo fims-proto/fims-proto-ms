@@ -68,14 +68,14 @@ type UserResponse struct {
 }
 
 type PeriodResponse struct {
-	Id            uuid.UUID `json:"id"`
-	FinancialYear int       `json:"financialYear"`
-	Number        int       `json:"number"`
-	OpeningTime   time.Time `json:"openingTime"`
-	EndingTime    time.Time `json:"endingTime"`
-	IsClosed      bool      `json:"isClosed"`
-	CreatedAt     time.Time `json:"createdAt"`
-	UpdatedAt     time.Time `json:"updatedAt"`
+	Id          uuid.UUID `json:"id"`
+	FiscalYear  int       `json:"fiscalYear"`
+	Number      int       `json:"number"`
+	OpeningTime time.Time `json:"openingTime"`
+	EndingTime  time.Time `json:"endingTime"`
+	IsClosed    bool      `json:"isClosed"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type VoucherResponse struct {
@@ -152,14 +152,14 @@ func VoucherDTOToVO(q query.Voucher) VoucherResponse {
 		SobId: q.SobId,
 		Id:    q.Id,
 		Period: PeriodResponse{
-			Id:            q.Period.PeriodId,
-			FinancialYear: q.Period.FinancialYear,
-			Number:        q.Period.Number,
-			OpeningTime:   q.Period.OpeningTime,
-			EndingTime:    q.Period.EndingTime,
-			IsClosed:      q.Period.IsClosed,
-			CreatedAt:     q.Period.CreatedAt,
-			UpdatedAt:     q.Period.UpdatedAt,
+			Id:          q.Period.PeriodId,
+			FiscalYear:  q.Period.FiscalYear,
+			Number:      q.Period.Number,
+			OpeningTime: q.Period.OpeningTime,
+			EndingTime:  q.Period.EndingTime,
+			IsClosed:    q.Period.IsClosed,
+			CreatedAt:   q.Period.CreatedAt,
+			UpdatedAt:   q.Period.UpdatedAt,
 		},
 		HeaderText:         q.HeaderText,
 		VoucherType:        q.VoucherType,

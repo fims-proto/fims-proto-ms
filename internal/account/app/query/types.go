@@ -23,16 +23,15 @@ type Account struct {
 }
 
 type Period struct {
-	Id               uuid.UUID
-	SobId            uuid.UUID
-	PreviousPeriodId uuid.UUID
-	FiscalYear       int
-	PeriodNumber     int
-	OpeningTime      time.Time
-	EndingTime       time.Time
-	IsClosed         bool
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	Id           uuid.UUID
+	SobId        uuid.UUID
+	FiscalYear   int
+	PeriodNumber int
+	OpeningTime  time.Time
+	EndingTime   time.Time
+	IsClosed     bool
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 type Ledger struct {

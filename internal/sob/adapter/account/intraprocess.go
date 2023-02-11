@@ -2,7 +2,8 @@ package account
 
 import (
 	"context"
-	"time"
+
+	"github.com/pkg/errors"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app/command"
 
@@ -23,14 +24,23 @@ func (i IntraProcessAdapter) InitializeAccounts(ctx context.Context, sobId uuid.
 	return i.accountInterface.InitializeAccounts(ctx, sobId)
 }
 
-func (i IntraProcessAdapter) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, financialYear, number int) error {
-	startDateOfMonth := time.Date(financialYear, time.Month(number), 1, 0, 0, 0, 0, time.UTC)
+func (i IntraProcessAdapter) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, fiscalYear, number int) error {
+	periodId := uuid.New()
+	if err := i.accountInterface.CreatePeriod(ctx, command.CreatePeriodCmd{
+		SobId:      sobId,
+		PeriodId:   periodId,
+		FiscalYear: fiscalYear,
+		Number:     number,
+	}); err != nil {
+		return errors.Wrap(err, "initializing first period failed")
+	}
 
-	return i.accountInterface.CreatePeriod(ctx, command.CreatePeriodCmd{
-		SobId:         sobId,
-		PeriodId:      uuid.New(),
-		FinancialYear: financialYear,
-		Number:        number,
-		OpeningTime:   startDateOfMonth,
-	})
+	if err := i.accountInterface.CreateLedgers(ctx, command.CreateLedgersCmd{
+		SobId:    sobId,
+		PeriodId: periodId,
+	}); err != nil {
+		return errors.Wrap(err, "initializing ledgers for first period failed")
+	}
+
+	return nil
 }

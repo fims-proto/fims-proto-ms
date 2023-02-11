@@ -1,6 +1,7 @@
 {
+  "emptySobId": "账套 ID 不能为空",
+
   "voucher-emptyId": "凭证 ID 不能为空",
-  "voucher-emptySobId": "凭证账套 ID 不能为空",
   "voucher-emptyPeriodId": "凭证账期 ID 不能为空",
   "voucher-emptyHeaderText": "凭证描述不能为空",
   "voucher-emptyNumber": "凭证号不能为空",
@@ -44,5 +45,11 @@
   "lineItem-emptyAccountId": "凭证行项目科目 ID 不能为空",
   "lineItem-emptyText": "凭证行项目摘要不能为空",
   "lineItem-emptyDebitCredit": "凭证行项目金额不能为空",
-  "lineItem-debitCreditDuplicated": "凭证行项目借贷金额不能同时记录"
+  "lineItem-debitCreditDuplicated": "凭证行项目借贷金额不能同时记录",
+
+  "period-emptyId": "账期 ID 不能为空",
+  "period-invalidFiscalYear": "财务年度 {{.A}} 不合法",
+  "period-invalidPeriodNumber": "账期号 {{.A}} 不合法",
+  "period-invalidOpeningTime": "账期开放时间 ({{.A}}) 与预期不符 ({{.B}})",
+  "period-invalidEndingTime": "账期关闭时间 ({{.A}}) 与预期不符 ({{.B}})"
 }

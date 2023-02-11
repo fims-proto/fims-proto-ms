@@ -247,8 +247,6 @@ definitions:
         type: string
       periodNumber:
         type: integer
-      previousPeriodId:
-        type: string
       sobId:
         type: string
       updatedAt:
@@ -292,7 +290,7 @@ definitions:
         type: string
       endingTime:
         type: string
-      financialYear:
+      fiscalYear:
         type: integer
       id:
         type: string

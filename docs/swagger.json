@@ -1381,9 +1381,6 @@
                 "periodNumber": {
                     "type": "integer"
                 },
-                "previousPeriodId": {
-                    "type": "string"
-                },
                 "sobId": {
                     "type": "string"
                 },
@@ -1451,7 +1448,7 @@
                 "endingTime": {
                     "type": "string"
                 },
-                "financialYear": {
+                "fiscalYear": {
                     "type": "integer"
                 },
                 "id": {

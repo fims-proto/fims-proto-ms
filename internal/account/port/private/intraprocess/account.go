@@ -44,6 +44,10 @@ func (i AccountInterface) CreatePeriod(ctx context.Context, cmd command.CreatePe
 	return i.app.Commands.CreatePeriod.Handle(ctx, cmd)
 }
 
+func (i AccountInterface) CreateLedgers(ctx context.Context, cmd command.CreateLedgersCmd) error {
+	return i.app.Commands.CreateLedgers.Handle(ctx, cmd)
+}
+
 func (i AccountInterface) PostAccounts(ctx context.Context, cmd command.PostAccountsCmd) error {
 	return i.app.Commands.PostAccounts.Handle(ctx, cmd)
 }

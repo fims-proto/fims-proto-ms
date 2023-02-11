@@ -24,6 +24,7 @@ type AccountReadModel interface {
 
 	OpenPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	PeriodById(ctx context.Context, periodId uuid.UUID) (Period, error)
+	PeriodByFiscalYearAndNumber(ctx context.Context, sobId uuid.UUID, fiscalYear, periodNumber int) (Period, error)
 	PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (Period, error)
 	PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]Period, error)
 }

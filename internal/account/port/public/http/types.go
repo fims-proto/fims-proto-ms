@@ -29,16 +29,15 @@ type AccountResponse struct {
 }
 
 type PeriodResponse struct {
-	Id               uuid.UUID `json:"id"`
-	SobId            uuid.UUID `json:"sobId"`
-	PreviousPeriodId uuid.UUID `json:"previousPeriodId"`
-	FiscalYear       int       `json:"fiscalYear"`
-	PeriodNumber     int       `json:"periodNumber"`
-	OpeningTime      time.Time `json:"openingTime"`
-	EndingTime       time.Time `json:"endingTime"`
-	IsClosed         bool      `json:"isClosed"`
-	CreatedAt        time.Time `json:"createdAt"`
-	UpdatedAt        time.Time `json:"updatedAt"`
+	Id           uuid.UUID `json:"id"`
+	SobId        uuid.UUID `json:"sobId"`
+	FiscalYear   int       `json:"fiscalYear"`
+	PeriodNumber int       `json:"periodNumber"`
+	OpeningTime  time.Time `json:"openingTime"`
+	EndingTime   time.Time `json:"endingTime"`
+	IsClosed     bool      `json:"isClosed"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 type LedgerResponse struct {
@@ -75,16 +74,15 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 
 func periodDTOToVO(dto query.Period) PeriodResponse {
 	return PeriodResponse{
-		Id:               dto.Id,
-		SobId:            dto.SobId,
-		PreviousPeriodId: dto.PreviousPeriodId,
-		FiscalYear:       dto.FiscalYear,
-		PeriodNumber:     dto.PeriodNumber,
-		OpeningTime:      dto.OpeningTime,
-		EndingTime:       dto.EndingTime,
-		IsClosed:         dto.IsClosed,
-		CreatedAt:        dto.CreatedAt,
-		UpdatedAt:        dto.UpdatedAt,
+		Id:           dto.Id,
+		SobId:        dto.SobId,
+		FiscalYear:   dto.FiscalYear,
+		PeriodNumber: dto.PeriodNumber,
+		OpeningTime:  dto.OpeningTime,
+		EndingTime:   dto.EndingTime,
+		IsClosed:     dto.IsClosed,
+		CreatedAt:    dto.CreatedAt,
+		UpdatedAt:    dto.UpdatedAt,
 	}
 }
 
