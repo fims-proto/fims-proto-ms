@@ -3,9 +3,10 @@ package localization
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"golang.org/x/text/language"
-	"strings"
 )
 
 var keys = strings.Split("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "")

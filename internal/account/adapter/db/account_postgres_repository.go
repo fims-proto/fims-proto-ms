@@ -238,19 +238,19 @@ func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId 
 }
 
 func (r AccountPostgresRepository) OpenPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
-	sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId)
 	isClosedFilter, _ := filterable.NewFilter("isClosed", "eq", false)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(sobIdFilter, isClosedFilter),
+		filterable.New(isClosedFilter),
 	)
+	addSobFilter(sobId, pageRequest)
 	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
 	if err != nil {
 		return query.Period{}, err
 	}
 	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("open period not found by sob id: %s", sobId)
+		return query.Period{}, errors.Errorf("ex[ected 1 open period found by sob id: %s, but got %d", sobId, periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil
@@ -268,7 +268,7 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 		return query.Period{}, err
 	}
 	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("period not found by id: %s", periodId)
+		return query.Period{}, errors.Errorf("expect 1 period not found by id: %s, but got %d", periodId, periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil
@@ -294,7 +294,7 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 
 	var periodPOs []periodPO
 	if err := db.
-		Where("sob_id = ? AND opening_time <= ? AND (ending_time > ? OR ending_time = ?)", sobId, timePoint, timePoint, time.Time{}).
+		Where("sob_id = ? AND opening_time <= ? AND ending_time > ?", sobId, timePoint, timePoint).
 		Find(&periodPOs).Error; err != nil {
 		return query.Period{}, errors.Wrap(err, "find period by id failed")
 	}
@@ -304,6 +304,26 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 	}
 
 	return periodPOToDTO(periodPOs[0])
+}
+
+func (r AccountPostgresRepository) PeriodByFiscalYearAndNumber(ctx context.Context, sobId uuid.UUID, fiscalYear, periodNumber int) (query.Period, error) {
+	fiscalYearFilter, _ := filterable.NewFilter("fiscalYear", "eq", fiscalYear)
+	numberFilter, _ := filterable.NewFilter("periodNumber", "eq", periodNumber)
+	pageRequest := data.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(fiscalYearFilter, numberFilter),
+	)
+	addSobFilter(sobId, pageRequest)
+	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
+	if err != nil {
+		return query.Period{}, err
+	}
+	if periods.NumberOfElements() != 1 {
+		return query.Period{}, errors.Errorf("expect 1 period found by fiscal year %d and number %d, but got %d", fiscalYear, periodNumber, periods.NumberOfElements())
+	}
+
+	return periods.Content()[0], nil
 }
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {

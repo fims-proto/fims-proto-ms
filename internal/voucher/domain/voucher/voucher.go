@@ -42,7 +42,7 @@ func New(
 	lineItems []line_item.LineItem,
 ) (*Voucher, error) {
 	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("voucher-emptySobId")
+		return nil, errors.NewSlugError("emptySobId")
 	}
 
 	if voucherId == uuid.Nil {

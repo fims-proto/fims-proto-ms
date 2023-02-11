@@ -970,7 +970,7 @@
 					"script": {
 						"exec": [
 							"pm.test(\"Post voucher failed\", function () {",
-							"    pm.response.to.have.status(500);",
+							"    pm.response.to.have.status(400);",
 							"});"
 						],
 						"type": "text/javascript"

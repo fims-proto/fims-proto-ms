@@ -31,16 +31,15 @@ type accountPO struct {
 }
 
 type periodPO struct {
-	Id               uuid.UUID `gorm:"type:uuid"`
-	SobId            uuid.UUID `gorm:"type:uuid;uniqueIndex:periods_sobid_year_number_key"`
-	PreviousPeriodId uuid.UUID `gorm:"type:uuid"`
-	FiscalYear       int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
-	PeriodNumber     int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
-	OpeningTime      time.Time
-	EndingTime       time.Time
-	IsClosed         bool
-	CreatedAt        time.Time `gorm:"<-:create"`
-	UpdatedAt        time.Time
+	Id           uuid.UUID `gorm:"type:uuid"`
+	SobId        uuid.UUID `gorm:"type:uuid;uniqueIndex:periods_sobid_year_number_key"`
+	FiscalYear   int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
+	PeriodNumber int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
+	OpeningTime  time.Time
+	EndingTime   time.Time
+	IsClosed     bool
+	CreatedAt    time.Time `gorm:"<-:create"`
+	UpdatedAt    time.Time
 }
 
 type ledgerPO struct {
@@ -147,29 +146,27 @@ func accountPOToDTO(po accountPO) (query.Account, error) {
 
 func periodBOToPO(bo period.Period) periodPO {
 	return periodPO{
-		SobId:            bo.SobId(),
-		Id:               bo.Id(),
-		PreviousPeriodId: bo.PreviousPeriodId(),
-		FiscalYear:       bo.FinancialYear(),
-		PeriodNumber:     bo.PeriodNumber(),
-		OpeningTime:      bo.OpeningTime(),
-		EndingTime:       bo.EndingTime(),
-		IsClosed:         bo.IsClosed(),
+		SobId:        bo.SobId(),
+		Id:           bo.Id(),
+		FiscalYear:   bo.FiscalYear(),
+		PeriodNumber: bo.PeriodNumber(),
+		OpeningTime:  bo.OpeningTime(),
+		EndingTime:   bo.EndingTime(),
+		IsClosed:     bo.IsClosed(),
 	}
 }
 
 func periodPOToDTO(po periodPO) (query.Period, error) {
 	return query.Period{
-		SobId:            po.SobId,
-		Id:               po.Id,
-		PreviousPeriodId: po.PreviousPeriodId,
-		FiscalYear:       po.FiscalYear,
-		PeriodNumber:     po.PeriodNumber,
-		OpeningTime:      po.OpeningTime,
-		EndingTime:       po.EndingTime,
-		IsClosed:         po.IsClosed,
-		CreatedAt:        po.CreatedAt,
-		UpdatedAt:        po.UpdatedAt,
+		SobId:        po.SobId,
+		Id:           po.Id,
+		FiscalYear:   po.FiscalYear,
+		PeriodNumber: po.PeriodNumber,
+		OpeningTime:  po.OpeningTime,
+		EndingTime:   po.EndingTime,
+		IsClosed:     po.IsClosed,
+		CreatedAt:    po.CreatedAt,
+		UpdatedAt:    po.UpdatedAt,
 	}, nil
 }
 

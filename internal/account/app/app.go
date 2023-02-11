@@ -21,6 +21,7 @@ type Queries struct {
 type Commands struct {
 	InitialAccounts command.InitialAccountsHandler
 	CreatePeriod    command.CreatePeriodHandler
+	CreateLedgers   command.CreateLedgersHandler
 	PostAccounts    command.PostAccountsHandler
 	Migrate         command.MigrationHandler
 }
@@ -57,7 +58,8 @@ func (a *Application) Inject(
 			numberingService,
 			readModel,
 		),
-		PostAccounts: command.NewPostAccountsHandler(repo, readModel),
-		Migrate:      command.NewMigrationHandler(repo),
+		CreateLedgers: command.NewCreateLedgersHandler(repo, readModel),
+		PostAccounts:  command.NewPostAccountsHandler(repo, readModel),
+		Migrate:       command.NewMigrationHandler(repo),
 	}
 }

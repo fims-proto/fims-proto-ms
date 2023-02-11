@@ -1,10 +1,11 @@
 package errors
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
-	"net/http"
 )
 
 func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {

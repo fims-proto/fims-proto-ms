@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/common/localization"
 
 	accountNumberingAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/numbering"
 

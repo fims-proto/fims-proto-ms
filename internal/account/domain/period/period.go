@@ -3,59 +3,94 @@ package period
 import (
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
+// Period consider a time point belongs to current period if ['openingTime', 'endingTime')
 type Period struct {
-	id               uuid.UUID
-	sobId            uuid.UUID
-	previousPeriodId uuid.UUID
-	financialYear    int
-	periodNumber     int
-	openingTime      time.Time
-	endingTime       time.Time
-	isClosed         bool
+	id           uuid.UUID
+	sobId        uuid.UUID
+	fiscalYear   int
+	periodNumber int
+	openingTime  time.Time
+	endingTime   time.Time
+	isClosed     bool
 }
 
-func New(id, sobId, previousPeriodId uuid.UUID, financialYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
+func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed bool) (*Period, error) {
 	if sobId == uuid.Nil {
-		return nil, errors.New("nil sob id")
+		return nil, errors.NewSlugError("emptySobId")
 	}
 
 	if id == uuid.Nil {
-		return nil, errors.New("nil period id")
+		return nil, errors.NewSlugError("period-emptyId")
 	}
 
-	if financialYear < 1970 || financialYear > 9999 {
-		return nil, errors.Errorf("invalid financial year %d", financialYear)
+	if fiscalYear < 1970 || fiscalYear > 9999 {
+		return nil, errors.NewSlugError("period-invalidFiscalYear", fiscalYear)
 	}
 
-	if periodNumber < 1 {
-		return nil, errors.Errorf("invalid period number %d", periodNumber)
+	if periodNumber < 1 || periodNumber > 12 {
+		return nil, errors.NewSlugError("period-invalidPeriodNumber", periodNumber)
+	}
+
+	return NewFromPersistence(
+		id,
+		sobId,
+		fiscalYear,
+		periodNumber,
+		getOpeningTime(fiscalYear, periodNumber),
+		getEndingTime(fiscalYear, periodNumber),
+		isClosed,
+	)
+}
+
+func NewFromPersistence(id, sobId uuid.UUID, fiscalYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
+	if sobId == uuid.Nil {
+		return nil, errors.NewSlugError("emptySobId")
+	}
+
+	if id == uuid.Nil {
+		return nil, errors.NewSlugError("period-emptyId")
+	}
+
+	if fiscalYear < 1970 || fiscalYear > 9999 {
+		return nil, errors.NewSlugError("period-invalidFiscalYear", fiscalYear)
+	}
+
+	if periodNumber < 1 || periodNumber > 12 {
+		return nil, errors.NewSlugError("period-invalidPeriodNumber", periodNumber)
 	}
 
 	if openingTime.IsZero() {
-		return nil, errors.New("zero opening time")
+		return nil, errors.NewSlugError("period-zeroOpeningTime")
 	}
 
-	if !endingTime.IsZero() && openingTime.After(endingTime) {
-		return nil, errors.Errorf("opening time %s is after ending time %s", openingTime.Format(time.RFC3339), endingTime.Format(time.RFC3339))
+	if endingTime.IsZero() {
+		return nil, errors.NewSlugError("period-zeroEndingTime")
 	}
 
-	if isClosed && endingTime.IsZero() {
-		return nil, errors.New("zero ending time when period is closed")
+	expectedOpeningTime := getOpeningTime(fiscalYear, periodNumber)
+	expectedEndingTime := getEndingTime(fiscalYear, periodNumber)
+
+	if !openingTime.Equal(expectedOpeningTime) {
+		return nil, errors.NewSlugError("period-invalidOpeningTime", openingTime, expectedOpeningTime)
+	}
+
+	if !endingTime.Equal(expectedEndingTime) {
+		return nil, errors.NewSlugError("period-invalidEndingTime", endingTime, expectedEndingTime)
 	}
 
 	return &Period{
-		id:               id,
-		sobId:            sobId,
-		previousPeriodId: previousPeriodId,
-		financialYear:    financialYear,
-		periodNumber:     periodNumber,
-		openingTime:      openingTime,
-		endingTime:       endingTime,
-		isClosed:         isClosed,
+		id:           id,
+		sobId:        sobId,
+		fiscalYear:   fiscalYear,
+		periodNumber: periodNumber,
+		openingTime:  openingTime,
+		endingTime:   endingTime,
+		isClosed:     isClosed,
 	}, nil
 }
 
@@ -67,12 +102,8 @@ func (p Period) SobId() uuid.UUID {
 	return p.sobId
 }
 
-func (p Period) PreviousPeriodId() uuid.UUID {
-	return p.previousPeriodId
-}
-
-func (p Period) FinancialYear() int {
-	return p.financialYear
+func (p Period) FiscalYear() int {
+	return p.fiscalYear
 }
 
 func (p Period) PeriodNumber() int {

@@ -26,14 +26,14 @@ type User struct {
 }
 
 type Period struct {
-	PeriodId      uuid.UUID
-	FinancialYear int
-	Number        int
-	OpeningTime   time.Time
-	EndingTime    time.Time
-	IsClosed      bool
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	PeriodId    uuid.UUID
+	FiscalYear  int
+	Number      int
+	OpeningTime time.Time
+	EndingTime  time.Time
+	IsClosed    bool
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Voucher struct {
