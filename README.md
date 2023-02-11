@@ -3,6 +3,7 @@
 1. in fims-proto-ms folder, start postgres with `docker compose up -build`
 2. in fims-proto-ms folder, start fims backend service with `go run cmd/main.go`, running at port `5002`
 3. in [fims-iap-dev](https://github.com/fims-proto/fims-iap-dev) folder, start ory/oathkeeper with `docker compose up -build`, running at port `4455`
+// 这部分是否可以去掉， 已经没有fims-iap-dev对么？
 4. in [fims-proto-ui](https://github.com/fims-proto/fims-proto-ui) folder, start vite in 'dev' mode with `npm run dev`, running at port `5001`
 5. Open [`http://127.0.0.1:4455/ui/`](http://127.0.0.1:4455/ui/), ready to go :)
 
