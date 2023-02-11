@@ -22,7 +22,7 @@ func Test_getOpeningTime(t *testing.T) {
 				fiscalYear:   2023,
 				periodNumber: 1,
 			},
-			want: "2023-01-01T00:00:00+08:00",
+			want: "2023-01-01T00:00:00Z",
 		},
 	}
 	for _, tt := range tests {
@@ -50,7 +50,7 @@ func Test_getEndingTime(t *testing.T) {
 				fiscalYear:   2023,
 				periodNumber: 1,
 			},
-			want: "2023-02-01T00:00:00+08:00",
+			want: "2023-02-01T00:00:00Z",
 		},
 		{
 			name: "nextYear_success",
@@ -58,7 +58,7 @@ func Test_getEndingTime(t *testing.T) {
 				fiscalYear:   2023,
 				periodNumber: 12,
 			},
-			want: "2024-01-01T00:00:00+08:00",
+			want: "2024-01-01T00:00:00Z",
 		},
 	}
 	for _, tt := range tests {
