@@ -2,24 +2,24 @@ package voucher
 
 import (
 	"github.com/google/uuid"
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 func (d *Voucher) Review(reviewer uuid.UUID) error {
 	if d.isReviewed {
-		return commonErrors.NewSlugError("voucher-review-repeatReview", "voucher is reviewed")
+		return errors.NewSlugError("voucher-review-repeatReview")
 	}
 
 	if reviewer == uuid.Nil {
-		return commonErrors.NewSlugError("voucher-review-emptyReviewer", "empty reviewer")
+		return errors.NewSlugError("voucher-review-emptyReviewer")
 	}
 
 	if reviewer == d.creator {
-		return commonErrors.NewSlugError("voucher-review-reviewerSameAsCreator", "reviewer is same as creator")
+		return errors.NewSlugError("voucher-review-reviewerSameAsCreator")
 	}
 
 	if d.auditor != uuid.Nil && reviewer == d.auditor {
-		return commonErrors.NewSlugError("voucher-review-reviewerSameAsAuditor", "reviewer is same as auditor")
+		return errors.NewSlugError("voucher-review-reviewerSameAsAuditor")
 	}
 
 	d.isReviewed = true
@@ -29,15 +29,15 @@ func (d *Voucher) Review(reviewer uuid.UUID) error {
 
 func (d *Voucher) CancelReview(reviewer uuid.UUID) error {
 	if !d.isReviewed {
-		return commonErrors.NewSlugError("voucher-cancelReview-notReviewed", "voucher is not reviewed")
+		return errors.NewSlugError("voucher-cancelReview-notReviewed")
 	}
 
 	if d.reviewer != reviewer {
-		return commonErrors.NewSlugError("voucher-cancelReview-differentReviewer", "only reviewer can cancel review")
+		return errors.NewSlugError("voucher-cancelReview-differentReviewer")
 	}
 
 	if d.isPosted {
-		return commonErrors.NewSlugError("voucher-cancelReview-posted", "voucher is posted")
+		return errors.NewSlugError("voucher-cancelReview-posted")
 	}
 
 	d.isReviewed = false

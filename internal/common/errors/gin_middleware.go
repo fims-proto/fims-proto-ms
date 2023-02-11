@@ -1,14 +1,13 @@
 package errors
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/localization"
+	"net/http"
 )
 
-func ErrorHandler(bundle *i18n.Bundle) gin.HandlerFunc {
+func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
 
@@ -33,16 +32,11 @@ func ErrorHandler(bundle *i18n.Bundle) gin.HandlerFunc {
 		}
 
 		if slug != "" {
-			localize, _ := i18n.NewLocalizer(bundle, c.Request.Header.Get("Accept-Language")).
-				Localize(&i18n.LocalizeConfig{
-					MessageID:    slug,
-					TemplateData: localizationArgs,
-				})
-			if localize != "" {
+			if localize := localizer.Get(c.Request.Header.Get("Accept-Language"), slug, localizationArgs); localize != "" {
 				message = localize
 			}
 
-			c.JSON(http.StatusInternalServerError, slugErrResponse{
+			c.JSON(http.StatusBadRequest, slugErrResponse{
 				Slug:    slug,
 				Message: message,
 			})

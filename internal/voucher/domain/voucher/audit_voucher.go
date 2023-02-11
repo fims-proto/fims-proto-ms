@@ -2,24 +2,24 @@ package voucher
 
 import (
 	"github.com/google/uuid"
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 func (d *Voucher) Audit(auditor uuid.UUID) error {
 	if d.isAudited {
-		return commonErrors.NewSlugError("voucher-audit-repeatAudit", "voucher is audited")
+		return errors.NewSlugError("voucher-audit-repeatAudit")
 	}
 
 	if auditor == uuid.Nil {
-		return commonErrors.NewSlugError("voucher-audit-emptyAuditor", "empty auditor")
+		return errors.NewSlugError("voucher-audit-emptyAuditor")
 	}
 
 	if auditor == d.creator {
-		return commonErrors.NewSlugError("voucher-audit-auditorSameAsCreator", "auditor is same as creator")
+		return errors.NewSlugError("voucher-audit-auditorSameAsCreator")
 	}
 
 	if d.reviewer != uuid.Nil && auditor == d.reviewer {
-		return commonErrors.NewSlugError("voucher-audit-auditorSameAsReviewer", "auditor is same as reviewer")
+		return errors.NewSlugError("voucher-audit-auditorSameAsReviewer")
 	}
 
 	d.isAudited = true
@@ -29,15 +29,15 @@ func (d *Voucher) Audit(auditor uuid.UUID) error {
 
 func (d *Voucher) CancelAudit(auditor uuid.UUID) error {
 	if !d.isAudited {
-		return commonErrors.NewSlugError("voucher-cancelAudit-notAudited", "voucher not audited")
+		return errors.NewSlugError("voucher-cancelAudit-notAudited")
 	}
 
 	if d.auditor != auditor {
-		return commonErrors.NewSlugError("voucher-cancelAudit-differentAuditor", "only auditor can cancel audit")
+		return errors.NewSlugError("voucher-cancelAudit-differentAuditor")
 	}
 
 	if d.isPosted {
-		return commonErrors.NewSlugError("voucher-cancelAudit-posted", "voucher is posted")
+		return errors.NewSlugError("voucher-cancelAudit-posted")
 	}
 
 	d.isAudited = false

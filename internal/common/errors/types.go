@@ -8,19 +8,17 @@ type slugErrResponse struct {
 }
 
 type SlugErr struct {
-	slug  string
-	error string
-	args  []any
+	slug string
+	args []any
 }
 
 func (s SlugErr) Error() string {
-	return s.error
+	return s.slug
 }
 
-func NewSlugError(slug, error string, args ...any) SlugErr {
+func NewSlugError(slug string, args ...any) SlugErr {
 	return SlugErr{
-		slug:  slug,
-		error: error,
-		args:  args,
+		slug: slug,
+		args: args,
 	}
 }

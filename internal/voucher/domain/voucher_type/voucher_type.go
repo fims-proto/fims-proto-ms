@@ -1,10 +1,6 @@
 package voucher_type
 
-import (
-	"fmt"
-
-	"github/fims-proto/fims-proto-ms/internal/common/errors"
-)
+import "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 type VoucherType struct {
 	slug string
@@ -25,5 +21,5 @@ func FromString(s string) (VoucherType, error) {
 		return General, nil
 	}
 
-	return Unknown, errors.NewSlugError("voucher-unknownVoucherType", fmt.Sprintf("unknown voucher type %s", s), s)
+	return Unknown, errors.NewSlugError("voucher-unknownVoucherType", s)
 }
