@@ -3,7 +3,7 @@ package voucher
 import (
 	"time"
 
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/line_item"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher_type"
 
@@ -42,19 +42,19 @@ func New(
 	lineItems []line_item.LineItem,
 ) (*Voucher, error) {
 	if sobId == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptySobId", "empty sob id")
+		return nil, errors.NewSlugError("voucher-emptySobId")
 	}
 
 	if voucherId == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptyId", "empty voucher id")
+		return nil, errors.NewSlugError("voucher-emptyId")
 	}
 
 	if periodId == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptyPeriodId", "empty period id")
+		return nil, errors.NewSlugError("voucher-emptyPeriodId")
 	}
 
 	if headerText == "" {
-		return nil, commonErrors.NewSlugError("voucher-emptySummary", "empty header text")
+		return nil, errors.NewSlugError("voucher-emptyHeaderText")
 	}
 
 	dt, err := voucher_type.FromString(voucherType)
@@ -63,39 +63,39 @@ func New(
 	}
 
 	if documentNumber == "" {
-		return nil, commonErrors.NewSlugError("voucher-emptyNumber", "empty document number")
+		return nil, errors.NewSlugError("voucher-emptyNumber")
 	}
 
 	if attachmentQuantity < 0 {
-		return nil, commonErrors.NewSlugError("voucher-emptyAttachment", "attachment quantity cannot lesser than 0")
+		return nil, errors.NewSlugError("voucher-invalidAttachmentQuantity")
 	}
 
 	if creator == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptyCreator", "empty creator")
+		return nil, errors.NewSlugError("voucher-emptyCreator")
 	}
 
 	if isReviewed && reviewer == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptyReviewer", "empty reviewer")
+		return nil, errors.NewSlugError("voucher-emptyReviewer")
 	}
 
 	if isAudited && auditor == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptyAuditor", "empty auditor")
+		return nil, errors.NewSlugError("voucher-emptyAuditor")
 	}
 
 	if isPosted && poster == uuid.Nil {
-		return nil, commonErrors.NewSlugError("voucher-emptyPoster", "empty poster")
+		return nil, errors.NewSlugError("voucher-emptyPoster")
 	}
 
 	if isPosted && (!isReviewed || !isAudited) {
-		return nil, commonErrors.NewSlugError("voucher-invalidPostStatus", "invalid post status")
+		return nil, errors.NewSlugError("voucher-invalidPostStatus")
 	}
 
 	if transactionTime.IsZero() {
-		return nil, commonErrors.NewSlugError("voucher-zeroTransactionTime", "zero transaction time")
+		return nil, errors.NewSlugError("voucher-zeroTransactionTime")
 	}
 
 	if transactionTime.After(time.Now()) {
-		return nil, commonErrors.NewSlugError("voucher-futureTransactionTime", "transaction time is in future")
+		return nil, errors.NewSlugError("voucher-futureTransactionTime")
 	}
 
 	totalVal, err := sumLineItems(lineItems)

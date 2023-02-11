@@ -3,7 +3,7 @@ package line_item
 import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 type LineItem struct {
@@ -16,23 +16,23 @@ type LineItem struct {
 
 func New(itemId, accountId uuid.UUID, text string, debit, credit decimal.Decimal) (*LineItem, error) {
 	if itemId == uuid.Nil {
-		return nil, commonErrors.NewSlugError("lineItem-emptyId", "empty item id")
+		return nil, errors.NewSlugError("lineItem-emptyId")
 	}
 
 	if accountId == uuid.Nil {
-		return nil, commonErrors.NewSlugError("lineItem-emptyAccountId", "empty account id")
+		return nil, errors.NewSlugError("lineItem-emptyAccountId")
 	}
 
 	if text == "" {
-		return nil, commonErrors.NewSlugError("lineItem-emptyText", "empty line item text")
+		return nil, errors.NewSlugError("lineItem-emptyText")
 	}
 
 	if debit.IsZero() && credit.IsZero() {
-		return nil, commonErrors.NewSlugError("lineItem-emptyDebitCredit", "debit and credit are both zero")
+		return nil, errors.NewSlugError("lineItem-emptyDebitCredit")
 	}
 
 	if !debit.IsZero() && !credit.IsZero() {
-		return nil, commonErrors.NewSlugError("lineItem-debitCreditDuplicated", "debit and credit are both presented")
+		return nil, errors.NewSlugError("lineItem-debitCreditDuplicated")
 	}
 
 	return &LineItem{

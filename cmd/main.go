@@ -2,14 +2,12 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"flag"
 	"fmt"
+	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"strings"
 
 	accountNumberingAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/numbering"
-
-	"golang.org/x/text/language"
 
 	"github/fims-proto/fims-proto-ms/internal/common/db"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -62,7 +60,6 @@ import (
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/gin-gonic/gin"
-	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 )
@@ -90,9 +87,7 @@ func main() {
 	tenantManagerImpl := tenantManager.NewTenantManager(tenantServiceImpl, dbConnector)
 
 	// i18n
-	bundle := i18n.NewBundle(language.SimplifiedChinese)
-	bundle.RegisterUnmarshalFunc("json", json.Unmarshal)
-	bundle.MustLoadMessageFile("./i18n/zh-CN.json")
+	localizer := localization.NewLocalizer("./i18n", "zh-CN")
 
 	// repositories
 	sobRepository := sobAdapter.NewSobPostgresRepository()
@@ -156,7 +151,7 @@ func main() {
 
 	router := gin.Default()
 	router.Use(ginMiddleware.ResolveTenantBySubdomain(tenantManagerImpl))
-	router.Use(commonErrors.ErrorHandler(bundle))
+	router.Use(commonErrors.ErrorHandler(localizer))
 
 	// public http API
 	publicApiRouter := router.Group("/api/v1")

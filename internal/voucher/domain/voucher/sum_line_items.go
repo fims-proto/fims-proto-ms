@@ -2,13 +2,13 @@ package voucher
 
 import (
 	"github.com/shopspring/decimal"
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/line_item"
 )
 
 func sumLineItems(lineItems []line_item.LineItem) (decimal.Decimal, error) {
 	if len(lineItems) == 0 {
-		return decimal.Decimal{}, commonErrors.NewSlugError("voucher-emptyLineItems", "empty lineItems")
+		return decimal.Decimal{}, errors.NewSlugError("voucher-emptyLineItems")
 	}
 
 	var debitInTotal decimal.Decimal
@@ -19,7 +19,7 @@ func sumLineItems(lineItems []line_item.LineItem) (decimal.Decimal, error) {
 	}
 
 	if !debitInTotal.Equal(creditInTotal) {
-		return decimal.Decimal{}, commonErrors.NewSlugError("voucher-notBalanced", "voucher is not balanced")
+		return decimal.Decimal{}, errors.NewSlugError("voucher-notBalanced")
 	}
 	return debitInTotal, nil
 }

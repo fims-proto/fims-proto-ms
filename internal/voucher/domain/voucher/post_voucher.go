@@ -2,24 +2,24 @@ package voucher
 
 import (
 	"github.com/google/uuid"
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 func (d *Voucher) Post(poster uuid.UUID) error {
 	if d.isPosted {
-		return commonErrors.NewSlugError("voucher-post-repeatPost", "voucher is posted")
+		return errors.NewSlugError("voucher-post-repeatPost")
 	}
 
 	if !d.isAudited {
-		return commonErrors.NewSlugError("voucher-post-notAudited", "voucher is not audited")
+		return errors.NewSlugError("voucher-post-notAudited")
 	}
 
 	if !d.isReviewed {
-		return commonErrors.NewSlugError("voucher-post-notReviewed", "voucher is not reviewed")
+		return errors.NewSlugError("voucher-post-notReviewed")
 	}
 
 	if poster == uuid.Nil {
-		return commonErrors.NewSlugError("voucher-post-emptyPoster", "empty poster")
+		return errors.NewSlugError("voucher-post-emptyPoster")
 	}
 
 	d.isPosted = true
