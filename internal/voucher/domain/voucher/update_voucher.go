@@ -55,10 +55,6 @@ func (d *Voucher) UpdateTransactionTime(transactionTime time.Time, periodId uuid
 		return commonErrors.NewSlugError("voucher-zeroTransactionTime")
 	}
 
-	if transactionTime.After(time.Now()) {
-		return commonErrors.NewSlugError("voucher-futureTransactionTime")
-	}
-
 	d.transactionTime = transactionTime
 	return nil
 }

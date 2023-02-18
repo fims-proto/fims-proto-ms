@@ -45,7 +45,7 @@ func TestNewByTime(t *testing.T) {
 			verify: func(t *testing.T, _ *Period, err error) {
 				assert.Equal(t, "period-timeInPast", err.Error())
 			},
-			wantErr: false,
+			wantErr: true,
 		},
 	}
 	for _, tt := range tests {

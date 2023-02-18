@@ -37,7 +37,7 @@ func NewHandler(app *app.Application) Handler {
 // @Param $filter query string false "filter on field(s)"
 // @Success 200 {array} VoucherResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/vouchers/ [get]
+// @Router /sob/{sobId}/vouchers [get]
 func (h Handler) ReadAllVouchers(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -272,7 +272,7 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 // @Success 201 {object} VoucherResponse
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/vouchers/ [post]
+// @Router /sob/{sobId}/vouchers [post]
 func (h Handler) CreateVoucher(c *gin.Context) {
 	var req CreateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -294,9 +294,9 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/vouchers/", h.ReadAllVouchers)
+	r.GET("/sob/:sobId/vouchers", h.ReadAllVouchers)
 	r.GET("/sob/:sobId/voucher/:id", h.ReadVoucherById)
-	r.POST("/sob/:sobId/vouchers/", h.CreateVoucher)
+	r.POST("/sob/:sobId/vouchers", h.CreateVoucher)
 	r.PATCH("/sob/:sobId/voucher/:id", h.UpdateVoucher)
 	r.POST("/sob/:sobId/voucher/:id/audit", h.Audit)
 	r.POST("/sob/:sobId/voucher/:id/cancel-audit", h.CancelAudit)

@@ -35,7 +35,7 @@ func NewByTime(id, sobId uuid.UUID, timePoint time.Time) (*Period, error) {
 		periodNumber,
 		openingTime,
 		getEndingTime(fiscalYear, periodNumber),
-		false, // period created in this case will always be open
+		false, // in this case will always be open
 	)
 }
 
@@ -55,7 +55,12 @@ func NewByNumber(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed boo
 
 // NewByAllFields creates valid period domain entity by given all fields
 // Typically used by other NewByXX methods or create from persistent entry
-func NewByAllFields(id, sobId uuid.UUID, fiscalYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
+func NewByAllFields(
+	id, sobId uuid.UUID,
+	fiscalYear, periodNumber int,
+	openingTime, endingTime time.Time,
+	isClosed bool,
+) (*Period, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("period-emptyId")
 	}
