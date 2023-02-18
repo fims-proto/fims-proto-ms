@@ -15,7 +15,7 @@ import (
 type AccountService interface {
 	ValidateExistenceAndGetId(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error)
 	ReadAccountsByIds(ctx context.Context, accountIds []uuid.UUID) (map[uuid.UUID]accountQuery.Account, error)
-	ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (accountQuery.Period, error)
+	ReadOrCreatePeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (accountQuery.Period, error)
 	ReadPeriodsByIds(ctx context.Context, periodIds []uuid.UUID) (map[uuid.UUID]accountQuery.Period, error)
 	PostVoucher(ctx context.Context, v voucher.Voucher) error
 }

@@ -15,15 +15,17 @@ type Queries struct {
 	PagingPeriods         query.PagingPeriodsHandler
 	PeriodByTime          query.PeriodByTimeHandler
 	PeriodsByIds          query.PeriodsByIdsHandler
+	PeriodById            query.PeriodByIdHandler
 	PagingLedgersByPeriod query.PagingLedgersByPeriodHandler
 }
 
 type Commands struct {
-	InitialAccounts command.InitialAccountsHandler
-	CreatePeriod    command.CreatePeriodHandler
-	CreateLedgers   command.CreateLedgersHandler
-	PostAccounts    command.PostAccountsHandler
-	Migrate         command.MigrationHandler
+	InitialAccounts      command.InitialAccountsHandler
+	CreatePeriodByTime   command.CreatePeriodByTimeHandler
+	CreatePeriodByNumber command.CreatePeriodByNumberHandler
+	CreateLedgers        command.CreateLedgersHandler
+	PostAccounts         command.PostAccountsHandler
+	Migrate              command.MigrationHandler
 }
 
 type Application struct {
@@ -49,11 +51,17 @@ func (a *Application) Inject(
 		PagingPeriods:         query.NewPagingPeriodsHandler(readModel),
 		PeriodByTime:          query.NewPeriodByTimeHandler(readModel),
 		PeriodsByIds:          query.NewPeriodsByIdsHandler(readModel),
+		PeriodById:            query.NewPeriodByIdHandler(readModel),
 		PagingLedgersByPeriod: query.NewPagingLedgersByPeriodHandler(readModel),
 	}
 	a.Commands = Commands{
 		InitialAccounts: command.NewInitialAccountHandler(repo, sobService),
-		CreatePeriod: command.NewCreatePeriodHandler(
+		CreatePeriodByTime: command.NewCreatePeriodByTimeHandler(
+			repo,
+			numberingService,
+			readModel,
+		),
+		CreatePeriodByNumber: command.NewCreatePeriodByNumberHandler(
 			repo,
 			numberingService,
 			readModel,

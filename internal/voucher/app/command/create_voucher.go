@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/line_item"
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 
@@ -58,13 +60,13 @@ func NewCreateVoucherHandler(
 
 func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) error {
 	// read period by transaction time
-	period, err := h.accountService.ReadPeriodByTime(ctx, cmd.SobId, cmd.TransactionTime)
+	period, err := h.accountService.ReadOrCreatePeriodByTime(ctx, cmd.SobId, cmd.TransactionTime)
 	if err != nil {
 		return errors.Wrap(err, "failed to read period by transaction time")
 	}
 
 	if period.IsClosed {
-		return errors.New("period is closed")
+		return commonErrors.NewSlugError("voucher-periodClosed")
 	}
 
 	// validate account numbers

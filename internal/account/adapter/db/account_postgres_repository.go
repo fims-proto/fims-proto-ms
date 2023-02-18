@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
@@ -249,8 +251,10 @@ func (r AccountPostgresRepository) OpenPeriod(ctx context.Context, sobId uuid.UU
 	if err != nil {
 		return query.Period{}, err
 	}
-	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("ex[ected 1 open period found by sob id: %s, but got %d", sobId, periods.NumberOfElements())
+	if periods.NumberOfElements() == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if periods.NumberOfElements() > 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil
@@ -267,8 +271,10 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 	if err != nil {
 		return query.Period{}, err
 	}
-	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("expect 1 period not found by id: %s, but got %d", periodId, periods.NumberOfElements())
+	if periods.NumberOfElements() == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if periods.NumberOfElements() > 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil
@@ -299,7 +305,9 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 		return query.Period{}, errors.Wrap(err, "find period by id failed")
 	}
 
-	if len(periodPOs) != 1 {
+	if len(periodPOs) == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if len(periodPOs) > 1 {
 		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(periodPOs))
 	}
 
@@ -319,8 +327,10 @@ func (r AccountPostgresRepository) PeriodByFiscalYearAndNumber(ctx context.Conte
 	if err != nil {
 		return query.Period{}, err
 	}
-	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("expect 1 period found by fiscal year %d and number %d, but got %d", fiscalYear, periodNumber, periods.NumberOfElements())
+	if periods.NumberOfElements() == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if periods.NumberOfElements() > 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil

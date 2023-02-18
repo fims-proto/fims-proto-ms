@@ -17,7 +17,7 @@ func NewIntraProcessAdapter(numberingInterface numberingPort.NumberingInterface)
 	return IntraProcessAdapter{numberingInterface: numberingInterface}
 }
 
-func (i IntraProcessAdapter) InitializeIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error {
+func (i IntraProcessAdapter) CreateIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error {
 	cmd := command.CreateIdentifierConfigurationCmd{
 		IdentifierConfigurationId: uuid.New(),
 		TargetBusinessObject:      "voucher",

@@ -19,24 +19,30 @@ type Period struct {
 	isClosed     bool
 }
 
-func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed bool) (*Period, error) {
-	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
+// NewByTime creates valid period domain entity by given time point
+// Typically used to create period when a specific time is provided when create a voucher
+func NewByTime(id, sobId uuid.UUID, timePoint time.Time) (*Period, error) {
+	fiscalYear, periodNumber := timePoint.Year(), int(timePoint.Month())
+	openingTime := getOpeningTime(fiscalYear, periodNumber)
+	if openingTime.Before(time.Now()) {
+		return nil, errors.NewSlugError("period-timeInPast")
 	}
 
-	if id == uuid.Nil {
-		return nil, errors.NewSlugError("period-emptyId")
-	}
+	return NewByAllFields(
+		id,
+		sobId,
+		fiscalYear,
+		periodNumber,
+		openingTime,
+		getEndingTime(fiscalYear, periodNumber),
+		false, // period created in this case will always be open
+	)
+}
 
-	if fiscalYear < 1970 || fiscalYear > 9999 {
-		return nil, errors.NewSlugError("period-invalidFiscalYear", fiscalYear)
-	}
-
-	if periodNumber < 1 || periodNumber > 12 {
-		return nil, errors.NewSlugError("period-invalidPeriodNumber", periodNumber)
-	}
-
-	return NewFromPersistence(
+// NewByNumber creates valid period domain entity by given fiscal year and number
+// Typically used when initializing first period and closing period
+func NewByNumber(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed bool) (*Period, error) {
+	return NewByAllFields(
 		id,
 		sobId,
 		fiscalYear,
@@ -47,13 +53,15 @@ func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed bool) (*Per
 	)
 }
 
-func NewFromPersistence(id, sobId uuid.UUID, fiscalYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
-	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
-	}
-
+// NewByAllFields creates valid period domain entity by given all fields
+// Typically used by other NewByXX methods or create from persistent entry
+func NewByAllFields(id, sobId uuid.UUID, fiscalYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("period-emptyId")
+	}
+
+	if sobId == uuid.Nil {
+		return nil, errors.NewSlugError("emptySobId")
 	}
 
 	if fiscalYear < 1970 || fiscalYear > 9999 {

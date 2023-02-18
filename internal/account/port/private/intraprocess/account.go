@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github/fims-proto/fims-proto-ms/internal/account/app/command"
 
 	"github/fims-proto/fims-proto-ms/internal/account/app"
@@ -32,16 +34,36 @@ func (i AccountInterface) ReadAccountsByIds(ctx context.Context, accountIds []uu
 	return i.app.Queries.AccountsByIds.Handle(ctx, accountIds)
 }
 
-func (i AccountInterface) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
-	return i.app.Queries.PeriodByTime.Handle(ctx, sobId, timePoint)
+func (i AccountInterface) ReadOrCreatePeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
+	p, err := i.app.Queries.PeriodByTime.Handle(ctx, sobId, timePoint)
+	if err == nil {
+		// found, return
+		return p, nil
+	} else if err != nil && err.Error() != "period-notFound" {
+		// errors others not found
+		return query.Period{}, err
+	}
+
+	// not found, create
+
+	newPeriodId := uuid.New()
+	if err = i.app.Commands.CreatePeriodByTime.Handle(ctx, command.CreatePeriodByTimeCmd{
+		SobId:     sobId,
+		PeriodId:  newPeriodId,
+		TimePoint: timePoint,
+	}); err != nil {
+		return query.Period{}, errors.Wrap(err, "failed to create period when not found")
+	}
+
+	return i.app.Queries.PeriodById.Handle(ctx, newPeriodId)
 }
 
 func (i AccountInterface) ReadPeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
 	return i.app.Queries.PeriodsByIds.Handle(ctx, periodIds)
 }
 
-func (i AccountInterface) CreatePeriod(ctx context.Context, cmd command.CreatePeriodCmd) error {
-	return i.app.Commands.CreatePeriod.Handle(ctx, cmd)
+func (i AccountInterface) CreatePeriodByNumber(ctx context.Context, cmd command.CreatePeriodByNumberCmd) error {
+	return i.app.Commands.CreatePeriodByNumber.Handle(ctx, cmd)
 }
 
 func (i AccountInterface) CreateLedgers(ctx context.Context, cmd command.CreateLedgersCmd) error {
