@@ -47,7 +47,7 @@ func (i AccountInterface) ReadOrCreatePeriodByTime(ctx context.Context, sobId uu
 	// not found, create
 
 	newPeriodId := uuid.New()
-	if err = i.app.Commands.CreatePeriodByTime.Handle(ctx, command.CreatePeriodByTimeCmd{
+	if err = i.app.Commands.CreateFuturePeriod.Handle(ctx, command.CreateFuturePeriodCmd{
 		SobId:     sobId,
 		PeriodId:  newPeriodId,
 		TimePoint: timePoint,
@@ -62,8 +62,8 @@ func (i AccountInterface) ReadPeriodsByIds(ctx context.Context, periodIds []uuid
 	return i.app.Queries.PeriodsByIds.Handle(ctx, periodIds)
 }
 
-func (i AccountInterface) CreatePeriodByNumber(ctx context.Context, cmd command.CreatePeriodByNumberCmd) error {
-	return i.app.Commands.CreatePeriodByNumber.Handle(ctx, cmd)
+func (i AccountInterface) CreatePeriodByNumber(ctx context.Context, cmd command.CreateCurrentPeriodCmd) error {
+	return i.app.Commands.CreateCurrentPeriod.Handle(ctx, cmd)
 }
 
 func (i AccountInterface) CreateLedgers(ctx context.Context, cmd command.CreateLedgersCmd) error {

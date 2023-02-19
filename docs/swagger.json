@@ -224,7 +224,7 @@
                 }
             }
         },
-        "/sob/{sobId}/periods/open-period": {
+        "/sob/{sobId}/periods/current": {
             "get": {
                 "description": "Open period in SoB",
                 "consumes": [
@@ -1373,6 +1373,9 @@
                     "type": "string"
                 },
                 "isClosed": {
+                    "type": "boolean"
+                },
+                "isCurrent": {
                     "type": "boolean"
                 },
                 "openingTime": {

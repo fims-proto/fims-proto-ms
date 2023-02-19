@@ -14,24 +14,24 @@ import (
 	"github.com/pkg/errors"
 )
 
-type CreatePeriodByNumberCmd struct {
+type CreateCurrentPeriodCmd struct {
 	SobId      uuid.UUID
 	PeriodId   uuid.UUID
 	FiscalYear int
 	Number     int
 }
 
-type CreatePeriodByNumberHandler struct {
+type CreateCurrentPeriodHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
 	readModel        query.AccountReadModel
 }
 
-func NewCreatePeriodByNumberHandler(
+func NewCreateCurrentPeriodHandler(
 	repo domain.Repository,
 	numberingService service.NumberingService,
 	readModel query.AccountReadModel,
-) CreatePeriodByNumberHandler {
+) CreateCurrentPeriodHandler {
 	if repo == nil {
 		panic("nil account repo")
 	}
@@ -44,15 +44,15 @@ func NewCreatePeriodByNumberHandler(
 		panic("nil read model")
 	}
 
-	return CreatePeriodByNumberHandler{
+	return CreateCurrentPeriodHandler{
 		repo:             repo,
 		numberingService: numberingService,
 		readModel:        readModel,
 	}
 }
 
-func (h CreatePeriodByNumberHandler) Handle(ctx context.Context, cmd CreatePeriodByNumberCmd) error {
-	p, err := period.NewByNumber(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, false)
+func (h CreateCurrentPeriodHandler) Handle(ctx context.Context, cmd CreateCurrentPeriodCmd) error {
+	p, err := period.NewCurrent(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number)
 	if err != nil {
 		return errors.Wrap(err, "failed to create period domain model")
 	}

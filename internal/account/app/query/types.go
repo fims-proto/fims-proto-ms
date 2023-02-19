@@ -30,6 +30,7 @@ type Period struct {
 	OpeningTime  time.Time
 	EndingTime   time.Time
 	IsClosed     bool
+	IsCurrent    bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }

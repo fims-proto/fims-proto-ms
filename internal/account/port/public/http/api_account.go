@@ -96,7 +96,7 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 	)
 }
 
-// ReadSobOpenPeriod godoc
+// ReadSobCurrentPeriod godoc
 // @Text Open period in SoB
 // @Description Open period in SoB
 // @Tags accounts
@@ -105,9 +105,9 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 // @Param sobId path string true "Sob ID"
 // @Success 200 {object} PeriodResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/periods/open-period [get]
-func (h Handler) ReadSobOpenPeriod(c *gin.Context) {
-	periodDTO, err := h.app.Queries.OpenPeriod.Handle(c, uuid.MustParse(c.Param("sobId")))
+// @Router /sob/{sobId}/periods/current [get]
+func (h Handler) ReadSobCurrentPeriod(c *gin.Context) {
+	periodDTO, err := h.app.Queries.CurrentPeriod.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -122,6 +122,6 @@ func (h Handler) ReadSobOpenPeriod(c *gin.Context) {
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/accounts", h.ReadPagingAccounts)
 	r.GET("/sob/:sobId/periods", h.ReadPagingPeriods)
-	r.GET("/sob/:sobId/periods/open-period", h.ReadSobOpenPeriod)
+	r.GET("/sob/:sobId/periods/current", h.ReadSobCurrentPeriod)
 	r.GET("/sob/:sobId/period/:periodId/ledgers", h.ReadPagingLodgersByPeriod)
 }

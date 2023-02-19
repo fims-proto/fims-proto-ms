@@ -6,18 +6,18 @@ import (
 	"github.com/google/uuid"
 )
 
-type OpenPeriodHandler struct {
+type CurrentPeriodHandler struct {
 	readModel AccountReadModel
 }
 
-func NewOpenPeriodHandler(readModel AccountReadModel) OpenPeriodHandler {
+func NewCurrentPeriodHandler(readModel AccountReadModel) CurrentPeriodHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 
-	return OpenPeriodHandler{readModel: readModel}
+	return CurrentPeriodHandler{readModel: readModel}
 }
 
-func (h OpenPeriodHandler) Handle(ctx context.Context, sobId uuid.UUID) (Period, error) {
-	return h.readModel.OpenPeriod(ctx, sobId)
+func (h CurrentPeriodHandler) Handle(ctx context.Context, sobId uuid.UUID) (Period, error) {
+	return h.readModel.CurrentPeriod(ctx, sobId)
 }

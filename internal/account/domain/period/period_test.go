@@ -50,9 +50,9 @@ func TestNewByTime(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewByTime(tt.args.id, tt.args.sobId, tt.args.timePoint)
+			got, err := NewFuture(tt.args.id, tt.args.sobId, tt.args.timePoint)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewByTime() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewFuture() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			tt.verify(t, got, err)

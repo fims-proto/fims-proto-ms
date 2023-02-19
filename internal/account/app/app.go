@@ -11,7 +11,7 @@ type Queries struct {
 	PagingAccounts        query.PagingAccountsHandler
 	AccountsByIds         query.AccountsByIdsHandler
 	AccountsByNumbers     query.AccountsByNumbersHandler
-	OpenPeriod            query.OpenPeriodHandler
+	CurrentPeriod         query.CurrentPeriodHandler
 	PagingPeriods         query.PagingPeriodsHandler
 	PeriodByTime          query.PeriodByTimeHandler
 	PeriodsByIds          query.PeriodsByIdsHandler
@@ -20,12 +20,12 @@ type Queries struct {
 }
 
 type Commands struct {
-	InitialAccounts      command.InitialAccountsHandler
-	CreatePeriodByTime   command.CreatePeriodByTimeHandler
-	CreatePeriodByNumber command.CreatePeriodByNumberHandler
-	CreateLedgers        command.CreateLedgersHandler
-	PostAccounts         command.PostAccountsHandler
-	Migrate              command.MigrationHandler
+	InitialAccounts     command.InitialAccountsHandler
+	CreateFuturePeriod  command.CreateFuturePeriodHandler
+	CreateCurrentPeriod command.CreateCurrentPeriodHandler
+	CreateLedgers       command.CreateLedgersHandler
+	PostAccounts        command.PostAccountsHandler
+	Migrate             command.MigrationHandler
 }
 
 type Application struct {
@@ -47,7 +47,7 @@ func (a *Application) Inject(
 		PagingAccounts:        query.NewPagingAccountsHandler(readModel),
 		AccountsByNumbers:     query.NewAccountsByNumbersHandler(readModel),
 		AccountsByIds:         query.NewAccountsByIdsHandler(readModel),
-		OpenPeriod:            query.NewOpenPeriodHandler(readModel),
+		CurrentPeriod:         query.NewCurrentPeriodHandler(readModel),
 		PagingPeriods:         query.NewPagingPeriodsHandler(readModel),
 		PeriodByTime:          query.NewPeriodByTimeHandler(readModel),
 		PeriodsByIds:          query.NewPeriodsByIdsHandler(readModel),
@@ -56,12 +56,12 @@ func (a *Application) Inject(
 	}
 	a.Commands = Commands{
 		InitialAccounts: command.NewInitialAccountHandler(repo, sobService),
-		CreatePeriodByTime: command.NewCreatePeriodByTimeHandler(
+		CreateFuturePeriod: command.NewCreateFuturePeriodHandler(
 			repo,
 			numberingService,
 			readModel,
 		),
-		CreatePeriodByNumber: command.NewCreatePeriodByNumberHandler(
+		CreateCurrentPeriod: command.NewCreateCurrentPeriodHandler(
 			repo,
 			numberingService,
 			readModel,

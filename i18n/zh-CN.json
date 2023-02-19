@@ -53,5 +53,6 @@
   "period-invalidPeriodNumber": "账期号 {{.A}} 不合法",
   "period-invalidOpeningTime": "账期开放时间 ({{.A}}) 与预期不符 ({{.B}})",
   "period-invalidEndingTime": "账期关闭时间 ({{.A}}) 与预期不符 ({{.B}})",
-  "period-notFound": "不能创建过去的账期"
+  "period-notFound": "不能创建过去的账期",
+  "period-duplicatedCurrent": "已经存在一个账期标记为当前账期"
 }

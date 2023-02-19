@@ -231,7 +231,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/periods/open-period": {
+        "/sob/{sobId}/periods/current": {
             "get": {
                 "description": "Open period in SoB",
                 "consumes": [
@@ -1380,6 +1380,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "isClosed": {
+                    "type": "boolean"
+                },
+                "isCurrent": {
                     "type": "boolean"
                 },
                 "openingTime": {

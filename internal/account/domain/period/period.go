@@ -17,11 +17,12 @@ type Period struct {
 	openingTime  time.Time
 	endingTime   time.Time
 	isClosed     bool
+	isCurrent    bool
 }
 
-// NewByTime creates valid period domain entity by given time point
-// Typically used to create period when a specific time is provided when create a voucher
-func NewByTime(id, sobId uuid.UUID, timePoint time.Time) (*Period, error) {
+// NewFuture creates valid period domain entity by given time point
+// Typically used to create period when a specific time in future is provided when create a voucher
+func NewFuture(id, sobId uuid.UUID, timePoint time.Time) (*Period, error) {
 	fiscalYear, periodNumber := timePoint.Year(), int(timePoint.Month())
 	openingTime := getOpeningTime(fiscalYear, periodNumber)
 	if openingTime.Before(time.Now()) {
@@ -35,13 +36,14 @@ func NewByTime(id, sobId uuid.UUID, timePoint time.Time) (*Period, error) {
 		periodNumber,
 		openingTime,
 		getEndingTime(fiscalYear, periodNumber),
-		false, // in this case will always be open
+		false, // future period is always open
+		false, // future period is not a current period
 	)
 }
 
-// NewByNumber creates valid period domain entity by given fiscal year and number
-// Typically used when initializing first period and closing period
-func NewByNumber(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed bool) (*Period, error) {
+// NewCurrent creates valid period domain entity by given fiscal year and number
+// Typically used when initializing first period or closing and opening a new period
+func NewCurrent(id, sobId uuid.UUID, fiscalYear, periodNumber int) (*Period, error) {
 	return NewByAllFields(
 		id,
 		sobId,
@@ -49,7 +51,8 @@ func NewByNumber(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed boo
 		periodNumber,
 		getOpeningTime(fiscalYear, periodNumber),
 		getEndingTime(fiscalYear, periodNumber),
-		isClosed,
+		false, // current period is always open
+		true,  // current period
 	)
 }
 
@@ -59,7 +62,7 @@ func NewByAllFields(
 	id, sobId uuid.UUID,
 	fiscalYear, periodNumber int,
 	openingTime, endingTime time.Time,
-	isClosed bool,
+	isClosed, isCurrent bool,
 ) (*Period, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("period-emptyId")
@@ -104,6 +107,7 @@ func NewByAllFields(
 		openingTime:  openingTime,
 		endingTime:   endingTime,
 		isClosed:     isClosed,
+		isCurrent:    isCurrent,
 	}, nil
 }
 
@@ -133,4 +137,8 @@ func (p Period) EndingTime() time.Time {
 
 func (p Period) IsClosed() bool {
 	return p.isClosed
+}
+
+func (p Period) IsCurrent() bool {
+	return p.isCurrent
 }

@@ -36,6 +36,7 @@ type PeriodResponse struct {
 	OpeningTime  time.Time `json:"openingTime"`
 	EndingTime   time.Time `json:"endingTime"`
 	IsClosed     bool      `json:"isClosed"`
+	IsCurrent    bool      `json:"isCurrent"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
@@ -81,6 +82,7 @@ func periodDTOToVO(dto query.Period) PeriodResponse {
 		OpeningTime:  dto.OpeningTime,
 		EndingTime:   dto.EndingTime,
 		IsClosed:     dto.IsClosed,
+		IsCurrent:    dto.IsCurrent,
 		CreatedAt:    dto.CreatedAt,
 		UpdatedAt:    dto.UpdatedAt,
 	}

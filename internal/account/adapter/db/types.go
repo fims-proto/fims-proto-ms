@@ -38,6 +38,7 @@ type periodPO struct {
 	OpeningTime  time.Time
 	EndingTime   time.Time
 	IsClosed     bool
+	IsCurrent    bool
 	CreatedAt    time.Time `gorm:"<-:create"`
 	UpdatedAt    time.Time
 }
@@ -153,6 +154,7 @@ func periodBOToPO(bo period.Period) periodPO {
 		OpeningTime:  bo.OpeningTime(),
 		EndingTime:   bo.EndingTime(),
 		IsClosed:     bo.IsClosed(),
+		IsCurrent:    bo.IsCurrent(),
 	}
 }
 
@@ -165,6 +167,7 @@ func periodPOToDTO(po periodPO) (query.Period, error) {
 		OpeningTime:  po.OpeningTime,
 		EndingTime:   po.EndingTime,
 		IsClosed:     po.IsClosed,
+		IsCurrent:    po.IsCurrent,
 		CreatedAt:    po.CreatedAt,
 		UpdatedAt:    po.UpdatedAt,
 	}, nil
