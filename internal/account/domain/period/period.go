@@ -17,43 +17,59 @@ type Period struct {
 	openingTime  time.Time
 	endingTime   time.Time
 	isClosed     bool
+	isCurrent    bool
 }
 
-func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isClosed bool) (*Period, error) {
-	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
+// NewFuture creates valid period domain entity by given time point
+// Typically used to create period when a specific time in future is provided when create a voucher
+func NewFuture(id, sobId uuid.UUID, timePoint time.Time) (*Period, error) {
+	fiscalYear, periodNumber := timePoint.Year(), int(timePoint.Month())
+	openingTime := getOpeningTime(fiscalYear, periodNumber)
+	if openingTime.Before(time.Now()) {
+		return nil, errors.NewSlugError("period-timeInPast")
 	}
 
-	if id == uuid.Nil {
-		return nil, errors.NewSlugError("period-emptyId")
-	}
+	return NewByAllFields(
+		id,
+		sobId,
+		fiscalYear,
+		periodNumber,
+		openingTime,
+		getEndingTime(fiscalYear, periodNumber),
+		false, // future period is always open
+		false, // future period is not a current period
+	)
+}
 
-	if fiscalYear < 1970 || fiscalYear > 9999 {
-		return nil, errors.NewSlugError("period-invalidFiscalYear", fiscalYear)
-	}
-
-	if periodNumber < 1 || periodNumber > 12 {
-		return nil, errors.NewSlugError("period-invalidPeriodNumber", periodNumber)
-	}
-
-	return NewFromPersistence(
+// NewCurrent creates valid period domain entity by given fiscal year and number
+// Typically used when initializing first period or closing and opening a new period
+func NewCurrent(id, sobId uuid.UUID, fiscalYear, periodNumber int) (*Period, error) {
+	return NewByAllFields(
 		id,
 		sobId,
 		fiscalYear,
 		periodNumber,
 		getOpeningTime(fiscalYear, periodNumber),
 		getEndingTime(fiscalYear, periodNumber),
-		isClosed,
+		false, // current period is always open
+		true,  // current period
 	)
 }
 
-func NewFromPersistence(id, sobId uuid.UUID, fiscalYear, periodNumber int, openingTime, endingTime time.Time, isClosed bool) (*Period, error) {
-	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
-	}
-
+// NewByAllFields creates valid period domain entity by given all fields
+// Typically used by other NewByXX methods or create from persistent entry
+func NewByAllFields(
+	id, sobId uuid.UUID,
+	fiscalYear, periodNumber int,
+	openingTime, endingTime time.Time,
+	isClosed, isCurrent bool,
+) (*Period, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("period-emptyId")
+	}
+
+	if sobId == uuid.Nil {
+		return nil, errors.NewSlugError("emptySobId")
 	}
 
 	if fiscalYear < 1970 || fiscalYear > 9999 {
@@ -91,6 +107,7 @@ func NewFromPersistence(id, sobId uuid.UUID, fiscalYear, periodNumber int, openi
 		openingTime:  openingTime,
 		endingTime:   endingTime,
 		isClosed:     isClosed,
+		isCurrent:    isCurrent,
 	}, nil
 }
 
@@ -120,4 +137,8 @@ func (p Period) EndingTime() time.Time {
 
 func (p Period) IsClosed() bool {
 	return p.isClosed
+}
+
+func (p Period) IsCurrent() bool {
+	return p.isCurrent
 }

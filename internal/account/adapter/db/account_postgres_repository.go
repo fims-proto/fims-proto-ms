@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
@@ -67,6 +69,16 @@ func (r AccountPostgresRepository) CreatePeriod(ctx context.Context, period *per
 	po := periodBOToPO(*period)
 
 	return db.Transaction(func(tx *gorm.DB) error {
+		if po.IsCurrent {
+			// make sure only 1 current period in one sob
+			_, err := r.currentPeriod(tx, po.SobId)
+			if err == nil {
+				return commonErrors.NewSlugError("period-duplicatedCurrent")
+			} else if "period-notFound" != err.Error() {
+				return errors.Wrap(err, "failed to check current period")
+			}
+		}
+
 		if err := tx.Create(&po).Error; err != nil {
 			return err
 		}
@@ -237,23 +249,15 @@ func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId 
 	return accounts.Content(), nil
 }
 
-func (r AccountPostgresRepository) OpenPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
-	isClosedFilter, _ := filterable.NewFilter("isClosed", "eq", false)
-	pageRequest := data.NewPageRequest(
-		pageable.Unpaged(),
-		sortable.Unsorted(),
-		filterable.New(isClosedFilter),
-	)
-	addSobFilter(sobId, pageRequest)
-	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
+func (r AccountPostgresRepository) CurrentPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
+	db := readDBFromCtx(ctx)
+
+	currentPeriod, err := r.currentPeriod(db, sobId)
 	if err != nil {
 		return query.Period{}, err
 	}
-	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("ex[ected 1 open period found by sob id: %s, but got %d", sobId, periods.NumberOfElements())
-	}
 
-	return periods.Content()[0], nil
+	return periodPOToDTO(currentPeriod)
 }
 
 func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
@@ -267,8 +271,10 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 	if err != nil {
 		return query.Period{}, err
 	}
-	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("expect 1 period not found by id: %s, but got %d", periodId, periods.NumberOfElements())
+	if periods.NumberOfElements() == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if periods.NumberOfElements() > 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil
@@ -299,7 +305,9 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 		return query.Period{}, errors.Wrap(err, "find period by id failed")
 	}
 
-	if len(periodPOs) != 1 {
+	if len(periodPOs) == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if len(periodPOs) > 1 {
 		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(periodPOs))
 	}
 
@@ -319,11 +327,28 @@ func (r AccountPostgresRepository) PeriodByFiscalYearAndNumber(ctx context.Conte
 	if err != nil {
 		return query.Period{}, err
 	}
-	if periods.NumberOfElements() != 1 {
-		return query.Period{}, errors.Errorf("expect 1 period found by fiscal year %d and number %d, but got %d", fiscalYear, periodNumber, periods.NumberOfElements())
+	if periods.NumberOfElements() == 0 {
+		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+	} else if periods.NumberOfElements() > 1 {
+		return query.Period{}, errors.Errorf("expected 1 but %d periods found", periods.NumberOfElements())
 	}
 
 	return periods.Content()[0], nil
+}
+
+func (r AccountPostgresRepository) currentPeriod(db *gorm.DB, sobId uuid.UUID) (periodPO, error) {
+	var periods []periodPO
+	if err := db.Find(&periods, "sob_id = ? AND is_current = ?", sobId, true).Error; err != nil {
+		return periodPO{}, err
+	}
+
+	if len(periods) == 0 {
+		return periodPO{}, commonErrors.NewSlugError("period-notFound")
+	} else if len(periods) > 1 {
+		return periodPO{}, errors.Errorf("expected 1 but %d periods found", len(periods))
+	}
+
+	return periods[0], nil
 }
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {

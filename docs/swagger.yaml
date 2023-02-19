@@ -243,6 +243,8 @@ definitions:
         type: string
       isClosed:
         type: boolean
+      isCurrent:
+        type: boolean
       openingTime:
         type: string
       periodNumber:
@@ -320,7 +322,7 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
-  /sob/{sobId}/accounts/:
+  /sob/{sobId}/accounts:
     get:
       consumes:
       - application/json
@@ -366,7 +368,7 @@ paths:
             $ref: '#/definitions/internal_account_port_public_http.Error'
       tags:
       - accounts
-  /sob/{sobId}/period/{periodId}/ledgers/:
+  /sob/{sobId}/period/{periodId}/ledgers:
     get:
       consumes:
       - application/json
@@ -417,7 +419,7 @@ paths:
             $ref: '#/definitions/internal_account_port_public_http.Error'
       tags:
       - accounts
-  /sob/{sobId}/periods/:
+  /sob/{sobId}/periods:
     get:
       consumes:
       - application/json
@@ -463,7 +465,7 @@ paths:
             $ref: '#/definitions/internal_account_port_public_http.Error'
       tags:
       - accounts
-  /sob/{sobId}/periods/open-period:
+  /sob/{sobId}/periods/current:
     get:
       consumes:
       - application/json
@@ -735,7 +737,7 @@ paths:
             $ref: '#/definitions/internal_voucher_port_public_http.Error'
       tags:
       - vouchers
-  /sob/{sobId}/vouchers/:
+  /sob/{sobId}/vouchers:
     get:
       consumes:
       - application/json
@@ -813,7 +815,7 @@ paths:
             $ref: '#/definitions/internal_voucher_port_public_http.Error'
       tags:
       - vouchers
-  /sobs/:
+  /sobs:
     get:
       consumes:
       - application/json

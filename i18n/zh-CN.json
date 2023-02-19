@@ -11,10 +11,10 @@
   "voucher-emptyPoster": "凭证登账人不能为空",
   "voucher-invalidPostStatus": "凭证登账状态异常",
   "voucher-zeroTransactionTime": "凭证交易日期不能为空",
-  "voucher-futureTransactionTime": "凭证交易日期 {{.A}} 不能在未来",
   "voucher-emptyLineItems": "凭证行项目不能为空",
   "voucher-notBalanced": "凭证借贷不平衡",
   "voucher-unknownVoucherType": "凭证类型 {{.A}} 不存在",
+  "voucher-periodClosed": "账期已关闭",
 
   "voucher-update-notCreator": "只能由创建者更新凭证",
   "voucher-update-audited": "凭证已被审核，不能更新",
@@ -48,8 +48,11 @@
   "lineItem-debitCreditDuplicated": "凭证行项目借贷金额不能同时记录",
 
   "period-emptyId": "账期 ID 不能为空",
+  "period-timeInPast": "不能创建过去的账期",
   "period-invalidFiscalYear": "财务年度 {{.A}} 不合法",
   "period-invalidPeriodNumber": "账期号 {{.A}} 不合法",
   "period-invalidOpeningTime": "账期开放时间 ({{.A}}) 与预期不符 ({{.B}})",
-  "period-invalidEndingTime": "账期关闭时间 ({{.A}}) 与预期不符 ({{.B}})"
+  "period-invalidEndingTime": "账期关闭时间 ({{.A}}) 与预期不符 ({{.B}})",
+  "period-notFound": "不能创建过去的账期",
+  "period-duplicatedCurrent": "已经存在一个账期标记为当前账期"
 }

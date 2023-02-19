@@ -94,10 +94,6 @@ func New(
 		return nil, errors.NewSlugError("voucher-zeroTransactionTime")
 	}
 
-	if transactionTime.After(time.Now()) {
-		return nil, errors.NewSlugError("voucher-futureTransactionTime")
-	}
-
 	totalVal, err := sumLineItems(lineItems)
 	if err != nil {
 		return nil, err

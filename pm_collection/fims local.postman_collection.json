@@ -321,13 +321,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sobs/",
+					"raw": "{{base_path}}/sobs",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
-						"sobs",
-						""
+						"sobs"
 					]
 				}
 			},
@@ -363,13 +362,12 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sobs/",
+					"raw": "{{base_path}}/sobs",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
-						"sobs",
-						""
+						"sobs"
 					]
 				}
 			},
@@ -456,15 +454,14 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/periods/",
+					"raw": "{{base_path}}/sob/{{sob_1}}/periods",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"periods",
-						""
+						"periods"
 					]
 				}
 			},
@@ -492,7 +489,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/periods/open-period",
+					"raw": "{{base_path}}/sob/{{sob_1}}/periods/current",
 					"host": [
 						"{{base_path}}"
 					],
@@ -500,7 +497,7 @@
 						"sob",
 						"{{sob_1}}",
 						"periods",
-						"open-period"
+						"current"
 					]
 				}
 			},
@@ -540,15 +537,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers/",
+					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"vouchers",
-						""
+						"vouchers"
 					]
 				}
 			},
@@ -584,15 +580,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_2}}/vouchers/",
+					"raw": "{{base_path}}/sob/{{sob_2}}/vouchers",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_2}}",
-						"vouchers",
-						""
+						"vouchers"
 					]
 				}
 			},
@@ -1164,15 +1159,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers/",
+					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"vouchers",
-						""
+						"vouchers"
 					]
 				}
 			},
@@ -1375,15 +1369,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers/",
+					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"vouchers",
-						""
+						"vouchers"
 					]
 				}
 			},
@@ -1586,15 +1579,14 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers/",
+					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"vouchers",
-						""
+						"vouchers"
 					]
 				}
 			},
@@ -1854,7 +1846,7 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/period/{{period_1_id}}/ledgers/?$size=999",
+					"raw": "{{base_path}}/sob/{{sob_1}}/period/{{period_1_id}}/ledgers?$size=999",
 					"host": [
 						"{{base_path}}"
 					],
@@ -1863,8 +1855,7 @@
 						"{{sob_1}}",
 						"period",
 						"{{period_1_id}}",
-						"ledgers",
-						""
+						"ledgers"
 					],
 					"query": [
 						{

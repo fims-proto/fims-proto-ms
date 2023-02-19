@@ -36,7 +36,7 @@ func NewHandler(app *app.Application) Handler {
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} AccountResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/accounts/ [get]
+// @Router /sob/{sobId}/accounts [get]
 func (h Handler) ReadPagingAccounts(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -61,7 +61,7 @@ func (h Handler) ReadPagingAccounts(c *gin.Context) {
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} LedgerResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/period/{periodId}/ledgers/ [get]
+// @Router /sob/{sobId}/period/{periodId}/ledgers [get]
 func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -85,7 +85,7 @@ func (h Handler) ReadPagingLodgersByPeriod(c *gin.Context) {
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} PeriodResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/periods/ [get]
+// @Router /sob/{sobId}/periods [get]
 func (h Handler) ReadPagingPeriods(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -96,7 +96,7 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 	)
 }
 
-// ReadSobOpenPeriod godoc
+// ReadSobCurrentPeriod godoc
 // @Text Open period in SoB
 // @Description Open period in SoB
 // @Tags accounts
@@ -105,9 +105,9 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 // @Param sobId path string true "Sob ID"
 // @Success 200 {object} PeriodResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/periods/open-period [get]
-func (h Handler) ReadSobOpenPeriod(c *gin.Context) {
-	periodDTO, err := h.app.Queries.OpenPeriod.Handle(c, uuid.MustParse(c.Param("sobId")))
+// @Router /sob/{sobId}/periods/current [get]
+func (h Handler) ReadSobCurrentPeriod(c *gin.Context) {
+	periodDTO, err := h.app.Queries.CurrentPeriod.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -120,8 +120,8 @@ func (h Handler) ReadSobOpenPeriod(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/accounts/", h.ReadPagingAccounts)
-	r.GET("/sob/:sobId/periods/", h.ReadPagingPeriods)
-	r.GET("/sob/:sobId/periods/open-period", h.ReadSobOpenPeriod)
-	r.GET("/sob/:sobId/period/:periodId/ledgers/", h.ReadPagingLodgersByPeriod)
+	r.GET("/sob/:sobId/accounts", h.ReadPagingAccounts)
+	r.GET("/sob/:sobId/periods", h.ReadPagingPeriods)
+	r.GET("/sob/:sobId/periods/current", h.ReadSobCurrentPeriod)
+	r.GET("/sob/:sobId/period/:periodId/ledgers", h.ReadPagingLodgersByPeriod)
 }

@@ -32,7 +32,7 @@ func NewHandler(app *app.Application) Handler {
 // @Produce application/json
 // @Success 200 {array} SobResponse
 // @Failure 500 {object} Error
-// @Router /sobs/ [get]
+// @Router /sobs [get]
 func (h Handler) ReadAllSobs(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -77,7 +77,7 @@ func (h Handler) ReadSobById(c *gin.Context) {
 // @Success 201 {object} SobResponse
 // @Failure 400 {object} Error
 // @Failure 500 {object} Error
-// @Router /sobs/ [post]
+// @Router /sobs [post]
 func (h Handler) CreateSob(c *gin.Context) {
 	var req CreateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -129,11 +129,8 @@ func (h Handler) UpdateSob(c *gin.Context) {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	g := r.Group("/sobs/")
-	{
-		g.GET("", h.ReadAllSobs)
-		g.GET(":sobId", h.ReadSobById)
-		g.PATCH(":sobId", h.UpdateSob)
-		g.POST("", h.CreateSob)
-	}
+	r.GET("/sobs", h.ReadAllSobs)
+	r.GET("/sobs/:sobId", h.ReadSobById)
+	r.PATCH("/sobs/:sobId", h.UpdateSob)
+	r.POST("/sobs", h.CreateSob)
 }

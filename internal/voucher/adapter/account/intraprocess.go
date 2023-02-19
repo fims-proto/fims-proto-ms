@@ -48,8 +48,8 @@ func (i IntraProcessAdapter) ReadAccountsByIds(ctx context.Context, accountIds [
 	return accountsMap, nil
 }
 
-func (i IntraProcessAdapter) ReadPeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (query.Period, error) {
-	return i.accountInterface.ReadPeriodByTime(ctx, sobId, transactionTime)
+func (i IntraProcessAdapter) ReadOrCreatePeriodByTime(ctx context.Context, sobId uuid.UUID, transactionTime time.Time) (query.Period, error) {
+	return i.accountInterface.ReadOrCreatePeriodByTime(ctx, sobId, transactionTime)
 }
 
 func (i IntraProcessAdapter) ReadPeriodsByIds(ctx context.Context, periodIds []uuid.UUID) (map[uuid.UUID]query.Period, error) {

@@ -13,7 +13,7 @@
     "host": "127.0.0.1:4455",
     "basePath": "/fims/api/v1",
     "paths": {
-        "/sob/{sobId}/accounts/": {
+        "/sob/{sobId}/accounts": {
             "get": {
                 "description": "List all account configurations",
                 "consumes": [
@@ -81,7 +81,7 @@
                 }
             }
         },
-        "/sob/{sobId}/period/{periodId}/ledgers/": {
+        "/sob/{sobId}/period/{periodId}/ledgers": {
             "get": {
                 "description": "List accounts in period",
                 "consumes": [
@@ -156,7 +156,7 @@
                 }
             }
         },
-        "/sob/{sobId}/periods/": {
+        "/sob/{sobId}/periods": {
             "get": {
                 "description": "List periods",
                 "consumes": [
@@ -224,7 +224,7 @@
                 }
             }
         },
-        "/sob/{sobId}/periods/open-period": {
+        "/sob/{sobId}/periods/current": {
             "get": {
                 "description": "Open period in SoB",
                 "consumes": [
@@ -636,7 +636,7 @@
                 }
             }
         },
-        "/sob/{sobId}/vouchers/": {
+        "/sob/{sobId}/vouchers": {
             "get": {
                 "description": "List all vouchers by sob with pagination",
                 "consumes": [
@@ -753,7 +753,7 @@
                 }
             }
         },
-        "/sobs/": {
+        "/sobs": {
             "get": {
                 "description": "List all sobs",
                 "consumes": [
@@ -1373,6 +1373,9 @@
                     "type": "string"
                 },
                 "isClosed": {
+                    "type": "boolean"
+                },
+                "isCurrent": {
                     "type": "boolean"
                 },
                 "openingTime": {

@@ -26,7 +26,7 @@ func (i IntraProcessAdapter) InitializeAccounts(ctx context.Context, sobId uuid.
 
 func (i IntraProcessAdapter) InitializeFirstPeriod(ctx context.Context, sobId uuid.UUID, fiscalYear, number int) error {
 	periodId := uuid.New()
-	if err := i.accountInterface.CreatePeriod(ctx, command.CreatePeriodCmd{
+	if err := i.accountInterface.CreatePeriodByNumber(ctx, command.CreateCurrentPeriodCmd{
 		SobId:      sobId,
 		PeriodId:   periodId,
 		FiscalYear: fiscalYear,
