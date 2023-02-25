@@ -20,7 +20,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sob/{sobId}/accounts": {
+        "/sob/{sobId}/accounts/": {
             "get": {
                 "description": "List all account configurations",
                 "consumes": [
@@ -88,7 +88,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/period/{periodId}/ledgers": {
+        "/sob/{sobId}/period/{periodId}/ledgers/": {
             "get": {
                 "description": "List accounts in period",
                 "consumes": [
@@ -163,7 +163,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/periods": {
+        "/sob/{sobId}/periods/": {
             "get": {
                 "description": "List periods",
                 "consumes": [
@@ -643,7 +643,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/vouchers": {
+        "/sob/{sobId}/vouchers/": {
             "get": {
                 "description": "List all vouchers by sob with pagination",
                 "consumes": [
@@ -760,7 +760,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sobs": {
+        "/sobs/": {
             "get": {
                 "description": "List all sobs",
                 "consumes": [
