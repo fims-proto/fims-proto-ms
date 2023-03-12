@@ -53,6 +53,9 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.6 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pointlander/compress v1.1.1-0.20190518213731-ff44bd196cc3 // indirect
+	github.com/pointlander/jetset v1.0.1-0.20190518214125-eee7eff80bd4 // indirect
+	github.com/pointlander/peg v1.0.1 // indirect
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect

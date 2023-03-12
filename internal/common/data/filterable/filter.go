@@ -1,8 +1,9 @@
 package filterable
 
 import (
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/data/field"
+
+	"github.com/pkg/errors"
 )
 
 type Filter interface {

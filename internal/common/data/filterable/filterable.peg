@@ -1,0 +1,76 @@
+# Copyright 2010 The Go Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+package filterable
+
+type FilterExpr Peg {
+}
+
+F   <- Spacing F1 EOT
+F1  <- F2 (OR F2)*
+F2  <- F3 (AND F3)*
+F3  <- NOT F4 
+    / F4
+F4  <- AtomFilter
+    /  LPAR F1 RPAR
+AtomFilter <- Field Operator Values
+Operator  <- (
+            EQ /
+            NE /
+            LT /
+            GT /
+            LTE /
+            GTE /
+            STW /
+            BTW /
+            CTN /
+            ) Spacing
+Field       <- Identifier
+Identifier	<- < IdentStart IdentCont* > Spacing
+IdentStart	<- [[a-z_]]
+IdentCont	<- IdentStart / [0-9]
+Values    <-  (ValueList
+            / SingleValue) Spacing
+ValueList <- LBRK (SingleValue Spacing COMMA)* SingleValue RBRK
+SingleValue <- StringLiteral
+                / NumLiteral
+StringLiteral <- 'L'? (["] StringChar* ["] Spacing)+
+StringChar <- Escape / ![\"\n\\] .
+Escape
+   <- SimpleEscape
+    / OctalEscape
+    / HexEscape
+    / UniversalCharacter
+UniversalCharacter
+   <- '\\u' HexQuad
+    / '\\U' HexQuad HexQuad
+
+HexQuad <- HexDigit HexDigit HexDigit HexDigit
+SimpleEscape <- '\\' ['\"?\\%abfnrtv]
+OctalEscape  <- '\\' [0-7][0-7]?[0-7]?
+HexEscape    <- '\\x' HexDigit+
+HexDigit        <- [a-f] / [A-F] / [0-9]
+
+NumLiteral <- Digits [.] Digits?
+            / Digits
+Digits <- [0-9]([_]*[0-9])*
+NOT       <-  'NOT'       Spacing
+AND       <-  'AND'       Spacing
+OR        <-  'OR'        Spacing
+EQ        <-  'eq'        Spacing
+NE        <-  'ne'        Spacing # none equal
+LT        <-  'lt' [ ]        Spacing
+GT        <-  'gt' [ ]        Spacing
+LTE       <-  'lte'       Spacing
+GTE       <-  'gte'       Spacing
+BTW       <-  'btw'       Spacing # between
+STW       <-  'stw'       Spacing # startWith
+CTN       <-  'ctn'       Spacing # contain
+LBRK      <-  '['         Spacing
+RBRK      <-  ']'         Spacing
+LPAR      <-  '('         Spacing
+RPAR      <-  ')'         Spacing
+COMMA     <-  ','         Spacing
+Spacing   <- ( ' ' / '\t' )*
+EOT       <-  !.
