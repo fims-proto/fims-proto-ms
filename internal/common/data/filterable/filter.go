@@ -32,7 +32,7 @@ func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
 	}
 
 	switch o {
-	case OptBt:
+	case OptBtw:
 		if len(values) != 2 {
 			return nil, errors.Errorf("invalid values for operator %s", o)
 		}
@@ -54,7 +54,38 @@ func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
 	}, nil
 }
 
-// impl
+func NewFilter1[T any](fieldName string, operator Operator, values ...T) (Filter, error) {
+	f, err := field.New(fieldName)
+	if err != nil {
+		return nil, err
+	}
+
+	o := operator
+
+	switch o {
+	case OptBtw:
+		if len(values) != 2 {
+			return nil, errors.Errorf("invalid values for operator %s", o)
+		}
+	default:
+		if len(values) == 0 {
+			return nil, errors.Errorf("invalid values for operator %s", o)
+		}
+	}
+
+	sliceAny := make([]any, len(values))
+	for i, v := range values {
+		sliceAny[i] = v
+	}
+
+	return filterImpl{
+		field:    f,
+		operator: o,
+		values:   sliceAny,
+	}, nil
+}
+
+// impl for Filter
 
 func (f filterImpl) Field() field.Field {
 	return f.field
@@ -68,26 +99,40 @@ func (f filterImpl) Values() []any {
 	return f.values
 }
 
+// impl for FilterNode
+func (f filterImpl) Children() []FilterNode {
+	return nil
+}
+
+func (f filterImpl) IsFiltered() bool {
+	return false
+}
+
+func (f filterImpl) Type() FilterNodeType {
+	return TypeATOM
+}
+
 // misc
 
 type Operator int
 
 const (
-	OptEq         Operator = 1 << iota // equal
-	OptBt                              // between
-	OptLt                              // less than
-	OptLte                             // less than equal
-	OptGt                              // greater than
-	OptGte                             // greater than equal
-	OptIn                              // in
-	OptStartsWith                      // starts with
+	OptBtw Operator = 1 << iota // between
+	OptCtn                      // contain
+	OptEq                       // equal
+	OptGt                       // greater than
+	OptGte                      // greater than equal
+	OptIn                       // in
+	OptLt                       // less than
+	OptLte                      // less than equal
+	OptStw                      // starts with
 )
 
 func (o Operator) String() string {
 	switch o {
 	case OptEq:
 		return "="
-	case OptBt:
+	case OptBtw:
 		return "BETWEEN"
 	case OptLt:
 		return "<"
@@ -99,8 +144,10 @@ func (o Operator) String() string {
 		return ">="
 	case OptIn:
 		return "IN"
-	case OptStartsWith:
+	case OptStw:
 		return "startsWith"
+	case OptCtn:
+		return "contain"
 	default:
 		return "unknown"
 	}
@@ -111,7 +158,7 @@ func newOperator(o string) (Operator, error) {
 	case "eq":
 		return OptEq, nil
 	case "bt":
-		return OptBt, nil
+		return OptBtw, nil
 	case "lt":
 		return OptLt, nil
 	case "lte":
@@ -123,7 +170,7 @@ func newOperator(o string) (Operator, error) {
 	case "in":
 		return OptIn, nil
 	case "startsWith":
-		return OptStartsWith, nil
+		return OptStw, nil
 	default:
 		return 0, errors.Errorf("operator %s not supported", o)
 	}

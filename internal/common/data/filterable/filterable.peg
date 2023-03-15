@@ -10,19 +10,22 @@ type FilterExpr Peg {
 F   <- Spacing Expr EOT
 ExprList <- Expr (COMMA Spacing Expr)+
 Expr <- (
-        NotExpr /
-        AndExpr /
-        OrExpr /
-        EqExpr /
-        NeExpr /
-        LtExpr /
-        GtExpr /
-        LteExpr /
-        GteExpr /
-        StwExpr /
-        BtwExpr /
-        CtnExpr /
-        )   Spacing
+         NotExpr /
+         AndExpr /
+         OrExpr /
+         AtomExpr
+         ) Spacing
+AtomExpr <- (        
+            EqExpr /
+            NeExpr /
+            LtExpr /
+            GtExpr /
+            LteExpr /
+            GteExpr /
+            StwExpr /
+            BtwExpr /
+            CtnExpr /
+            )   Spacing
 NotExpr <- NOT LPAR Expr RPAR
 AndExpr <- AND LPAR ExprList RPAR
 OrExpr  <- OR LPAR ExprList RPAR

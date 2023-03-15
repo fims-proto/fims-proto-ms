@@ -4,16 +4,17 @@ import (
 	"testing"
 )
 
-func TestCalculator(t *testing.T) {
-	expression := "(title eq \"哈哈\") AND (accountNum gte 100 OR accountNum lte 50)"
-	calc := &FilterExpr{Buffer: expression}
-	calc.Init()
-	calc.Print()
-	if err := calc.Parse(); err != nil {
+func TestFilter(t *testing.T) {
+	expression := `and(btw(name, 1, 2),or(eq(title,"哈哈"),lt(title, 1.3)))`
+	filter := &FilterExpr{Buffer: expression}
+	filter.Init()
+	filter.Print()
+	if err := filter.Parse(); err != nil {
 		t.Fatal(err)
 	}
-	bff := ""
-	// calc.PrettyPrintSyntaxTree(bff)
-	calc.PrintSyntaxTree()
-	t.Log(bff)
+	filter.PrintSyntaxTree()
+	_, err := filter.ParseAsFilterNode()
+	if err != nil {
+		t.Fatal(err)
+	}
 }

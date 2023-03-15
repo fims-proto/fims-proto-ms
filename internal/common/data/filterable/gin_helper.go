@@ -7,6 +7,19 @@ import (
 	"github.com/pkg/errors"
 )
 
+func NewFilterNodeFromQuery(filter string) (FilterNode, error) {
+	if filter == "" {
+		return nil, nil // TODO Lond create Unfiltered type
+	}
+	filterExpr := &FilterExpr{Buffer: filter}
+	filterExpr.Init()
+	filterNode, err := filterExpr.ParseAsFilterNode()
+	if err != nil {
+		return nil, err
+	}
+	return filterNode, nil
+}
+
 func NewFilterableFromQuery(filter string) (Filterable, error) {
 	if filter == "" {
 		return Unfiltered(), nil
