@@ -163,6 +163,14 @@ func (fe *FilterExpr) ParseAtomExpr(node *node32) (FilterNode, error) {
 		{
 			op = OptBtw
 		}
+	case ruleStwExpr:
+		{
+			op = OptStw
+		}
+	case ruleCtnExpr:
+		{
+			op = OptCtn
+		}
 	default:
 		{
 			return nil, errors.New("unknow ruleType")
@@ -175,7 +183,7 @@ func (fe *FilterExpr) ParseAtomExpr(node *node32) (FilterNode, error) {
 		return nil, err
 	}
 	fImpl := filter.(filterImpl)
-	if err != nil {
+	if err == nil {
 		return fImpl, err
 	}
 	return nil, err
