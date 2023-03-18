@@ -10,6 +10,8 @@ type PageRequest interface {
 	pageable.Pageable
 	sortable.Sortable
 	filterable.Filterable
+	GetRawFilterable() filterable.Filterable
+	AddAndFilterable(filterbal filterable.Filterable)
 }
 
 type pageRequestImpl struct {
@@ -19,7 +21,7 @@ type pageRequestImpl struct {
 }
 
 func NewPageRequest(p pageable.Pageable, s sortable.Sortable, f filterable.Filterable) PageRequest {
-	return pageRequestImpl{
+	return &pageRequestImpl{
 		p: p,
 		s: s,
 		f: f,
@@ -56,10 +58,19 @@ func (p pageRequestImpl) IsFiltered() bool {
 	return p.f.IsFiltered()
 }
 
-func (p pageRequestImpl) Filters() []filterable.Filter {
-	return p.f.Filters()
+func (p pageRequestImpl) Children() []filterable.Filterable {
+	return p.f.Children()
 }
 
-func (p pageRequestImpl) AddFilter(f filterable.Filter) {
-	p.f.AddFilter(f)
+func (p pageRequestImpl) FilterableType() filterable.FilterableType {
+	return filterable.TypeComposite
+}
+
+func (p *pageRequestImpl) GetRawFilterable() filterable.Filterable {
+	return p.f
+}
+
+func (p *pageRequestImpl) AddAndFilterable(fb filterable.Filterable) {
+	newFilterable := filterable.NewFilterable(filterable.TypeAND, p.f, fb)
+	p.f = newFilterable
 }

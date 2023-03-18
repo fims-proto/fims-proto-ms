@@ -10,9 +10,10 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/voucher/domain/voucher"
 
+	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/voucher/app/query"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -76,15 +77,16 @@ func (r VoucherPostgresRepository) UpdateVoucher(ctx context.Context, voucherId 
 
 func (r VoucherPostgresRepository) SearchVouchers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Voucher], error) {
 	if sobId != uuid.Nil {
-		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
-		pageRequest.AddFilter(sobIdFilter)
+		sobIdFilter, _ := filterable.NewFilter("sobId", filterable.OptEq, sobId.String())
+		sobIdFilterable := filterable.NewFilterableAtom(sobIdFilter)
+		pageRequest.AddAndFilterable(sobIdFilterable)
 	}
 	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, readDBFromCtx(ctx).Preload("LineItems"))
 }
 
 func (r VoucherPostgresRepository) VoucherById(ctx context.Context, voucherId uuid.UUID) (query.Voucher, error) {
-	voucherIdFilter, _ := filterable.NewFilter("id", "eq", voucherId)
-	pageRequest := data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.New(voucherIdFilter))
+	voucherIdFilter, _ := filterable.NewFilter("id", filterable.OptEq, voucherId)
+	pageRequest := data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.NewFilterableAtom(voucherIdFilter))
 
 	vouchers, err := r.SearchVouchers(ctx, uuid.Nil, pageRequest)
 	if err != nil {

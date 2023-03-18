@@ -20,41 +20,7 @@ type filterImpl struct {
 
 // new
 
-func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
-	f, err := field.New(fieldName)
-	if err != nil {
-		return nil, err
-	}
-
-	o, err := newOperator(operator)
-	if err != nil {
-		return nil, err
-	}
-
-	switch o {
-	case OptBtw:
-		if len(values) != 2 {
-			return nil, errors.Errorf("invalid values for operator %s", o)
-		}
-	default:
-		if len(values) == 0 {
-			return nil, errors.Errorf("invalid values for operator %s", o)
-		}
-	}
-
-	sliceAny := make([]any, len(values))
-	for i, v := range values {
-		sliceAny[i] = v
-	}
-
-	return filterImpl{
-		field:    f,
-		operator: o,
-		values:   sliceAny,
-	}, nil
-}
-
-func NewFilter1[T any](fieldName string, operator Operator, values ...T) (Filter, error) {
+func NewFilter[T any](fieldName string, operator Operator, values ...T) (Filter, error) {
 	f, err := field.New(fieldName)
 	if err != nil {
 		return nil, err
@@ -99,16 +65,16 @@ func (f filterImpl) Values() []any {
 	return f.values
 }
 
-// impl for FilterNode
-func (f filterImpl) Children() []FilterNode {
+// impl for Filterable
+func (f filterImpl) Children() []Filterable {
 	return nil
 }
 
 func (f filterImpl) IsFiltered() bool {
-	return false
+	return true
 }
 
-func (f filterImpl) Type() FilterNodeType {
+func (f filterImpl) FilterableType() FilterableType {
 	return TypeATOM
 }
 

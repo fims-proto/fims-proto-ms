@@ -12,57 +12,16 @@ import (
 	"gorm.io/gorm"
 )
 
-func Filtering(f Filterable, targetSchema schema.Schema) func(db *gorm.DB) *gorm.DB {
-	return func(db *gorm.DB) *gorm.DB {
-		if f.IsFiltered() {
-			var whereStr []string
-			var args []any
-			for _, filter := range f.Filters() {
-				// field
-				fieldName, err := field.ToColumn(filter.Field(), targetSchema)
-				if err != nil {
-					_ = db.AddError(err)
-					return db
-				}
-				whereStr = append(whereStr, fieldName)
-
-				// operator and variable placeholder, and args
-				switch filter.Operator() {
-				case OptBtw:
-					whereStr = append(whereStr, filter.Operator().String())
-					whereStr = append(whereStr, "? AND ?")
-					args = append(args, filter.Values()[0], filter.Values()[1])
-				case OptIn:
-					whereStr = append(whereStr, filter.Operator().String())
-					whereStr = append(whereStr, "?")
-					args = append(args, filter.Values())
-				case OptStw:
-					whereStr = append(whereStr, "LIKE")
-					whereStr = append(whereStr, "?")
-					args = append(args, fmt.Sprintf("%s%%", filter.Values()[0]))
-				default:
-					whereStr = append(whereStr, filter.Operator().String())
-					whereStr = append(whereStr, "?")
-					args = append(args, filter.Values()[0])
-				}
-
-				whereStr = append(whereStr, "AND")
-			}
-			whereStr = whereStr[0 : len(whereStr)-1] // remove last AND
-
-			db = db.Where(strings.Join(whereStr, " "), args...)
-		}
-
-		return db
-	}
-}
-
 func helpValueToString(values any) string {
+	strVal, ok := values.(string)
+	if ok {
+		return fmt.Sprintf(`'%s'`, strVal)
+	}
 	return fmt.Sprintf("%v", values)
 }
 
-func assembleSQL(f FilterNode, targetSchema schema.Schema) (string, error) {
-	fType := f.Type()
+func assembleSQL(f Filterable, targetSchema schema.Schema) (string, error) {
+	fType := f.FilterableType()
 	switch fType {
 	case TypeAND:
 		{
@@ -130,6 +89,15 @@ func assembleSQL(f FilterNode, targetSchema schema.Schema) (string, error) {
 						helpValueToString(filter.Values()[1]),
 					)
 				}
+			case OptIn:
+				{
+					whereStr = append(whereStr, filter.Operator().String())
+					var strValList []string
+					for _, val := range filter.Values() {
+						strValList = append(strValList, helpValueToString(val))
+					}
+					whereStr = append(whereStr, "(", strings.Join(strValList, ","), ")")
+				}
 			case OptEq, OptLt, OptLte, OptGt, OptGte:
 				{
 					whereStr = append(whereStr, filter.Operator().String(), helpValueToString(filter.Values()[0]))
@@ -137,12 +105,12 @@ func assembleSQL(f FilterNode, targetSchema schema.Schema) (string, error) {
 			case OptStw:
 				{
 					whereStr = append(whereStr, "LIKE")
-					whereStr = append(whereStr, fmt.Sprintf("%s%%", filter.Values()[0]))
+					whereStr = append(whereStr, fmt.Sprintf("'%s%%'", filter.Values()[0]))
 				}
 			case OptCtn:
 				{
 					whereStr = append(whereStr, "LIKE")
-					whereStr = append(whereStr, fmt.Sprintf("%%%s%%", filter.Values()[0]))
+					whereStr = append(whereStr, fmt.Sprintf(`'%%%s%%'`, filter.Values()[0]))
 				}
 			default:
 				{
@@ -159,7 +127,7 @@ func assembleSQL(f FilterNode, targetSchema schema.Schema) (string, error) {
 	}
 }
 
-func FilteringNode(f FilterNode, targetSchema schema.Schema) func(db *gorm.DB) *gorm.DB {
+func Filtering(f Filterable, targetSchema schema.Schema) func(db *gorm.DB) *gorm.DB {
 	return func(db *gorm.DB) *gorm.DB {
 		if f.IsFiltered() {
 			strFilter, err := assembleSQL(f, targetSchema)

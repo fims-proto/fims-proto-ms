@@ -22,6 +22,7 @@ AtomExpr <- (
             GtExpr /
             LteExpr /
             GteExpr /
+            InExpr /
             StwExpr /
             BtwExpr /
             CtnExpr /
@@ -35,6 +36,7 @@ LtExpr  <- LT LPAR Identifier COMMA Literal RPAR
 GtExpr  <- GT LPAR Identifier COMMA Literal RPAR
 LteExpr <- LTE LPAR Identifier COMMA Literal RPAR
 GteExpr <- GTE LPAR Identifier COMMA Literal RPAR 
+InExpr  <- IN LPAR Identifier COMMA LiteralList RPAR
 StwExpr <- STW LPAR Identifier COMMA Literal RPAR
 BtwExpr <- BTW LPAR Identifier COMMA Literal COMMA Literal RPAR
 CtnExpr <- CTN LPAR Identifier COMMA Literal RPAR
@@ -42,9 +44,10 @@ CtnExpr <- CTN LPAR Identifier COMMA Literal RPAR
 Identifier	<- < IdentStart IdentCont* > Spacing
 IdentStart	<- [[a-z_]]
 IdentCont	<- IdentStart / [0-9]
-Literal <- StringLiteral
-            / NumLiteral
-
+Literal <- (StringLiteral
+            / NumLiteral)
+            Spacing
+LiteralList    <- Literal (COMMA Spacing Literal)+
 StringLiteral <- '\"' (Escape / !["\\\n\r] .)* '\"'
 
 Escape <- '\\' ([btnfr"'\\] / OctalEscape / UnicodeEscape)
@@ -70,6 +73,7 @@ EQ        <-  'eq'        Spacing
 NE        <-  'ne'        Spacing # none equal
 LT        <-  'lt'        Spacing
 GT        <-  'gt'        Spacing
+IN        <-  'in'        Spacing
 LTE       <-  'lte'       Spacing
 GTE       <-  'gte'       Spacing
 BTW       <-  'btw'       Spacing # between

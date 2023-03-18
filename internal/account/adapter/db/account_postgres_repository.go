@@ -16,11 +16,13 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/account/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/account/domain/period"
+
 	"gorm.io/gorm/clause"
+
+	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/account/app/query"
 
 	"gorm.io/gorm"
 )
@@ -154,17 +156,18 @@ func (r AccountPostgresRepository) SearchLedgers(ctx context.Context, sobId uuid
 }
 
 func (r AccountPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
-	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
-	pageRequest.AddFilter(periodIdFilter)
+	periodIdFilter, _ := filterable.NewFilter("periodId", filterable.OptEq, periodId)
+	periodIdFilterable := filterable.NewFilterableAtom(periodIdFilter)
+	pageRequest.AddAndFilterable(periodIdFilterable)
 	return r.SearchLedgers(ctx, sobId, pageRequest)
 }
 
 func (r AccountPostgresRepository) LedgersInPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) ([]query.Ledger, error) {
-	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
+	periodIdFilter, _ := filterable.NewFilter("periodId", filterable.OptEq, periodId)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(periodIdFilter),
+		filterable.NewFilterableAtom(periodIdFilter),
 	)
 	ledgers, err := r.SearchLedgers(ctx, sobId, pageRequest)
 	if err != nil {
@@ -222,11 +225,11 @@ func (r AccountPostgresRepository) SuperiorAccounts(ctx context.Context, account
 }
 
 func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds []uuid.UUID) ([]query.Account, error) {
-	accountIdFilter, _ := filterable.NewFilter("id", "in", accountIds...)
+	accountIdFilter, _ := filterable.NewFilter("id", filterable.OptIn, accountIds...)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(accountIdFilter),
+		filterable.NewFilterableAtom(accountIdFilter),
 	)
 	accounts, err := r.SearchAccounts(ctx, uuid.Nil, pageRequest)
 	if err != nil {
@@ -236,11 +239,11 @@ func (r AccountPostgresRepository) AccountsByIds(ctx context.Context, accountIds
 }
 
 func (r AccountPostgresRepository) AccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]query.Account, error) {
-	accountIdFilter, _ := filterable.NewFilter("accountNumber", "in", accountNumbers...)
+	accountIdFilter, _ := filterable.NewFilter("accountNumber", filterable.OptIn, accountNumbers...)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(accountIdFilter),
+		filterable.NewFilterableAtom(accountIdFilter),
 	)
 	accounts, err := r.SearchAccounts(ctx, sobId, pageRequest)
 	if err != nil {
@@ -261,11 +264,11 @@ func (r AccountPostgresRepository) CurrentPeriod(ctx context.Context, sobId uuid
 }
 
 func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid.UUID) (query.Period, error) {
-	periodIdFilter, _ := filterable.NewFilter("id", "eq", periodId)
+	periodIdFilter, _ := filterable.NewFilter("id", filterable.OptEq, periodId)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(periodIdFilter),
+		filterable.NewFilterableAtom(periodIdFilter),
 	)
 	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
 	if err != nil {
@@ -281,11 +284,11 @@ func (r AccountPostgresRepository) PeriodById(ctx context.Context, periodId uuid
 }
 
 func (r AccountPostgresRepository) PeriodsByIds(ctx context.Context, periodIds []uuid.UUID) ([]query.Period, error) {
-	periodIdFilter, _ := filterable.NewFilter("id", "in", periodIds...)
+	periodIdFilter, _ := filterable.NewFilter("id", filterable.OptIn, periodIds...)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(periodIdFilter),
+		filterable.NewFilterableAtom(periodIdFilter),
 	)
 	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
 	if err != nil {
@@ -315,12 +318,14 @@ func (r AccountPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.
 }
 
 func (r AccountPostgresRepository) PeriodByFiscalYearAndNumber(ctx context.Context, sobId uuid.UUID, fiscalYear, periodNumber int) (query.Period, error) {
-	fiscalYearFilter, _ := filterable.NewFilter("fiscalYear", "eq", fiscalYear)
-	numberFilter, _ := filterable.NewFilter("periodNumber", "eq", periodNumber)
+	fiscalYearFilter, _ := filterable.NewFilter("fiscalYear", filterable.OptEq, fiscalYear)
+	numberFilter, _ := filterable.NewFilter("periodNumber", filterable.OptEq, periodNumber)
+	fiscalYearFilterable := filterable.NewFilterableAtom(fiscalYearFilter)
+	numberFilterable := filterable.NewFilterableAtom(numberFilter)
 	pageRequest := data.NewPageRequest(
 		pageable.Unpaged(),
 		sortable.Unsorted(),
-		filterable.New(fiscalYearFilter, numberFilter),
+		filterable.NewFilterable(filterable.TypeAND, fiscalYearFilterable, numberFilterable),
 	)
 	addSobFilter(sobId, pageRequest)
 	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
@@ -353,8 +358,9 @@ func (r AccountPostgresRepository) currentPeriod(db *gorm.DB, sobId uuid.UUID) (
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
 	if sobId != uuid.Nil {
-		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
-		pageRequest.AddFilter(sobIdFilter)
+		sobIdFilter, _ := filterable.NewFilter("sobId", filterable.OptEq, sobId.String())
+		sobIdFilterable := filterable.NewFilterableAtom(sobIdFilter)
+		pageRequest.AddAndFilterable(sobIdFilterable)
 	}
 }
 

@@ -5,7 +5,7 @@ import (
 )
 
 func TestFilter(t *testing.T) {
-	expression := `and(ctn(name, "a"),or(eq(title,"哈哈"),lt(title, 1.3)))`
+	expression := "in(accountNumber,\"1821\",\"1001\")"
 	filter := &FilterExpr{Buffer: expression}
 	filter.Init()
 	filter.Print()
@@ -13,8 +13,8 @@ func TestFilter(t *testing.T) {
 		t.Fatal(err)
 	}
 	// filter.PrintSyntaxTree()
-	_, err := filter.ParseAsFilterNode()
-	// strSQL, err := assembleSQL(node)
+	_, err := filter.ParseAsFilterable()
+	// _, err = assembleSQL(node)
 	// println(strSQL)
 	if err != nil {
 		t.Fatal(err)

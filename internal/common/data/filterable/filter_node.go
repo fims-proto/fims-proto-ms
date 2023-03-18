@@ -6,47 +6,56 @@ import (
 	"github.com/pkg/errors"
 )
 
-type FilterNodeType int
+type FilterableType int
 
 const (
-	TypeATOM FilterNodeType = 1 << iota // identity no child filters
-	TypeAND                             // and
-	TypeOR                              // or
-	TypeNOT                             // not, only one child filter
+	TypeATOM      FilterableType = 1 << iota // identity no child filters
+	TypeAND                                  // and
+	TypeOR                                   // or
+	TypeNOT                                  // not, only one child filter
+	TypeNONE                                 // empty not a filter
+	TypeComposite                            // current filterblae is pageRequestImpl
 )
 
-type FilterNode interface {
+type Filterable interface {
 	IsFiltered() bool
-	Children() []FilterNode // child filters
-	Type() FilterNodeType
+	Children() []Filterable // child filters
+	FilterableType() FilterableType
 }
 
-type filterNodeImpl struct {
-	filterableType FilterNodeType
-	children       []FilterNode
+type filterableImpl struct {
+	filterableType FilterableType
+	children       []Filterable
 }
 
 // new
+func Unfiltered() Filterable {
+	return &filterableImpl{filterableType: TypeNONE, children: nil}
+}
 
-func NewFilterNode(fType FilterNodeType, filters ...FilterNode) FilterNode {
-	return &filterNodeImpl{filterableType: fType, children: filters}
+func NewFilterable(fType FilterableType, filters ...Filterable) Filterable {
+	return &filterableImpl{filterableType: fType, children: filters}
+}
+
+func NewFilterableAtom(filter Filter) Filterable {
+	return filter.(filterImpl)
 }
 
 // impl
 
-func (f *filterNodeImpl) IsFiltered() bool {
+func (f *filterableImpl) IsFiltered() bool {
 	return len(f.children) > 0
 }
 
-func (f *filterNodeImpl) Children() []FilterNode {
+func (f *filterableImpl) Children() []Filterable {
 	return f.children
 }
 
-func (f *filterNodeImpl) Type() FilterNodeType {
+func (f *filterableImpl) FilterableType() FilterableType {
 	return f.filterableType
 }
 
-func (fe *FilterExpr) ParseAsFilterNode() (FilterNode, error) {
+func (fe *FilterExpr) ParseAsFilterable() (Filterable, error) {
 	node := fe.AST()
 	node = node.up
 	if node.pegRule != ruleExpr {
@@ -56,7 +65,7 @@ func (fe *FilterExpr) ParseAsFilterNode() (FilterNode, error) {
 	return fe.ParseExpr(node)
 }
 
-func (fe *FilterExpr) ParseExpr(node *node32) (FilterNode, error) {
+func (fe *FilterExpr) ParseExpr(node *node32) (Filterable, error) {
 	node = node.up
 	if node == nil {
 		return nil, errors.Errorf("Pase failed at %s", node.String())
@@ -85,8 +94,8 @@ func (fe *FilterExpr) ParseExpr(node *node32) (FilterNode, error) {
 	}
 }
 
-func (fe *FilterExpr) ParseAndExpr(node *node32) (FilterNode, error) {
-	var children []FilterNode
+func (fe *FilterExpr) ParseAndExpr(node *node32) (Filterable, error) {
+	var children []Filterable
 	node = node.up.next.next.up
 	for node != nil {
 		if node.pegRule == ruleExpr {
@@ -99,13 +108,13 @@ func (fe *FilterExpr) ParseAndExpr(node *node32) (FilterNode, error) {
 		node = node.next
 	}
 	if children != nil {
-		return NewFilterNode(TypeAND, children...), nil
+		return NewFilterable(TypeAND, children...), nil
 	}
 	return nil, errors.Errorf("no child for andExpr")
 }
 
-func (fe *FilterExpr) ParseOrExpr(node *node32) (FilterNode, error) {
-	var children []FilterNode
+func (fe *FilterExpr) ParseOrExpr(node *node32) (Filterable, error) {
+	var children []Filterable
 	node = node.up.next.next.up
 	for node != nil {
 		if node.pegRule == ruleExpr {
@@ -118,23 +127,23 @@ func (fe *FilterExpr) ParseOrExpr(node *node32) (FilterNode, error) {
 		node = node.next
 	}
 	if children != nil {
-		return NewFilterNode(TypeOR, children...), nil
+		return NewFilterable(TypeOR, children...), nil
 	}
 	return nil, errors.Errorf("no child for orExpr")
 }
 
-func (fe *FilterExpr) ParseNotExpr(node *node32) (FilterNode, error) {
-	var children []FilterNode
+func (fe *FilterExpr) ParseNotExpr(node *node32) (Filterable, error) {
+	var children []Filterable
 	node = node.up.next.next
 	f, err := fe.ParseExpr(node)
 	if err != nil {
 		return nil, err
 	}
 	children = append(children, f)
-	return NewFilterNode(TypeNOT, children...), nil
+	return NewFilterable(TypeNOT, children...), nil
 }
 
-func (fe *FilterExpr) ParseAtomExpr(node *node32) (FilterNode, error) {
+func (fe *FilterExpr) ParseAtomExpr(node *node32) (Filterable, error) {
 	// return types are all filterImpl
 	node = node.up
 	var op Operator
@@ -171,6 +180,10 @@ func (fe *FilterExpr) ParseAtomExpr(node *node32) (FilterNode, error) {
 		{
 			op = OptCtn
 		}
+	case ruleInExpr:
+		{
+			op = OptIn
+		}
 	default:
 		{
 			return nil, errors.New("unknow ruleType")
@@ -178,7 +191,7 @@ func (fe *FilterExpr) ParseAtomExpr(node *node32) (FilterNode, error) {
 	}
 	field := node.up.next.next
 	fieldName := string(fe.buffer[field.begin:field.end])
-	filter, err := NewFilter1(fieldName, op, fe.ParseLiterals(field.next.next)...)
+	filter, err := NewFilter(fieldName, op, fe.ParseLiterals(field.next.next)...)
 	if err != nil {
 		return nil, err
 	}
@@ -191,6 +204,9 @@ func (fe *FilterExpr) ParseAtomExpr(node *node32) (FilterNode, error) {
 
 func (fe *FilterExpr) ParseLiterals(node *node32) []any {
 	var values []any
+	if node.pegRule == ruleLiteralList {
+		node = node.up
+	}
 	for node != nil {
 		if node.pegRule == ruleLiteral {
 			literalNode := node.up
