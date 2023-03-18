@@ -5,8 +5,10 @@ func NewFilterableFromQuery(filter string) (Filterable, error) {
 		return Unfiltered(), nil // TODO Lond create Unfiltered type
 	}
 	filterExpr := &FilterAST{Buffer: filter}
-	filterExpr.Init()
-	filterExpr.Print()
+	if err := filterExpr.Init(); err != nil {
+		return Unfiltered(), err
+	}
+
 	if err := filterExpr.Parse(); err != nil {
 		return Unfiltered(), err
 	}

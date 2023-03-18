@@ -118,26 +118,3 @@ func (o Operator) String() string {
 		return "unknown"
 	}
 }
-
-func newOperator(o string) (Operator, error) {
-	switch o {
-	case "eq":
-		return OptEq, nil
-	case "bt":
-		return OptBtw, nil
-	case "lt":
-		return OptLt, nil
-	case "lte":
-		return OptLte, nil
-	case "gt":
-		return OptGt, nil
-	case "gte":
-		return OptGte, nil
-	case "in":
-		return OptIn, nil
-	case "startsWith":
-		return OptStw, nil
-	default:
-		return 0, errors.Errorf("operator %s not supported", o)
-	}
-}

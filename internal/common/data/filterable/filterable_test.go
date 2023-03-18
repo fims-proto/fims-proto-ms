@@ -7,7 +7,9 @@ import (
 func TestFilter(t *testing.T) {
 	expression := "in(accountNumber,\"1821\",\"1001\")"
 	filter := &FilterAST{Buffer: expression}
-	filter.Init()
+	if err := filter.Init(); err != nil {
+		t.Fatal(err)
+	}
 	filter.Print()
 	if err := filter.Parse(); err != nil {
 		t.Fatal(err)
