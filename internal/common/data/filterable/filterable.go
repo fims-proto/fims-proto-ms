@@ -55,7 +55,7 @@ func (f *filterableImpl) FilterableType() FilterableType {
 	return f.filterableType
 }
 
-func (fe *FilterExpr) ParseAsFilterable() (Filterable, error) {
+func (fe *FilterAST) ParseAsFilterable() (Filterable, error) {
 	node := fe.AST()
 	node = node.up
 	if node.pegRule != ruleExpr {
@@ -65,7 +65,7 @@ func (fe *FilterExpr) ParseAsFilterable() (Filterable, error) {
 	return fe.ParseExpr(node)
 }
 
-func (fe *FilterExpr) ParseExpr(node *node32) (Filterable, error) {
+func (fe *FilterAST) ParseExpr(node *node32) (Filterable, error) {
 	node = node.up
 	if node == nil {
 		return nil, errors.Errorf("Pase failed at %s", node.String())
@@ -94,7 +94,7 @@ func (fe *FilterExpr) ParseExpr(node *node32) (Filterable, error) {
 	}
 }
 
-func (fe *FilterExpr) ParseAndExpr(node *node32) (Filterable, error) {
+func (fe *FilterAST) ParseAndExpr(node *node32) (Filterable, error) {
 	var children []Filterable
 	node = node.up.next.next.up
 	for node != nil {
@@ -113,7 +113,7 @@ func (fe *FilterExpr) ParseAndExpr(node *node32) (Filterable, error) {
 	return nil, errors.Errorf("no child for andExpr")
 }
 
-func (fe *FilterExpr) ParseOrExpr(node *node32) (Filterable, error) {
+func (fe *FilterAST) ParseOrExpr(node *node32) (Filterable, error) {
 	var children []Filterable
 	node = node.up.next.next.up
 	for node != nil {
@@ -132,7 +132,7 @@ func (fe *FilterExpr) ParseOrExpr(node *node32) (Filterable, error) {
 	return nil, errors.Errorf("no child for orExpr")
 }
 
-func (fe *FilterExpr) ParseNotExpr(node *node32) (Filterable, error) {
+func (fe *FilterAST) ParseNotExpr(node *node32) (Filterable, error) {
 	var children []Filterable
 	node = node.up.next.next
 	f, err := fe.ParseExpr(node)
@@ -143,7 +143,7 @@ func (fe *FilterExpr) ParseNotExpr(node *node32) (Filterable, error) {
 	return NewFilterable(TypeNOT, children...), nil
 }
 
-func (fe *FilterExpr) ParseAtomExpr(node *node32) (Filterable, error) {
+func (fe *FilterAST) ParseAtomExpr(node *node32) (Filterable, error) {
 	// return types are all filterImpl
 	node = node.up
 	var op Operator
@@ -202,7 +202,7 @@ func (fe *FilterExpr) ParseAtomExpr(node *node32) (Filterable, error) {
 	return nil, err
 }
 
-func (fe *FilterExpr) ParseLiterals(node *node32) []any {
+func (fe *FilterAST) ParseLiterals(node *node32) []any {
 	var values []any
 	if node.pegRule == ruleLiteralList {
 		node = node.up

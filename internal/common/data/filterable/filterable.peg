@@ -4,7 +4,7 @@
 
 package filterable
 
-type FilterExpr Peg {
+type FilterAST Peg {
 }
 
 F   <- Spacing Expr EOT

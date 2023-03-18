@@ -229,7 +229,7 @@ func (t *tokens32) Tokens() []token32 {
 	return t.tree
 }
 
-type FilterExpr struct {
+type FilterAST struct {
 	Buffer string
 	buffer []rune
 	rules  [49]func() bool
@@ -239,11 +239,11 @@ type FilterExpr struct {
 	tokens32
 }
 
-func (p *FilterExpr) Parse(rule ...int) error {
+func (p *FilterAST) Parse(rule ...int) error {
 	return p.parse(rule...)
 }
 
-func (p *FilterExpr) Reset() {
+func (p *FilterAST) Reset() {
 	p.reset()
 }
 
@@ -279,7 +279,7 @@ search:
 }
 
 type parseError struct {
-	p   *FilterExpr
+	p   *FilterAST
 	max token32
 }
 
@@ -307,7 +307,7 @@ func (e *parseError) Error() string {
 	return err
 }
 
-func (p *FilterExpr) PrintSyntaxTree() {
+func (p *FilterAST) PrintSyntaxTree() {
 	if p.Pretty {
 		p.tokens32.PrettyPrintSyntaxTree(p.Buffer)
 	} else {
@@ -315,30 +315,30 @@ func (p *FilterExpr) PrintSyntaxTree() {
 	}
 }
 
-func (p *FilterExpr) WriteSyntaxTree(w io.Writer) {
+func (p *FilterAST) WriteSyntaxTree(w io.Writer) {
 	p.tokens32.WriteSyntaxTree(w, p.Buffer)
 }
 
-func (p *FilterExpr) SprintSyntaxTree() string {
+func (p *FilterAST) SprintSyntaxTree() string {
 	var bldr strings.Builder
 	p.WriteSyntaxTree(&bldr)
 	return bldr.String()
 }
 
-func Pretty(pretty bool) func(*FilterExpr) error {
-	return func(p *FilterExpr) error {
+func Pretty(pretty bool) func(*FilterAST) error {
+	return func(p *FilterAST) error {
 		p.Pretty = pretty
 		return nil
 	}
 }
 
-func Size(size int) func(*FilterExpr) error {
-	return func(p *FilterExpr) error {
+func Size(size int) func(*FilterAST) error {
+	return func(p *FilterAST) error {
 		p.tokens32 = tokens32{tree: make([]token32, 0, size)}
 		return nil
 	}
 }
-func (p *FilterExpr) Init(options ...func(*FilterExpr) error) error {
+func (p *FilterAST) Init(options ...func(*FilterAST) error) error {
 	var (
 		max                  token32
 		position, tokenIndex uint32

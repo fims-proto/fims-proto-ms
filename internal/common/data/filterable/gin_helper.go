@@ -4,7 +4,7 @@ func NewFilterableFromQuery(filter string) (Filterable, error) {
 	if filter == "" {
 		return Unfiltered(), nil // TODO Lond create Unfiltered type
 	}
-	filterExpr := &FilterExpr{Buffer: filter}
+	filterExpr := &FilterAST{Buffer: filter}
 	filterExpr.Init()
 	filterExpr.Print()
 	if err := filterExpr.Parse(); err != nil {
