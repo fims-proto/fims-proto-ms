@@ -63,7 +63,7 @@ func (p pageRequestImpl) Children() []filterable.Filterable {
 }
 
 func (p pageRequestImpl) FilterableType() filterable.FilterableType {
-	return filterable.TypeComposite
+	return filterable.TypeRequest
 }
 
 func (p *pageRequestImpl) GetRawFilterable() filterable.Filterable {
@@ -71,6 +71,10 @@ func (p *pageRequestImpl) GetRawFilterable() filterable.Filterable {
 }
 
 func (p *pageRequestImpl) AddAndFilterable(fb filterable.Filterable) {
-	newFilterable := filterable.NewFilterable(filterable.TypeAND, p.f, fb)
-	p.f = newFilterable
+	if p.f.FilterableType() == filterable.TypeNONE {
+		p.f = fb
+	} else {
+		newFilterable := filterable.NewFilterable(filterable.TypeAND, p.f, fb)
+		p.f = newFilterable
+	}
 }

@@ -9,12 +9,12 @@ import (
 type FilterableType int
 
 const (
-	TypeATOM      FilterableType = 1 << iota // identity no child filters
-	TypeAND                                  // and
-	TypeOR                                   // or
-	TypeNOT                                  // not, only one child filter
-	TypeNONE                                 // empty not a filter
-	TypeComposite                            // current filterblae is pageRequestImpl
+	TypeATOM    FilterableType = 1 << iota // identity one child filters
+	TypeAND                                // and
+	TypeOR                                 // or
+	TypeNOT                                // not, only one child filter
+	TypeNONE                               // empty not a filter
+	TypeRequest                            // current filterblae is pageRequestImpl, should not go into assembleSQL
 )
 
 type Filterable interface {

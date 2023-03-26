@@ -9,6 +9,7 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/field"
 
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -17,6 +18,11 @@ func helpValueToString(values any) string {
 	if ok {
 		return fmt.Sprintf(`'%s'`, strVal)
 	}
+	uuidVal, ok := values.(uuid.UUID)
+	if ok {
+		return fmt.Sprintf(`'%s'`, uuidVal.String())
+	}
+
 	return fmt.Sprintf("%v", values)
 }
 
