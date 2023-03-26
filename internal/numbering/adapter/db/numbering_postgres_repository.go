@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/database"
+
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
 
@@ -20,7 +22,7 @@ func NewNumberingPostgresRepository() *NumberingPostgresRepository {
 }
 
 func (r NumberingPostgresRepository) Migrate(ctx context.Context) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	if err := db.AutoMigrate(&identifierConfigurationPO{}, &identifierPO{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
@@ -29,7 +31,7 @@ func (r NumberingPostgresRepository) Migrate(ctx context.Context) error {
 }
 
 func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.Context, domainConfig *identifier_configuration.IdentifierConfiguration) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	dbConfig, err := identifierConfigurationBOToPO(*domainConfig)
 	if err != nil {
@@ -42,7 +44,7 @@ func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.C
 }
 
 func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.Context, id uuid.UUID, updateFn func(config *identifier_configuration.IdentifierConfiguration) (*identifier_configuration.IdentifierConfiguration, error)) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
 		po := identifierConfigurationPO{}
@@ -69,7 +71,7 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.C
 }
 
 func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *identifier.Identifier) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	po := identifierBOToPO(*bo)
 
@@ -79,7 +81,7 @@ func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *i
 }
 
 func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.Context, targetBusinessObject string, objectsToMatch map[string]string) (query.IdentifierConfiguration, error) {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	var configPOs []identifierConfigurationPO
 	if err := db.Where("target_business_object = ?", targetBusinessObject).Find(&configPOs).Error; err != nil {
@@ -102,7 +104,7 @@ func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.
 }
 
 func (r NumberingPostgresRepository) IdentifierById(ctx context.Context, id uuid.UUID) (query.Identifier, error) {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	po := identifierPO{}
 	if err := db.First(&po, "id = ?", id).Error; err != nil {
@@ -110,8 +112,4 @@ func (r NumberingPostgresRepository) IdentifierById(ctx context.Context, id uuid
 	}
 
 	return identifierPOToDTO(po), nil
-}
-
-func readDBFromCtx(ctx context.Context) *gorm.DB {
-	return ctx.Value("db").(*gorm.DB)
 }

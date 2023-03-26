@@ -6,6 +6,8 @@ import (
 	"net/url"
 	"testing"
 
+	"github/fims-proto/fims-proto-ms/internal/common/database"
+
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -39,7 +41,7 @@ func TestResolveTenantBySubdomain_localhost(t *testing.T) {
 
 	ResolveTenantBySubdomain(mockTenantManager{})(&c)
 
-	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
+	assert.Equal(t, "localhost", database.ReadDBFromContext(&c).Error.Error())
 }
 
 func TestResolveTenantBySubdomain_127_0_0_1(t *testing.T) {
@@ -56,7 +58,7 @@ func TestResolveTenantBySubdomain_127_0_0_1(t *testing.T) {
 
 	ResolveTenantBySubdomain(mockTenantManager{})(&c)
 
-	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
+	assert.Equal(t, "localhost", database.ReadDBFromContext(&c).Error.Error())
 }
 
 func TestResolveTenantBySubdomain_remote(t *testing.T) {
@@ -73,7 +75,7 @@ func TestResolveTenantBySubdomain_remote(t *testing.T) {
 
 	ResolveTenantBySubdomain(mockTenantManager{})(&c)
 
-	assert.Equal(t, "remote", c.Value("db").(*gorm.DB).Error.Error())
+	assert.Equal(t, "remote", database.ReadDBFromContext(&c).Error.Error())
 }
 
 type mockTenantManager struct{}

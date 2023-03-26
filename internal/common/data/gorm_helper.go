@@ -19,7 +19,7 @@ func SearchEntities[PO schema.Schema, DTO any](
 	db *gorm.DB,
 ) (Page[DTO], error) {
 	var persistentObjects []PO
-	tx := db.Scopes(filterable.Filtering(r, po)).WithContext(ctx) // new session
+	tx := db.Scopes(filterable.Filtering(r, po)).Session(nil) // new session
 
 	var count int64
 	if err := tx.Model(&po).Count(&count).Error; err != nil {

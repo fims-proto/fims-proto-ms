@@ -66,6 +66,13 @@ definitions:
       voucherType:
         type: string
     type: object
+  http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
   http.LedgerResponse:
     properties:
       account:
@@ -119,6 +126,29 @@ definitions:
       id:
         type: string
       text:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.PeriodResponse:
+    properties:
+      createdAt:
+        type: string
+      endingTime:
+        type: string
+      fiscalYear:
+        type: integer
+      id:
+        type: string
+      isClosed:
+        type: boolean
+      isCurrent:
+        type: boolean
+      openingTime:
+        type: string
+      periodNumber:
+        type: integer
+      sobId:
         type: string
       updatedAt:
         type: string
@@ -184,11 +214,11 @@ definitions:
       attachmentQuantity:
         type: integer
       auditor:
-        $ref: '#/definitions/internal_voucher_port_public_http.UserResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       createdAt:
         type: string
       creator:
-        $ref: '#/definitions/internal_voucher_port_public_http.UserResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       credit:
         type: number
       debit:
@@ -210,11 +240,11 @@ definitions:
           $ref: '#/definitions/http.LineItemResponse'
         type: array
       period:
-        $ref: '#/definitions/internal_voucher_port_public_http.PeriodResponse'
+        $ref: '#/definitions/http.PeriodResponse'
       poster:
-        $ref: '#/definitions/internal_voucher_port_public_http.UserResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       reviewer:
-        $ref: '#/definitions/internal_voucher_port_public_http.UserResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       sobId:
         type: string
       transactionTime:
@@ -224,49 +254,12 @@ definitions:
       voucherType:
         type: string
     type: object
-  internal_account_port_public_http.Error:
+  internal_general_ledger_port_public_http.UserResponse:
     properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
-  internal_account_port_public_http.PeriodResponse:
-    properties:
-      createdAt:
-        type: string
-      endingTime:
-        type: string
-      fiscalYear:
-        type: integer
       id:
         type: string
-      isClosed:
-        type: boolean
-      isCurrent:
-        type: boolean
-      openingTime:
-        type: string
-      periodNumber:
-        type: integer
-      sobId:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  internal_sob_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
-  internal_user_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
+      traits:
+        type: any
     type: object
   internal_user_port_public_http.UserResponse:
     properties:
@@ -278,39 +271,6 @@ definitions:
         type: any
       updatedAt:
         type: string
-    type: object
-  internal_voucher_port_public_http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
-  internal_voucher_port_public_http.PeriodResponse:
-    properties:
-      createdAt:
-        type: string
-      endingTime:
-        type: string
-      fiscalYear:
-        type: integer
-      id:
-        type: string
-      isClosed:
-        type: boolean
-      number:
-        type: integer
-      openingTime:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  internal_voucher_port_public_http.UserResponse:
-    properties:
-      id:
-        type: string
-      traits:
-        type: any
     type: object
 host: 127.0.0.1:4455
 info:
@@ -326,7 +286,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: List all account configurations
+      description: List all accounts
       parameters:
       - description: Sob ID
         in: path
@@ -365,14 +325,14 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_account_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - accounts
   /sob/{sobId}/period/{periodId}/ledgers:
     get:
       consumes:
       - application/json
-      description: List accounts in period
+      description: List ledgers in period
       parameters:
       - description: Sob ID
         in: path
@@ -416,9 +376,9 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_account_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
-      - accounts
+      - ledgers
   /sob/{sobId}/periods:
     get:
       consumes:
@@ -457,14 +417,14 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/internal_account_port_public_http.PeriodResponse'
+              $ref: '#/definitions/http.PeriodResponse'
             type: array
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_account_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
-      - accounts
+      - periods
   /sob/{sobId}/periods/current:
     get:
       consumes:
@@ -482,13 +442,13 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_account_port_public_http.PeriodResponse'
+            $ref: '#/definitions/http.PeriodResponse'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_account_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
-      - accounts
+      - periods
   /sob/{sobId}/voucher/{id}:
     get:
       consumes:
@@ -517,7 +477,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
     patch:
@@ -549,18 +509,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sob/{sobId}/voucher/{id}/audit:
     post:
       consumes:
       - application/json
-      description: Audit voucher
+      description: AuditVoucher voucher
       parameters:
       - description: Sob ID
         in: path
@@ -572,7 +532,7 @@ paths:
         name: id
         required: true
         type: string
-      - description: Audit voucher request, auditor user ID
+      - description: AuditVoucher voucher request, auditor user ID
         in: body
         name: AuditVoucherRequest
         required: true
@@ -586,11 +546,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sob/{sobId}/voucher/{id}/cancel-audit:
@@ -623,11 +583,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sob/{sobId}/voucher/{id}/cancel-review:
@@ -660,18 +620,18 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sob/{sobId}/voucher/{id}/post:
     post:
       consumes:
       - application/json
-      description: Post voucher
+      description: PostVoucher voucher
       parameters:
       - description: Sob ID
         in: path
@@ -683,7 +643,7 @@ paths:
         name: id
         required: true
         type: string
-      - description: Post voucher request, poster user ID
+      - description: PostVoucher voucher request, poster user ID
         in: body
         name: PostVoucherRequest
         required: true
@@ -697,14 +657,14 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sob/{sobId}/voucher/{id}/review:
     post:
       consumes:
       - application/json
-      description: Review voucher
+      description: ReviewVoucher voucher
       parameters:
       - description: Sob ID
         in: path
@@ -716,7 +676,7 @@ paths:
         name: id
         required: true
         type: string
-      - description: Review voucher request, reviewer user ID
+      - description: ReviewVoucher voucher request, reviewer user ID
         in: body
         name: ReviewVoucherRequest
         required: true
@@ -730,11 +690,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sob/{sobId}/vouchers:
@@ -779,7 +739,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
     post:
@@ -808,11 +768,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_voucher_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - vouchers
   /sobs:
@@ -832,7 +792,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - sobs
     post:
@@ -856,11 +816,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - sobs
   /sobs/{sobId}:
@@ -886,7 +846,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - sobs
     patch:
@@ -913,11 +873,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_sob_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - sobs
   /user/{userId}:
@@ -943,7 +903,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_user_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - users
     patch:
@@ -970,11 +930,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/internal_user_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/internal_user_port_public_http.Error'
+            $ref: '#/definitions/http.Error'
       tags:
       - users
 swagger: "2.0"

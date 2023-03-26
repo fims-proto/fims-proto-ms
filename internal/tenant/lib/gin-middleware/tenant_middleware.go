@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/common/database"
+
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 
 	"github.com/gin-gonic/gin"
@@ -36,7 +38,7 @@ func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
 		if err != nil {
 			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", subdomain))
 		}
-		c.Set("db", db.WithContext(c))
+		c.Set(database.GetContextDBKey(), db.WithContext(c))
 		c.Set("subdomain", subdomain)
 
 		c.Next()

@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
+	"github/fims-proto/fims-proto-ms/internal/common/database"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
@@ -21,7 +22,7 @@ func NewSobPostgresRepository() *SobPostgresRepository {
 }
 
 func (r SobPostgresRepository) Migrate(ctx context.Context) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	if err := db.AutoMigrate(&sobPO{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
@@ -30,7 +31,7 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 }
 
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	po, err := sobBOToPO(*sob)
 	if err != nil {
@@ -43,7 +44,7 @@ func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) erro
 }
 
 func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
 		po := sobPO{}
@@ -73,11 +74,11 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 // Queries
 
 func (r SobPostgresRepository) SearchSobs(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.Sob], error) {
-	return data.SearchEntities(ctx, pageRequest, sobPO{}, sobPOToDTO, readDBFromCtx(ctx))
+	return data.SearchEntities(ctx, pageRequest, sobPO{}, sobPOToDTO, database.ReadDBFromContext(ctx))
 }
 
 func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	dbSob := sobPO{}
 	if err := db.Where("id = ?", sobId).First(&dbSob).Error; err != nil {
@@ -90,8 +91,4 @@ func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (qu
 	}
 
 	return querySob, nil
-}
-
-func readDBFromCtx(ctx context.Context) *gorm.DB {
-	return ctx.Value("db").(*gorm.DB)
 }
