@@ -39,7 +39,7 @@ func (r GeneralLedgerPostgresRepository) EnableTx(ctx context.Context, txFn func
 	db := database.ReadDBFromContext(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		return txFn(database.ContextWithDB(ctx, tx))
+		return txFn(database.NewContextWithDB(ctx, tx))
 	})
 }
 
