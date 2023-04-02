@@ -1,6 +1,11 @@
+.PHONY: test
+test:
+	go test ./... -count=1
+
 .PHONY: peg
 peg:
 	peg -output internal/common/data/filterable/filterable_ast.go internal/common/data/filterable/filterable.peg
+
 .PHONY: swag
 swag:
 	swag init -g api/api.go

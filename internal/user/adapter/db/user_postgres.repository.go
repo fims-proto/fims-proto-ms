@@ -3,6 +3,8 @@ package db
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/database"
+
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
 
 	"github.com/google/uuid"
@@ -19,7 +21,7 @@ func NewUserPostgresRepository() *UserPostgresRepository {
 }
 
 func (r UserPostgresRepository) Migrate(ctx context.Context) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	if err := db.AutoMigrate(&userPO{}); err != nil {
 		return errors.Wrap(err, "DB migration failed")
@@ -28,7 +30,7 @@ func (r UserPostgresRepository) Migrate(ctx context.Context) error {
 }
 
 func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID, updateFn func(*user.User) (*user.User, error)) error {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
 		po := userPO{}
@@ -61,7 +63,7 @@ func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID
 // queries
 
 func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (query.User, error) {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	po := userPO{}
 	if err := db.Where("id = ?", id).First(&po).Error; err != nil {
@@ -77,7 +79,7 @@ func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (que
 }
 
 func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID) ([]query.User, error) {
-	db := readDBFromCtx(ctx)
+	db := database.ReadDBFromContext(ctx)
 
 	if len(ids) == 0 {
 		return nil, nil
@@ -99,8 +101,4 @@ func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID)
 	}
 
 	return userDTOs, nil
-}
-
-func readDBFromCtx(ctx context.Context) *gorm.DB {
-	return ctx.Value("db").(*gorm.DB)
 }
