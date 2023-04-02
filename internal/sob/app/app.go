@@ -30,14 +30,14 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	repo domain.Repository,
 	readModel query.SobReadModel,
-	accountService service.AccountService,
+	generalLedgerService service.GeneralLedgerService,
 ) {
 	a.Queries = Queries{
 		PagingSobs: query.NewPagingSobsHandler(readModel),
 		SobById:    query.NewSobByIdHandler(readModel),
 	}
 	a.Commands = Commands{
-		CreateSob: command.NewCreateSobHandler(repo, accountService),
+		CreateSob: command.NewCreateSobHandler(repo, generalLedgerService),
 		UpdateSob: command.NewUpdateSobHandler(repo),
 		Migrate:   command.NewMigrationHandler(repo),
 	}

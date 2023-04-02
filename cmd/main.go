@@ -6,63 +6,46 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
+	"github.com/spf13/viper"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "github/fims-proto/fims-proto-ms/docs"
+	"github/fims-proto/fims-proto-ms/internal/common/database"
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
-
-	accountNumberingAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/numbering"
-
-	"github/fims-proto/fims-proto-ms/internal/common/db"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/devops"
-
-	_ "github/fims-proto/fims-proto-ms/docs"
-	accountAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/db"
-	accountSobAdapter "github/fims-proto/fims-proto-ms/internal/account/adapter/sob"
-	accountApp "github/fims-proto/fims-proto-ms/internal/account/app"
-	accountPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/account/port/private/http"
-	accountIntraPort "github/fims-proto/fims-proto-ms/internal/account/port/private/intraprocess"
-	accountPublicHttpPort "github/fims-proto/fims-proto-ms/internal/account/port/public/http"
-
+	generalLedgerAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/db"
+	generalLedgerNumberingAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/numbering"
+	generalLedgerSobAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/sob"
+	generalLedgerUserAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/user"
+	generalLedgerApp "github/fims-proto/fims-proto-ms/internal/general_ledger/app"
+	generalLedgerPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/general_ledger/port/private/http"
+	generalLedgerIntraPort "github/fims-proto/fims-proto-ms/internal/general_ledger/port/private/intraprocess"
+	generalLedgerPublicHttpPort "github/fims-proto/fims-proto-ms/internal/general_ledger/port/public/http"
 	numberingAdapter "github/fims-proto/fims-proto-ms/internal/numbering/adapter/db"
 	numberingApp "github/fims-proto/fims-proto-ms/internal/numbering/app"
 	numberingPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/http"
 	numberingIntraPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/intraprocess"
-
-	userAdapter "github/fims-proto/fims-proto-ms/internal/user/adapter/db"
-	userApp "github/fims-proto/fims-proto-ms/internal/user/app"
-	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
-	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
-	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
-
-	sobAccountAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/account"
 	sobAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/db"
+	sobGeneralLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/general_ledger"
 	sobApp "github/fims-proto/fims-proto-ms/internal/sob/app"
 	sobPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/http"
 	sobIntraPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/intraprocess"
 	sobPublicHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/public/http"
-
 	tenantDb "github/fims-proto/fims-proto-ms/internal/tenant/adapter/db"
 	tenantApp "github/fims-proto/fims-proto-ms/internal/tenant/app"
 	ginMiddleware "github/fims-proto/fims-proto-ms/internal/tenant/lib/gin-middleware"
 	tenantManager "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-manager"
 	tenantService "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
 	tenantIntraPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
-
-	voucherAccountAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/account"
-	voucherAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/db"
-	voucherNumberingAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/numbering"
-	voucherUserAdapter "github/fims-proto/fims-proto-ms/internal/voucher/adapter/user"
-	voucherApp "github/fims-proto/fims-proto-ms/internal/voucher/app"
-	voucherPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/private/http"
-	voucherPublicHttpPort "github/fims-proto/fims-proto-ms/internal/voucher/port/public/http"
-
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
-
-	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
-	"github.com/spf13/viper"
+	userAdapter "github/fims-proto/fims-proto-ms/internal/user/adapter/db"
+	userApp "github/fims-proto/fims-proto-ms/internal/user/app"
+	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
+	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
+	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
 )
 
 func main() {
@@ -73,7 +56,7 @@ func main() {
 	log.InitLogger()
 	defer cleanup()
 
-	dbConnector := db.NewConnector()
+	dbConnector := database.NewConnector()
 
 	dbConnection, err := dbConnector.Open(viper.GetString("postgres.dsn"))
 	if err != nil {
@@ -92,50 +75,39 @@ func main() {
 
 	// repositories
 	sobRepository := sobAdapter.NewSobPostgresRepository()
-	accountRepository := accountAdapter.NewAccountPostgresRepository()
-	voucherRepository := voucherAdapter.NewVoucherPostgresRepository()
+	generalLedgerRepository := generalLedgerAdapter.NewGeneralLedgerPostgresRepository()
 	numberingRepository := numberingAdapter.NewNumberingPostgresRepository()
 	userRepository := userAdapter.NewUserPostgresRepository()
 
 	// application - will be passed by reference, in order to make injection work
 	sobApplication := sobApp.NewApplication()
-	accountApplication := accountApp.NewApplication()
-	voucherApplication := voucherApp.NewApplication()
+	generalLedgerApplication := generalLedgerApp.NewApplication()
 	numberingApplication := numberingApp.NewApplication()
 	userApplication := userApp.NewApplication()
 
 	// intra process interfaces
 	sobInterface := sobIntraPort.NewSobInterface(&sobApplication)
-	accountInterface := accountIntraPort.NewAccountInterface(&accountApplication)
+	generalLedgerInterface := generalLedgerIntraPort.NewGeneralLedgerInterface(&generalLedgerApplication)
 	numberingInterface := numberingIntraPort.NewNumberingInterface(&numberingApplication)
 	userInterface := userIntraPort.NewUserInterface(&userApplication)
 
 	// application dependencies injection
-	accountServiceForSob := sobAccountAdapter.NewIntraProcessAdapter(accountInterface)
+	generalLedgerServiceForSob := sobGeneralLedgerAdapter.NewIntraProcessAdapter(generalLedgerInterface)
 	sobApplication.Inject(
 		sobRepository,
 		sobRepository,
-		accountServiceForSob,
+		generalLedgerServiceForSob,
 	)
 
-	sobServiceForAccount := accountSobAdapter.NewIntraProcessAdapter(sobInterface)
-	numberingServiceForAccount := accountNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
-	accountApplication.Inject(
-		accountRepository,
-		accountRepository,
-		sobServiceForAccount,
-		numberingServiceForAccount,
-	)
-
-	accountServiceForVoucher := voucherAccountAdapter.NewIntraProcessAdapter(accountInterface)
-	numberingServiceForVoucher := voucherNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
-	userServiceForVoucher := voucherUserAdapter.NewIntraProcessAdapter(userInterface)
-	voucherApplication.Inject(
-		voucherRepository,
-		voucherRepository,
-		accountServiceForVoucher,
-		userServiceForVoucher,
-		numberingServiceForVoucher,
+	sobServiceForGeneralLedger := generalLedgerSobAdapter.NewIntraProcessAdapter(sobInterface)
+	numberingServiceForGeneralLedger := generalLedgerNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
+	userServiceForGeneralLedger := generalLedgerUserAdapter.NewIntraProcessAdapter(userInterface)
+	generalLedgerApplication.Inject(
+		generalLedgerRepository,
+		generalLedgerRepository,
+		sobServiceForGeneralLedger,
+		numberingServiceForGeneralLedger,
+		userServiceForGeneralLedger,
 	)
 
 	numberingApplication.Inject(
@@ -157,16 +129,14 @@ func main() {
 	// public http API
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
-	accountPublicHttpPort.InitRouter(accountPublicHttpPort.NewHandler(&accountApplication), publicApiRouter)
-	voucherPublicHttpPort.InitRouter(voucherPublicHttpPort.NewHandler(&voucherApplication), publicApiRouter)
+	generalLedgerPublicHttpPort.InitRouter(generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication), publicApiRouter)
 	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
 
 	// private http API, should have different authentication method then public API
 	privateApiRouter := router.Group("/internal")
 	sobPrivateHttpPort.InitRouter(sobPrivateHttpPort.NewHandler(&sobApplication), privateApiRouter)
 	numberingPrivateHttpPort.InitRouter(numberingPrivateHttpPort.NewHandler(&numberingApplication), privateApiRouter)
-	accountPrivateHttpPort.InitRouter(accountPrivateHttpPort.NewHandler(&accountApplication), privateApiRouter)
-	voucherPrivateHttpPort.InitRouter(voucherPrivateHttpPort.NewHandler(&voucherApplication), privateApiRouter)
+	generalLedgerPrivateHttpPort.InitRouter(generalLedgerPrivateHttpPort.NewHandler(&generalLedgerApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
 	if strings.HasPrefix(viper.GetString("profile"), "dev") {

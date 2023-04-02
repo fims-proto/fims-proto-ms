@@ -3,8 +3,11 @@ package ginmiddleware
 import (
 	"context"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github/fims-proto/fims-proto-ms/internal/common/database"
 
 	"github.com/gin-gonic/gin"
 	"github.com/pkg/errors"
@@ -30,16 +33,15 @@ func TestResolveTenantBySubdomain_localhost(t *testing.T) {
 
 	localhost, _ := url.Parse("http://localhost:3000/test")
 
-	c := gin.Context{
-		Request: &http.Request{
-			Host: "localhost:3000",
-			URL:  localhost,
-		},
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = &http.Request{
+		Host: "localhost:3000",
+		URL:  localhost,
 	}
 
-	ResolveTenantBySubdomain(mockTenantManager{})(&c)
+	ResolveTenantBySubdomain(mockTenantManager{})(c)
 
-	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
+	assert.Equal(t, "localhost", database.ReadDBFromContext(c).Error.Error())
 }
 
 func TestResolveTenantBySubdomain_127_0_0_1(t *testing.T) {
@@ -47,16 +49,15 @@ func TestResolveTenantBySubdomain_127_0_0_1(t *testing.T) {
 
 	localhost, _ := url.Parse("http://127.0.0.1:3000/test")
 
-	c := gin.Context{
-		Request: &http.Request{
-			Host: "127.0.0.1:3000",
-			URL:  localhost,
-		},
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = &http.Request{
+		Host: "127.0.0.1:3000",
+		URL:  localhost,
 	}
 
-	ResolveTenantBySubdomain(mockTenantManager{})(&c)
+	ResolveTenantBySubdomain(mockTenantManager{})(c)
 
-	assert.Equal(t, "localhost", c.Value("db").(*gorm.DB).Error.Error())
+	assert.Equal(t, "localhost", database.ReadDBFromContext(c).Error.Error())
 }
 
 func TestResolveTenantBySubdomain_remote(t *testing.T) {
@@ -64,16 +65,15 @@ func TestResolveTenantBySubdomain_remote(t *testing.T) {
 
 	remote, _ := url.Parse("https://some-domain.fims.com/test")
 
-	c := gin.Context{
-		Request: &http.Request{
-			Host: "some-domain.fims.com",
-			URL:  remote,
-		},
+	c, _ := gin.CreateTestContext(httptest.NewRecorder())
+	c.Request = &http.Request{
+		Host: "some-domain.fims.com",
+		URL:  remote,
 	}
 
-	ResolveTenantBySubdomain(mockTenantManager{})(&c)
+	ResolveTenantBySubdomain(mockTenantManager{})(c)
 
-	assert.Equal(t, "remote", c.Value("db").(*gorm.DB).Error.Error())
+	assert.Equal(t, "remote", database.ReadDBFromContext(c.Request.Context()).Error.Error())
 }
 
 type mockTenantManager struct{}

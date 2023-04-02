@@ -22,7 +22,7 @@ const docTemplate = `{
     "paths": {
         "/sob/{sobId}/accounts": {
             "get": {
-                "description": "List all account configurations",
+                "description": "List all accounts",
                 "consumes": [
                     "application/json"
                 ],
@@ -82,7 +82,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -90,7 +90,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/period/{periodId}/ledgers": {
             "get": {
-                "description": "List accounts in period",
+                "description": "List ledgers in period",
                 "consumes": [
                     "application/json"
                 ],
@@ -98,7 +98,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "ledgers"
                 ],
                 "parameters": [
                     {
@@ -157,7 +157,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -173,7 +173,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "periods"
                 ],
                 "parameters": [
                     {
@@ -218,14 +218,14 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_account_port_public_http.PeriodResponse"
+                                "$ref": "#/definitions/http.PeriodResponse"
                             }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -241,7 +241,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "accounts"
+                    "periods"
                 ],
                 "parameters": [
                     {
@@ -256,13 +256,13 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_account_port_public_http.PeriodResponse"
+                            "$ref": "#/definitions/http.PeriodResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_account_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -309,7 +309,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -357,13 +357,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -371,7 +371,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/voucher/{id}/audit": {
             "post": {
-                "description": "Audit voucher",
+                "description": "AuditVoucher voucher",
                 "consumes": [
                     "application/json"
                 ],
@@ -397,7 +397,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Audit voucher request, auditor user ID",
+                        "description": "AuditVoucher voucher request, auditor user ID",
                         "name": "AuditVoucherRequest",
                         "in": "body",
                         "required": true,
@@ -413,13 +413,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -469,13 +469,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -525,13 +525,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -539,7 +539,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/voucher/{id}/post": {
             "post": {
-                "description": "Post voucher",
+                "description": "PostVoucher voucher",
                 "consumes": [
                     "application/json"
                 ],
@@ -565,7 +565,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Post voucher request, poster user ID",
+                        "description": "PostVoucher voucher request, poster user ID",
                         "name": "PostVoucherRequest",
                         "in": "body",
                         "required": true,
@@ -581,7 +581,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -589,7 +589,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/voucher/{id}/review": {
             "post": {
-                "description": "Review voucher",
+                "description": "ReviewVoucher voucher",
                 "consumes": [
                     "application/json"
                 ],
@@ -615,7 +615,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Review voucher request, reviewer user ID",
+                        "description": "ReviewVoucher voucher request, reviewer user ID",
                         "name": "ReviewVoucherRequest",
                         "in": "body",
                         "required": true,
@@ -631,13 +631,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -704,7 +704,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -748,13 +748,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_voucher_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -785,7 +785,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -822,13 +822,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -868,7 +868,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -909,13 +909,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -955,7 +955,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_user_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -996,13 +996,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/internal_user_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/internal_user_port_public_http.Error"
+                            "$ref": "#/definitions/http.Error"
                         }
                     }
                 }
@@ -1111,6 +1111,17 @@ const docTemplate = `{
                 }
             }
         },
+        "http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "http.LedgerResponse": {
             "type": "object",
             "properties": {
@@ -1191,6 +1202,41 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "fiscalYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "isCurrent": {
+                    "type": "boolean"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "periodNumber": {
+                    "type": "integer"
+                },
+                "sobId": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1292,13 +1338,13 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "auditor": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
                 },
                 "createdAt": {
                     "type": "string"
                 },
                 "creator": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
                 },
                 "credit": {
                     "type": "number"
@@ -1331,13 +1377,13 @@ const docTemplate = `{
                     }
                 },
                 "period": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.PeriodResponse"
+                    "$ref": "#/definitions/http.PeriodResponse"
                 },
                 "poster": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
                 },
                 "reviewer": {
-                    "$ref": "#/definitions/internal_voucher_port_public_http.UserResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
                 },
                 "sobId": {
                     "type": "string"
@@ -1353,71 +1399,14 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_account_port_public_http.Error": {
+        "internal_general_ledger_port_public_http.UserResponse": {
             "type": "object",
             "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_account_port_public_http.PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "fiscalYear": {
-                    "type": "integer"
-                },
                 "id": {
                     "type": "string"
                 },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "isCurrent": {
-                    "type": "boolean"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "periodNumber": {
-                    "type": "integer"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_sob_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_user_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
+                "traits": {
+                    "type": "any"
                 }
             }
         },
@@ -1435,57 +1424,6 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
-                }
-            }
-        },
-        "internal_voucher_port_public_http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_voucher_port_public_http.PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "fiscalYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "number": {
-                    "type": "integer"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_voucher_port_public_http.UserResponse": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "traits": {
-                    "type": "any"
                 }
             }
         }
