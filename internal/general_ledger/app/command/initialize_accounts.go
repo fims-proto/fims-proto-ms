@@ -9,14 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	sobQuery "github/fims-proto/fims-proto-ms/internal/sob/app/query"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/balance_direction"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 )
 
 type accountEntry struct {
@@ -28,46 +28,23 @@ type accountEntry struct {
 	balanceDirection string
 }
 
-type InitialAccountsHandler struct {
-	repo       domain.Repository
-	sobService service.SobService
-}
-
-func NewInitialAccountHandler(repo domain.Repository, sobService service.SobService) InitialAccountsHandler {
-	if repo == nil {
-		panic("nil repo")
-	}
-	return InitialAccountsHandler{
-		repo:       repo,
-		sobService: sobService,
-	}
-}
-
-func (h InitialAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID) error {
-	// 0. read sob
-	sob, err := h.sobService.ReadById(ctx, sobId)
-	if err != nil {
-		return errors.Wrap(err, "read sob failed")
-	}
-
+func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repository) error {
 	// 1. read CSV
-	accountEntries, err := h.readFromCSV()
+	accountEntries, err := readFromCSV()
 	if err != nil {
 		return err
 	}
 
 	// 2. prepare accounts
-	preparedAccounts, err := h.prepareAccounts(sobId, accountEntries, sob.AccountsCodeLength)
+	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries, sob.AccountsCodeLength)
 	if err != nil {
 		return err
 	}
 
-	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		return h.repo.InitialAccounts(txCtx, preparedAccounts)
-	})
+	return repo.InitialAccounts(ctx, preparedAccounts)
 }
 
-func (h InitialAccountsHandler) readFromCSV() ([]accountEntry, error) {
+func readFromCSV() ([]accountEntry, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return nil, errors.Wrap(err, "could not get working directory")
@@ -116,7 +93,7 @@ func (h InitialAccountsHandler) readFromCSV() ([]accountEntry, error) {
 	return entries, nil
 }
 
-func (h InitialAccountsHandler) prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthLimits []int) ([]*account.Account, error) {
+func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthLimits []int) ([]*account.Account, error) {
 	preparedAccounts := make(map[string]*account.Account)
 	for i := 0; i < len(codeLengthLimits); i++ {
 		for _, entry := range accountEntries {

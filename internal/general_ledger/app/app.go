@@ -22,11 +22,9 @@ type Queries struct {
 }
 
 type Commands struct {
-	InitialAccounts command.InitialAccountsHandler
+	Initialize command.InitializeHandler
 
 	CreatePeriod command.CreatePeriodHandler
-
-	CreateLedgers command.CreateLedgersHandler
 
 	CreateVoucher       command.CreateVoucherHandler
 	AuditVoucher        command.AuditVoucherHandler
@@ -72,15 +70,9 @@ func (a *Application) Inject(
 		PagingVouchers: query.NewPagingVouchersHandler(readModel, userService),
 	}
 	a.Commands = Commands{
-		InitialAccounts: command.NewInitialAccountHandler(repo, sobService),
+		Initialize: command.NewInitializeHandler(repo, readModel, sobService, numberingService),
 
-		CreatePeriod: command.NewCreatePeriodHandler(
-			repo,
-			numberingService,
-			readModel,
-		),
-
-		CreateLedgers: command.NewCreateLedgersHandler(repo, readModel),
+		CreatePeriod: command.NewCreatePeriodHandler(repo, readModel, numberingService),
 
 		CreateVoucher:       command.NewCreateVoucherHandler(repo, readModel, numberingService),
 		AuditVoucher:        command.NewAuditVoucherHandler(repo),

@@ -32,7 +32,13 @@ func NewGeneralLedgerPostgresRepository() *GeneralLedgerPostgresRepository {
 func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 	db := database.ReadDBFromContext(ctx)
 
-	return db.AutoMigrate(&accountPO{}, &periodPO{}, &ledgerPO{})
+	return db.AutoMigrate(
+		&accountPO{},
+		&periodPO{},
+		&ledgerPO{},
+		&voucherPO{},
+		&lineItemPO{},
+	)
 }
 
 func (r GeneralLedgerPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error {
@@ -184,7 +190,7 @@ func (r GeneralLedgerPostgresRepository) SearchLedgers(ctx context.Context, sobI
 
 func (r GeneralLedgerPostgresRepository) SearchVouchers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Voucher], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, database.ReadDBFromContext(ctx).Preload("LineItems").Joins("Period"))
+	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, database.ReadDBFromContext(ctx).Preload("LineItems.Account").Joins("Period"))
 }
 
 func (r GeneralLedgerPostgresRepository) PagingLedgersByPeriod(ctx context.Context, sobId, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {

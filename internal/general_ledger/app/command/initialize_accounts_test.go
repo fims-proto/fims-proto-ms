@@ -122,11 +122,7 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			h := InitialAccountsHandler{
-				repo:       tt.fields.repo,
-				sobService: tt.fields.sobService,
-			}
-			got, err := h.prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.codeLengthLimits)
+			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.codeLengthLimits)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("prepareAccounts() error = %v, wantErr %v", err, tt.wantErr)
 				return

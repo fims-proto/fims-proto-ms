@@ -3,52 +3,30 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
 
-type CreateLedgersCmd struct {
+type InitializeLedgersCmd struct {
 	SobId    uuid.UUID
 	PeriodId uuid.UUID
 }
 
-type CreateLedgersHandler struct {
-	repo      domain.Repository
-	readModel query.GeneralLedgerReadModel
-}
-
-func NewCreateLedgersHandler(
-	repo domain.Repository,
-	readModel query.GeneralLedgerReadModel,
-) CreateLedgersHandler {
-	if repo == nil {
-		panic("nil account repo")
-	}
-
-	if readModel == nil {
-		panic("nil read model")
-	}
-
-	return CreateLedgersHandler{
-		repo:      repo,
-		readModel: readModel,
-	}
-}
-
-func (h CreateLedgersHandler) Handle(ctx context.Context, cmd CreateLedgersCmd) error {
+func initializeLedgers(ctx context.Context, cmd InitializeLedgersCmd, repo domain.Repository, readModel query.GeneralLedgerReadModel) error {
 	// read period
-	period, err := h.readModel.PeriodById(ctx, cmd.PeriodId)
+	period, err := readModel.PeriodById(ctx, cmd.PeriodId)
 	if err != nil {
 		return errors.Wrap(err, "failed to create ledgers for period")
 	}
 
 	// read all accounts
-	accounts, err := h.readModel.AllAccounts(ctx, cmd.SobId)
+	accounts, err := readModel.AllAccounts(ctx, cmd.SobId)
 	if err != nil {
 		return errors.Wrap(err, "failed to create ledgers for period")
 	}
@@ -58,9 +36,9 @@ func (h CreateLedgersHandler) Handle(ctx context.Context, cmd CreateLedgersCmd) 
 
 	previousPeriodTime := period.OpeningTime.AddDate(0, -1, 0) // one month before
 
-	previousPeriod, _ := h.readModel.PeriodByFiscalYearAndNumber(ctx, cmd.SobId, previousPeriodTime.Year(), int(previousPeriodTime.Month()))
+	previousPeriod, _ := readModel.PeriodByFiscalYearAndNumber(ctx, cmd.SobId, previousPeriodTime.Year(), int(previousPeriodTime.Month()))
 	if previousPeriod.Id != uuid.Nil {
-		ledgers, err := h.readModel.LedgersInPeriod(ctx, cmd.SobId, previousPeriod.Id)
+		ledgers, err := readModel.LedgersInPeriod(ctx, cmd.SobId, previousPeriod.Id)
 		if err != nil {
 			return errors.Wrap(err, "failed to read ledgers in previous period")
 		}
@@ -114,5 +92,5 @@ func (h CreateLedgersHandler) Handle(ctx context.Context, cmd CreateLedgersCmd) 
 		ledgers = append(ledgers, domainLedger)
 	}
 
-	return h.repo.CreateLedgers(ctx, ledgers)
+	return repo.CreateLedgers(ctx, ledgers)
 }

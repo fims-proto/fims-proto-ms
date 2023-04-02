@@ -23,31 +23,27 @@ type CreatePeriodCmd struct {
 
 type CreatePeriodHandler struct {
 	repo             domain.Repository
-	numberingService service.NumberingService
 	readModel        query.GeneralLedgerReadModel
+	numberingService service.NumberingService
 }
 
-func NewCreatePeriodHandler(
-	repo domain.Repository,
-	numberingService service.NumberingService,
-	readModel query.GeneralLedgerReadModel,
-) CreatePeriodHandler {
+func NewCreatePeriodHandler(repo domain.Repository, readModel query.GeneralLedgerReadModel, numberingService service.NumberingService) CreatePeriodHandler {
 	if repo == nil {
 		panic("nil account repo")
-	}
-
-	if numberingService == nil {
-		panic("nil numbering service")
 	}
 
 	if readModel == nil {
 		panic("nil read model")
 	}
 
+	if numberingService == nil {
+		panic("nil numbering service")
+	}
+
 	return CreatePeriodHandler{
 		repo:             repo,
-		numberingService: numberingService,
 		readModel:        readModel,
+		numberingService: numberingService,
 	}
 }
 
