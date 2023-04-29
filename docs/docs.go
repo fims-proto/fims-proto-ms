@@ -88,6 +88,40 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/period/{id}/close": {
+            "post": {
+                "description": "Close period",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "periods"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/period/{periodId}/ledgers": {
             "get": {
                 "description": "List ledgers in period",
@@ -233,7 +267,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/periods/current": {
             "get": {
-                "description": "Open period in SoB",
+                "description": "Current period",
                 "consumes": [
                     "application/json"
                 ],

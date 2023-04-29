@@ -328,6 +328,28 @@ paths:
             $ref: '#/definitions/http.Error'
       tags:
       - accounts
+  /sob/{sobId}/period/{id}/close:
+    post:
+      consumes:
+      - application/json
+      description: Close period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      tags:
+      - periods
   /sob/{sobId}/period/{periodId}/ledgers:
     get:
       consumes:
@@ -429,7 +451,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Open period in SoB
+      description: Current period
       parameters:
       - description: Sob ID
         in: path

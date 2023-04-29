@@ -3,9 +3,6 @@ package db
 import (
 	"context"
 	"strings"
-	"time"
-
-	"github/fims-proto/fims-proto-ms/internal/common/database"
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -13,9 +10,11 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
+	"github/fims-proto/fims-proto-ms/internal/common/database"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	accountType "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
@@ -89,6 +88,29 @@ func (r GeneralLedgerPostgresRepository) CreatePeriod(ctx context.Context, perio
 	}
 
 	return db.Create(&po).Error
+}
+
+func (r GeneralLedgerPostgresRepository) UpdatePeriod(ctx context.Context, periodId uuid.UUID, updateFn func(p *period.Period) (*period.Period, error)) error {
+	db := database.ReadDBFromContext(ctx)
+
+	po := periodPO{}
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", periodId).Error; err != nil {
+		return err
+	}
+
+	bo, err := periodPOToBO(po)
+	if err != nil {
+		return errors.Wrap(err, "failed to map period")
+	}
+
+	updatedBO, err := updateFn(bo)
+	if err != nil {
+		return errors.Wrap(err, "update period failed")
+	}
+
+	po = periodBOToPO(*updatedBO)
+
+	return db.Save(&po).Error
 }
 
 func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
@@ -214,6 +236,34 @@ func (r GeneralLedgerPostgresRepository) LedgersInPeriod(ctx context.Context, so
 	return ledgers.Content(), nil
 }
 
+func (r GeneralLedgerPostgresRepository) FirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]query.Ledger, error) {
+	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
+	ledgerLevelFilter, _ := filterable.NewFilter("account.level", "eq", 1)
+	pageRequest := data.NewPageRequest(
+		pageable.Unpaged(),
+		sortable.Unsorted(),
+		filterable.New(periodIdFilter, ledgerLevelFilter),
+	)
+	ledgers, err := r.SearchLedgers(ctx, sobId, pageRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return ledgers.Content(), nil
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
+	db := database.ReadDBFromContext(ctx)
+
+	var count int64
+	err := db.Model(&ledgerPO{}).
+		Where("sob_id = ? AND period_id = ? AND account.account_type = ?", sobId, periodId, accountType.ProfitAndLoss).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
 func (r GeneralLedgerPostgresRepository) AllAccounts(ctx context.Context, sobId uuid.UUID) ([]query.Account, error) {
 	accounts, err := r.SearchAccounts(
 		ctx,
@@ -335,57 +385,21 @@ func (r GeneralLedgerPostgresRepository) PeriodsByIds(ctx context.Context, perio
 	return periods.Content(), nil
 }
 
-func (r GeneralLedgerPostgresRepository) PeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (query.Period, error) {
+func (r GeneralLedgerPostgresRepository) PeriodByFiscalYearAndNumber(ctx context.Context, sobId uuid.UUID, fiscalYear, periodNumber int) (query.Period, error) {
 	db := database.ReadDBFromContext(ctx)
 
-	var periodPOs []periodPO
-	if err := db.
-		Where("sob_id = ? AND opening_time <= ? AND ending_time > ?", sobId, timePoint, timePoint).
-		Find(&periodPOs).Error; err != nil {
-		return query.Period{}, errors.Wrap(err, "find period by id failed")
-	}
+	var po periodPO
+	err := db.
+		Where("sob_id = ? AND fiscal_year = ? AND period_number = ?", sobId, fiscalYear, periodNumber).
+		First(&po).Error
 
-	if len(periodPOs) == 0 {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return query.Period{}, commonErrors.NewSlugError("period-notFound")
-	} else if len(periodPOs) > 1 {
-		return query.Period{}, errors.Errorf("expected 1 but %d periods found", len(periodPOs))
+	} else if err != nil {
+		return query.Period{}, errors.Wrap(err, "failed to read period")
 	}
 
-	return periodPOToDTO(periodPOs[0])
-}
-
-func (r GeneralLedgerPostgresRepository) ExistsPeriodByTime(ctx context.Context, sobId uuid.UUID, timePoint time.Time) (bool, error) {
-	_, err := r.PeriodByTime(ctx, sobId, timePoint)
-	if err == nil {
-		return true, nil
-	}
-	if err.Error() == "period-notFound" {
-		return false, nil
-	}
-
-	return false, errors.Wrap(err, "failed to read period by transaction time")
-}
-
-func (r GeneralLedgerPostgresRepository) PeriodByFiscalYearAndNumber(ctx context.Context, sobId uuid.UUID, fiscalYear, periodNumber int) (query.Period, error) {
-	fiscalYearFilter, _ := filterable.NewFilter("fiscalYear", "eq", fiscalYear)
-	numberFilter, _ := filterable.NewFilter("periodNumber", "eq", periodNumber)
-	pageRequest := data.NewPageRequest(
-		pageable.Unpaged(),
-		sortable.Unsorted(),
-		filterable.New(fiscalYearFilter, numberFilter),
-	)
-	addSobFilter(sobId, pageRequest)
-	periods, err := r.SearchPeriods(ctx, uuid.Nil, pageRequest)
-	if err != nil {
-		return query.Period{}, err
-	}
-	if periods.NumberOfElements() == 0 {
-		return query.Period{}, commonErrors.NewSlugError("period-notFound")
-	} else if periods.NumberOfElements() > 1 {
-		return query.Period{}, errors.Errorf("expected 1 but %d periods found", periods.NumberOfElements())
-	}
-
-	return periods.Content()[0], nil
+	return periodPOToDTO(po)
 }
 
 func (r GeneralLedgerPostgresRepository) VoucherById(ctx context.Context, voucherId uuid.UUID) (query.Voucher, error) {
@@ -402,6 +416,18 @@ func (r GeneralLedgerPostgresRepository) VoucherById(ctx context.Context, vouche
 	}
 
 	return vouchers.Content()[0], nil
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
+	db := database.ReadDBFromContext(ctx)
+
+	var count int64
+	err := db.Model(&voucherPO{}).
+		Where("sob_id = ? AND period_id = ? AND is_posted = false").
+		Count(&count).
+		Error
+
+	return count > 0, err
 }
 
 func (r GeneralLedgerPostgresRepository) currentPeriod(db *gorm.DB, sobId uuid.UUID) (periodPO, error) {

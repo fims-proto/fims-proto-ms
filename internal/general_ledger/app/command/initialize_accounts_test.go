@@ -174,19 +174,19 @@ func (m mockRepo) InitialAccounts(context.Context, []*account.Account) error {
 	panic("implement me")
 }
 
+func (m mockRepo) CreatePeriod(context.Context, *period.Period) error {
+	panic("implement me")
+}
+
+func (m mockRepo) UpdatePeriod(context.Context, uuid.UUID, func(p *period.Period) (*period.Period, error)) error {
+	panic("implement me")
+}
+
 func (m mockRepo) CreateLedgers(context.Context, []*ledger.Ledger) error {
 	panic("implement me")
 }
 
 func (m mockRepo) UpdateLedgersByPeriodAndAccountIds(context.Context, uuid.UUID, []uuid.UUID, func(accounts []*ledger.Ledger) ([]*ledger.Ledger, error)) error {
-	panic("implement me")
-}
-
-func (m mockRepo) Migrate(context.Context) error {
-	panic("implement me")
-}
-
-func (m mockRepo) CreatePeriod(context.Context, *period.Period) error {
 	panic("implement me")
 }
 
@@ -199,6 +199,10 @@ func (m mockRepo) UpdateVoucher(context.Context, uuid.UUID, func(d *voucher.Vouc
 }
 
 func (m mockRepo) EnableTx(context.Context, func(txCtx context.Context) error) error {
+	panic("implement me")
+}
+
+func (m mockRepo) Migrate(context.Context) error {
 	panic("implement me")
 }
 

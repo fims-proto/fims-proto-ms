@@ -77,19 +77,39 @@ func readOrCreatePeriodForVoucher(
 	sobId uuid.UUID,
 	transactionTime time.Time,
 ) (uuid.UUID, error) {
-	periodExists, err := readModel.ExistsPeriodByTime(ctx, sobId, transactionTime)
+	fiscalYear := transactionTime.Year()
+	periodNumber := int(transactionTime.Month())
+
+	existedPeriodId, err := createPeriodIfNotExists(ctx, repo, readModel, numberingService, sobId, fiscalYear, periodNumber)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to read period by transaction time")
+		return uuid.Nil, err
 	}
 
-	if periodExists {
-		// read period
-		period, _ := readModel.PeriodByTime(ctx, sobId, transactionTime)
-		if period.IsClosed {
-			return uuid.Nil, commonErrors.NewSlugError("voucher-periodClosed")
-		}
+	p, _ := readModel.PeriodById(ctx, existedPeriodId)
+	if p.IsClosed {
+		return uuid.Nil, commonErrors.NewSlugError("voucher-periodClosed")
+	}
 
-		return period.Id, nil
+	return existedPeriodId, nil
+}
+
+func createPeriodIfNotExists(
+	ctx context.Context,
+	repo domain.Repository,
+	readModel query.GeneralLedgerReadModel,
+	numberingService service.NumberingService,
+	sobId uuid.UUID,
+	fiscalYear int,
+	periodNumber int,
+) (uuid.UUID, error) {
+	existedPeriod, err := readModel.PeriodByFiscalYearAndNumber(ctx, sobId, fiscalYear, periodNumber)
+	if err == nil {
+		// period exists
+		return existedPeriod.Id, nil
+	}
+
+	if err.Error() != "period-notFound" {
+		return uuid.Nil, errors.Wrap(err, "failed to read period by transaction time")
 	}
 
 	// create period
@@ -97,8 +117,8 @@ func readOrCreatePeriodForVoucher(
 	createPeriodCmd := CreatePeriodCmd{
 		SobId:      sobId,
 		PeriodId:   newPeriodId,
-		FiscalYear: transactionTime.Year(),
-		Number:     int(transactionTime.Month()),
+		FiscalYear: fiscalYear,
+		Number:     periodNumber,
 	}
 	if err = createPeriod(ctx, createPeriodCmd, repo, numberingService); err != nil {
 		return uuid.Nil, errors.Wrap(err, "failed to create period")

@@ -16,6 +16,11 @@ type Repository interface {
 	InitialAccounts(ctx context.Context, accounts []*account.Account) error
 
 	CreatePeriod(ctx context.Context, period *period.Period) error
+	UpdatePeriod(
+		ctx context.Context,
+		periodId uuid.UUID,
+		updateFn func(p *period.Period) (*period.Period, error),
+	) error
 
 	CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error
 	UpdateLedgersByPeriodAndAccountIds(

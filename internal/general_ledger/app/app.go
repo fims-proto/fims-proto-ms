@@ -13,7 +13,6 @@ type Queries struct {
 	AccountsByNumbers     query.AccountsByNumbersHandler
 	CurrentPeriod         query.CurrentPeriodHandler
 	PagingPeriods         query.PagingPeriodsHandler
-	PeriodByTime          query.PeriodByTimeHandler
 	PeriodsByIds          query.PeriodsByIdsHandler
 	PeriodById            query.PeriodByIdHandler
 	PagingLedgersByPeriod query.PagingLedgersByPeriodHandler
@@ -25,6 +24,7 @@ type Commands struct {
 	Initialize command.InitializeHandler
 
 	CreatePeriod command.CreatePeriodHandler
+	ClosePeriod  command.ClosePeriodHandler
 
 	CreateVoucher       command.CreateVoucherHandler
 	AuditVoucher        command.AuditVoucherHandler
@@ -60,7 +60,6 @@ func (a *Application) Inject(
 
 		CurrentPeriod: query.NewCurrentPeriodHandler(readModel),
 		PagingPeriods: query.NewPagingPeriodsHandler(readModel),
-		PeriodByTime:  query.NewPeriodByTimeHandler(readModel),
 		PeriodsByIds:  query.NewPeriodsByIdsHandler(readModel),
 		PeriodById:    query.NewPeriodByIdHandler(readModel),
 
@@ -73,6 +72,7 @@ func (a *Application) Inject(
 		Initialize: command.NewInitializeHandler(repo, readModel, sobService, numberingService),
 
 		CreatePeriod: command.NewCreatePeriodHandler(repo, readModel, numberingService),
+		ClosePeriod:  command.NewClosePeriodHandler(repo, readModel, numberingService),
 
 		CreateVoucher:       command.NewCreateVoucherHandler(repo, readModel, numberingService),
 		AuditVoucher:        command.NewAuditVoucherHandler(repo),
