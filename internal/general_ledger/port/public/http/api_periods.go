@@ -65,13 +65,14 @@ func (h Handler) ReadSobCurrentPeriod(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
+// @Param periodId path string true "Period ID"
 // @Success 204
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/period/{id}/close [post]
+// @Router /sob/{sobId}/period/{periodId}/close [post]
 func (h Handler) ClosePeriod(c *gin.Context) {
 	if err := h.app.Commands.ClosePeriod.Handle(c, command.ClosePeriodCmd{
 		SobId:    uuid.MustParse(c.Param("sobId")),
-		PeriodId: uuid.MustParse(c.Param("id")),
+		PeriodId: uuid.MustParse(c.Param("periodId")),
 	}); err != nil {
 		_ = c.Error(err)
 		return

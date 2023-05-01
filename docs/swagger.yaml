@@ -328,7 +328,7 @@ paths:
             $ref: '#/definitions/http.Error'
       tags:
       - accounts
-  /sob/{sobId}/period/{id}/close:
+  /sob/{sobId}/period/{periodId}/close:
     post:
       consumes:
       - application/json
@@ -337,6 +337,11 @@ paths:
       - description: Sob ID
         in: path
         name: sobId
+        required: true
+        type: string
+      - description: Period ID
+        in: path
+        name: periodId
         required: true
         type: string
       produces:

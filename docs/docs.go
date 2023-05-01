@@ -88,7 +88,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/period/{id}/close": {
+        "/sob/{sobId}/period/{periodId}/close": {
             "post": {
                 "description": "Close period",
                 "consumes": [
@@ -105,6 +105,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Sob ID",
                         "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period ID",
+                        "name": "periodId",
                         "in": "path",
                         "required": true
                     }

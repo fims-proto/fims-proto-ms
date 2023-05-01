@@ -12,5 +12,6 @@ func (p *Period) Close() error {
 	}
 
 	p.isClosed = true
+	p.isCurrent = false
 	return nil
 }
