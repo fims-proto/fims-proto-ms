@@ -22,7 +22,7 @@ type Period struct {
 
 // New creates valid period domain entity by given fiscal year and number
 // Typically used when initializing first period or closing and opening a new period
-func New(id, sobId uuid.UUID, fiscalYear, periodNumber int) (*Period, error) {
+func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isCurrent bool) (*Period, error) {
 	return NewByAllFields(
 		id,
 		sobId,
@@ -30,8 +30,8 @@ func New(id, sobId uuid.UUID, fiscalYear, periodNumber int) (*Period, error) {
 		periodNumber,
 		getOpeningTime(fiscalYear, periodNumber),
 		getEndingTime(fiscalYear, periodNumber),
-		false, // current period is always open
-		true,  // current period
+		false, // never create a closed period
+		isCurrent,
 	)
 }
 

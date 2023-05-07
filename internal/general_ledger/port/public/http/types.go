@@ -139,34 +139,11 @@ type VoucherResponse struct {
 // mapper
 
 func accountDTOToVO(dto query.Account) AccountResponse {
-	return AccountResponse{
-		Id:                dto.Id,
-		SobId:             dto.SobId,
-		SuperiorAccountId: dto.SuperiorAccountId,
-		Title:             dto.Title,
-		AccountNumber:     dto.AccountNumber,
-		NumberHierarchy:   dto.NumberHierarchy,
-		Level:             dto.Level,
-		AccountType:       dto.AccountType,
-		BalanceDirection:  dto.BalanceDirection,
-		CreatedAt:         dto.CreatedAt,
-		UpdatedAt:         dto.UpdatedAt,
-	}
+	return AccountResponse(dto)
 }
 
 func periodDTOToVO(dto query.Period) PeriodResponse {
-	return PeriodResponse{
-		Id:           dto.Id,
-		SobId:        dto.SobId,
-		FiscalYear:   dto.FiscalYear,
-		PeriodNumber: dto.PeriodNumber,
-		OpeningTime:  dto.OpeningTime,
-		EndingTime:   dto.EndingTime,
-		IsClosed:     dto.IsClosed,
-		IsCurrent:    dto.IsCurrent,
-		CreatedAt:    dto.CreatedAt,
-		UpdatedAt:    dto.UpdatedAt,
-	}
+	return PeriodResponse(dto)
 }
 
 func ledgerDTOToVO(dto query.Ledger) LedgerResponse {

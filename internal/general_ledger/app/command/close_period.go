@@ -119,13 +119,28 @@ func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd
 	}
 
 	// create next period if it does not exist
-	nextPeriodId, err := createPeriodIfNotExists(ctx, h.repo, h.readModel, h.numberingService, cmd.SobId, nextFiscalYear, nextPeriodNumber)
+	nextPeriodId, err := createPeriodIfNotExists(ctx, createPeriodCmd{
+		SobId:      cmd.SobId,
+		PeriodId:   uuid.Nil,
+		FiscalYear: nextFiscalYear,
+		Number:     nextPeriodNumber,
+	}, h.repo, h.readModel, h.numberingService)
 	if err != nil {
 		return errors.Wrap(err, "failed to create next period")
 	}
 
+	// update next period to current
+	if err = h.repo.UpdatePeriod(ctx, nextPeriodId, func(p *period.Period) (*period.Period, error) {
+		if err = p.Start(); err != nil {
+			return nil, err
+		}
+		return p, nil
+	}); err != nil {
+		return err
+	}
+
 	// initialize ledgers for new period
-	if err = initializeLedgers(ctx, InitializeLedgersCmd{
+	if err = initializeLedgers(ctx, initializeLedgersCmd{
 		SobId:    cmd.SobId,
 		PeriodId: nextPeriodId,
 	}, h.repo, h.readModel); err != nil {

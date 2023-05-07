@@ -13,12 +13,12 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
 
-type InitializeLedgersCmd struct {
+type initializeLedgersCmd struct {
 	SobId    uuid.UUID
 	PeriodId uuid.UUID
 }
 
-func initializeLedgers(ctx context.Context, cmd InitializeLedgersCmd, repo domain.Repository, readModel query.GeneralLedgerReadModel) error {
+func initializeLedgers(ctx context.Context, cmd initializeLedgersCmd, repo domain.Repository, readModel query.GeneralLedgerReadModel) error {
 	// read period
 	period, err := readModel.PeriodById(ctx, cmd.PeriodId)
 	if err != nil {

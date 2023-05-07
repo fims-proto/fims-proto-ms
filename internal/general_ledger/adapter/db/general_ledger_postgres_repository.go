@@ -70,17 +70,17 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 	return db.CreateInBatches(&accountPOs, 100).Error
 }
 
-func (r GeneralLedgerPostgresRepository) CreatePeriod(ctx context.Context, period *period.Period) error {
+func (r GeneralLedgerPostgresRepository) CreatePeriod(ctx context.Context, bo *period.Period) error {
 	db := database.ReadDBFromContext(ctx)
 
-	po := periodBOToPO(*period)
+	po := periodBOToPO(*bo)
 
 	if po.IsCurrent {
 		// make sure only 1 current period in one sob
 		_, err := r.currentPeriod(db, po.SobId)
 		if err == nil {
 			return commonErrors.NewSlugError("period-duplicatedCurrent")
-		} else if "period-notFound" != err.Error() {
+		} else if _, ok := err.(commonErrors.ObjectNotFoundErr); !ok {
 			return errors.Wrap(err, "failed to check current period")
 		}
 	}
@@ -350,7 +350,7 @@ func (r GeneralLedgerPostgresRepository) PeriodById(ctx context.Context, periodI
 	err := db.First(&po).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+		return query.Period{}, commonErrors.NewObjectNotFoundErr("period")
 	} else if err != nil {
 		return query.Period{}, err
 	}
@@ -376,7 +376,7 @@ func (r GeneralLedgerPostgresRepository) PeriodByFiscalYearAndNumber(ctx context
 	err := db.Where(periodPO{SobId: sobId, FiscalYear: fiscalYear, PeriodNumber: periodNumber}).First(&po).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return query.Period{}, commonErrors.NewSlugError("period-notFound")
+		return query.Period{}, commonErrors.NewObjectNotFoundErr("period")
 	} else if err != nil {
 		return query.Period{}, err
 	}
@@ -391,7 +391,7 @@ func (r GeneralLedgerPostgresRepository) VoucherById(ctx context.Context, vouche
 	err := db.Preload("LineItems.Account").Preload("Period").First(&po).Error
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		return query.Voucher{}, commonErrors.NewSlugError("voucher-notFound")
+		return query.Voucher{}, commonErrors.NewObjectNotFoundErr("voucher")
 	} else if err != nil {
 		return query.Voucher{}, err
 	}
@@ -419,7 +419,7 @@ func (r GeneralLedgerPostgresRepository) currentPeriod(db *gorm.DB, sobId uuid.U
 	}
 
 	if len(periods) == 0 {
-		return periodPO{}, commonErrors.NewSlugError("period-notFound")
+		return periodPO{}, commonErrors.NewObjectNotFoundErr("period")
 	} else if len(periods) > 1 {
 		return periodPO{}, errors.Errorf("expected 1 but %d periods found", len(periods))
 	}

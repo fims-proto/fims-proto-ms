@@ -71,7 +71,7 @@ func (h UpdateVoucherHandler) updateVoucher(ctx context.Context, cmd UpdateVouch
 					return nil, errors.Wrap(err, "failed to prepare line items")
 				}
 
-				if err := v.UpdateLineItems(lineItems, cmd.Updater); err != nil {
+				if err = v.UpdateLineItems(lineItems, cmd.Updater); err != nil {
 					return nil, err
 				}
 			}
