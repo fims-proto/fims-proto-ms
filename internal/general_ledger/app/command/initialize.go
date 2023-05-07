@@ -65,7 +65,7 @@ func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error 
 
 		// create first period
 		periodId := uuid.New()
-		if err = createPeriod(txCtx, CreatePeriodCmd{
+		if err = initializePeriod(txCtx, initializePeriodCmd{
 			SobId:      sob.Id,
 			PeriodId:   periodId,
 			FiscalYear: sob.StartingPeriodYear,
@@ -75,7 +75,7 @@ func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error 
 		}
 
 		// create all ledgers for this period
-		if err = initializeLedgers(txCtx, InitializeLedgersCmd{
+		if err = initializeLedgers(txCtx, initializeLedgersCmd{
 			SobId:    sob.Id,
 			PeriodId: periodId,
 		}, h.repo, h.readModel); err != nil {

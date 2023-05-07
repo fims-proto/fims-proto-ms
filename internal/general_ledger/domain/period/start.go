@@ -2,16 +2,11 @@ package period
 
 import "github/fims-proto/fims-proto-ms/internal/common/errors"
 
-func (p *Period) Close() error {
+func (p *Period) Start() error {
 	if p.isClosed {
 		return errors.NewSlugError("period-close-closed")
 	}
 
-	if !p.isCurrent {
-		return errors.NewSlugError("period-close-isNotCurrent")
-	}
-
-	p.isClosed = true
-	p.isCurrent = false
+	p.isCurrent = true
 	return nil
 }

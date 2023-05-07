@@ -123,12 +123,7 @@ func identifierConfigurationPOToDTO(po identifierConfigurationPO) (query.Identif
 }
 
 func identifierPOToDTO(po identifierPO) query.Identifier {
-	return query.Identifier{
-		Id:                        po.Id,
-		IdentifierConfigurationId: po.IdentifierConfigurationId,
-		Identifier:                po.Identifier,
-		CreatedAt:                 po.CreatedAt,
-	}
+	return query.Identifier(po)
 }
 
 func serializePropertyMatchers(matcherBOs []identifier_configuration.PropertyMatcher) (pgtype.JSONB, error) {

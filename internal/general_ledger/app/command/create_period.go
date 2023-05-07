@@ -3,7 +3,9 @@ package command
 import (
 	"context"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
@@ -14,50 +16,20 @@ import (
 	"github.com/pkg/errors"
 )
 
-type CreatePeriodCmd struct {
+type createPeriodCmd struct {
 	SobId      uuid.UUID
 	PeriodId   uuid.UUID
 	FiscalYear int
 	Number     int
 }
 
-type CreatePeriodHandler struct {
-	repo             domain.Repository
-	readModel        query.GeneralLedgerReadModel
-	numberingService service.NumberingService
-}
-
-func NewCreatePeriodHandler(repo domain.Repository, readModel query.GeneralLedgerReadModel, numberingService service.NumberingService) CreatePeriodHandler {
-	if repo == nil {
-		panic("nil account repo")
-	}
-
-	if readModel == nil {
-		panic("nil read model")
-	}
-
-	if numberingService == nil {
-		panic("nil numbering service")
-	}
-
-	return CreatePeriodHandler{
-		repo:             repo,
-		readModel:        readModel,
-		numberingService: numberingService,
-	}
-}
-
-func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) error {
-	return createPeriod(ctx, cmd, h.repo, h.numberingService)
-}
-
 func createPeriod(
 	ctx context.Context,
-	cmd CreatePeriodCmd,
+	cmd createPeriodCmd,
 	repo domain.Repository,
 	numberingService service.NumberingService,
 ) error {
-	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number)
+	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, true)
 	if err != nil {
 		return errors.Wrap(err, "failed to create period domain model")
 	}
@@ -68,4 +40,40 @@ func createPeriod(
 	}
 
 	return repo.CreatePeriod(ctx, p)
+}
+
+func createPeriodIfNotExists(
+	ctx context.Context,
+	cmd createPeriodCmd,
+	repo domain.Repository,
+	readModel query.GeneralLedgerReadModel,
+	numberingService service.NumberingService,
+) (uuid.UUID, error) {
+	existedPeriod, err := readModel.PeriodByFiscalYearAndNumber(ctx, cmd.SobId, cmd.FiscalYear, cmd.Number)
+	if err == nil {
+		// period exists
+		return existedPeriod.Id, nil
+	}
+	if _, ok := err.(commonErrors.ObjectNotFoundErr); !ok {
+		return uuid.Nil, errors.Wrap(err, "failed to read period by transaction time")
+	}
+
+	// create period
+	newPeriodId := uuid.New()
+
+	p, err := period.New(newPeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, false)
+	if err != nil {
+		return uuid.Nil, errors.Wrap(err, "failed to create period domain model")
+	}
+
+	// create numbering configuration for voucher entries in this period
+	if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, newPeriodId); err != nil {
+		return uuid.Nil, errors.Wrap(err, "failed to create numbering configuration for period")
+	}
+
+	if err = repo.CreatePeriod(ctx, p); err != nil {
+		return uuid.Nil, err
+	} else {
+		return newPeriodId, nil
+	}
 }

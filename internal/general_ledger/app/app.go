@@ -23,8 +23,7 @@ type Queries struct {
 type Commands struct {
 	Initialize command.InitializeHandler
 
-	CreatePeriod command.CreatePeriodHandler
-	ClosePeriod  command.ClosePeriodHandler
+	ClosePeriod command.ClosePeriodHandler
 
 	CreateVoucher       command.CreateVoucherHandler
 	AuditVoucher        command.AuditVoucherHandler
@@ -71,8 +70,7 @@ func (a *Application) Inject(
 	a.Commands = Commands{
 		Initialize: command.NewInitializeHandler(repo, readModel, sobService, numberingService),
 
-		CreatePeriod: command.NewCreatePeriodHandler(repo, readModel, numberingService),
-		ClosePeriod:  command.NewClosePeriodHandler(repo, readModel, numberingService),
+		ClosePeriod: command.NewClosePeriodHandler(repo, readModel, numberingService),
 
 		CreateVoucher:       command.NewCreateVoucherHandler(repo, readModel, numberingService),
 		AuditVoucher:        command.NewAuditVoucherHandler(repo),

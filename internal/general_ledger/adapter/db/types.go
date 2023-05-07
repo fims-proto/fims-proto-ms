@@ -249,18 +249,7 @@ func periodPOToBO(po periodPO) (*period.Period, error) {
 }
 
 func periodPOToDTO(po periodPO) (query.Period, error) {
-	return query.Period{
-		SobId:        po.SobId,
-		Id:           po.Id,
-		FiscalYear:   po.FiscalYear,
-		PeriodNumber: po.PeriodNumber,
-		OpeningTime:  po.OpeningTime,
-		EndingTime:   po.EndingTime,
-		IsClosed:     po.IsClosed,
-		IsCurrent:    po.IsCurrent,
-		CreatedAt:    po.CreatedAt,
-		UpdatedAt:    po.UpdatedAt,
-	}, nil
+	return query.Period(po), nil
 }
 
 func ledgerBOToPO(bo ledger.Ledger) ledgerPO {
