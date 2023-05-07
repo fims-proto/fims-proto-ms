@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -123,6 +124,7 @@ func main() {
 	log.InfoWithoutCxt("All module applications initiated")
 
 	router := gin.Default()
+	router.GET("/health/ping", func(c *gin.Context) { c.String(http.StatusOK, "Pong") })
 	router.Use(ginMiddleware.ResolveTenantBySubdomain(tenantManagerImpl))
 	router.Use(commonErrors.ErrorHandler(localizer))
 

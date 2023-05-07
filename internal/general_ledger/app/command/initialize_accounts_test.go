@@ -22,6 +22,73 @@ import (
 
 var sobId = uuid.New()
 
+var sampleAccountEntries = []accountEntry{
+	{
+		number:           "1001",
+		level:            1,
+		title:            "库存现金",
+		superiorNumber:   "",
+		accountType:      "assets",
+		balanceDirection: "debit",
+	},
+	{
+		number:           "1002",
+		level:            1,
+		title:            "银行存款",
+		superiorNumber:   "",
+		accountType:      "assets",
+		balanceDirection: "debit",
+	},
+	{
+		number:           "1002001",
+		level:            2,
+		title:            "中国银行存款",
+		superiorNumber:   "1002",
+		accountType:      "assets",
+		balanceDirection: "debit",
+	},
+	{
+		number:           "1002002",
+		level:            2,
+		title:            "招商银行存款",
+		superiorNumber:   "1002",
+		accountType:      "assets",
+		balanceDirection: "debit",
+	},
+	{
+		number:           "6602",
+		level:            1,
+		title:            "管理费用",
+		superiorNumber:   "",
+		accountType:      "profit_and_loss",
+		balanceDirection: "not_defined",
+	},
+	{
+		number:           "6602001",
+		level:            2,
+		title:            "办公费",
+		superiorNumber:   "6602",
+		accountType:      "profit_and_loss",
+		balanceDirection: "not_defined",
+	},
+	{
+		number:           "6602001001",
+		level:            3,
+		title:            "办公室租金",
+		superiorNumber:   "6602001",
+		accountType:      "profit_and_loss",
+		balanceDirection: "not_defined",
+	},
+	{
+		number:           "6602001002",
+		level:            3,
+		title:            "文具费用",
+		superiorNumber:   "6602001",
+		accountType:      "profit_and_loss",
+		balanceDirection: "not_defined",
+	},
+}
+
 func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 	t.Parallel()
 	type fields struct {
@@ -34,11 +101,11 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 		codeLengthLimits []int
 	}
 	tests := []struct {
-		name    string
-		fields  fields
-		args    args
-		want    []*account.Account
-		wantErr bool
+		name       string
+		fields     fields
+		args       args
+		wantNumber map[string]string
+		wantErr    bool
 	}{
 		{
 			name: "success",
@@ -47,76 +114,66 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 				sobService: mockSobService{},
 			},
 			args: args{
-				sobId: sobId,
-				accountEntries: []accountEntry{
-					{
-						number:           "1001",
-						level:            1,
-						title:            "库存现金",
-						superiorNumber:   "",
-						accountType:      "assets",
-						balanceDirection: "debit",
-					},
-					{
-						number:           "1002",
-						level:            1,
-						title:            "银行存款",
-						superiorNumber:   "",
-						accountType:      "assets",
-						balanceDirection: "debit",
-					},
-					{
-						number:           "1002001",
-						level:            2,
-						title:            "中国银行存款",
-						superiorNumber:   "1002",
-						accountType:      "assets",
-						balanceDirection: "debit",
-					},
-					{
-						number:           "1002002",
-						level:            2,
-						title:            "招商银行存款",
-						superiorNumber:   "1002",
-						accountType:      "assets",
-						balanceDirection: "debit",
-					},
-					{
-						number:           "6602",
-						level:            1,
-						title:            "管理费用",
-						superiorNumber:   "",
-						accountType:      "profit_and_loss",
-						balanceDirection: "not_defined",
-					},
-					{
-						number:           "6602001",
-						level:            2,
-						title:            "办公费",
-						superiorNumber:   "6602",
-						accountType:      "profit_and_loss",
-						balanceDirection: "not_defined",
-					},
-					{
-						number:           "6602001001",
-						level:            3,
-						title:            "办公室租金",
-						superiorNumber:   "6602001",
-						accountType:      "profit_and_loss",
-						balanceDirection: "not_defined",
-					},
-					{
-						number:           "6602001002",
-						level:            3,
-						title:            "文具费用",
-						superiorNumber:   "6602001",
-						accountType:      "profit_and_loss",
-						balanceDirection: "not_defined",
-					},
-				},
+				sobId:            sobId,
+				accountEntries:   sampleAccountEntries,
 				codeLengthLimits: []int{4, 3, 3},
 			},
-			want:    []*account.Account{},
+			wantNumber: map[string]string{
+				"库存现金":   "1001",
+				"银行存款":   "1002",
+				"中国银行存款": "1002001",
+				"招商银行存款": "1002002",
+				"管理费用":   "6602",
+				"办公费":    "6602001",
+				"办公室租金":  "6602001001",
+				"文具费用":   "6602001002",
+			},
+			wantErr: false,
+		},
+		{
+			name: "shorter_code_length_success",
+			fields: fields{
+				repo:       mockRepo{},
+				sobService: mockSobService{},
+			},
+			args: args{
+				sobId:            sobId,
+				accountEntries:   sampleAccountEntries,
+				codeLengthLimits: []int{4, 2, 2},
+			},
+			wantNumber: map[string]string{
+				"库存现金":   "1001",
+				"银行存款":   "1002",
+				"中国银行存款": "100201",
+				"招商银行存款": "100202",
+				"管理费用":   "6602",
+				"办公费":    "660201",
+				"办公室租金":  "66020101",
+				"文具费用":   "66020102",
+			},
+			wantErr: false,
+		},
+		{
+			name: "longer_code_length_success",
+			fields: fields{
+				repo:       mockRepo{},
+				sobService: mockSobService{},
+			},
+			args: args{
+				sobId:            sobId,
+				accountEntries:   sampleAccountEntries,
+				codeLengthLimits: []int{4, 4, 4},
+			},
+			wantNumber: map[string]string{
+				"库存现金":   "1001",
+				"银行存款":   "1002",
+				"中国银行存款": "10020001",
+				"招商银行存款": "10020002",
+				"管理费用":   "6602",
+				"办公费":    "66020001",
+				"办公室租金":  "660200010001",
+				"文具费用":   "660200010002",
+			},
 			wantErr: false,
 		},
 	}
@@ -131,35 +188,35 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 			for _, acc := range got {
 				switch acc.Title() {
 				case "库存现金":
-					assert.Equal(t, "1001", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["库存现金"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1001}, acc.NumberHierarchy())
 					assert.Equal(t, 1, acc.Level())
 				case "银行存款":
-					assert.Equal(t, "1002", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["银行存款"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1002}, acc.NumberHierarchy())
 					assert.Equal(t, 1, acc.Level())
 				case "中国银行存款":
-					assert.Equal(t, "1002001", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["中国银行存款"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1002, 1}, acc.NumberHierarchy())
 					assert.Equal(t, 2, acc.Level())
 				case "招商银行存款":
-					assert.Equal(t, "1002002", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["招商银行存款"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1002, 2}, acc.NumberHierarchy())
 					assert.Equal(t, 2, acc.Level())
 				case "管理费用":
-					assert.Equal(t, "6602", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["管理费用"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602}, acc.NumberHierarchy())
 					assert.Equal(t, 1, acc.Level())
 				case "办公费":
-					assert.Equal(t, "6602001", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["办公费"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1}, acc.NumberHierarchy())
 					assert.Equal(t, 2, acc.Level())
 				case "办公室租金":
-					assert.Equal(t, "6602001001", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["办公室租金"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 1}, acc.NumberHierarchy())
 					assert.Equal(t, 3, acc.Level())
 				case "文具费用":
-					assert.Equal(t, "6602001002", acc.AccountNumber())
+					assert.Equal(t, tt.wantNumber["文具费用"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 2}, acc.NumberHierarchy())
 					assert.Equal(t, 3, acc.Level())
 				}
@@ -174,19 +231,19 @@ func (m mockRepo) InitialAccounts(context.Context, []*account.Account) error {
 	panic("implement me")
 }
 
+func (m mockRepo) CreatePeriod(context.Context, *period.Period) error {
+	panic("implement me")
+}
+
+func (m mockRepo) UpdatePeriod(context.Context, uuid.UUID, func(p *period.Period) (*period.Period, error)) error {
+	panic("implement me")
+}
+
 func (m mockRepo) CreateLedgers(context.Context, []*ledger.Ledger) error {
 	panic("implement me")
 }
 
 func (m mockRepo) UpdateLedgersByPeriodAndAccountIds(context.Context, uuid.UUID, []uuid.UUID, func(accounts []*ledger.Ledger) ([]*ledger.Ledger, error)) error {
-	panic("implement me")
-}
-
-func (m mockRepo) Migrate(context.Context) error {
-	panic("implement me")
-}
-
-func (m mockRepo) CreatePeriod(context.Context, *period.Period) error {
 	panic("implement me")
 }
 
@@ -199,6 +256,10 @@ func (m mockRepo) UpdateVoucher(context.Context, uuid.UUID, func(d *voucher.Vouc
 }
 
 func (m mockRepo) EnableTx(context.Context, func(txCtx context.Context) error) error {
+	panic("implement me")
+}
+
+func (m mockRepo) Migrate(context.Context) error {
 	panic("implement me")
 }
 

@@ -57,5 +57,14 @@
   "period-invalidOpeningTime": "账期开放时间 ({{.A}}) 与预期不符 ({{.B}})",
   "period-invalidEndingTime": "账期关闭时间 ({{.A}}) 与预期不符 ({{.B}})",
   "period-notFound": "账期不存在",
-  "period-duplicatedCurrent": "已经存在一个账期标记为当前账期"
+  "period-duplicatedCurrent": "已经存在一个账期标记为当前账期",
+
+  "period-close-repeatClose": "账期已经被关闭",
+  "period-close-isNotCurrent": "只能关闭当前账期",
+  "period-close-notAllVouchersPosted": "关闭账期前需登账所有账期内凭证",
+  "period-close-unclearedProfitAndLoss": "关闭账期前需要结清损益类科目",
+  "period-close-unknownAccountBalanceDirection": "科目 {{.A}} 余额方向未知",
+  "period-close-openingBalanceUnequal": "借方期初余额总计和贷方期初余额总计不等",
+  "period-close-periodBalanceUnequal": "借方发生额总计和贷方发生额总计不等",
+  "period-close-endingBalanceUnequal": "借方期末余额总计和贷方期末余额总计不等"
 }

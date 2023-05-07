@@ -9,9 +9,23 @@ func SliceToMap[E any, K comparable, V any](
 	keyMapper func(element E) K,
 	valueMapper func(element E) V,
 ) map[K]V {
+	return SliceToMapMerge(elements, keyMapper, valueMapper, func(_ V, replacement V) V { return replacement })
+}
+
+func SliceToMapMerge[E any, K comparable, V any](
+	elements []E,
+	keyMapper func(element E) K,
+	valueMapper func(element E) V,
+	mergeFn func(existing V, replacement V) V,
+) map[K]V {
 	result := make(map[K]V)
 	for _, element := range elements {
-		result[keyMapper(element)] = valueMapper(element)
+		existing, ok := result[keyMapper(element)]
+		if ok {
+			result[keyMapper(element)] = mergeFn(existing, valueMapper(element))
+		} else {
+			result[keyMapper(element)] = valueMapper(element)
+		}
 	}
 	return result
 }

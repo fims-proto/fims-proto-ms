@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/common/utils"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -85,14 +87,8 @@ type postLedgersRecordCmd struct {
 }
 
 func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd) error {
-	// all involved accounts
-	// prepare all ids and map
-	var accountIds []uuid.UUID
-	accountsMap := make(map[uuid.UUID]postLedgersRecordCmd)
+	accountCommands := cmd.records
 	for _, record := range cmd.records {
-		accountIds = append(accountIds, record.accountId)
-		accountsMap[record.accountId] = record
-
 		//  read all superior accounts
 		superiorAccounts, err := h.readModel.SuperiorAccounts(ctx, record.accountId)
 		if err != nil {
@@ -105,15 +101,25 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 				debit:     record.debit,
 				credit:    record.credit,
 			}
-			accountIds = append(accountIds, superiorRecord.accountId)
-			accountsMap[superiorRecord.accountId] = superiorRecord
+			accountCommands = append(accountCommands, superiorRecord)
 		}
 	}
+
+	// merge duplicated accounts
+	accountsMap := utils.SliceToMapMerge(accountCommands, func(c postLedgersRecordCmd) uuid.UUID {
+		return c.accountId
+	}, func(c postLedgersRecordCmd) postLedgersRecordCmd {
+		return c
+	}, func(existing, replacement postLedgersRecordCmd) postLedgersRecordCmd {
+		existing.debit = existing.debit.Add(replacement.debit)
+		existing.credit = existing.credit.Add(replacement.credit)
+		return existing
+	})
 
 	return h.repo.UpdateLedgersByPeriodAndAccountIds(
 		ctx,
 		cmd.periodId,
-		accountIds,
+		utils.MapToKeySlice(accountsMap),
 		func(ledgers []*ledger.Ledger) ([]*ledger.Ledger, error) {
 			for _, l := range ledgers {
 				record, ok := accountsMap[l.AccountId()]

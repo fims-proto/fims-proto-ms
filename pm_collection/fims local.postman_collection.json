@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "582c73c7-b1f9-4a99-86c7-e24b94560584",
+		"_postman_id": "55fd3c5a-a76e-4587-992a-eaf18c0256c2",
 		"name": "fims local",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "5054360"
@@ -74,7 +74,7 @@
 					"response": []
 				},
 				{
-					"name": "account migration",
+					"name": "general ledger migration",
 					"event": [
 						{
 							"listen": "test",
@@ -92,45 +92,13 @@
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{base_path_private}}/internal/accounts/migrate",
+							"raw": "{{base_path_private}}/internal/general-ledgers/migrate",
 							"host": [
 								"{{base_path_private}}"
 							],
 							"path": [
 								"internal",
-								"accounts",
-								"migrate"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "voucher migration",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 204\", function () {",
-									"    pm.response.to.have.status(204);",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "{{base_path_private}}/internal/vouchers/migrate",
-							"host": [
-								"{{base_path_private}}"
-							],
-							"path": [
-								"internal",
-								"vouchers",
+								"general-ledgers",
 								"migrate"
 							]
 						}
@@ -191,7 +159,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"traits\": \"{\\\"email\\\":\\\"o@fims.com\\\",\\\"name\\\":{\\\"last\\\":\\\"Ou\\\",\\\"first\\\":\\\"linfeng\\\"}}\"\n}",
+					"raw": "{\n    \"traits\": \"{\\\"email\\\":\\\"o@fims.com\\\",\\\"name\\\":{\\\"last\\\":\\\"欧\\\",\\\"first\\\":\\\"德华\\\"}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -199,13 +167,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/user/4a923c5f-ab84-4267-b6de-1f9b841ec270",
+					"raw": "{{base_path}}/user/{{user_1}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"user",
-						"4a923c5f-ab84-4267-b6de-1f9b841ec270"
+						"{{user_1}}"
 					]
 				}
 			},
@@ -231,7 +199,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"traits\": \"{\\\"email\\\":\\\"l@fims.com\\\",\\\"name\\\":{\\\"last\\\":\\\"Lin\\\",\\\"first\\\":\\\"FengOu\\\"}}\"\n}",
+					"raw": "{\n    \"traits\": \"{\\\"email\\\":\\\"l@fims.com\\\",\\\"name\\\":{\\\"last\\\":\\\"林\\\",\\\"first\\\":\\\"朝伟\\\"}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -239,13 +207,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/user/4a923c5f-ab84-4267-b6de-1f9b841ec271",
+					"raw": "{{base_path}}/user/{{user_2}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"user",
-						"4a923c5f-ab84-4267-b6de-1f9b841ec271"
+						"{{user_2}}"
 					]
 				}
 			},
@@ -271,7 +239,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"traits\": \"{\\\"email\\\":\\\"f@fims.com\\\",\\\"name\\\":{\\\"last\\\":\\\"Feng\\\",\\\"first\\\":\\\"OuLin\\\"}}\"\n}",
+					"raw": "{\n    \"traits\": \"{\\\"email\\\":\\\"f@fims.com\\\",\\\"name\\\":{\\\"last\\\":\\\"风\\\",\\\"first\\\":\\\"彦祖\\\"}}\"\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -279,30 +247,39 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/user/4a923c5f-ab84-4267-b6de-1f9b841ec272",
+					"raw": "{{base_path}}/user/{{user_3}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"user",
-						"4a923c5f-ab84-4267-b6de-1f9b841ec272"
+						"{{user_3}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "create sob 1",
+			"name": "create sob",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Create test_sob_1 201\", function () {",
+							"pm.test(\"Create SoB 201\", function () {",
 							"    pm.response.to.have.status(201);",
 							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"sob_1\", createdId);"
+							"",
+							"pm.collectionVariables.set(\"sob\", pm.response.json()['id']);"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"pm.collectionVariables.set(\"now\", new Date().toISOString())"
 						],
 						"type": "text/javascript"
 					}
@@ -313,7 +290,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"name\": \"My Company 1\",\n    \"description\": \"My Company 1\",\n    \"baseCurrency\": \"CNY\",\n    \"startingPeriodYear\": 2022,\n    \"startingPeriodMonth\": 7,\n    \"accountsCodeLength\": [\n        4,\n        3,\n        3\n    ]\n}",
+					"raw": "{\n    \"name\": \"PM Test {{now}}\",\n    \"description\": \"PM test company at {{now}}\",\n    \"baseCurrency\": \"CNY\",\n    \"startingPeriodYear\": 2023,\n    \"startingPeriodMonth\": 1,\n    \"accountsCodeLength\": [\n        4,\n        3,\n        3\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -333,48 +310,7 @@
 			"response": []
 		},
 		{
-			"name": "create sob 2",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Create test_sob_2 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"sob_2\", createdId);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"Name\": \"My Company 2\",\n    \"Description\": \"My Company 2\",\n    \"BaseCurrency\": \"CNY\",\n    \"StartingPeriodYear\": 2022,\n    \"StartingPeriodMonth\": 7,\n    \"AccountsCodeLength\": [\n        4,\n        3,\n        3\n    ]\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sobs",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sobs"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "read all sobs",
+			"name": "read sobs",
 			"event": [
 				{
 					"listen": "test",
@@ -404,13 +340,13 @@
 			"response": []
 		},
 		{
-			"name": "read sob 1",
+			"name": "read sob by id",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read test_sob_1 200\", function () {",
+							"pm.test(\"Read SoB 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
@@ -422,26 +358,26 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sobs/{{sob_1}}",
+					"raw": "{{base_path}}/sobs/{{sob}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sobs",
-						"{{sob_1}}"
+						"{{sob}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "read sob 2",
+			"name": "read periods",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read test_sob_2 200\", function () {",
+							"pm.test(\"Read periods 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});"
 						],
@@ -453,44 +389,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sobs/{{sob_2}}",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sobs",
-						"{{sob_2}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > read periods",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Read accounting periods 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/periods",
+					"raw": "{{base_path}}/sob/{{sob}}/periods",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"periods"
 					]
 				}
@@ -498,18 +403,17 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > read current period",
+			"name": "read current period",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read accounting periods 200\", function () {",
+							"pm.test(\"Read current period 200\", function () {",
 							"    pm.response.to.have.status(200);",
 							"});",
 							"",
-							"let periodId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"period_1_id\", periodId);"
+							"pm.collectionVariables.set(\"current_period\", pm.response.json()['id']);"
 						],
 						"type": "text/javascript"
 					}
@@ -519,13 +423,13 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/periods/current",
+					"raw": "{{base_path}}/sob/{{sob}}/periods/current",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"periods",
 						"current"
 					]
@@ -534,21 +438,263 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > create voucher 1",
+			"name": "create voucher",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Record voucher 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"voucherUUID_1\", createdId);",
+							"let voucherIds = pm.collectionVariables.get(\"voucher_ids\")",
+							"if (!voucherIds || voucherIds.length == 0 || !Array.isArray(voucherIds)) {",
+							"    voucherIds = []",
+							"}",
+							"voucherIds.push(pm.response.json()['id'])",
+							"pm.collectionVariables.set(\"voucher_ids\", voucherIds)",
 							"",
-							"let jsonData = pm.response.json();",
-							"pm.collectionVariables.set(\"voucher_1_item_1\", jsonData.lineItems[0].id);",
-							"pm.collectionVariables.set(\"voucher_1_item_2\", jsonData.lineItems[1].id);"
+							"// let jsonData = pm.response.json()",
+							"// pm.collectionVariables.set(\"voucher_1_item_1\", jsonData.lineItems[0].id)",
+							"// pm.collectionVariables.set(\"voucher_1_item_2\", jsonData.lineItems[1].id)",
+							"",
+							"const sampleVouchers = pm.collectionVariables.get(\"sample_vouchers\")",
+							"if (sampleVouchers && sampleVouchers.length > 0){",
+							"    postman.setNextRequest(\"create voucher\")",
+							"}",
+							"",
+							"pm.test(\"Create voucher\", function () {",
+							"    pm.response.to.have.status(201)",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const testSamples = [",
+							"    {",
+							"        summary: \"1 - 收到投资款\",",
+							"        date: \"2023-01-08T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"1002001\",",
+							"                debit: 500000",
+							"            },",
+							"            {",
+							"                account: \"3001001\",",
+							"                credit: 300000",
+							"            },",
+							"            {",
+							"                account: \"3001002\",",
+							"                credit: 200000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"2 - 提取备用金\",",
+							"        date: \"2023-01-09T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"1001\",",
+							"                debit: 100000",
+							"            },",
+							"            {",
+							"                account: \"1002001\",",
+							"                credit: 100000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"3 - 报销费用\",",
+							"        date: \"2023-01-10T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"5602001\",",
+							"                debit: 1000",
+							"            },",
+							"            {",
+							"                account: \"1001\",",
+							"                credit: 1000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"4 - 支付店庆花篮费\",",
+							"        date: \"2023-01-11T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"5602002\",",
+							"                debit: 500",
+							"            },",
+							"            {",
+							"                account: \"1002001\",",
+							"                credit: 500",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"5 - 报销办公用品\",",
+							"        date: \"2023-01-12T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"5602001\",",
+							"                debit: 600",
+							"            },",
+							"            {",
+							"                account: \"1001\",",
+							"                credit: 600",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"6 - 购买电脑\",",
+							"        date: \"2023-01-13T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"1601001\",",
+							"                debit: 18500",
+							"            },",
+							"            {",
+							"                account: \"1002001\",",
+							"                credit: 18500",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"7 - 购买品牌使用费三年\",",
+							"        date: \"2023-01-14T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"1701001\",",
+							"                debit: 36000",
+							"            },",
+							"            {",
+							"                account: \"1002001\",",
+							"                credit: 36000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"8 - 支付房租两年\",",
+							"        date: \"2023-01-15T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"1801001\",",
+							"                debit: 60000",
+							"            },",
+							"            {",
+							"                account: \"1002001\",",
+							"                credit: 60000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"9 - 计提一月工资\",",
+							"        date: \"2023-01-31T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"5602003\",",
+							"                debit: 10000",
+							"            },",
+							"            {",
+							"                account: \"2211001\",",
+							"                credit: 10000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"10 - 摊销品牌使用费\",",
+							"        date: \"2023-01-31T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"5602004\",",
+							"                debit: 1000",
+							"            },",
+							"            {",
+							"                account: \"1702\",",
+							"                credit: 1000",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"11 - 摊销房租\",",
+							"        date: \"2023-01-31T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"5602005\",",
+							"                debit: 2500",
+							"            },",
+							"            {",
+							"                account: \"1801001\",",
+							"                credit: 2500",
+							"            }",
+							"        ]",
+							"    },",
+							"    {",
+							"        summary: \"12 - 结转损益\",",
+							"        date: \"2023-01-31T00:00:00Z\",",
+							"        items: [",
+							"            {",
+							"                account: \"3103\",",
+							"                debit: 15600",
+							"            },",
+							"            {",
+							"                account: \"5602001\",",
+							"                credit: 1000",
+							"            },",
+							"            {",
+							"                account: \"5602002\",",
+							"                credit: 500",
+							"            },",
+							"            {",
+							"                account: \"5602001\",",
+							"                credit: 600",
+							"            },",
+							"            {",
+							"                account: \"5602003\",",
+							"                credit: 10000",
+							"            },",
+							"            {",
+							"                account: \"5602004\",",
+							"                credit: 1000",
+							"            },",
+							"            {",
+							"                account: \"5602005\",",
+							"                credit: 2500",
+							"            }",
+							"        ]",
+							"    }",
+							"]",
+							"",
+							"let sampleVouchers = pm.collectionVariables.get(\"sample_vouchers\")",
+							"",
+							"if(!sampleVouchers || sampleVouchers.length == 0) {",
+							"    sampleVouchers = testSamples",
+							"}",
+							"",
+							"let currentSampleVoucher = sampleVouchers.shift()",
+							"pm.collectionVariables.set(\"sample_vouchers\", sampleVouchers)",
+							"",
+							"",
+							"// build current payload",
+							"const payload = {",
+							"    \"voucherType\": \"general_voucher\",",
+							"    \"headerText\": currentSampleVoucher.summary,",
+							"    \"attachmentQuantity\": 0,",
+							"    \"lineItems\": [],",
+							"    \"creator\": pm.collectionVariables.get(\"user_1\"),",
+							"    \"transactionTime\": currentSampleVoucher.date",
+							"}",
+							"",
+							"currentSampleVoucher.items.forEach(sampleItem => payload.lineItems.push({",
+							"    \"text\": currentSampleVoucher.summary,",
+							"    \"accountNumber\": sampleItem.account,",
+							"    \"debit\": sampleItem.debit,",
+							"    \"credit\": sampleItem.credit,",
+							"}))",
+							"",
+							"pm.collectionVariables.set(\"current_voucher_payload\", JSON.stringify(payload))"
 						],
 						"type": "text/javascript"
 					}
@@ -559,7 +705,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"voucherType\": \"general_voucher\",\n    \"headerText\": \"取钱\",\n    \"attachmentQuantity\": 0,\n    \"lineItems\": [\n        {\n            \"text\": \"取钱\",\n            \"accountNumber\": \"1001\",\n            \"debit\": \"100\"\n        },\n        {\n            \"text\": \"取钱\",\n            \"accountNumber\": \"1002001\",\n            \"credit\": \"100\"\n        }\n    ],\n    \"creator\": \"{{user_1}}\",\n    \"transactionTime\": \"2022-07-08T00:00:00Z\"\n}",
+					"raw": "{{current_voucher_payload}}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -567,13 +713,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
+					"raw": "{{base_path}}/sob/{{sob}}/vouchers",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"vouchers"
 					]
 				}
@@ -581,63 +727,68 @@
 			"response": []
 		},
 		{
-			"name": "sob 2 > create voucher 1",
+			"name": "read all vouchers",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Record voucher 201\", function () {",
-							"    pm.response.to.have.status(201);",
+							"pm.test(\"Read all vouchers\", function () {",
+							"    pm.response.to.have.status(200)",
 							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"voucherUUID_sob2_1\", createdId);"
+							""
 						],
 						"type": "text/javascript"
 					}
 				}
 			],
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"voucherType\": \"general_voucher\",\n    \"headerText\": \"取钱\",\n    \"attachmentQuantity\": 0,\n    \"lineItems\": [\n        {\n            \"text\": \"取钱 sob 2\",\n            \"accountNumber\": \"1001\",\n            \"debit\": \"100\"\n        },\n        {\n            \"text\": \"取钱 sob 2\",\n            \"accountNumber\": \"1002001\",\n            \"credit\": \"100\"\n        }\n    ],\n    \"creator\": \"{{user_1}}\",\n    \"transactionTime\": \"2022-07-08T00:00:00Z\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/vouchers",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"vouchers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read voucher",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read voucher by id 200\", function () {",
+							"    pm.response.to.have.status(200)",
+							"})",
+							"",
+							"pm.test(\"Number check\", function () {",
+							"    var jsonData = pm.response.json()",
+							"    pm.expect(jsonData.documentNumber).to.eql(`记 ${pm.collectionVariables.get(\"voucher_index\")} 号`)",
+							"})",
+							"",
+							"postman.setNextRequest(\"review voucher\")"
+						],
+						"type": "text/javascript"
 					}
 				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_2}}/vouchers",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_2}}",
-						"vouchers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > read voucher 1 by id",
-			"event": [
 				{
-					"listen": "test",
+					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"pm.test(\"Read voucher by uuid 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
+							"const voucherIds = pm.collectionVariables.get(\"voucher_ids\")",
+							"const index = Number(pm.collectionVariables.get(\"voucher_index\")) || 0",
 							"",
-							"pm.test(\"Number check\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.documentNumber).to.eql(\"记 1 号\");",
-							"});"
+							"pm.collectionVariables.set(\"current_voucher_id\", voucherIds[index])",
+							"pm.collectionVariables.set(\"voucher_index\", index + 1)"
 						],
 						"type": "text/javascript"
 					}
@@ -647,100 +798,30 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}",
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"voucher",
-						"{{voucherUUID_1}}"
+						"{{current_voucher_id}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "sob 2 > read voucher 2 by id",
+			"name": "review voucher",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read voucher by uuid 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Number check\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.documentNumber).to.eql(\"记 1 号\");",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_2}}/voucher/{{voucherUUID_sob2_1}}",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_2}}",
-						"voucher",
-						"{{voucherUUID_sob2_1}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > all vouchers",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Read all voucher\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"vouchers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > review 1",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Review voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
+							"pm.test(\"Review voucher\", function () {",
+							"    pm.response.to.have.status(204)",
+							"})"
 						],
 						"type": "text/javascript"
 					}
@@ -759,15 +840,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/review",
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/review",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"voucher",
-						"{{voucherUUID_1}}",
+						"{{current_voucher_id}}",
 						"review"
 					]
 				}
@@ -775,13 +856,57 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > cancel review",
+			"name": "audit voucher",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Cancel review voucher 204\", function () {",
+							"pm.test(\"Aduti voucher\", function () {",
+							"    pm.response.to.have.status(204)",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/audit",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"voucher",
+						"{{current_voucher_id}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "cancel review",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Cancel review voucher\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],
@@ -802,15 +927,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/cancel-review",
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-review",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"voucher",
-						"{{voucherUUID_1}}",
+						"{{current_voucher_id}}",
 						"cancel-review"
 					]
 				}
@@ -818,13 +943,13 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > audit 1",
+			"name": "cancel audit",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Aduti voucher 204\", function () {",
+							"pm.test(\"Cancel audit voucher\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],
@@ -845,58 +970,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/audit",
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-audit",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
-						"{{sob_1}}",
+						"{{sob}}",
 						"voucher",
-						"{{voucherUUID_1}}",
-						"audit"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > cancel audit",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Cancel audit voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/cancel-audit",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}",
+						"{{current_voucher_id}}",
 						"cancel-audit"
 					]
 				}
@@ -904,7 +986,644 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > update voucher 1",
+			"name": "attempt post voucher",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher failed\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"voucher",
+						"{{current_voucher_id}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "review voucher again",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Review voucher\", function () {",
+							"    pm.response.to.have.status(204);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"reviewer\": \"{{user_2}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/review",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"voucher",
+						"{{current_voucher_id}}",
+						"review"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "audit voucher again",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Aduti voucher\", function () {",
+							"    pm.response.to.have.status(204)",
+							"})",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/audit",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"voucher",
+						"{{current_voucher_id}}",
+						"audit"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "post voucher",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Post voucher\", function () {",
+							"    pm.response.to.have.status(204)",
+							"})",
+							"",
+							"const voucherIds = pm.collectionVariables.get(\"voucher_ids\")",
+							"if (voucherIds && pm.collectionVariables.get(\"voucher_index\") < voucherIds.length) {",
+							"    postman.setNextRequest(\"read voucher\")",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"voucher",
+						"{{current_voucher_id}}",
+						"post"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read ledgers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ledgers exists (count more than 0)\", function () {",
+							"    pm.expect(pm.response.json().content.length).to.gt(0);",
+							"});",
+							"",
+							"pm.test(\"Ledgers have right balance\", function () {",
+							"    tobeTested = {",
+							"        \"1001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"100000\",",
+							"            expectedCredit: \"1600\",",
+							"            expectedBalance: \"98400\"",
+							"        },",
+							"        \"1002\": {",
+							"            tested: false,",
+							"            expectedDebit: \"500000\",",
+							"            expectedCredit: \"215000\",",
+							"            expectedBalance: \"285000\"",
+							"        },",
+							"        \"1002001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"500000\",",
+							"            expectedCredit: \"215000\",",
+							"            expectedBalance: \"285000\"",
+							"        },",
+							"        \"1601\": {",
+							"            tested: false,",
+							"            expectedDebit: \"18500\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"18500\"",
+							"        },",
+							"        \"1601001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"18500\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"18500\"",
+							"        },",
+							"        \"1701\": {",
+							"            tested: false,",
+							"            expectedDebit: \"36000\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"36000\"",
+							"        },",
+							"        \"1701001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"36000\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"36000\"",
+							"        },",
+							"        \"1702\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"1000\",",
+							"            expectedBalance: \"1000\"",
+							"        },",
+							"        \"1801\": {",
+							"            tested: false,",
+							"            expectedDebit: \"60000\",",
+							"            expectedCredit: \"2500\",",
+							"            expectedBalance: \"57500\"",
+							"        },",
+							"        \"1801001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"60000\",",
+							"            expectedCredit: \"2500\",",
+							"            expectedBalance: \"57500\"",
+							"        },",
+							"        \"2211\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"10000\",",
+							"            expectedBalance: \"10000\"",
+							"        },",
+							"        \"2211001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"10000\",",
+							"            expectedBalance: \"10000\"",
+							"        },",
+							"        \"3001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"500000\",",
+							"            expectedBalance: \"500000\"",
+							"        },",
+							"        \"3001001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"300000\",",
+							"            expectedBalance: \"300000\"",
+							"        },",
+							"        \"3001002\": {",
+							"            tested: false,",
+							"            expectedDebit: \"0\",",
+							"            expectedCredit: \"200000\",",
+							"            expectedBalance: \"200000\"",
+							"        },",
+							"        \"3103\": {",
+							"            tested: false,",
+							"            expectedDebit: \"15600\",",
+							"            expectedCredit: \"0\",",
+							"            expectedBalance: \"-15600\"",
+							"        },",
+							"        \"5602\": {",
+							"            tested: false,",
+							"            expectedDebit: \"15600\",",
+							"            expectedCredit: \"15600\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602001\": {",
+							"            tested: false,",
+							"            expectedDebit: \"1600\",",
+							"            expectedCredit: \"1600\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602002\": {",
+							"            tested: false,",
+							"            expectedDebit: \"500\",",
+							"            expectedCredit: \"500\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602003\": {",
+							"            tested: false,",
+							"            expectedDebit: \"10000\",",
+							"            expectedCredit: \"10000\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602004\": {",
+							"            tested: false,",
+							"            expectedDebit: \"1000\",",
+							"            expectedCredit: \"1000\",",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602005\": {",
+							"            tested: false,",
+							"            expectedDebit: \"2500\",",
+							"            expectedCredit: \"2500\",",
+							"            expectedBalance: \"0\"",
+							"        }",
+							"    }",
+							"",
+							"    ls = pm.response.json().content;",
+							"",
+							"    for(let i = 0; i < ls.length ; i++) {",
+							"        const accountNumber = ls[i].account.accountNumber;",
+							"        if (tobeTested.hasOwnProperty(accountNumber)) {",
+							"            tobeTested[accountNumber].tested = true;",
+							"            tobeTested[accountNumber].debit = ls[i].periodDebit;",
+							"            tobeTested[accountNumber].credit = ls[i].periodCredit;",
+							"            tobeTested[accountNumber].balance = ls[i].endingBalance;",
+							"        }",
+							"    }",
+							"",
+							"    for (let key in tobeTested) {",
+							"        pm.expect(tobeTested[key].tested).to.be.true;",
+							"        pm.expect(tobeTested[key].expectedDebit).to.be.eq(tobeTested[key].debit);",
+							"        pm.expect(tobeTested[key].expectedCredit).to.be.eq(tobeTested[key].credit);",
+							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].balance);",
+							"    }",
+							"",
+							"    console.log(tobeTested);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/period/{{current_period}}/ledgers?$size=999",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"period",
+						"{{current_period}}",
+						"ledgers"
+					],
+					"query": [
+						{
+							"key": "$size",
+							"value": "999"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "close period",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Close period\", function () {",
+							"    pm.response.to.have.status(204)",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/period/{{current_period}}/close",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"period",
+						"{{current_period}}",
+						"close"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "read new period",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Read current period 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.collectionVariables.set(\"current_period\", pm.response.json()['id']);"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/periods/current",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"periods",
+						"current"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "check balances",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Ledgers exists (count more than 0)\", function () {",
+							"    pm.expect(pm.response.json().content.length).to.gt(0)",
+							"})",
+							"",
+							"pm.test(\"Ledgers have right opening balance\", function () {",
+							"    tobeTested = {",
+							"        \"1001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"98400\"",
+							"        },",
+							"        \"1002\": {",
+							"            tested: false,",
+							"            expectedBalance: \"285000\"",
+							"        },",
+							"        \"1002001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"285000\"",
+							"        },",
+							"        \"1601\": {",
+							"            tested: false,",
+							"            expectedBalance: \"18500\"",
+							"        },",
+							"        \"1601001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"18500\"",
+							"        },",
+							"        \"1701\": {",
+							"            tested: false,",
+							"            expectedBalance: \"36000\"",
+							"        },",
+							"        \"1701001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"36000\"",
+							"        },",
+							"        \"1702\": {",
+							"            tested: false,",
+							"            expectedBalance: \"1000\"",
+							"        },",
+							"        \"1801\": {",
+							"            tested: false,",
+							"            expectedBalance: \"57500\"",
+							"        },",
+							"        \"1801001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"57500\"",
+							"        },",
+							"        \"2211\": {",
+							"            tested: false,",
+							"            expectedBalance: \"10000\"",
+							"        },",
+							"        \"2211001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"10000\"",
+							"        },",
+							"        \"3001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"500000\"",
+							"        },",
+							"        \"3001001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"300000\"",
+							"        },",
+							"        \"3001002\": {",
+							"            tested: false,",
+							"            expectedBalance: \"200000\"",
+							"        },",
+							"        \"3103\": {",
+							"            tested: false,",
+							"            expectedBalance: \"-15600\"",
+							"        },",
+							"        \"5602\": {",
+							"            tested: false,",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602001\": {",
+							"            tested: false,",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602002\": {",
+							"            tested: false,",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602003\": {",
+							"            tested: false,",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602004\": {",
+							"            tested: false,",
+							"            expectedBalance: \"0\"",
+							"        },",
+							"        \"5602005\": {",
+							"            tested: false,",
+							"            expectedBalance: \"0\"",
+							"        }",
+							"    }",
+							"",
+							"    ls = pm.response.json().content",
+							"",
+							"    for(let i = 0; i < ls.length; i++) {",
+							"        const accountNumber = ls[i].account.accountNumber",
+							"        if (tobeTested.hasOwnProperty(accountNumber)) {",
+							"            tobeTested[accountNumber].tested = true",
+							"            tobeTested[accountNumber].openingBalance = ls[i].openingBalance",
+							"            tobeTested[accountNumber].endingBalance = ls[i].endingBalance",
+							"        }",
+							"    }",
+							"",
+							"    for (let key in tobeTested) {",
+							"        pm.expect(tobeTested[key].tested).to.be.true",
+							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].openingBalance)",
+							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].endingBalance)",
+							"    }",
+							"",
+							"    console.log(tobeTested)",
+							"})"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_path}}/sob/{{sob}}/period/{{current_period}}/ledgers?$size=999",
+					"host": [
+						"{{base_path}}"
+					],
+					"path": [
+						"sob",
+						"{{sob}}",
+						"period",
+						"{{current_period}}",
+						"ledgers"
+					],
+					"query": [
+						{
+							"key": "$size",
+							"value": "999"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ending",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"postman.setNextRequest(null)",
+							"",
+							"pm.collectionVariables.unset(\"now\")",
+							"pm.collectionVariables.unset(\"sob\")",
+							"pm.collectionVariables.unset(\"current_period\")",
+							"pm.collectionVariables.unset(\"sample_vouchers\")",
+							"pm.collectionVariables.unset(\"current_voucher_payload\")",
+							"pm.collectionVariables.unset(\"voucher_ids\")",
+							"pm.collectionVariables.unset(\"current_voucher_id\")",
+							"pm.collectionVariables.unset(\"voucher_index\")",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_path_private}}/health/ping",
+					"host": [
+						"{{base_path_private}}"
+					],
+					"path": [
+						"health",
+						"ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "[NOT USED] update voucher",
 			"event": [
 				{
 					"listen": "test",
@@ -946,7 +1665,7 @@
 			"response": []
 		},
 		{
-			"name": "sob 1 > update voucher 1 transaction time",
+			"name": "[NOT USED] update voucher transaction time",
 			"event": [
 				{
 					"listen": "test",
@@ -986,916 +1705,6 @@
 				}
 			},
 			"response": []
-		},
-		{
-			"name": "sob 1 > attempt to post voucher 1",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Post voucher failed\", function () {",
-							"    pm.response.to.have.status(400);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/post",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}",
-						"post"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > review 1 again",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Review voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"reviewer\": \"{{user_2}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/review",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}",
-						"review"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > audit 1 again",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Aduti voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/audit",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}",
-						"audit"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > post voucher 1",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Post voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}/post",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}",
-						"post"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > create voucher 2",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Record voucher 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"voucherUUID_2\", createdId);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"voucherType\": \"general_voucher\",\n    \"headerText\": \"用现金报销电话费\",\n    \"attachmentQuantity\": 0,\n    \"lineItems\": [\n        {\n            \"text\": \"用现金报销电话费\",\n            \"accountNumber\": \"1001\",\n            \"credit\": \"200\"\n        },\n        {\n            \"text\": \"用现金报销电话费\",\n            \"accountNumber\": \"6602001\",\n            \"debit\": \"200\"\n        }\n    ],\n    \"creator\": \"{{user_1}}\",\n    \"transactionTime\": \"2022-07-09T00:00:00Z\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"vouchers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > read voucher 2 by id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Read voucher by uuid 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Number check\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.documentNumber).to.eql(\"记 2 号\");",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_2}}",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_2}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > review 2",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Review voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"reviewer\": \"{{user_2}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_2}}/review",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_2}}",
-						"review"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > audit 2",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Aduti voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_2}}/audit",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_2}}",
-						"audit"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > post voucher 2",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Post voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_2}}/post",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_2}}",
-						"post"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > create voucher 3",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Record voucher 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"voucherUUID_3\", createdId);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"voucherType\": \"general_voucher\",\n    \"headerText\": \"销售款存入银行\",\n    \"attachmentQuantity\": 0,\n    \"lineItems\": [\n        {\n            \"text\": \"销售款存入银行\",\n            \"accountNumber\": \"1002001\",\n            \"debit\": \"400\"\n        },\n        {\n            \"text\": \"销售款存入银行\",\n            \"accountNumber\": \"1122\",\n            \"credit\": \"400\"\n        }\n    ],\n    \"creator\": \"{{user_1}}\",\n    \"transactionTime\": \"2022-07-09T00:00:00Z\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"vouchers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > read voucher 3 by id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Read voucher by uuid 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Number check\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.documentNumber).to.eql(\"记 3 号\");",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_3}}",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_3}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > review 3",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Review voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"reviewer\": \"{{user_2}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_3}}/review",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_3}}",
-						"review"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > audit 3",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Aduti voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_3}}/audit",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_3}}",
-						"audit"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > post voucher 3",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Post voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_3}}/post",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_3}}",
-						"post"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > create voucher 4",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Record voucher 201\", function () {",
-							"    pm.response.to.have.status(201);",
-							"});",
-							"let createdId = pm.response.json()['id']",
-							"pm.collectionVariables.set(\"voucherUUID_4\", createdId);"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"voucherType\": \"general_voucher\",\n    \"headerText\": \"用支票支付办公用品\",\n    \"attachmentQuantity\": 0,\n    \"lineItems\": [\n        {\n            \"text\": \"用支票支付办公用品\",\n            \"accountNumber\": \"6602001\",\n            \"debit\": \"300\"\n        },\n        {\n            \"text\": \"用支票支付办公用品\",\n            \"accountNumber\": \"1002001\",\n            \"credit\": \"300\"\n        }\n    ],\n    \"creator\": \"{{user_1}}\",\n    \"transactionTime\": \"2022-07-09T00:00:00Z\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/vouchers",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"vouchers"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > read voucher 4 by id",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Read voucher by uuid 200\", function () {",
-							"    pm.response.to.have.status(200);",
-							"});",
-							"",
-							"pm.test(\"Number check\", function () {",
-							"    var jsonData = pm.response.json();",
-							"    pm.expect(jsonData.documentNumber).to.eql(\"记 4 号\");",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_4}}",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_4}}"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > review 4",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Review voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"reviewer\": \"{{user_2}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_4}}/review",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_4}}",
-						"review"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > audit 4",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Aduti voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"auditor\": \"{{user_3}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_4}}/audit",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_4}}",
-						"audit"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > post voucher 4",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Post voucher 204\", function () {",
-							"    pm.response.to.have.status(204);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n    \"poster\": \"{{user_1}}\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_4}}/post",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_4}}",
-						"post"
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "sob 1 > all ledgers",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"exec": [
-							"pm.test(\"Ledgers exists (count more than 0)\", function () {",
-							"    pm.expect(pm.response.json().content.length).to.gt(0);",
-							"});",
-							"",
-							"pm.test(\"Ledgers have right balance\", function () {",
-							"    tobeTested = {",
-							"        \"1001\": {",
-							"            tested: false,",
-							"            expectedDebit: \"101\",",
-							"            expectedCredit: \"200\",",
-							"            expectedBalance: \"-99\"",
-							"        },",
-							"        \"1002\": {",
-							"            tested: false,",
-							"            expectedDebit: \"400\",",
-							"            expectedCredit: \"401\",",
-							"            expectedBalance: \"-1\"",
-							"        },",
-							"        \"1002001\": {",
-							"            tested: false,",
-							"            expectedDebit: \"400\",",
-							"            expectedCredit: \"300\",",
-							"            expectedBalance: \"100\"",
-							"        },",
-							"        \"1002002\": {",
-							"            tested: false,",
-							"            expectedDebit: \"0\",",
-							"            expectedCredit: \"101\",",
-							"            expectedBalance: \"-101\"",
-							"        },",
-							"        \"1122\": {",
-							"            tested: false,",
-							"            expectedDebit: \"0\",",
-							"            expectedCredit: \"400\",",
-							"            expectedBalance: \"-400\"",
-							"        },",
-							"        \"6602\": {",
-							"            tested: false,",
-							"            expectedDebit: \"500\",",
-							"            expectedCredit: \"0\",",
-							"            expectedBalance: \"500\"",
-							"        },",
-							"        \"6602001\": {",
-							"            tested: false,",
-							"            expectedDebit: \"500\",",
-							"            expectedCredit: \"0\",",
-							"            expectedBalance: \"500\"",
-							"        }",
-							"    }",
-							"",
-							"    ls = pm.response.json().content;",
-							"",
-							"    for(let i = 0; i < ls.length ; i++) {",
-							"        const accountNumber = ls[i].account.accountNumber;",
-							"        if (tobeTested.hasOwnProperty(accountNumber)) {",
-							"            tobeTested[accountNumber].tested = true;",
-							"            tobeTested[accountNumber].debit = ls[i].periodDebit;",
-							"            tobeTested[accountNumber].credit = ls[i].periodCredit;",
-							"            tobeTested[accountNumber].balance = ls[i].endingBalance;",
-							"        }",
-							"    }",
-							"",
-							"    for (let key in tobeTested) {",
-							"        pm.expect(tobeTested[key].tested).to.be.true;",
-							"        pm.expect(tobeTested[key].expectedDebit).to.be.eq(tobeTested[key].debit);",
-							"        pm.expect(tobeTested[key].expectedCredit).to.be.eq(tobeTested[key].credit);",
-							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].balance);",
-							"    }",
-							"",
-							"    console.log(tobeTested);",
-							"});"
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/period/{{period_1_id}}/ledgers?$size=999",
-					"host": [
-						"{{base_path}}"
-					],
-					"path": [
-						"sob",
-						"{{sob_1}}",
-						"period",
-						"{{period_1_id}}",
-						"ledgers"
-					],
-					"query": [
-						{
-							"key": "$size",
-							"value": "999"
-						}
-					]
-				}
-			},
-			"response": []
 		}
 	],
 	"event": [
@@ -1920,67 +1729,29 @@
 	],
 	"variable": [
 		{
+			"key": "base_path",
+			"value": "http://127.0.0.1:5002/api/v1",
+			"type": "string"
+		},
+		{
+			"key": "base_path_private",
+			"value": "http://127.0.0.1:5002",
+			"type": "string"
+		},
+		{
 			"key": "user_1",
 			"value": "4a923c5f-ab84-4267-b6de-1f9b841ec270",
 			"type": "string"
 		},
 		{
 			"key": "user_2",
-			"value": "4a923c5f-ab84-4267-b6de-1f9b841ec271",
+			"value": "254fb592-070e-4bfa-b96b-c1264fc36942",
 			"type": "string"
 		},
 		{
 			"key": "user_3",
-			"value": "4a923c5f-ab84-4267-b6de-1f9b841ec272",
+			"value": "90eb2fd2-5f25-4108-bac4-ae203e8933ee",
 			"type": "string"
-		},
-		{
-			"key": "sob_1",
-			"value": ""
-		},
-		{
-			"key": "sob_2",
-			"value": ""
-		},
-		{
-			"key": "period_1_id",
-			"value": ""
-		},
-		{
-			"key": "voucherUUID_1",
-			"value": ""
-		},
-		{
-			"key": "voucher_1_item_1",
-			"value": ""
-		},
-		{
-			"key": "voucher_1_item_2",
-			"value": ""
-		},
-		{
-			"key": "voucherUUID_2",
-			"value": ""
-		},
-		{
-			"key": "voucherUUID_3",
-			"value": ""
-		},
-		{
-			"key": "voucherUUID_4",
-			"value": ""
-		},
-		{
-			"key": "voucherUUID_sob2_1",
-			"value": ""
-		},
-		{
-			"key": "base_path",
-			"value": "127.0.0.1:5002/api/v1"
-		},
-		{
-			"key": "base_path_private",
-			"value": "127.0.0.1:5002"
 		}
 	]
 }

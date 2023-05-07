@@ -90,34 +90,34 @@ func NewByAllFields(
 	}, nil
 }
 
-func (p Period) Id() uuid.UUID {
+func (p *Period) Id() uuid.UUID {
 	return p.id
 }
 
-func (p Period) SobId() uuid.UUID {
+func (p *Period) SobId() uuid.UUID {
 	return p.sobId
 }
 
-func (p Period) FiscalYear() int {
+func (p *Period) FiscalYear() int {
 	return p.fiscalYear
 }
 
-func (p Period) PeriodNumber() int {
+func (p *Period) PeriodNumber() int {
 	return p.periodNumber
 }
 
-func (p Period) OpeningTime() time.Time {
+func (p *Period) OpeningTime() time.Time {
 	return p.openingTime
 }
 
-func (p Period) EndingTime() time.Time {
+func (p *Period) EndingTime() time.Time {
 	return p.endingTime
 }
 
-func (p Period) IsClosed() bool {
+func (p *Period) IsClosed() bool {
 	return p.isClosed
 }
 
-func (p Period) IsCurrent() bool {
+func (p *Period) IsCurrent() bool {
 	return p.isCurrent
 }

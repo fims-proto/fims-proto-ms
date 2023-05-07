@@ -19,7 +19,7 @@ import (
 )
 
 type accountPO struct {
-	Id                uuid.UUID `gorm:"type:uuid"`
+	Id                uuid.UUID `gorm:"type:uuid;primaryKey"`
 	SobId             uuid.UUID `gorm:"type:uuid;uniqueIndex:accounts_sobid_number_key"`
 	SuperiorAccountId uuid.UUID `gorm:"type:uuid"`
 	Title             string
@@ -34,7 +34,7 @@ type accountPO struct {
 }
 
 type periodPO struct {
-	Id           uuid.UUID `gorm:"type:uuid"`
+	Id           uuid.UUID `gorm:"type:uuid;primaryKey"`
 	SobId        uuid.UUID `gorm:"type:uuid;uniqueIndex:periods_sobid_year_number_key"`
 	FiscalYear   int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
 	PeriodNumber int       `gorm:"uniqueIndex:periods_sobid_year_number_key"`
@@ -48,10 +48,10 @@ type periodPO struct {
 }
 
 type ledgerPO struct {
-	Id             uuid.UUID `gorm:"type:uuid"`
+	Id             uuid.UUID `gorm:"type:uuid;primaryKey"`
 	SobId          uuid.UUID `gorm:"type:uuid"`
-	AccountId      uuid.UUID `gorm:"type:uuid;primaryKey"`
-	PeriodId       uuid.UUID `gorm:"type:uuid;primaryKey"`
+	AccountId      uuid.UUID `gorm:"type:uuid"`
+	PeriodId       uuid.UUID `gorm:"type:uuid"`
 	OpeningBalance decimal.Decimal
 	EndingBalance  decimal.Decimal
 	PeriodDebit    decimal.Decimal
@@ -233,6 +233,19 @@ func periodBOToPO(bo period.Period) periodPO {
 		IsClosed:     bo.IsClosed(),
 		IsCurrent:    bo.IsCurrent(),
 	}
+}
+
+func periodPOToBO(po periodPO) (*period.Period, error) {
+	return period.NewByAllFields(
+		po.Id,
+		po.SobId,
+		po.FiscalYear,
+		po.PeriodNumber,
+		po.OpeningTime,
+		po.EndingTime,
+		po.IsClosed,
+		po.IsCurrent,
+	)
 }
 
 func periodPOToDTO(po periodPO) (query.Period, error) {

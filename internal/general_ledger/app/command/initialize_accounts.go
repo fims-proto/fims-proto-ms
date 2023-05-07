@@ -50,7 +50,7 @@ func readFromCSV() ([]accountEntry, error) {
 		return nil, errors.Wrap(err, "could not get working directory")
 	}
 
-	csvFile, err := os.Open(filepath.Join(workDir, "dataload", "account", "accounts.csv"))
+	csvFile, err := os.Open(filepath.Join(workDir, "dataload", "account", "accounts_xqykjzz.csv"))
 	if err != nil {
 		return nil, errors.Wrap(err, "could not open file")
 	}
@@ -114,9 +114,15 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					superiorAccountId = superiorAccount.Id()
 					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
-				domainAccount, err := account.New(uuid.New(), sobId, superiorAccountId, entry.title, entry.number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
+
+				number, err := account.ComposeAccountNumber(numberHierarchy, codeLengthLimits)
 				if err != nil {
-					return nil, errors.Wrapf(err, "dataload failed on account %s", entry.number)
+					return nil, errors.Wrap(err, "failed to compose account number")
+				}
+
+				domainAccount, err := account.New(uuid.New(), sobId, superiorAccountId, entry.title, number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
+				if err != nil {
+					return nil, errors.Wrapf(err, "dataload failed on account %s", number)
 				}
 				preparedAccounts[entry.number] = domainAccount
 			}
