@@ -167,13 +167,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/user/4a923c5f-ab84-4267-b6de-1f9b841ec270",
+					"raw": "{{base_path}}/user/{{user_1}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"user",
-						"4a923c5f-ab84-4267-b6de-1f9b841ec270"
+						"{{user_1}}"
 					]
 				}
 			},
@@ -207,13 +207,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/user/4a923c5f-ab84-4267-b6de-1f9b841ec271",
+					"raw": "{{base_path}}/user/{{user_2}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"user",
-						"4a923c5f-ab84-4267-b6de-1f9b841ec271"
+						"{{user_2}}"
 					]
 				}
 			},
@@ -247,13 +247,13 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/user/4a923c5f-ab84-4267-b6de-1f9b841ec272",
+					"raw": "{{base_path}}/user/{{user_3}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"user",
-						"4a923c5f-ab84-4267-b6de-1f9b841ec272"
+						"{{user_3}}"
 					]
 				}
 			},
@@ -1432,7 +1432,7 @@
 			"response": []
 		},
 		{
-			"name": "check opening balances",
+			"name": "check balances",
 			"event": [
 				{
 					"listen": "test",
@@ -1540,13 +1540,15 @@
 							"        const accountNumber = ls[i].account.accountNumber",
 							"        if (tobeTested.hasOwnProperty(accountNumber)) {",
 							"            tobeTested[accountNumber].tested = true",
-							"            tobeTested[accountNumber].balance = ls[i].openingBalance",
+							"            tobeTested[accountNumber].openingBalance = ls[i].openingBalance",
+							"            tobeTested[accountNumber].endingBalance = ls[i].endingBalance",
 							"        }",
 							"    }",
 							"",
 							"    for (let key in tobeTested) {",
 							"        pm.expect(tobeTested[key].tested).to.be.true",
-							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].balance)",
+							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].openingBalance)",
+							"        pm.expect(tobeTested[key].expectedBalance).to.be.eq(tobeTested[key].endingBalance)",
 							"    }",
 							"",
 							"    console.log(tobeTested)",
@@ -1743,12 +1745,12 @@
 		},
 		{
 			"key": "user_2",
-			"value": "4a923c5f-ab84-4267-b6de-1f9b841ec271",
+			"value": "254fb592-070e-4bfa-b96b-c1264fc36942",
 			"type": "string"
 		},
 		{
 			"key": "user_3",
-			"value": "4a923c5f-ab84-4267-b6de-1f9b841ec272",
+			"value": "90eb2fd2-5f25-4108-bac4-ae203e8933ee",
 			"type": "string"
 		}
 	]

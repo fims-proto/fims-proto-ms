@@ -51,11 +51,14 @@ func initializeLedgers(ctx context.Context, cmd InitializeLedgersCmd, repo domai
 	// create ledgers based on accounts
 	var ledgers []*ledger.Ledger
 	for _, accountDTO := range accounts {
-		// move previous ending balance to opening balance
+		// move previous ending balance to current balance
 		openingBalance := decimal.Zero
+		endingBalance := decimal.Zero
+
 		previousLedger, ok := ledgersInPreviousPeriod[accountDTO.Id]
 		if ok {
 			openingBalance = previousLedger.EndingBalance
+			endingBalance = previousLedger.EndingBalance
 		}
 
 		accountBO, err := account.New(
@@ -80,7 +83,7 @@ func initializeLedgers(ctx context.Context, cmd InitializeLedgersCmd, repo domai
 			accountDTO.Id,
 			cmd.PeriodId,
 			openingBalance,
-			decimal.Zero,
+			endingBalance,
 			decimal.Zero,
 			decimal.Zero,
 			*accountBO,
