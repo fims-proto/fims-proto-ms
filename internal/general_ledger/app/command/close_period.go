@@ -3,6 +3,8 @@ package command
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
@@ -10,7 +12,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 )
 

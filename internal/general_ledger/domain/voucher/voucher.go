@@ -3,11 +3,11 @@ package voucher
 import (
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher_type"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher/voucher_type"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 type Voucher struct {

@@ -9,14 +9,14 @@ import (
 	"strconv"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	sobQuery "github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/balance_direction"
-
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 )
 
 type accountEntry struct {

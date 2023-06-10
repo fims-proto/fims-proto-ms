@@ -3,8 +3,8 @@ package account
 import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account_type"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/balance_direction"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 )
 
 type Account struct {

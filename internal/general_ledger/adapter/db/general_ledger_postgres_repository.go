@@ -4,6 +4,8 @@ import (
 	"context"
 	"strings"
 
+	accountType "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
+
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -12,7 +14,6 @@ import (
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	accountType "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
