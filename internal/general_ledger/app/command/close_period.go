@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
@@ -42,14 +42,14 @@ func NewClosePeriodHandler(repo domain.Repository, numberingService service.Numb
 func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) error {
 	// check all vouchers are posted
 	if notPostedVoucherExists, err := h.repo.ExistsVouchersNotPostedInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-		return errors.Wrap(err, "failed to check vouchers posted status")
+		return fmt.Errorf("failed to check vouchers posted status: %w", err)
 	} else if notPostedVoucherExists {
 		return commonErrors.NewSlugError("period-close-notAllVouchersPosted")
 	}
 
 	// check all profit and loss ledgers have zero ending balance
 	if unclearedProfitAndLoss, err := h.repo.ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-		return errors.Wrap(err, "failed to check profit and loss ledgers balances")
+		return fmt.Errorf("failed to check profit and loss ledgers balances: %w", err)
 	} else if unclearedProfitAndLoss {
 		return commonErrors.NewSlugError("period-close-unclearedProfitAndLoss")
 	}
@@ -57,7 +57,7 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 	// check trial balance
 	ledgers, err := h.repo.ReadFirstLevelLedgersInPeriod(ctx, cmd.SobId, cmd.PeriodId)
 	if err != nil {
-		return errors.Wrap(err, "failed to read 1st level ledgers")
+		return fmt.Errorf("failed to read 1st level ledgers: %w", err)
 	}
 	var totalOpeningDebit, totalOpeningCredit,
 		totalPeriodDebit, totalPeriodCredit,
@@ -120,7 +120,7 @@ func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd
 		Number:     nextPeriodNumber,
 	}, h.repo, h.numberingService)
 	if err != nil {
-		return errors.Wrap(err, "failed to create next period")
+		return fmt.Errorf("failed to create next period: %w", err)
 	}
 
 	// update next period to current
@@ -135,7 +135,7 @@ func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd
 
 	// initialize ledgers for new period
 	if err = initializeAllLedgers(ctx, h.repo, cmd.SobId); err != nil {
-		return errors.Wrap(err, "failed to initialize ledgers for next period")
+		return fmt.Errorf("failed to initialize ledgers for next period: %w", err)
 	}
 
 	return nil

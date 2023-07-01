@@ -2,9 +2,9 @@ package query
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 )
 
@@ -34,12 +34,12 @@ func NewVoucherByIdHandler(
 func (h VoucherByIdHandler) Handle(ctx context.Context, voucherId uuid.UUID) (Voucher, error) {
 	v, err := h.readModel.VoucherById(ctx, voucherId)
 	if err != nil {
-		return Voucher{}, errors.Wrap(err, "failed to read voucher")
+		return Voucher{}, fmt.Errorf("failed to read voucher: %w", err)
 	}
 
 	singletonList, err := enrichUserName(ctx, h.userService, []Voucher{v})
 	if err != nil {
-		return Voucher{}, errors.Wrap(err, "failed to enrich user in voucher")
+		return Voucher{}, fmt.Errorf("failed to enrich user in voucher: %w", err)
 	}
 
 	return singletonList[0], nil

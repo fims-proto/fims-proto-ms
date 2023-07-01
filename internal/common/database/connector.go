@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"time"
 
 	"gorm.io/gorm/schema"
@@ -9,7 +10,6 @@ import (
 
 	"gorm.io/gorm/logger"
 
-	"github.com/pkg/errors"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -42,11 +42,11 @@ func (d Connector) open(dsn string) (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to open connection")
+		return nil, fmt.Errorf("failed to open connection: %w", err)
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get sql.DB")
+		return nil, fmt.Errorf("failed to get sql.DB: %w", err)
 	}
 
 	sqlDB.SetMaxIdleConns(5)

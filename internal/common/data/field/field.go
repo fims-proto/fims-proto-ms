@@ -1,10 +1,9 @@
 package field
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type Field interface {
@@ -33,7 +32,7 @@ func (f fieldImpl) Equals(another Field) bool {
 func New(fieldName string) (Field, error) {
 	// can only contain camel cased field name with . as separator
 	if match, _ := regexp.Match(`^[a-zA-Z.]+$`, []byte(fieldName)); !match {
-		return nil, errors.Errorf("invalid field name %s", fieldName)
+		return nil, fmt.Errorf("invalid field name %s", fieldName)
 	}
 
 	parts := strings.Split(fieldName, ".")
@@ -50,6 +49,6 @@ func New(fieldName string) (Field, error) {
 			name:   parts[1],
 		}, nil
 	default:
-		return nil, errors.Errorf("invalid field name %s", fieldName)
+		return nil, fmt.Errorf("invalid field name %s", fieldName)
 	}
 }

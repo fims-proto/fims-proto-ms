@@ -1,8 +1,10 @@
 package account
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
@@ -54,11 +56,11 @@ func New(
 	}
 
 	if level < 1 {
-		return nil, errors.Errorf("level %d must >= 1", level)
+		return nil, fmt.Errorf("level %d must >= 1", level)
 	}
 
 	if level != len(numberHierarchy) {
-		return nil, errors.Errorf("level %d not match to number hierarchy %v", level, numberHierarchy)
+		return nil, fmt.Errorf("level %d not match to number hierarchy %v", level, numberHierarchy)
 	}
 
 	at, err := account_type.FromString(accountType)

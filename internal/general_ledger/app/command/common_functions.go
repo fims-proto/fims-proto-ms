@@ -2,12 +2,12 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
@@ -30,7 +30,7 @@ func prepareLineItems(
 
 	accounts, err := repo.ReadAccountsByNumbers(ctx, sobId, accountNumbers)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to validate account numbers")
+		return nil, fmt.Errorf("failed to validate account numbers: %w", err)
 	}
 
 	accountsMap := utils.SliceToMap(

@@ -2,9 +2,9 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 )
@@ -43,12 +43,12 @@ func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error 
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		sob, err := h.sobService.ReadById(txCtx, cmd.SobId)
 		if err != nil {
-			return errors.Wrap(err, "read sob failed")
+			return fmt.Errorf("failed to read sob: %w", err)
 		}
 
 		// create all accounts
 		if err = initializeAccounts(txCtx, sob, h.repo); err != nil {
-			return errors.Wrap(err, "failed to create accounts")
+			return fmt.Errorf("failed to create accounts: %w", err)
 		}
 
 		// create first period
@@ -59,12 +59,12 @@ func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error 
 			FiscalYear: sob.StartingPeriodYear,
 			Number:     sob.StartingPeriodMonth,
 		}, h.repo, h.numberingService); err != nil {
-			return errors.Wrap(err, "failed to create first period")
+			return fmt.Errorf("failed to create first period: %w", err)
 		}
 
 		// create all ledgers for this period
 		if err = initializeAllLedgers(txCtx, h.repo, sob.Id); err != nil {
-			return errors.Wrap(err, "failed to initialize ledgers")
+			return fmt.Errorf("failed to initialize ledgers: %w", err)
 		}
 
 		return nil

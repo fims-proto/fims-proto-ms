@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -58,7 +58,7 @@ func (h PostVoucherHandler) postVoucher(ctx context.Context, cmd PostVoucherCmd)
 				periodId: v.PeriodId(),
 				records:  records,
 			}); err != nil {
-				return nil, errors.Wrap(err, "failed to post voucher to ledger")
+				return nil, fmt.Errorf("failed to post voucher to ledger: %w", err)
 			}
 
 			return v, nil
@@ -83,7 +83,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 		//  read all superior accounts
 		superiorAccounts, err := h.repo.ReadSuperiorAccountsById(ctx, record.accountId)
 		if err != nil {
-			return errors.Wrap(err, "failed to read superior accounts")
+			return fmt.Errorf("failed to read superior accounts: %w", err)
 		}
 
 		for _, superiorAccount := range superiorAccounts {
@@ -115,7 +115,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 			for _, l := range ledgers {
 				record, ok := accountsMap[l.AccountId()]
 				if !ok {
-					return nil, errors.Errorf("should not happen, failed to find account %s in accountsMap", l.AccountId())
+					return nil, fmt.Errorf("should not happen, failed to find account %s in accountsMap", l.AccountId())
 				}
 
 				l.UpdateBalance(record.debit, record.credit)

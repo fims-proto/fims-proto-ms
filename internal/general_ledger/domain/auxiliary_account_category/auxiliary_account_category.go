@@ -1,8 +1,9 @@
 package auxiliary_account_category
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type AuxiliaryAccountCategory struct {

@@ -2,9 +2,9 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
@@ -39,7 +39,7 @@ func (h CreateAuxiliaryAccountCategoryHandler) Handle(ctx context.Context, cmd C
 		cmd.IsStandard,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to create auxiliary account category")
+		return fmt.Errorf("failed to create auxiliary account category: %w", err)
 	}
 
 	return h.repo.CreateAuxiliaryAccountCategories(ctx, utils.AsSlice(auxiliaryAccountCategory))

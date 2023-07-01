@@ -2,8 +2,8 @@ package intraprocess
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/command"
 )
@@ -22,12 +22,12 @@ func (i NumberingInterface) CreateIdentifierConfiguration(ctx context.Context, c
 
 func (i NumberingInterface) GenerateIdentifier(ctx context.Context, cmd command.GenerateNextIdentifierCmd) (string, error) {
 	if err := i.app.Commands.GenerateNextIdentifier.Handle(ctx, cmd); err != nil {
-		return "", errors.Wrap(err, "failed to generate identifier")
+		return "", fmt.Errorf("failed to generate identifier: %w", err)
 	}
 
 	identifier, err := i.app.Queries.IdentifierById.Handle(ctx, cmd.IdentifierId)
 	if err != nil {
-		return "", errors.Wrap(err, "failed to read identifier")
+		return "", fmt.Errorf("failed to read identifier: %w", err)
 	}
 
 	return identifier.Identifier, nil

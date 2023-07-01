@@ -2,9 +2,9 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
@@ -48,7 +48,7 @@ func (h CreateAuxiliaryAccountHandler) Handle(ctx context.Context, cmd CreateAux
 func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd CreateAuxiliaryAccountCmd) (*auxiliary_account.AuxiliaryAccount, error) {
 	category, err := h.repo.ReadAuxiliaryAccountCategoryById(ctx, cmd.CategoryId)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to get auxiliary account category by id")
+		return nil, fmt.Errorf("failed to get auxiliary account category: %w", err)
 	}
 
 	auxiliaryAccount, err := auxiliary_account.New(
@@ -59,7 +59,7 @@ func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd Cr
 		cmd.Description,
 	)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create auxiliary account")
+		return nil, fmt.Errorf("failed to create auxiliary account: %w", err)
 	}
 
 	if err = h.repo.CreateAuxiliaryAccounts(ctx, utils.AsSlice(auxiliaryAccount)); err != nil {
@@ -72,7 +72,7 @@ func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd Cr
 func (h CreateAuxiliaryAccountHandler) createLedger(ctx context.Context, auxiliaryAccount *auxiliary_account.AuxiliaryAccount) error {
 	p, err := h.repo.ReadCurrentPeriod(ctx, auxiliaryAccount.Category().SobId())
 	if err != nil {
-		return errors.Wrap(err, "failed to read current period")
+		return fmt.Errorf("failed to read current period: %w", err)
 	}
 
 	auxiliaryLedger, err := auxiliary_ledger.New(
@@ -85,7 +85,7 @@ func (h CreateAuxiliaryAccountHandler) createLedger(ctx context.Context, auxilia
 		decimal.Zero,
 	)
 	if err != nil {
-		return errors.Wrap(err, "failed to create auxiliary ledger")
+		return fmt.Errorf("failed to create auxiliary ledger: %w", err)
 	}
 
 	return h.repo.CreateAuxiliaryLedgers(ctx, utils.AsSlice(auxiliaryLedger))

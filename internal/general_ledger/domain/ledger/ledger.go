@@ -1,8 +1,9 @@
 package ledger
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 )

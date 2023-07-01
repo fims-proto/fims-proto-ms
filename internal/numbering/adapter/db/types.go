@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
@@ -8,7 +9,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
 )
 
@@ -81,7 +81,7 @@ func identifierConfigurationPOToBO(po identifierConfigurationPO) (*identifier_co
 	for _, matcher := range matchers {
 		matcherBO, err := identifier_configuration.NewPropertyMatcher(matcher.Name, matcher.Value)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to create property matchers")
+			return nil, fmt.Errorf("failed to create property matchers: %w", err)
 		}
 		matcherBOs = append(matcherBOs, *matcherBO)
 	}
@@ -136,7 +136,7 @@ func serializePropertyMatchers(matcherBOs []identifier_configuration.PropertyMat
 	}
 	var matcherPO pgtype.JSONB
 	if err := matcherPO.Set(matchers); err != nil {
-		return pgtype.JSONB{}, errors.Wrapf(err, "failed to convert %v to pgtype.JSONB", matcherBOs)
+		return pgtype.JSONB{}, fmt.Errorf("failed to convert %v to pgtype.JSONB: %w", matcherBOs, err)
 	}
 
 	return matcherPO, nil
@@ -145,7 +145,7 @@ func serializePropertyMatchers(matcherBOs []identifier_configuration.PropertyMat
 func deserializePropertyMatchers(po pgtype.JSONB) ([]propertyMatcher, error) {
 	var matchers []propertyMatcher
 	if err := po.AssignTo(&matchers); err != nil {
-		return nil, errors.Wrap(err, "failed to unmarshal property matchers")
+		return nil, fmt.Errorf("failed to unmarshal property matchers: %w", err)
 	}
 	return matchers, nil
 }

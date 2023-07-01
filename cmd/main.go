@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -61,7 +60,7 @@ func main() {
 
 	dbConnection, err := dbConnector.Open(viper.GetString("postgres.dsn"))
 	if err != nil {
-		panic(errors.Wrapf(err, "failed to initialize dbConnection connection"))
+		panic(fmt.Errorf("failed to initialize dbConnection connection: %w", err))
 	}
 
 	tenantPostgresRepository := tenantDb.NewTenantPostgresRepository(dbConnection)
@@ -161,7 +160,7 @@ func main() {
 func loadConfig() {
 	// environment variables
 	if err := viper.BindEnv("profile", "PROFILE"); err != nil {
-		panic(errors.Wrap(err, "failed to bind ENV profile"))
+		panic(fmt.Errorf("failed to bind ENV profile: %w", err))
 	}
 	viper.SetDefault("profile", "dev")
 
@@ -172,7 +171,7 @@ func loadConfig() {
 	viper.SetConfigName(fmt.Sprintf("application-%s", profile))
 	viper.AddConfigPath("./config/")
 	if err := viper.ReadInConfig(); err != nil {
-		panic(errors.Wrap(err, "failed to load config file"))
+		panic(fmt.Errorf("failed to load config file: %w", err))
 	}
 
 	// check mandatory and set defaults:

@@ -1,7 +1,8 @@
 package filterable
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data/field"
 )
 
@@ -33,11 +34,11 @@ func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
 	switch o {
 	case OptBt:
 		if len(values) != 2 {
-			return nil, errors.Errorf("invalid values for operator %s", o)
+			return nil, fmt.Errorf("invalid values for operator %s", o)
 		}
 	default:
 		if len(values) == 0 {
-			return nil, errors.Errorf("invalid values for operator %s", o)
+			return nil, fmt.Errorf("invalid values for operator %s", o)
 		}
 	}
 
@@ -124,6 +125,6 @@ func newOperator(o string) (Operator, error) {
 	case "startsWith":
 		return OptStartsWith, nil
 	default:
-		return 0, errors.Errorf("operator %s not supported", o)
+		return 0, fmt.Errorf("operator %s not supported", o)
 	}
 }

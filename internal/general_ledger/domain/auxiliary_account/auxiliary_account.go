@@ -1,8 +1,9 @@
 package auxiliary_account
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
 )
 

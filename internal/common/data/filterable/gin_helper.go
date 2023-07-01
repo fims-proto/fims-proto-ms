@@ -1,10 +1,9 @@
 package filterable
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 func NewFilterableFromQuery(filter string) (Filterable, error) {
@@ -24,7 +23,7 @@ func NewFilterableFromQuery(filter string) (Filterable, error) {
 		condition := strings.TrimSpace(raw)
 		components := spaceSep.Split(condition, -1)
 		if len(components) < 3 {
-			return nil, errors.Errorf("invalid filter %s", condition)
+			return nil, fmt.Errorf("invalid filter %s", condition)
 		}
 		field := components[0]
 		opt := components[1]

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -19,7 +20,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
-	"github.com/pkg/errors"
 )
 
 type accountPO struct {
@@ -189,14 +189,14 @@ func (a accountPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return a.TableName(), nil
 	}
-	return "", errors.Errorf("accountPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("accountPO doesn't have association named %s", entity)
 }
 
 func (p periodPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return p.TableName(), nil
 	}
-	return "", errors.Errorf("periodPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("periodPO doesn't have association named %s", entity)
 }
 
 func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
@@ -206,7 +206,7 @@ func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
 	}
-	return "", errors.Errorf("ledgerPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("ledgerPO doesn't have association named %s", entity)
 }
 
 func (v voucherPO) ResolveAssociation(entity string) (string, error) {
@@ -219,7 +219,7 @@ func (v voucherPO) ResolveAssociation(entity string) (string, error) {
 	if strings.EqualFold(entity, "period") {
 		return "Period", nil
 	}
-	return "", errors.Errorf("voucherPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("voucherPO doesn't have association named %s", entity)
 }
 
 func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
@@ -229,7 +229,7 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
 	}
-	return "", errors.Errorf("lineItemPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("lineItemPO doesn't have association named %s", entity)
 }
 
 // mappers
@@ -237,7 +237,7 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 func accountBOToPO(bo account.Account) accountPO {
 	var int4array pgtype.Int4Array
 	if err := int4array.Set(bo.NumberHierarchy()); err != nil {
-		panic(errors.Wrap(err, "convert []int to Int4Array failed"))
+		panic(fmt.Errorf("failde to convert []int to Int4Array: %w", err))
 	}
 
 	return accountPO{
@@ -256,12 +256,12 @@ func accountBOToPO(bo account.Account) accountPO {
 func accountPOToBO(po accountPO) (*account.Account, error) {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
-		return nil, errors.Wrap(err, "assign Int4Array to []int failed")
+		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
 	}
 
 	categoryBOs, err := pos2bos(po.AuxiliaryAccountCategories, auxiliaryAccountCategoryPOToBO)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map to auxiliary account category")
+		return nil, err
 	}
 
 	return account.New(
@@ -281,7 +281,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 func accountPOToDTO(po accountPO) query.Account {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
-		panic(errors.Wrap(err, "assign Int4Array to []int failed"))
+		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
 	}
 
 	return query.Account{
@@ -320,7 +320,7 @@ func auxiliaryAccountCategoryBOToPO(bo auxiliary_account_category.AuxiliaryAccou
 func auxiliaryAccountPOToBO(po auxiliaryAccountPO) (*auxiliary_account.AuxiliaryAccount, error) {
 	categoryBO, err := auxiliaryAccountCategoryPOToBO(po.Category)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map auxiliary account category")
+		return nil, err
 	}
 
 	return auxiliary_account.New(
@@ -439,7 +439,7 @@ func auxiliaryLedgerBOToPO(bo auxiliary_ledger.AuxiliaryLedger) auxiliaryLedgerP
 func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLedger, error) {
 	auxiliaryAccount, err := auxiliaryAccountPOToBO(po.AuxiliaryAccount)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map auxiliary account")
+		return nil, err
 	}
 
 	return auxiliary_ledger.New(
@@ -484,7 +484,7 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 	itemBOs, err := pos2bos(po.LineItems, lineItemPOToBO)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map line item")
+		return nil, err
 	}
 
 	return voucher.New(
@@ -550,12 +550,12 @@ func lineItemBOToPO(bo voucher.LineItem, voucherId uuid.UUID) lineItemPO {
 func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 	accountBO, err := accountPOToBO(po.Account)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map account")
+		return nil, err
 	}
 
 	auxiliaryAccountBOs, err := pos2bos(po.AuxiliaryAccounts, auxiliaryAccountPOToBO)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map auxiliary account")
+		return nil, err
 	}
 
 	return voucher.NewLineItem(
@@ -598,7 +598,7 @@ func pos2bos[B any, P any](pos []P, convertFn func(po P) (*B, error)) ([]*B, err
 	for _, po := range pos {
 		bo, err := convertFn(po)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to map to business object")
+			return nil, err
 		}
 		bos = append(bos, bo)
 	}

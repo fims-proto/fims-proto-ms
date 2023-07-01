@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
@@ -12,7 +13,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
@@ -21,7 +21,7 @@ func initializeAllLedgers(ctx context.Context, repo domain.Repository, sobId uui
 	// read current period
 	currentPeriod, err := repo.ReadCurrentPeriod(ctx, sobId)
 	if err != nil {
-		return errors.Wrap(err, "failed to read current period")
+		return fmt.Errorf("failed to read current period: %w", err)
 	}
 
 	// read previous period
@@ -45,7 +45,7 @@ func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.U
 		// normal ledgers
 		ledgers, err := repo.ReadLedgersByPeriod(ctx, previousPeriod.Id())
 		if err != nil {
-			return errors.Wrap(err, "failed to read ledgers in previous period")
+			return fmt.Errorf("failed to read ledgers in previous period: %w", err)
 		}
 		for _, previousLedger := range ledgers {
 			ledgersInPreviousPeriod[previousLedger.AccountId()] = *previousLedger
@@ -55,7 +55,7 @@ func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.U
 	// create ledgers based on accounts
 	accounts, err := repo.ReadAllAccounts(ctx, sobId)
 	if err != nil {
-		return errors.Wrap(err, "failed to read accounts")
+		return fmt.Errorf("failed to read accounts: %w", err)
 	}
 
 	var ledgers []*ledger.Ledger
@@ -82,7 +82,7 @@ func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.U
 			decimal.Zero,
 		)
 		if err != nil {
-			return errors.Wrap(err, "should not happen, failed to create ledger")
+			return fmt.Errorf("should not happen, failed to create ledger: %w", err)
 		}
 
 		ledgers = append(ledgers, ledgerBO)
@@ -99,7 +99,7 @@ func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sob
 		// auxiliary ledgers
 		auxiliaryLedgers, err := repo.ReadAuxiliaryLedgersByPeriod(ctx, previousPeriod.Id())
 		if err != nil {
-			return errors.Wrap(err, "failed to read auxiliary ledgers in previous period")
+			return fmt.Errorf("failed to read auxiliary ledgers in previous period: %w", err)
 		}
 		for _, previousLedger := range auxiliaryLedgers {
 			auxiliaryLedgersInPreviousPeriod[previousLedger.AuxiliaryAccount().Id()] = *previousLedger
@@ -109,7 +109,7 @@ func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sob
 	// create auxiliary ledgers based on auxiliary accounts
 	auxiliaryAccounts, err := repo.ReadAllAuxiliaryAccounts(ctx, sobId)
 	if err != nil {
-		return errors.Wrap(err, "failed to read auxiliary accounts")
+		return fmt.Errorf("failed to read auxiliary accounts: %w", err)
 	}
 
 	var auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger
@@ -134,7 +134,7 @@ func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sob
 			decimal.Zero,
 		)
 		if err != nil {
-			return errors.Wrap(err, "should not happen, failed to create ledger")
+			return fmt.Errorf("should not happen, failed to create ledger: %w", err)
 		}
 
 		auxiliaryLedgers = append(auxiliaryLedgers, auxiliaryLedger)

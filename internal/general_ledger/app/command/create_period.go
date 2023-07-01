@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
@@ -10,7 +11,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type createPeriodCmd struct {
@@ -28,12 +28,12 @@ func createPeriod(
 ) error {
 	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, true)
 	if err != nil {
-		return errors.Wrap(err, "failed to create period domain model")
+		return fmt.Errorf("failed to create period: %w", err)
 	}
 
 	// create numbering configuration for voucher entries in this period
 	if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
-		return errors.Wrap(err, "failed to create numbering configuration for period")
+		return fmt.Errorf("failed to create period: %w", err)
 	}
 
 	_, _, err = repo.CreatePeriodIfNotExists(ctx, p)
@@ -48,18 +48,18 @@ func createPeriodIfNotExists(
 ) (*period.Period, error) {
 	p, err := period.New(uuid.New() /*dummy id*/, cmd.SobId, cmd.FiscalYear, cmd.Number, false)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to create period domain model")
+		return nil, fmt.Errorf("failed to create period: %w", err)
 	}
 
 	p, created, err := repo.CreatePeriodIfNotExists(ctx, p)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read or create period")
+		return nil, fmt.Errorf("failed to create period: %w", err)
 	}
 
 	if created {
 		// create numbering configuration for voucher entries in this period
 		if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, p.Id()); err != nil {
-			return nil, errors.Wrap(err, "failed to create numbering configuration for period")
+			return nil, fmt.Errorf("failed to create period: %w", err)
 		}
 	}
 

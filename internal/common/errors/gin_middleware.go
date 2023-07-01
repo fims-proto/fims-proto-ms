@@ -1,10 +1,10 @@
 package errors
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 )
 
@@ -18,9 +18,7 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 		var localizationArgs []any
 		if len(c.Errors) == 1 {
 			// there should only be 1 error in the stack
-			ginErr := c.Errors.Last()
-
-			se, ok := errors.Cause(ginErr.Err).(SlugErr)
+			se, ok := errors.Unwrap(c.Errors.Last().Err).(SlugErr)
 			if ok {
 				slug = se.slug
 				localizationArgs = se.args
@@ -37,7 +35,9 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 				Slug:    slug,
 				Message: message,
 			})
-		} else if slug != "" {
+			return
+		}
+		if slug != "" {
 			if localize := localizer.Get(c.Request.Header.Get("Accept-Language"), slug, localizationArgs); localize != "" {
 				message = localize
 			}

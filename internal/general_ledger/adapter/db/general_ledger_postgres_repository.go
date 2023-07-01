@@ -2,10 +2,11 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/database"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
@@ -58,7 +59,7 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 
 	// delete all within sob
 	if err := db.Where("sob_id = ?", accounts[0].SobId()).Delete(&accountPO{}).Error; err != nil {
-		return errors.Wrap(err, "accounts deletion failed")
+		return fmt.Errorf("failed initialize accounts: %w", err)
 	}
 
 	// create all
@@ -76,12 +77,12 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(ctx context.Context, acco
 
 	bo, err := accountPOToBO(po)
 	if err != nil {
-		return errors.Wrap(err, "failed to map account")
+		return fmt.Errorf("failed to update account: %w", err)
 	}
 
 	updatedBO, err := updateFn(bo)
 	if err != nil {
-		return errors.Wrap(err, "update account failed")
+		return fmt.Errorf("failed to update account: %w", err)
 	}
 
 	po = accountBOToPO(*updatedBO)
@@ -161,7 +162,7 @@ func (r GeneralLedgerPostgresRepository) CreatePeriodIfNotExists(ctx context.Con
 		if err == nil {
 			return nil, false, commonErrors.NewSlugError("period-duplicatedCurrent")
 		} else if !errors.Is(err, commonErrors.ErrRecordNotFound()) {
-			return nil, false, errors.Wrap(err, "failed to check current period")
+			return nil, false, fmt.Errorf("failed to check current period: %w", err)
 		}
 	}
 
@@ -178,12 +179,12 @@ func (r GeneralLedgerPostgresRepository) UpdatePeriod(ctx context.Context, perio
 
 	bo, err := periodPOToBO(po)
 	if err != nil {
-		return errors.Wrap(err, "failed to map period")
+		return fmt.Errorf("failed to update period: %w", err)
 	}
 
 	updatedBO, err := updateFn(bo)
 	if err != nil {
-		return errors.Wrap(err, "update period failed")
+		return fmt.Errorf("failed to update period: %w", err)
 	}
 
 	po = periodBOToPO(*updatedBO)
@@ -211,12 +212,12 @@ func (r GeneralLedgerPostgresRepository) ReadPreviousPeriod(ctx context.Context,
 	currentPO := periodPO{Id: currentPeriodId}
 
 	if err := db.First(&currentPO).Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to find period by id %s", currentPeriodId)
+		return nil, fmt.Errorf("failed to find period by id %s: %w", currentPeriodId, err)
 	}
 
 	currentBO, err := periodPOToBO(currentPO)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to map period")
+		return nil, fmt.Errorf("failed to read period: %w", err)
 	}
 
 	previousFiscalYear, previousNumber := currentBO.PreviousNumber()
@@ -253,12 +254,12 @@ func (r GeneralLedgerPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx 
 
 	ledgerBOs, err := pos2bos(ledgerPOs, ledgerPOToBO)
 	if err != nil {
-		return errors.Wrap(err, "failed to map ledger")
+		return fmt.Errorf("failed to update ledgers: %w", err)
 	}
 
 	updatedLedgers, err := updateFn(ledgerBOs)
 	if err != nil {
-		return errors.Wrap(err, "failed to update ledgers")
+		return fmt.Errorf("failed to update ledgers: %w", err)
 	}
 
 	updatedPOs := bos2pos(updatedLedgers, ledgerBOToPO)
@@ -322,19 +323,19 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 
 	bo, err := voucherPOToBO(po)
 	if err != nil {
-		return errors.Wrap(err, "failed to map voucher")
+		return fmt.Errorf("failed to update voucher: %w", err)
 	}
 
 	updatedBO, err := updateFn(bo)
 	if err != nil {
-		return errors.Wrap(err, "update voucher failed")
+		return fmt.Errorf("failed to update voucher: %w", err)
 	}
 
 	po = voucherBOToPO(*updatedBO)
 
 	// remove existing first
 	if err = db.Where("voucher_id = ?", po.Id).Delete(&lineItemPO{}).Error; err != nil {
-		return errors.Wrap(err, "delete voucher items failed")
+		return fmt.Errorf("failed to delete line items: %w", err)
 	}
 
 	return db.Save(&po).Error

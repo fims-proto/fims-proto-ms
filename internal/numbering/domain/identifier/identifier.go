@@ -1,8 +1,9 @@
 package identifier
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type Identifier struct {

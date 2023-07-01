@@ -2,11 +2,11 @@ package query
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	userQuery "github/fims-proto/fims-proto-ms/internal/user/app/query"
 )
@@ -34,7 +34,7 @@ func enrichUserName(ctx context.Context, service service.UserService, vouchers [
 
 	users, err := service.ReadUsersByIds(ctx, utils.MapToKeySlice(userSet))
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read users by Ids")
+		return nil, fmt.Errorf("failed to read users: %w", err)
 	}
 
 	convertUser := func(user User, users map[uuid.UUID]userQuery.User) User {
