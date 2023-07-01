@@ -13,7 +13,7 @@ import (
 
 type sobPO struct {
 	Id                  uuid.UUID `gorm:"type:uuid"`
-	Name                string    `gorm:"uniqueIndex"`
+	Name                string    `gorm:"uniqueIndex:UQ_Sobs_Name"`
 	Description         string
 	BaseCurrency        string
 	StartingPeriodYear  int
@@ -74,10 +74,10 @@ func sobPOToBO(po sobPO) (*sob.Sob, error) {
 	)
 }
 
-func sobPOToDTO(po sobPO) (query.Sob, error) {
+func sobPOToDTO(po sobPO) query.Sob {
 	var codesLength []int
 	if err := po.AccountsCodeLength.AssignTo(&codesLength); err != nil {
-		return query.Sob{}, errors.Wrap(err, "assign Int4Array to []int failed")
+		panic(errors.Wrap(err, "assign Int4Array to []int failed"))
 	}
 
 	return query.Sob{
@@ -88,5 +88,5 @@ func sobPOToDTO(po sobPO) (query.Sob, error) {
 		StartingPeriodYear:  po.StartingPeriodYear,
 		StartingPeriodMonth: po.StartingPeriodMonth,
 		AccountsCodeLength:  codesLength, // from 4-2-2 to [4,2,2]
-	}, nil
+	}
 }

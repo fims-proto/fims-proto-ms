@@ -47,3 +47,7 @@ func MapToKeySlice[K comparable, V any](m map[K]V) []K {
 	}
 	return keys
 }
+
+func AsSlice[E any](elements ...E) []E {
+	return elements
+}

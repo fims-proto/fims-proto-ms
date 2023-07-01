@@ -5,21 +5,34 @@ import (
 	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
 )
 
 type Account struct {
-	id                uuid.UUID
-	sobId             uuid.UUID
-	superiorAccountId uuid.UUID
-	title             string
-	accountNumber     string
-	numberHierarchy   []int
-	level             int
-	accountType       account_type.AccountType
-	balanceDirection  balance_direction.BalanceDirection
+	id                         uuid.UUID
+	sobId                      uuid.UUID
+	superiorAccountId          uuid.UUID
+	title                      string
+	accountNumber              string
+	numberHierarchy            []int
+	level                      int
+	accountType                account_type.AccountType
+	balanceDirection           balance_direction.BalanceDirection
+	auxiliaryAccountCategories []*auxiliary_account_category.AuxiliaryAccountCategory
 }
 
-func New(id, sobId, superiorAccountId uuid.UUID, title, accountNumber string, numberHierarchy []int, level int, accountType, direction string) (*Account, error) {
+func New(
+	id uuid.UUID,
+	sobId uuid.UUID,
+	superiorAccountId uuid.UUID,
+	title string,
+	accountNumber string,
+	numberHierarchy []int,
+	level int,
+	accountType string,
+	balanceDirection string,
+	auxiliaryAccountCategories []*auxiliary_account_category.AuxiliaryAccountCategory,
+) (*Account, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil account id")
 	}
@@ -53,56 +66,67 @@ func New(id, sobId, superiorAccountId uuid.UUID, title, accountNumber string, nu
 		return nil, err
 	}
 
-	bd, err := balance_direction.FromString(direction)
+	bd, err := balance_direction.FromString(balanceDirection)
 	if err != nil {
 		return nil, err
 	}
 
+	for _, category := range auxiliaryAccountCategories {
+		if category == nil {
+			return nil, errors.New("nil auxiliary account category")
+		}
+	}
+
 	return &Account{
-		id:                id,
-		sobId:             sobId,
-		superiorAccountId: superiorAccountId,
-		title:             title,
-		accountNumber:     accountNumber,
-		numberHierarchy:   numberHierarchy,
-		level:             level,
-		accountType:       at,
-		balanceDirection:  bd,
+		id:                         id,
+		sobId:                      sobId,
+		superiorAccountId:          superiorAccountId,
+		title:                      title,
+		accountNumber:              accountNumber,
+		numberHierarchy:            numberHierarchy,
+		level:                      level,
+		accountType:                at,
+		balanceDirection:           bd,
+		auxiliaryAccountCategories: auxiliaryAccountCategories,
 	}, nil
 }
 
-func (ac Account) Id() uuid.UUID {
-	return ac.id
+func (a *Account) Id() uuid.UUID {
+	return a.id
 }
 
-func (ac Account) SobId() uuid.UUID {
-	return ac.sobId
+func (a *Account) SobId() uuid.UUID {
+	return a.sobId
 }
 
-func (ac Account) SuperiorAccountId() uuid.UUID {
-	return ac.superiorAccountId
+func (a *Account) SuperiorAccountId() uuid.UUID {
+	return a.superiorAccountId
 }
 
-func (ac Account) AccountNumber() string {
-	return ac.accountNumber
+func (a *Account) Title() string {
+	return a.title
 }
 
-func (ac Account) NumberHierarchy() []int {
-	return ac.numberHierarchy
+func (a *Account) AccountNumber() string {
+	return a.accountNumber
 }
 
-func (ac Account) Title() string {
-	return ac.title
+func (a *Account) NumberHierarchy() []int {
+	return a.numberHierarchy
 }
 
-func (ac Account) Level() int {
-	return ac.level
+func (a *Account) Level() int {
+	return a.level
 }
 
-func (ac Account) AccountType() account_type.AccountType {
-	return ac.accountType
+func (a *Account) AccountType() account_type.AccountType {
+	return a.accountType
 }
 
-func (ac Account) BalanceDirection() balance_direction.BalanceDirection {
-	return ac.balanceDirection
+func (a *Account) BalanceDirection() balance_direction.BalanceDirection {
+	return a.balanceDirection
+}
+
+func (a *Account) AuxiliaryAccountCategories() []*auxiliary_account_category.AuxiliaryAccountCategory {
+	return a.auxiliaryAccountCategories
 }

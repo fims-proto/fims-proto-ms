@@ -28,24 +28,33 @@ type Voucher struct {
 	isAudited          bool
 	isPosted           bool
 	transactionTime    time.Time
-	lineItems          []LineItem
+	lineItems          []*LineItem
 }
 
 func New(
-	sobId, voucherId, periodId uuid.UUID,
-	headerText, voucherType, documentNumber string,
+	id uuid.UUID,
+	sobId uuid.UUID,
+	periodId uuid.UUID,
+	voucherType string,
+	headerText string,
+	documentNumber string,
 	attachmentQuantity int,
-	creator, reviewer, auditor, poster uuid.UUID,
-	isReviewed, isAudited, isPosted bool,
+	creator uuid.UUID,
+	reviewer uuid.UUID,
+	auditor uuid.UUID,
+	poster uuid.UUID,
+	isReviewed bool,
+	isAudited bool,
+	isPosted bool,
 	transactionTime time.Time,
-	lineItems []LineItem,
+	lineItems []*LineItem,
 ) (*Voucher, error) {
-	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
+	if id == uuid.Nil {
+		return nil, errors.NewSlugError("voucher-emptyId")
 	}
 
-	if voucherId == uuid.Nil {
-		return nil, errors.NewSlugError("voucher-emptyId")
+	if sobId == uuid.Nil {
+		return nil, errors.NewSlugError("emptySobId")
 	}
 
 	if periodId == uuid.Nil {
@@ -99,8 +108,8 @@ func New(
 	}
 
 	return &Voucher{
+		id:                 id,
 		sobId:              sobId,
-		id:                 voucherId,
 		periodId:           periodId,
 		headerText:         headerText,
 		voucherType:        dt,
@@ -188,6 +197,6 @@ func (d *Voucher) TransactionTime() time.Time {
 	return d.transactionTime
 }
 
-func (d *Voucher) LineItems() []LineItem {
+func (d *Voucher) LineItems() []*LineItem {
 	return d.lineItems
 }

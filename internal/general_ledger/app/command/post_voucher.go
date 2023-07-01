@@ -8,7 +8,6 @@ import (
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
@@ -20,23 +19,15 @@ type PostVoucherCmd struct {
 }
 
 type PostVoucherHandler struct {
-	repo      domain.Repository
-	readModel query.GeneralLedgerReadModel
+	repo domain.Repository
 }
 
-func NewPostVoucherHandler(repo domain.Repository, readModel query.GeneralLedgerReadModel) PostVoucherHandler {
+func NewPostVoucherHandler(repo domain.Repository) PostVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
-	if readModel == nil {
-		panic("nil read model")
-	}
-
-	return PostVoucherHandler{
-		repo:      repo,
-		readModel: readModel,
-	}
+	return PostVoucherHandler{repo: repo}
 }
 
 func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) error {
@@ -90,14 +81,14 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 	accountCommands := cmd.records
 	for _, record := range cmd.records {
 		//  read all superior accounts
-		superiorAccounts, err := h.readModel.SuperiorAccounts(ctx, record.accountId)
+		superiorAccounts, err := h.repo.ReadSuperiorAccountsById(ctx, record.accountId)
 		if err != nil {
 			return errors.Wrap(err, "failed to read superior accounts")
 		}
 
 		for _, superiorAccount := range superiorAccounts {
 			superiorRecord := postLedgersRecordCmd{
-				accountId: superiorAccount.Id,
+				accountId: superiorAccount.Id(),
 				debit:     record.debit,
 				credit:    record.credit,
 			}

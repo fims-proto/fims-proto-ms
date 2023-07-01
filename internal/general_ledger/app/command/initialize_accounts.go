@@ -120,7 +120,18 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					return nil, errors.Wrap(err, "failed to compose account number")
 				}
 
-				domainAccount, err := account.New(uuid.New(), sobId, superiorAccountId, entry.title, number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
+				domainAccount, err := account.New(
+					uuid.New(),
+					sobId,
+					superiorAccountId,
+					entry.title,
+					number,
+					numberHierarchy,
+					entry.level,
+					entry.accountType,
+					entry.balanceDirection,
+					nil,
+				)
 				if err != nil {
 					return nil, errors.Wrapf(err, "dataload failed on account %s", number)
 				}

@@ -20,3 +20,10 @@ func (p *Period) NextNumber() (int, int) {
 
 	return nextFirstDay.Year(), int(nextFirstDay.Month())
 }
+
+func (p *Period) PreviousNumber() (int, int) {
+	firstDay := time.Date(p.fiscalYear, time.Month(p.periodNumber), fistDayOfMonth, 0, 0, 0, 0, time.UTC)
+	previousFirstDay := firstDay.AddDate(0, -1, 0)
+
+	return previousFirstDay.Year(), int(previousFirstDay.Month())
+}

@@ -32,7 +32,12 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 			slug = unknownErrorSlug
 		}
 
-		if slug != "" {
+		if slug == unknownErrorSlug {
+			c.JSON(http.StatusBadRequest, slugErrResponse{
+				Slug:    slug,
+				Message: message,
+			})
+		} else if slug != "" {
 			if localize := localizer.Get(c.Request.Header.Get("Accept-Language"), slug, localizationArgs); localize != "" {
 				message = localize
 			}

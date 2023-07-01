@@ -5,7 +5,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 )
@@ -16,23 +15,13 @@ type InitializeCmd struct {
 
 type InitializeHandler struct {
 	repo             domain.Repository
-	readModel        query.GeneralLedgerReadModel
 	sobService       service.SobService
 	numberingService service.NumberingService
 }
 
-func NewInitializeHandler(
-	repo domain.Repository,
-	readModel query.GeneralLedgerReadModel,
-	sobService service.SobService,
-	numberingService service.NumberingService,
-) InitializeHandler {
+func NewInitializeHandler(repo domain.Repository, sobService service.SobService, numberingService service.NumberingService) InitializeHandler {
 	if repo == nil {
 		panic("nil repo")
-	}
-
-	if readModel == nil {
-		panic("nil read model")
 	}
 
 	if sobService == nil {
@@ -45,7 +34,6 @@ func NewInitializeHandler(
 
 	return InitializeHandler{
 		repo:             repo,
-		readModel:        readModel,
 		sobService:       sobService,
 		numberingService: numberingService,
 	}
@@ -75,10 +63,7 @@ func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error 
 		}
 
 		// create all ledgers for this period
-		if err = initializeLedgers(txCtx, initializeLedgersCmd{
-			SobId:    sob.Id,
-			PeriodId: periodId,
-		}, h.repo, h.readModel); err != nil {
+		if err = initializeAllLedgers(txCtx, h.repo, sob.Id); err != nil {
 			return errors.Wrap(err, "failed to initialize ledgers")
 		}
 

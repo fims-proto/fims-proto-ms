@@ -19,8 +19,8 @@ type propertyMatcher struct {
 
 type identifierConfigurationPO struct {
 	Id                   uuid.UUID    `gorm:"type:uuid"`
-	TargetBusinessObject string       `gorm:"uniqueIndex:identifierConfigs_target_matcher_key"`
-	PropertyMatchers     pgtype.JSONB `gorm:"uniqueIndex:identifierConfigs_target_matcher_key"`
+	TargetBusinessObject string       `gorm:"uniqueIndex:UQ_IdentifierConfigurations_TargetBusinessObject_PropertyMatchers"`
+	PropertyMatchers     pgtype.JSONB `gorm:"uniqueIndex:UQ_IdentifierConfigurations_TargetBusinessObject_PropertyMatchers"`
 	Counter              int
 	Prefix               string
 	Suffix               string
@@ -30,8 +30,8 @@ type identifierConfigurationPO struct {
 
 type identifierPO struct {
 	Id                        uuid.UUID `gorm:"type:uuid"`
-	IdentifierConfigurationId uuid.UUID `gorm:"type:uuid;uniqueIndex:identifiers_configuration_identifier_key"`
-	Identifier                string    `gorm:"uniqueIndex:identifiers_configuration_identifier_key"`
+	IdentifierConfigurationId uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Identifiers_IdentifierConfigurationId_Identifier"`
+	Identifier                string    `gorm:"uniqueIndex:UQ_Identifiers_IdentifierConfigurationId_Identifier"`
 	CreatedAt                 time.Time `gorm:"<-:create"`
 }
 

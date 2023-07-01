@@ -77,6 +77,7 @@ func main() {
 	// repositories
 	sobRepository := sobAdapter.NewSobPostgresRepository()
 	generalLedgerRepository := generalLedgerAdapter.NewGeneralLedgerPostgresRepository()
+	generalLedgerReadRepository := generalLedgerAdapter.NewGeneralLedgerPostgresReadRepository()
 	numberingRepository := numberingAdapter.NewNumberingPostgresRepository()
 	userRepository := userAdapter.NewUserPostgresRepository()
 
@@ -105,7 +106,7 @@ func main() {
 	userServiceForGeneralLedger := generalLedgerUserAdapter.NewIntraProcessAdapter(userInterface)
 	generalLedgerApplication.Inject(
 		generalLedgerRepository,
-		generalLedgerRepository,
+		generalLedgerReadRepository,
 		sobServiceForGeneralLedger,
 		numberingServiceForGeneralLedger,
 		userServiceForGeneralLedger,

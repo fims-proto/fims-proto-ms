@@ -38,10 +38,14 @@ func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isCurrent bool) (*Pe
 // NewByAllFields creates valid period domain entity by given all fields
 // Typically used by other NewByXX methods or create from persistent entry
 func NewByAllFields(
-	id, sobId uuid.UUID,
-	fiscalYear, periodNumber int,
-	openingTime, endingTime time.Time,
-	isClosed, isCurrent bool,
+	id uuid.UUID,
+	sobId uuid.UUID,
+	fiscalYear int,
+	periodNumber int,
+	openingTime time.Time,
+	endingTime time.Time,
+	isClosed bool,
+	isCurrent bool,
 ) (*Period, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("period-emptyId")

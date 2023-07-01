@@ -85,10 +85,5 @@ func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (qu
 		return query.Sob{}, errors.Wrapf(err, "failed to read sob %s", sobId)
 	}
 
-	querySob, err := sobPOToDTO(dbSob)
-	if err != nil {
-		return query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
-	}
-
-	return querySob, nil
+	return sobPOToDTO(dbSob), nil
 }

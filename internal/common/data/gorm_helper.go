@@ -15,7 +15,7 @@ func SearchEntities[PO schema.Schema, DTO any](
 	ctx context.Context,
 	r PageRequest,
 	po PO,
-	convert func(po PO) (DTO, error),
+	convert func(po PO) DTO,
 	db *gorm.DB,
 ) (Page[DTO], error) {
 	var persistentObjects []PO
@@ -36,10 +36,7 @@ func SearchEntities[PO schema.Schema, DTO any](
 
 	var dataTransferObjects []DTO
 	for _, persistentObject := range persistentObjects {
-		dto, err := convert(persistentObject)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map entity to DTO")
-		}
+		dto := convert(persistentObject)
 		dataTransferObjects = append(dataTransferObjects, dto)
 	}
 
