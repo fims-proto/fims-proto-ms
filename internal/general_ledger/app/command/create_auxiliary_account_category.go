@@ -7,10 +7,10 @@ import (
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
-type CreateAuxiliaryAccountCategoryCmd struct {
+type CreateAuxiliaryCategoryCmd struct {
 	SobId      uuid.UUID
 	CategoryId uuid.UUID
 	Key        string
@@ -18,20 +18,20 @@ type CreateAuxiliaryAccountCategoryCmd struct {
 	IsStandard bool
 }
 
-type CreateAuxiliaryAccountCategoryHandler struct {
+type CreateAuxiliaryCategoryHandler struct {
 	repo domain.Repository
 }
 
-func NewCreateAuxiliaryAccountCategoryHandler(repo domain.Repository) CreateAuxiliaryAccountCategoryHandler {
+func NewCreateAuxiliaryCategoryHandler(repo domain.Repository) CreateAuxiliaryCategoryHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
-	return CreateAuxiliaryAccountCategoryHandler{repo: repo}
+	return CreateAuxiliaryCategoryHandler{repo: repo}
 }
 
-func (h CreateAuxiliaryAccountCategoryHandler) Handle(ctx context.Context, cmd CreateAuxiliaryAccountCategoryCmd) error {
-	auxiliaryAccountCategory, err := auxiliary_account_category.New(
+func (h CreateAuxiliaryCategoryHandler) Handle(ctx context.Context, cmd CreateAuxiliaryCategoryCmd) error {
+	auxiliaryCategory, err := auxiliary_category.New(
 		cmd.CategoryId,
 		cmd.SobId,
 		cmd.Key,
@@ -39,8 +39,8 @@ func (h CreateAuxiliaryAccountCategoryHandler) Handle(ctx context.Context, cmd C
 		cmd.IsStandard,
 	)
 	if err != nil {
-		return fmt.Errorf("failed to create auxiliary account category: %w", err)
+		return fmt.Errorf("failed to create auxiliary category: %w", err)
 	}
 
-	return h.repo.CreateAuxiliaryAccountCategories(ctx, utils.AsSlice(auxiliaryAccountCategory))
+	return h.repo.CreateAuxiliaryCategories(ctx, utils.AsSlice(auxiliaryCategory))
 }

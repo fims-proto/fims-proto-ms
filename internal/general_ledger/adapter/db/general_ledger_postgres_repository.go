@@ -12,7 +12,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	accountType "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
@@ -32,7 +32,7 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 
 	return db.AutoMigrate(
 		&accountPO{},
-		&auxiliaryAccountCategoryPO{},
+		&auxiliaryCategoryPO{},
 		&auxiliaryAccountPO{},
 		&periodPO{},
 		&ledgerPO{},
@@ -64,14 +64,14 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 
 	// create all
 	pos := bos2pos(accounts, accountBOToPO)
-	return db.CreateInBatches(&pos, 100).Error
+	return db.Omit("AuxiliaryCategories").CreateInBatches(&pos, 100).Error
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateAccount(ctx context.Context, accountId uuid.UUID, updateFn func(a *account.Account) (*account.Account, error)) error {
 	db := database.ReadDBFromContext(ctx)
 
 	po := accountPO{Id: accountId}
-	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("AuxiliaryCategories").First(&po).Error; err != nil {
 		return err
 	}
 
@@ -87,7 +87,15 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(ctx context.Context, acco
 
 	po = accountBOToPO(*updatedBO)
 
-	return db.Save(&po).Error
+	if err = db.Omit("AuxiliaryCategories").Save(&po).Error; err != nil {
+		return err
+	}
+
+	if err = db.Model(&po).Omit("AuxiliaryCategories.*").Association("AuxiliaryCategories").Replace(po.AuxiliaryCategories); err != nil {
+		return fmt.Errorf("failed to update auxiliary category associations: %w", err)
+	}
+
+	return nil
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error) {
@@ -105,7 +113,7 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Conte
 	db := database.ReadDBFromContext(ctx)
 
 	var accountPOs []accountPO
-	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).Find(&accountPOs).Error; err != nil {
+	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).Preload("AuxiliaryCategories").Find(&accountPOs).Error; err != nil {
 		return nil, err
 	}
 
@@ -166,7 +174,7 @@ func (r GeneralLedgerPostgresRepository) CreatePeriodIfNotExists(ctx context.Con
 		}
 	}
 
-	return p, true, db.Create(&po).Error
+	return p, true, db.Save(&po).Error
 }
 
 func (r GeneralLedgerPostgresRepository) UpdatePeriod(ctx context.Context, periodId uuid.UUID, updateFn func(p *period.Period) (*period.Period, error)) error {
@@ -264,7 +272,7 @@ func (r GeneralLedgerPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx 
 
 	updatedPOs := bos2pos(updatedLedgers, ledgerBOToPO)
 
-	return db.Save(&updatedPOs).Error
+	return db.Omit("Account").Save(&updatedPOs).Error
 }
 
 func (r GeneralLedgerPostgresRepository) ReadLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*ledger.Ledger, error) {
@@ -353,23 +361,23 @@ func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx con
 	return count > 0, err
 }
 
-func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccountCategories(ctx context.Context, categories []*auxiliary_account_category.AuxiliaryAccountCategory) error {
+func (r GeneralLedgerPostgresRepository) CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error {
 	db := database.ReadDBFromContext(ctx)
 
-	pos := bos2pos(categories, auxiliaryAccountCategoryBOToPO)
+	pos := bos2pos(categories, auxiliaryCategoryBOToPO)
 
 	return db.CreateInBatches(&pos, 100).Error
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryAccountCategoryById(ctx context.Context, id uuid.UUID) (*auxiliary_account_category.AuxiliaryAccountCategory, error) {
+func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error) {
 	db := database.ReadDBFromContext(ctx)
 
-	po := auxiliaryAccountCategoryPO{Id: id}
-	if err := db.First(&po).Error; err != nil {
+	var po auxiliaryCategoryPO
+	if err := db.Where(auxiliaryCategoryPO{Key: key}).First(&po).Error; err != nil {
 		return nil, err
 	}
 
-	return auxiliaryAccountCategoryPOToBO(po)
+	return auxiliaryCategoryPOToBO(po)
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error {
@@ -384,7 +392,7 @@ func (r GeneralLedgerPostgresRepository) ReadAllAuxiliaryAccounts(ctx context.Co
 	db := database.ReadDBFromContext(ctx)
 
 	var auxiliaryAccountPOs []auxiliaryAccountPO
-	if err := db.Joins("Category", db.Where(&auxiliaryAccountCategoryPO{SobId: sobId})).Find(&auxiliaryAccountPOs).Error; err != nil {
+	if err := db.Joins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Find(&auxiliaryAccountPOs).Error; err != nil {
 		return nil, err
 	}
 

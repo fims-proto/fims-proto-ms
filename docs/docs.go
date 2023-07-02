@@ -20,6 +20,56 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/sob/{sobId}/account/{accountId}/assign-auxiliaries": {
+            "post": {
+                "description": "Assign auxiliary categories to account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Account id and category ids",
+                        "name": "AssignAuxiliaryCategoriesToAccountRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.AssignAuxiliaryCategoriesToAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": ""
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/accounts": {
             "get": {
                 "description": "List all accounts",
@@ -76,6 +126,325 @@ const docTemplate = `{
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/http.AccountResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/auxiliaries": {
+            "get": {
+                "description": "List all auxiliary categories",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auxiliary accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create auxiliary category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auxiliary accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create auxiliary category request",
+                        "name": "CreateAuxiliaryCategoryRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateAuxiliaryCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/auxiliary/{categoryKey}/accounts": {
+            "get": {
+                "description": "List all auxiliary accounts",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auxiliary accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category Key",
+                        "name": "categoryKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.AuxiliaryAccountResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create auxiliary account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auxiliary accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category Key",
+                        "name": "categoryKey",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create auxiliary account request",
+                        "name": "CreateAuxiliaryAccountRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateAuxiliaryAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": ""
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/period/{periodId}/auxiliary-ledgers": {
+            "get": {
+                "description": "List all auxiliary ledgers",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auxiliary ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period ID",
+                        "name": "periodId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.LedgerResponse"
                             }
                         }
                     },
@@ -309,7 +678,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{id}": {
+        "/sob/{sobId}/voucher/{voucherId}": {
             "get": {
                 "description": "Show voucher by sob and id",
                 "consumes": [
@@ -332,7 +701,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     }
@@ -377,7 +746,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     },
@@ -410,7 +779,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{id}/audit": {
+        "/sob/{sobId}/voucher/{voucherId}/audit": {
             "post": {
                 "description": "AuditVoucher voucher",
                 "consumes": [
@@ -433,7 +802,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     },
@@ -466,7 +835,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{id}/cancel-audit": {
+        "/sob/{sobId}/voucher/{voucherId}/cancel-audit": {
             "post": {
                 "description": "Cancel audit voucher",
                 "consumes": [
@@ -489,7 +858,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     },
@@ -522,7 +891,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{id}/cancel-review": {
+        "/sob/{sobId}/voucher/{voucherId}/cancel-review": {
             "post": {
                 "description": "Cancel review voucher",
                 "consumes": [
@@ -545,7 +914,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     },
@@ -578,7 +947,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{id}/post": {
+        "/sob/{sobId}/voucher/{voucherId}/post": {
             "post": {
                 "description": "PostVoucher voucher",
                 "consumes": [
@@ -601,7 +970,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     },
@@ -628,7 +997,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{id}/review": {
+        "/sob/{sobId}/voucher/{voucherId}/review": {
             "post": {
                 "description": "ReviewVoucher voucher",
                 "consumes": [
@@ -651,7 +1020,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Voucher ID",
-                        "name": "id",
+                        "name": "voucherId",
                         "in": "path",
                         "required": true
                     },
@@ -1060,6 +1429,12 @@ const docTemplate = `{
                 "accountType": {
                     "type": "string"
                 },
+                "auxiliaryCategories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                    }
+                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -1092,10 +1467,98 @@ const docTemplate = `{
                 }
             }
         },
+        "http.AssignAuxiliaryCategoriesToAccountRequest": {
+            "type": "object",
+            "properties": {
+                "categoryKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "http.AuditVoucherRequest": {
             "type": "object",
             "properties": {
                 "auditor": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AuxiliaryAccountResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AuxiliaryCategoryResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isStandard": {
+                    "type": "boolean"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateAuxiliaryAccountRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateAuxiliaryCategoryRequest": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }
@@ -1229,6 +1692,12 @@ const docTemplate = `{
                 },
                 "accountNumber": {
                     "type": "string"
+                },
+                "auxiliaryAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
+                    }
                 },
                 "createdAt": {
                     "type": "string"

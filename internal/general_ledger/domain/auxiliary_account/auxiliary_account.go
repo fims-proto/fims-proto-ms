@@ -4,12 +4,12 @@ import (
 	"errors"
 
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
 type AuxiliaryAccount struct {
 	id          uuid.UUID
-	category    *auxiliary_account_category.AuxiliaryAccountCategory
+	category    *auxiliary_category.AuxiliaryCategory
 	key         string
 	title       string
 	description string
@@ -17,7 +17,7 @@ type AuxiliaryAccount struct {
 
 func New(
 	id uuid.UUID,
-	category *auxiliary_account_category.AuxiliaryAccountCategory,
+	category *auxiliary_category.AuxiliaryCategory,
 	key string,
 	title string,
 	description string,
@@ -27,7 +27,7 @@ func New(
 	}
 
 	if category == nil {
-		return nil, errors.New("nil auxiliary account category")
+		return nil, errors.New("nil auxiliary category")
 	}
 
 	if key == "" {
@@ -51,7 +51,7 @@ func (a AuxiliaryAccount) Id() uuid.UUID {
 	return a.id
 }
 
-func (a AuxiliaryAccount) Category() *auxiliary_account_category.AuxiliaryAccountCategory {
+func (a AuxiliaryAccount) Category() *auxiliary_category.AuxiliaryCategory {
 	return a.category
 }
 

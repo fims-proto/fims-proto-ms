@@ -7,7 +7,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
 type LineItem struct {
@@ -41,7 +41,7 @@ func NewLineItem(
 		return nil, errors.NewSlugError("lineItem-nilAccount")
 	}
 
-	if len(auxiliaryAccounts) != len(account.AuxiliaryAccountCategories()) {
+	if len(auxiliaryAccounts) != len(account.AuxiliaryCategories()) {
 		return nil, errors.NewSlugError("lineItem-unmatchedAuxiliaryAccount")
 	}
 
@@ -64,7 +64,7 @@ func NewLineItem(
 	}
 
 	// validate each auxiliary account
-	categorySet := utils.SliceToSet(account.AuxiliaryAccountCategories(), func(category *auxiliary_account_category.AuxiliaryAccountCategory) uuid.UUID {
+	categorySet := utils.SliceToSet(account.AuxiliaryCategories(), func(category *auxiliary_category.AuxiliaryCategory) uuid.UUID {
 		return category.Id()
 	})
 	for _, auxiliaryAccount := range auxiliaryAccounts {

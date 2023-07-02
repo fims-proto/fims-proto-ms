@@ -1,10 +1,10 @@
 package account
 
-import "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+import "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 
-func (a *Account) AssignAuxiliaryAccountCategories(auxiliaryAccountCategories []*auxiliary_account_category.AuxiliaryAccountCategory) {
+func (a *Account) AssignAuxiliaryCategories(auxiliaryCategories []*auxiliary_category.AuxiliaryCategory) {
 	// check leaf node?
 	// check superior account?
 
-	a.auxiliaryAccountCategories = auxiliaryAccountCategories
+	a.auxiliaryCategories = auxiliaryCategories
 }

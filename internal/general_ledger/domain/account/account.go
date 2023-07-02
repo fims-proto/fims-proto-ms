@@ -7,20 +7,20 @@ import (
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
 type Account struct {
-	id                         uuid.UUID
-	sobId                      uuid.UUID
-	superiorAccountId          uuid.UUID
-	title                      string
-	accountNumber              string
-	numberHierarchy            []int
-	level                      int
-	accountType                account_type.AccountType
-	balanceDirection           balance_direction.BalanceDirection
-	auxiliaryAccountCategories []*auxiliary_account_category.AuxiliaryAccountCategory
+	id                  uuid.UUID
+	sobId               uuid.UUID
+	superiorAccountId   uuid.UUID
+	title               string
+	accountNumber       string
+	numberHierarchy     []int
+	level               int
+	accountType         account_type.AccountType
+	balanceDirection    balance_direction.BalanceDirection
+	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
 }
 
 func New(
@@ -33,7 +33,7 @@ func New(
 	level int,
 	accountType string,
 	balanceDirection string,
-	auxiliaryAccountCategories []*auxiliary_account_category.AuxiliaryAccountCategory,
+	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
 ) (*Account, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil account id")
@@ -73,23 +73,23 @@ func New(
 		return nil, err
 	}
 
-	for _, category := range auxiliaryAccountCategories {
+	for _, category := range auxiliaryCategories {
 		if category == nil {
-			return nil, errors.New("nil auxiliary account category")
+			return nil, errors.New("nil auxiliary category")
 		}
 	}
 
 	return &Account{
-		id:                         id,
-		sobId:                      sobId,
-		superiorAccountId:          superiorAccountId,
-		title:                      title,
-		accountNumber:              accountNumber,
-		numberHierarchy:            numberHierarchy,
-		level:                      level,
-		accountType:                at,
-		balanceDirection:           bd,
-		auxiliaryAccountCategories: auxiliaryAccountCategories,
+		id:                  id,
+		sobId:               sobId,
+		superiorAccountId:   superiorAccountId,
+		title:               title,
+		accountNumber:       accountNumber,
+		numberHierarchy:     numberHierarchy,
+		level:               level,
+		accountType:         at,
+		balanceDirection:    bd,
+		auxiliaryCategories: auxiliaryCategories,
 	}, nil
 }
 
@@ -129,6 +129,6 @@ func (a *Account) BalanceDirection() balance_direction.BalanceDirection {
 	return a.balanceDirection
 }
 
-func (a *Account) AuxiliaryAccountCategories() []*auxiliary_account_category.AuxiliaryAccountCategory {
-	return a.auxiliaryAccountCategories
+func (a *Account) AuxiliaryCategories() []*auxiliary_category.AuxiliaryCategory {
+	return a.auxiliaryCategories
 }

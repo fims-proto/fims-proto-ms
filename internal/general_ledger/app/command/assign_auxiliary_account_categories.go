@@ -7,38 +7,38 @@ import (
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
-type AssignAuxiliaryAccountCategoryCmd struct {
-	AccountId   uuid.UUID
-	CategoryIds []uuid.UUID
+type AssignAuxiliaryCategoryCmd struct {
+	AccountId    uuid.UUID
+	CategoryKeys []string
 }
 
-type AssignAuxiliaryAccountCategoryHandler struct {
+type AssignAuxiliaryCategoryHandler struct {
 	repo domain.Repository
 }
 
-func NewAssignAuxiliaryAccountCategoryHandler(repo domain.Repository) AssignAuxiliaryAccountCategoryHandler {
+func NewAssignAuxiliaryCategoryHandler(repo domain.Repository) AssignAuxiliaryCategoryHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
-	return AssignAuxiliaryAccountCategoryHandler{repo: repo}
+	return AssignAuxiliaryCategoryHandler{repo: repo}
 }
 
-func (h AssignAuxiliaryAccountCategoryHandler) Handle(ctx context.Context, cmd AssignAuxiliaryAccountCategoryCmd) error {
-	var categories []*auxiliary_account_category.AuxiliaryAccountCategory
-	for _, categoryId := range cmd.CategoryIds {
-		auxiliaryAccountCategory, err := h.repo.ReadAuxiliaryAccountCategoryById(ctx, categoryId)
+func (h AssignAuxiliaryCategoryHandler) Handle(ctx context.Context, cmd AssignAuxiliaryCategoryCmd) error {
+	var categories []*auxiliary_category.AuxiliaryCategory
+	for _, key := range cmd.CategoryKeys {
+		auxiliaryCategory, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, key)
 		if err != nil {
-			return fmt.Errorf("failed to read auxiliary account category: %w", err)
+			return fmt.Errorf("failed to read auxiliary category: %w", err)
 		}
-		categories = append(categories, auxiliaryAccountCategory)
+		categories = append(categories, auxiliaryCategory)
 	}
 
 	return h.repo.UpdateAccount(ctx, cmd.AccountId, func(a *account.Account) (*account.Account, error) {
-		a.AssignAuxiliaryAccountCategories(categories)
+		a.AssignAuxiliaryCategories(categories)
 		return a, nil
 	})
 }

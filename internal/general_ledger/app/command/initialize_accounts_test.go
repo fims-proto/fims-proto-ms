@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
@@ -307,11 +307,11 @@ func (m mockRepo) ExistsVouchersNotPostedInPeriod(context.Context, uuid.UUID, uu
 	panic("implement me")
 }
 
-func (m mockRepo) CreateAuxiliaryAccountCategories(context.Context, []*auxiliary_account_category.AuxiliaryAccountCategory) error {
+func (m mockRepo) CreateAuxiliaryCategories(context.Context, []*auxiliary_category.AuxiliaryCategory) error {
 	panic("implement me")
 }
 
-func (m mockRepo) ReadAuxiliaryAccountCategoryById(context.Context, uuid.UUID) (*auxiliary_account_category.AuxiliaryAccountCategory, error) {
+func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, string) (*auxiliary_category.AuxiliaryCategory, error) {
 	panic("implement me")
 }
 

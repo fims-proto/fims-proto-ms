@@ -14,7 +14,7 @@ import (
 
 type CreateAuxiliaryAccountCmd struct {
 	AccountId   uuid.UUID
-	CategoryId  uuid.UUID
+	CategoryKey string
 	Key         string
 	Title       string
 	Description string
@@ -46,9 +46,9 @@ func (h CreateAuxiliaryAccountHandler) Handle(ctx context.Context, cmd CreateAux
 }
 
 func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd CreateAuxiliaryAccountCmd) (*auxiliary_account.AuxiliaryAccount, error) {
-	category, err := h.repo.ReadAuxiliaryAccountCategoryById(ctx, cmd.CategoryId)
+	category, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, cmd.CategoryKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get auxiliary account category: %w", err)
+		return nil, fmt.Errorf("failed to get auxiliary category: %w", err)
 	}
 
 	auxiliaryAccount, err := auxiliary_account.New(

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
@@ -58,8 +58,8 @@ type Repository interface {
 	) error
 	ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
-	CreateAuxiliaryAccountCategories(ctx context.Context, categories []*auxiliary_account_category.AuxiliaryAccountCategory) error
-	ReadAuxiliaryAccountCategoryById(ctx context.Context, id uuid.UUID) (*auxiliary_account_category.AuxiliaryAccountCategory, error)
+	CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error
+	ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error)
 
 	CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error
 	ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error)
