@@ -5,21 +5,17 @@ import (
 	"strings"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
-
+	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
-
-	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type accountPO struct {

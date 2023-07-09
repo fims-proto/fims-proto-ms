@@ -71,7 +71,10 @@ func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, vo
 	db := database.ReadDBFromContext(ctx)
 
 	po := voucherPO{Id: voucherId}
-	if err := db.Preload("LineItems.Account").Preload("Period").First(&po).Error; err != nil {
+	if err := db.Preload("LineItems.Account").
+		Preload("LineItems.AuxiliaryAccounts").
+		Preload("Period").
+		First(&po).Error; err != nil {
 		return query.Voucher{}, err
 	}
 

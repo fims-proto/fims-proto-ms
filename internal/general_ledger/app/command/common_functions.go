@@ -55,7 +55,7 @@ func prepareLineItems(
 	}
 
 	// validate auxiliary account keys
-	auxiliaryAccounts, err := repo.ReadAuxiliaryAccountsByKeys(ctx, sobId, auxiliaryPair)
+	auxiliaryAccounts, err := repo.ReadAuxiliaryAccountsByPairs(ctx, sobId, auxiliaryPair)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read auxiliary accounts: %w", err)
 	}
