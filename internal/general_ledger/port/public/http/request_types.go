@@ -34,11 +34,17 @@ type CreateVoucherRequest struct {
 }
 
 type LineItemRequest struct {
-	Id            uuid.UUID       `json:"id"`
-	AccountNumber string          `json:"accountNumber"`
-	Text          string          `json:"text"`
-	Credit        decimal.Decimal `json:"credit"`
-	Debit         decimal.Decimal `json:"debit"`
+	Id                uuid.UUID              `json:"id"`
+	AccountNumber     string                 `json:"accountNumber"`
+	AuxiliaryAccounts []AuxiliaryItemRequest `json:"auxiliaryAccounts"`
+	Text              string                 `json:"text"`
+	Credit            decimal.Decimal        `json:"credit"`
+	Debit             decimal.Decimal        `json:"debit"`
+}
+
+type AuxiliaryItemRequest struct {
+	CategoryKey string `json:"categoryKey"`
+	AccountKey  string `json:"accountKey"`
 }
 
 type AuditVoucherRequest struct {
@@ -63,12 +69,21 @@ type UpdateVoucherRequest struct {
 // mapper
 
 func (r LineItemRequest) mapToCommand() command.LineItemCmd {
+	var auxiliaryItemCmds []command.AuxiliaryItemCmd
+	for _, auxiliaryAccount := range r.AuxiliaryAccounts {
+		auxiliaryItemCmds = append(auxiliaryItemCmds, command.AuxiliaryItemCmd{
+			CategoryKey: auxiliaryAccount.CategoryKey,
+			AccountKey:  auxiliaryAccount.AccountKey,
+		})
+	}
+
 	return command.LineItemCmd{
-		Id:            r.Id,
-		Text:          r.Text,
-		AccountNumber: r.AccountNumber,
-		Debit:         r.Debit,
-		Credit:        r.Credit,
+		Id:                r.Id,
+		Text:              r.Text,
+		AccountNumber:     r.AccountNumber,
+		AuxiliaryAccounts: auxiliaryItemCmds,
+		Debit:             r.Debit,
+		Credit:            r.Credit,
 	}
 }
 

@@ -66,3 +66,8 @@ func (a AuxiliaryAccount) Title() string {
 func (a AuxiliaryAccount) Description() string {
 	return a.description
 }
+
+type AuxiliaryPair struct {
+	CategoryKey string
+	AccountKey  string
+}

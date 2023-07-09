@@ -77,6 +77,13 @@ definitions:
       updatedAt:
         type: string
     type: object
+  http.AuxiliaryItemRequest:
+    properties:
+      accountKey:
+        type: string
+      categoryKey:
+        type: string
+    type: object
   http.CreateAuxiliaryAccountRequest:
     properties:
       description:
@@ -163,6 +170,10 @@ definitions:
     properties:
       accountNumber:
         type: string
+      auxiliaryAccounts:
+        items:
+          $ref: '#/definitions/http.AuxiliaryItemRequest'
+        type: array
       credit:
         type: number
       debit:

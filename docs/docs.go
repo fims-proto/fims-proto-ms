@@ -1538,6 +1538,17 @@ const docTemplate = `{
                 }
             }
         },
+        "http.AuxiliaryItemRequest": {
+            "type": "object",
+            "properties": {
+                "accountKey": {
+                    "type": "string"
+                },
+                "categoryKey": {
+                    "type": "string"
+                }
+            }
+        },
         "http.CreateAuxiliaryAccountRequest": {
             "type": "object",
             "properties": {
@@ -1669,6 +1680,12 @@ const docTemplate = `{
             "properties": {
                 "accountNumber": {
                     "type": "string"
+                },
+                "auxiliaryAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
+                    }
                 },
                 "credit": {
                     "type": "number"

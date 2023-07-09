@@ -64,9 +64,10 @@ func NewLineItem(
 	}
 
 	// validate each auxiliary account
-	categorySet := utils.SliceToSet(account.AuxiliaryCategories(), func(category *auxiliary_category.AuxiliaryCategory) uuid.UUID {
-		return category.Id()
-	})
+	categorySet := utils.SliceToSet(
+		account.AuxiliaryCategories(),
+		func(category *auxiliary_category.AuxiliaryCategory) uuid.UUID { return category.Id() },
+	)
 	for _, auxiliaryAccount := range auxiliaryAccounts {
 		if _, ok := categorySet[auxiliaryAccount.Category().Id()]; !ok {
 			return nil, errors.NewSlugError("lineItem-invalidAuxiliaryAccount", auxiliaryAccount.Title())

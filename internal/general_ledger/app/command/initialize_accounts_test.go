@@ -231,6 +231,10 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 
 type mockRepo struct{}
 
+func (m mockRepo) ReadAuxiliaryAccountsByKeys(context.Context, uuid.UUID, []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error) {
+	panic("implement me")
+}
+
 func (m mockRepo) Migrate(context.Context) error {
 	panic("implement me")
 }

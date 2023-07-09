@@ -112,6 +112,10 @@ func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, so
 func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error) {
 	db := database.ReadDBFromContext(ctx)
 
+	if len(accountNumbers) == 0 {
+		return nil, nil
+	}
+
 	var accountPOs []accountPO
 	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).Preload("AuxiliaryCategories").Find(&accountPOs).Error; err != nil {
 		return nil, err
@@ -386,6 +390,26 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccounts(ctx context.Con
 	pos := bos2pos(accounts, auxiliaryAccountBOToPO)
 
 	return db.Omit("Category").CreateInBatches(&pos, 100).Error
+}
+
+func (r GeneralLedgerPostgresRepository) ReadAuxiliaryAccountsByKeys(ctx context.Context, sobId uuid.UUID, pairs []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error) {
+	db := database.ReadDBFromContext(ctx)
+
+	if len(pairs) == 0 {
+		return nil, nil
+	}
+
+	dbOr := db.Session(&gorm.Session{NewDB: true})
+	for _, pair := range pairs {
+		dbOr = dbOr.Or("category.key = ? AND auxiliary_account.key = ?", pair.CategoryKey, pair.AccountKey)
+	}
+
+	var auxiliaryAccountPOs []auxiliaryAccountPO
+	if err := db.Joins("Category", db.Where("sob_id = ?", sobId)).Where(dbOr).Find(&auxiliaryAccountPOs).Error; err != nil {
+		return nil, err
+	}
+
+	return pos2bos(auxiliaryAccountPOs, auxiliaryAccountPOToBO)
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error) {

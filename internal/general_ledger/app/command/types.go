@@ -6,10 +6,15 @@ import (
 )
 
 type LineItemCmd struct {
-	Id                   uuid.UUID
-	Text                 string
-	AccountNumber        string
-	AuxiliaryAccountKeys []string
-	Debit                decimal.Decimal
-	Credit               decimal.Decimal
+	Id                uuid.UUID
+	Text              string
+	AccountNumber     string
+	AuxiliaryAccounts []AuxiliaryItemCmd
+	Debit             decimal.Decimal
+	Credit            decimal.Decimal
+}
+
+type AuxiliaryItemCmd struct {
+	CategoryKey string
+	AccountKey  string
 }

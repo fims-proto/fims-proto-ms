@@ -62,6 +62,7 @@ type Repository interface {
 	ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error)
 
 	CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error
+	ReadAuxiliaryAccountsByKeys(ctx context.Context, sobId uuid.UUID, pairs []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error)
 	ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error)
 
 	CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error
