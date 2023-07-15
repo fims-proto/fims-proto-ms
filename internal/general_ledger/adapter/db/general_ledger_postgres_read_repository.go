@@ -27,7 +27,7 @@ func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryCategories(ctx conte
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryAccounts(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.AuxiliaryAccount], error) {
-	return data.SearchEntities(ctx, pageRequest, &auxiliaryAccountPO{}, auxiliaryAccountPOToDTO, database.ReadDBFromContext(ctx).Joins("Category"))
+	return data.SearchEntities(ctx, pageRequest, &auxiliaryAccountPO{}, auxiliaryAccountPOToDTO, database.ReadDBFromContext(ctx).InnerJoins("Category"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {

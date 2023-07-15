@@ -348,7 +348,7 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 
 	po = voucherBOToPO(*updatedBO)
 
-	return db.Updates(&po).Error
+	return db.Save(&po).Error
 }
 
 func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
@@ -403,7 +403,7 @@ func (r GeneralLedgerPostgresRepository) ReadAuxiliaryAccountsByPairs(ctx contex
 	}
 
 	var auxiliaryAccountPOs []auxiliaryAccountPO
-	if err := db.Joins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Where(dbOr).Find(&auxiliaryAccountPOs).Error; err != nil {
+	if err := db.InnerJoins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Where(dbOr).Find(&auxiliaryAccountPOs).Error; err != nil {
 		return nil, err
 	}
 
@@ -414,7 +414,7 @@ func (r GeneralLedgerPostgresRepository) ReadAllAuxiliaryAccounts(ctx context.Co
 	db := database.ReadDBFromContext(ctx)
 
 	var auxiliaryAccountPOs []auxiliaryAccountPO
-	if err := db.Joins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Find(&auxiliaryAccountPOs).Error; err != nil {
+	if err := db.InnerJoins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Find(&auxiliaryAccountPOs).Error; err != nil {
 		return nil, err
 	}
 
