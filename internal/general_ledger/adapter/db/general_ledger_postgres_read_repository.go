@@ -18,35 +18,35 @@ func NewGeneralLedgerPostgresReadRepository() *GeneralLedgerPostgresReadReposito
 
 func (r GeneralLedgerPostgresReadRepository) SearchAccounts(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Account], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, &accountPO{}, accountPOToDTO, database.ReadDBFromContext(ctx).Preload("AuxiliaryCategories"))
+	return data.SearchEntities(ctx, pageRequest, accountPO{}, accountPOToDTO, database.ReadDBFromContext(ctx).Preload("AuxiliaryCategories"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryCategories(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.AuxiliaryCategory], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, &auxiliaryCategoryPO{}, auxiliaryCategoryPOToDTO, database.ReadDBFromContext(ctx))
+	return data.SearchEntities(ctx, pageRequest, auxiliaryCategoryPO{}, auxiliaryCategoryPOToDTO, database.ReadDBFromContext(ctx))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryAccounts(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.AuxiliaryAccount], error) {
-	return data.SearchEntities(ctx, pageRequest, &auxiliaryAccountPO{}, auxiliaryAccountPOToDTO, database.ReadDBFromContext(ctx).InnerJoins("Category"))
+	return data.SearchEntities(ctx, pageRequest, auxiliaryAccountPO{}, auxiliaryAccountPOToDTO, database.ReadDBFromContext(ctx).InnerJoins("Category"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, &ledgerPO{}, ledgerPOToDTO, database.ReadDBFromContext(ctx).Joins("Account"))
+	return data.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, database.ReadDBFromContext(ctx).Joins("Account"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryLedgers(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.AuxiliaryLedger], error) {
-	return data.SearchEntities(ctx, pageRequest, &auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO, database.ReadDBFromContext(ctx).Joins("AuxiliaryAccount.Category"))
+	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO, database.ReadDBFromContext(ctx).Joins("AuxiliaryAccount.Category"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Period], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, &periodPO{}, periodPOToDTO, database.ReadDBFromContext(ctx))
+	return data.SearchEntities(ctx, pageRequest, periodPO{}, periodPOToDTO, database.ReadDBFromContext(ctx))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchVouchers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Voucher], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, &voucherPO{}, voucherPOToDTO, database.ReadDBFromContext(ctx).Preload("LineItems.Account").Joins("Period"))
+	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, database.ReadDBFromContext(ctx).Preload("LineItems.Account").Joins("Period"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) PagingLedgersByPeriod(ctx context.Context, sobId, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
@@ -64,7 +64,7 @@ func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, 
 		return query.Period{}, err
 	}
 
-	return periodPOToDTO(&po), nil
+	return periodPOToDTO(po), nil
 }
 
 func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, voucherId uuid.UUID) (query.Voucher, error) {
@@ -78,7 +78,7 @@ func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, vo
 		return query.Voucher{}, err
 	}
 
-	return voucherPOToDTO(&po), nil
+	return voucherPOToDTO(po), nil
 }
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {

@@ -105,10 +105,10 @@ type Voucher struct {
 	AttachmentQuantity int
 	Debit              decimal.Decimal
 	Credit             decimal.Decimal
-	Creator            User
-	Reviewer           User
-	Auditor            User
-	Poster             User
+	Creator            *User
+	Reviewer           *User
+	Auditor            *User
+	Poster             *User
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool

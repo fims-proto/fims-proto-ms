@@ -108,10 +108,10 @@ type VoucherResponse struct {
 	DocumentNumber     string             `json:"documentNumber,omitempty"`
 	VoucherType        string             `json:"voucherType,omitempty"`
 	AttachmentQuantity int                `json:"attachmentQuantity,omitempty"`
-	Creator            UserResponse       `json:"creator"`
-	Auditor            UserResponse       `json:"auditor"`
-	Reviewer           UserResponse       `json:"reviewer"`
-	Poster             UserResponse       `json:"poster"`
+	Creator            *UserResponse      `json:"creator"`
+	Auditor            *UserResponse      `json:"auditor"`
+	Reviewer           *UserResponse      `json:"reviewer"`
+	Poster             *UserResponse      `json:"poster"`
 	Credit             decimal.Decimal    `json:"credit"`
 	Debit              decimal.Decimal    `json:"debit"`
 	IsAudited          bool               `json:"isAudited"`
@@ -224,6 +224,17 @@ func VoucherDTOToVO(dto query.Voucher) VoucherResponse {
 	for _, item := range dto.LineItems {
 		itemRes = append(itemRes, lineItemDTOToVO(item))
 	}
+
+	userOrNil := func(u *query.User) *UserResponse {
+		if u != nil {
+			return &UserResponse{
+				Id:     u.Id,
+				Traits: u.Traits,
+			}
+		}
+		return nil
+	}
+
 	return VoucherResponse{
 		SobId:              dto.SobId,
 		Id:                 dto.Id,
@@ -234,28 +245,16 @@ func VoucherDTOToVO(dto query.Voucher) VoucherResponse {
 		AttachmentQuantity: dto.AttachmentQuantity,
 		Debit:              dto.Debit,
 		Credit:             dto.Credit,
-		Creator: UserResponse{
-			Id:     dto.Creator.Id,
-			Traits: dto.Creator.Traits,
-		},
-		Reviewer: UserResponse{
-			Id:     dto.Reviewer.Id,
-			Traits: dto.Reviewer.Traits,
-		},
-		Auditor: UserResponse{
-			Id:     dto.Auditor.Id,
-			Traits: dto.Auditor.Traits,
-		},
-		Poster: UserResponse{
-			Id:     dto.Poster.Id,
-			Traits: dto.Poster.Traits,
-		},
-		IsReviewed:      dto.IsReviewed,
-		IsAudited:       dto.IsAudited,
-		IsPosted:        dto.IsPosted,
-		TransactionTime: dto.TransactionTime,
-		LineItems:       itemRes,
-		CreatedAt:       dto.CreatedAt,
-		UpdatedAt:       dto.UpdatedAt,
+		Creator:            userOrNil(dto.Creator),
+		Reviewer:           userOrNil(dto.Reviewer),
+		Auditor:            userOrNil(dto.Auditor),
+		Poster:             userOrNil(dto.Poster),
+		IsReviewed:         dto.IsReviewed,
+		IsAudited:          dto.IsAudited,
+		IsPosted:           dto.IsPosted,
+		TransactionTime:    dto.TransactionTime,
+		LineItems:          itemRes,
+		CreatedAt:          dto.CreatedAt,
+		UpdatedAt:          dto.UpdatedAt,
 	}
 }
