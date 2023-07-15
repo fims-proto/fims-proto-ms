@@ -329,7 +329,10 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 	db := database.ReadDBFromContext(ctx)
 
 	po := voucherPO{Id: voucherId}
-	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("LineItems.Account").First(&po).Error; err != nil {
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Preload("LineItems.Account.AuxiliaryCategories").
+		Preload("LineItems.AuxiliaryAccounts.Category").
+		First(&po).Error; err != nil {
 		return err
 	}
 
@@ -345,12 +348,7 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 
 	po = voucherBOToPO(*updatedBO)
 
-	// remove existing first
-	if err = db.Where("voucher_id = ?", po.Id).Delete(&lineItemPO{}).Error; err != nil {
-		return fmt.Errorf("failed to delete line items: %w", err)
-	}
-
-	return db.Save(&po).Error
+	return db.Updates(&po).Error
 }
 
 func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
@@ -429,6 +427,32 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryLedgers(ctx context.Cont
 	pos := bos2pos(ledgers, auxiliaryLedgerBOToPO)
 
 	return db.Omit("AuxiliaryAccount").CreateInBatches(&pos, 100).Error
+}
+
+func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccountIds(ctx context.Context, periodId uuid.UUID, auxiliaryAccountIds []uuid.UUID, updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
+	db := database.ReadDBFromContext(ctx)
+
+	var auxiliaryLedgerPOs []auxiliaryLedgerPO
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Where("period_id = ? AND auxiliary_account_id IN ?", periodId, auxiliaryAccountIds).
+		Preload("AuxiliaryAccount.Category").
+		Find(&auxiliaryLedgerPOs).Error; err != nil {
+		return err
+	}
+
+	auxiliaryLedgerBOs, err := pos2bos(auxiliaryLedgerPOs, auxiliaryLedgerPOToBO)
+	if err != nil {
+		return fmt.Errorf("failed to update auxiliary ledgers: %w", err)
+	}
+
+	updated, err := updateFn(auxiliaryLedgerBOs)
+	if err != nil {
+		return fmt.Errorf("failed to update auxiliary ledgers: %w", err)
+	}
+
+	updatedPOs := bos2pos(updated, auxiliaryLedgerBOToPO)
+
+	return db.Omit("AuxiliaryAccount").Save(&updatedPOs).Error
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {

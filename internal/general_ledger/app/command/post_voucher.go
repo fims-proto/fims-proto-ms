@@ -4,6 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
 	"github.com/google/uuid"
@@ -16,6 +19,28 @@ import (
 type PostVoucherCmd struct {
 	VoucherId uuid.UUID
 	Poster    uuid.UUID
+}
+
+type postLedgersCmd struct {
+	periodId uuid.UUID
+	records  []postLedgersRecordCmd
+}
+
+type postLedgersRecordCmd struct {
+	accountId uuid.UUID
+	debit     decimal.Decimal
+	credit    decimal.Decimal
+}
+
+type postAuxiliaryLedgersCmd struct {
+	periodId uuid.UUID
+	records  []postAuxiliaryLedgersRecordCmd
+}
+
+type postAuxiliaryLedgersRecordCmd struct {
+	auxiliaryAccount auxiliary_account.AuxiliaryAccount
+	debit            decimal.Decimal
+	credit           decimal.Decimal
 }
 
 type PostVoucherHandler struct {
@@ -36,6 +61,7 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) erro
 	})
 }
 
+// postVoucher updates voucher, and triggers ledgers and auxiliary ledgers (if applicable) posting
 func (h PostVoucherHandler) postVoucher(ctx context.Context, cmd PostVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
@@ -61,20 +87,27 @@ func (h PostVoucherHandler) postVoucher(ctx context.Context, cmd PostVoucherCmd)
 				return nil, fmt.Errorf("failed to post voucher to ledger: %w", err)
 			}
 
+			var auxiliaryRecords []postAuxiliaryLedgersRecordCmd
+			for _, item := range v.LineItems() {
+				for _, auxiliaryAccount := range item.AuxiliaryAccounts() {
+					auxiliaryRecords = append(auxiliaryRecords, postAuxiliaryLedgersRecordCmd{
+						auxiliaryAccount: *auxiliaryAccount,
+						debit:            item.Debit(),
+						credit:           item.Credit(),
+					})
+				}
+			}
+
+			if err := h.postAuxiliaryLedgers(ctx, postAuxiliaryLedgersCmd{
+				periodId: v.PeriodId(),
+				records:  auxiliaryRecords,
+			}); err != nil {
+				return nil, fmt.Errorf("failed to post voucher to auxiliary ledger: %w", err)
+			}
+
 			return v, nil
 		},
 	)
-}
-
-type postLedgersCmd struct {
-	periodId uuid.UUID
-	records  []postLedgersRecordCmd
-}
-
-type postLedgersRecordCmd struct {
-	accountId uuid.UUID
-	debit     decimal.Decimal
-	credit    decimal.Decimal
 }
 
 func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd) error {
@@ -96,7 +129,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 		}
 	}
 
-	// merge duplicated accounts
+	// merge same accounts
 	accountsMap := utils.SliceToMapMerge(accountCommands, func(c postLedgersRecordCmd) uuid.UUID {
 		return c.accountId
 	}, func(c postLedgersRecordCmd) postLedgersRecordCmd {
@@ -122,6 +155,41 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 			}
 
 			return ledgers, nil
+		},
+	)
+}
+
+func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAuxiliaryLedgersCmd) error {
+	if len(cmd.records) == 0 {
+		return nil
+	}
+
+	// merge same auxiliary accounts
+	auxiliaryAccountsMap := utils.SliceToMapMerge(cmd.records, func(c postAuxiliaryLedgersRecordCmd) uuid.UUID {
+		return c.auxiliaryAccount.Id()
+	}, func(c postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
+		return c
+	}, func(existing, replacement postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
+		existing.debit = existing.debit.Add(replacement.debit)
+		existing.credit = existing.credit.Add(replacement.credit)
+		return existing
+	})
+
+	return h.repo.UpdateAuxiliaryLedgersByPeriodAndAccountIds(
+		ctx,
+		cmd.periodId,
+		utils.MapToKeySlice(auxiliaryAccountsMap),
+		func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+			for _, l := range auxiliaryLedgers {
+				record, ok := auxiliaryAccountsMap[l.AuxiliaryAccount().Id()]
+				if !ok {
+					return nil, fmt.Errorf("should not happen, failed to find auxiliary account %s", l.AuxiliaryAccount().Key())
+				}
+
+				l.UpdateBalance(record.debit, record.credit)
+			}
+
+			return auxiliaryLedgers, nil
 		},
 	)
 }

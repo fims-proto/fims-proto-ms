@@ -50,30 +50,30 @@ func New(
 	}, nil
 }
 
-func (a *AuxiliaryLedger) Id() uuid.UUID {
-	return a.id
+func (l *AuxiliaryLedger) Id() uuid.UUID {
+	return l.id
 }
 
-func (a *AuxiliaryLedger) PeriodId() uuid.UUID {
-	return a.periodId
+func (l *AuxiliaryLedger) PeriodId() uuid.UUID {
+	return l.periodId
 }
 
-func (a *AuxiliaryLedger) AuxiliaryAccount() *auxiliary_account.AuxiliaryAccount {
-	return a.auxiliaryAccount
+func (l *AuxiliaryLedger) AuxiliaryAccount() *auxiliary_account.AuxiliaryAccount {
+	return l.auxiliaryAccount
 }
 
-func (a *AuxiliaryLedger) OpeningBalance() decimal.Decimal {
-	return a.openingBalance
+func (l *AuxiliaryLedger) OpeningBalance() decimal.Decimal {
+	return l.openingBalance
 }
 
-func (a *AuxiliaryLedger) EndingBalance() decimal.Decimal {
-	return a.endingBalance
+func (l *AuxiliaryLedger) EndingBalance() decimal.Decimal {
+	return l.endingBalance
 }
 
-func (a *AuxiliaryLedger) PeriodDebit() decimal.Decimal {
-	return a.periodDebit
+func (l *AuxiliaryLedger) PeriodDebit() decimal.Decimal {
+	return l.periodDebit
 }
 
-func (a *AuxiliaryLedger) PeriodCredit() decimal.Decimal {
-	return a.periodCredit
+func (l *AuxiliaryLedger) PeriodCredit() decimal.Decimal {
+	return l.periodCredit
 }

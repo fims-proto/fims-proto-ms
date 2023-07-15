@@ -66,5 +66,11 @@ type Repository interface {
 	ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error)
 
 	CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error
+	UpdateAuxiliaryLedgersByPeriodAndAccountIds(
+		ctx context.Context,
+		periodId uuid.UUID,
+		auxiliaryAccountIds []uuid.UUID,
+		updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
+	) error
 	ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)
 }

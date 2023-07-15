@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"strings"
 	"time"
 
@@ -147,41 +148,41 @@ type lineItemPO struct {
 
 // table names
 
-func (a accountPO) TableName() string {
+func (a *accountPO) TableName() string {
 	return "a_accounts"
 }
 
-func (a auxiliaryCategoryPO) TableName() string {
+func (a *auxiliaryCategoryPO) TableName() string {
 	return "a_auxiliary_categories"
 }
 
-func (a auxiliaryAccountPO) TableName() string {
+func (a *auxiliaryAccountPO) TableName() string {
 	return "a_auxiliary_accounts"
 }
 
-func (p periodPO) TableName() string {
+func (p *periodPO) TableName() string {
 	return "a_periods"
 }
 
-func (l ledgerPO) TableName() string {
+func (l *ledgerPO) TableName() string {
 	return "a_ledgers"
 }
 
-func (a auxiliaryLedgerPO) TableName() string {
+func (a *auxiliaryLedgerPO) TableName() string {
 	return "a_auxiliary_ledgers"
 }
 
-func (v voucherPO) TableName() string {
+func (v *voucherPO) TableName() string {
 	return "a_vouchers"
 }
 
-func (l lineItemPO) TableName() string {
+func (l *lineItemPO) TableName() string {
 	return "a_line_items"
 }
 
 // schemas
 
-func (a accountPO) ResolveAssociation(entity string) (string, error) {
+func (a *accountPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return a.TableName(), nil
 	}
@@ -191,14 +192,14 @@ func (a accountPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("accountPO doesn't have association named %s", entity)
 }
 
-func (a auxiliaryCategoryPO) ResolveAssociation(entity string) (string, error) {
+func (a *auxiliaryCategoryPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return a.TableName(), nil
 	}
 	return "", fmt.Errorf("auxiliaryCategoryPO doesn't have association named %s", entity)
 }
 
-func (a auxiliaryAccountPO) ResolveAssociation(entity string) (string, error) {
+func (a *auxiliaryAccountPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return a.TableName(), nil
 	}
@@ -208,14 +209,14 @@ func (a auxiliaryAccountPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("auxiliaryAccountPO doesn't have association named %s", entity)
 }
 
-func (p periodPO) ResolveAssociation(entity string) (string, error) {
+func (p *periodPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return p.TableName(), nil
 	}
 	return "", fmt.Errorf("periodPO doesn't have association named %s", entity)
 }
 
-func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
+func (l *ledgerPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return l.TableName(), nil
 	}
@@ -225,7 +226,7 @@ func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("ledgerPO doesn't have association named %s", entity)
 }
 
-func (a auxiliaryLedgerPO) ResolveAssociation(entity string) (string, error) {
+func (a *auxiliaryLedgerPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return a.TableName(), nil
 	}
@@ -235,7 +236,7 @@ func (a auxiliaryLedgerPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("auxiliaryLedgerPO doesn't have association named %s", entity)
 }
 
-func (v voucherPO) ResolveAssociation(entity string) (string, error) {
+func (v *voucherPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return v.TableName(), nil
 	}
@@ -248,7 +249,7 @@ func (v voucherPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("voucherPO doesn't have association named %s", entity)
 }
 
-func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
+func (l *lineItemPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return l.TableName(), nil
 	}
@@ -259,6 +260,23 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 		return "AuxiliaryAccount", nil
 	}
 	return "", fmt.Errorf("lineItemPO doesn't have association named %s", entity)
+}
+
+// hooks
+
+func (v *voucherPO) BeforeUpdate(db *gorm.DB) error {
+	if db.Statement.Changed("LineItems") {
+		// remove existing line item first
+		for _, item := range v.LineItems {
+			if err := db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
+				return fmt.Errorf("failed to remove line item auxiliary account associations: %w", err)
+			}
+		}
+		if err := db.Where("voucher_id = ?", v.Id).Delete(&lineItemPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete line items: %w", err)
+		}
+	}
+	return nil
 }
 
 // mappers
@@ -313,7 +331,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 	)
 }
 
-func accountPOToDTO(po accountPO) query.Account {
+func accountPOToDTO(po *accountPO) query.Account {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
 		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
@@ -321,7 +339,7 @@ func accountPOToDTO(po accountPO) query.Account {
 
 	var categoryDTOs []query.AuxiliaryCategory
 	for _, category := range po.AuxiliaryCategories {
-		categoryDTOs = append(categoryDTOs, auxiliaryCategoryPOToDTO(category))
+		categoryDTOs = append(categoryDTOs, auxiliaryCategoryPOToDTO(&category))
 	}
 
 	return query.Account{
@@ -358,7 +376,7 @@ func auxiliaryCategoryBOToPO(bo auxiliary_category.AuxiliaryCategory) auxiliaryC
 	}
 }
 
-func auxiliaryCategoryPOToDTO(po auxiliaryCategoryPO) query.AuxiliaryCategory {
+func auxiliaryCategoryPOToDTO(po *auxiliaryCategoryPO) query.AuxiliaryCategory {
 	return query.AuxiliaryCategory{
 		Id:         po.Id,
 		SobId:      po.SobId,
@@ -396,10 +414,10 @@ func auxiliaryAccountBOToPO(bo auxiliary_account.AuxiliaryAccount) auxiliaryAcco
 	}
 }
 
-func auxiliaryAccountPOToDTO(po auxiliaryAccountPO) query.AuxiliaryAccount {
+func auxiliaryAccountPOToDTO(po *auxiliaryAccountPO) query.AuxiliaryAccount {
 	return query.AuxiliaryAccount{
 		Id:          po.Id,
-		Category:    auxiliaryCategoryPOToDTO(po.Category),
+		Category:    auxiliaryCategoryPOToDTO(&po.Category),
 		Key:         po.Key,
 		Title:       po.Title,
 		Description: po.Description,
@@ -434,8 +452,8 @@ func periodPOToBO(po periodPO) (*period.Period, error) {
 	)
 }
 
-func periodPOToDTO(po periodPO) query.Period {
-	return query.Period(po)
+func periodPOToDTO(po *periodPO) query.Period {
+	return query.Period(*po)
 }
 
 func ledgerBOToPO(bo ledger.Ledger) ledgerPO {
@@ -470,8 +488,8 @@ func ledgerPOToBO(po ledgerPO) (*ledger.Ledger, error) {
 	)
 }
 
-func ledgerPOToDTO(po ledgerPO) query.Ledger {
-	accountDTO := accountPOToDTO(po.Account)
+func ledgerPOToDTO(po *ledgerPO) query.Ledger {
+	accountDTO := accountPOToDTO(&po.Account)
 
 	return query.Ledger{
 		Id:             po.Id,
@@ -518,11 +536,11 @@ func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLed
 	)
 }
 
-func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
+func auxiliaryLedgerPOToDTO(po *auxiliaryLedgerPO) query.AuxiliaryLedger {
 	return query.AuxiliaryLedger{
 		Id:               po.Id,
 		PeriodId:         po.PeriodId,
-		AuxiliaryAccount: auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
+		AuxiliaryAccount: auxiliaryAccountPOToDTO(&po.AuxiliaryAccount),
 		OpeningBalance:   po.OpeningBalance,
 		EndingBalance:    po.EndingBalance,
 		PeriodDebit:      po.PeriodDebit,
@@ -586,8 +604,8 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 	)
 }
 
-func voucherPOToDTO(po voucherPO) query.Voucher {
-	periodDTO := periodPOToDTO(po.Period)
+func voucherPOToDTO(po *voucherPO) query.Voucher {
+	periodDTO := periodPOToDTO(&po.Period)
 
 	itemDTOs := pos2dtos(po.LineItems, lineItemPOToDTO)
 
@@ -655,11 +673,11 @@ func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 }
 
 func lineItemPOToDTO(po lineItemPO) query.LineItem {
-	accountDTO := accountPOToDTO(po.Account)
+	accountDTO := accountPOToDTO(&po.Account)
 
 	var auxiliaryAccounts []query.AuxiliaryAccount
 	for _, auxiliaryAccount := range po.AuxiliaryAccounts {
-		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountPOToDTO(auxiliaryAccount))
+		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountPOToDTO(&auxiliaryAccount))
 	}
 
 	return query.LineItem{
