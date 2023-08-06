@@ -358,6 +358,37 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
+  /sob/{sobId}/account/{accountId}:
+    get:
+      consumes:
+      - application/json
+      description: Get an account by id
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AccountResponse'
+        "404":
+          description: ""
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/http.Error'
+      tags:
+      - accounts
   /sob/{sobId}/account/{accountId}/assign-auxiliaries:
     post:
       consumes:

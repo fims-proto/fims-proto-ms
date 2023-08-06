@@ -9,6 +9,7 @@ import (
 
 type Queries struct {
 	PagingAccounts            query.PagingAccountsHandler
+	AccountById               query.AccountByIdHandler
 	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
 	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
 	CurrentPeriod             query.CurrentPeriodHandler
@@ -58,6 +59,7 @@ func (a *Application) Inject(
 ) {
 	a.Queries = Queries{
 		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
+		AccountById:               query.NewAccountByIdHandler(readModel),
 		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
 		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
 		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),

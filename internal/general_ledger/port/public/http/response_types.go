@@ -219,7 +219,7 @@ func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
 	}
 }
 
-func VoucherDTOToVO(dto query.Voucher) VoucherResponse {
+func voucherDTOToVO(dto query.Voucher) VoucherResponse {
 	var itemRes []LineItemResponse
 	for _, item := range dto.LineItems {
 		itemRes = append(itemRes, lineItemDTOToVO(item))

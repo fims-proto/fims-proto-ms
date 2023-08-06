@@ -19,6 +19,7 @@ func NewHandler(app *app.Application) Handler {
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/accounts", h.ReadPagingAccounts)
+	r.GET("/sob/:sobId/account/:accountId", h.ReadAccountById)
 	r.POST("/sob/:sobId/account/:accountId/assign-auxiliaries", h.AssignAuxiliaryCategoriesToAccount)
 
 	r.GET("/sob/:sobId/auxiliaries", h.ReadPagingAuxiliaryCategories)

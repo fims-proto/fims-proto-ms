@@ -30,7 +30,7 @@ func (h Handler) ReadAllVouchers(c *gin.Context) {
 		func(pageRequest data.PageRequest) (data.Page[query.Voucher], error) {
 			return h.app.Queries.PagingVouchers.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
-		VoucherDTOToVO,
+		voucherDTOToVO,
 	)
 }
 
@@ -56,7 +56,7 @@ func (h Handler) ReadVoucherById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, VoucherDTOToVO(v))
+	c.JSON(http.StatusOK, voucherDTOToVO(v))
 }
 
 // CreateVoucher godoc
@@ -88,7 +88,7 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusCreated, VoucherDTOToVO(createdVoucher))
+	c.JSON(http.StatusCreated, voucherDTOToVO(createdVoucher))
 }
 
 // UpdateVoucher godoc
