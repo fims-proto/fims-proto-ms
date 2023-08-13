@@ -343,10 +343,15 @@ func accountPOToDTO(po accountPO) query.Account {
 		categoryDTOs = append(categoryDTOs, auxiliaryCategoryPOToDTO(category))
 	}
 
+	var superiorAccountId *uuid.UUID
+	if po.SuperiorAccountId != uuid.Nil {
+		superiorAccountId = &po.SuperiorAccountId
+	}
+
 	return query.Account{
 		SobId:               po.SobId,
 		Id:                  po.Id,
-		SuperiorAccountId:   po.SuperiorAccountId,
+		SuperiorAccountId:   superiorAccountId,
 		Title:               po.Title,
 		AccountNumber:       po.AccountNumber,
 		NumberHierarchy:     numberHierarchy,

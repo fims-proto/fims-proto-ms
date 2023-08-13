@@ -17,7 +17,7 @@ type Error struct {
 type AccountResponse struct {
 	Id                  uuid.UUID                   `json:"id,omitempty"`
 	SobId               uuid.UUID                   `json:"sobId,omitempty"`
-	SuperiorAccountId   uuid.UUID                   `json:"superiorAccountId,omitempty"`
+	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
 	Title               string                      `json:"title,omitempty"`
 	AccountNumber       string                      `json:"accountNumber,omitempty"`
 	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`

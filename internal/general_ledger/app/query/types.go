@@ -12,7 +12,7 @@ import (
 type Account struct {
 	Id                  uuid.UUID
 	SobId               uuid.UUID
-	SuperiorAccountId   uuid.UUID
+	SuperiorAccountId   *uuid.UUID
 	Title               string
 	AccountNumber       string
 	NumberHierarchy     []int
