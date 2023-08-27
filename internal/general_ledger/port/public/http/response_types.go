@@ -21,7 +21,7 @@ type AccountResponse struct {
 	Title               string                      `json:"title,omitempty"`
 	AccountNumber       string                      `json:"accountNumber,omitempty"`
 	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
-	Level               int                         `json:"level,omitempty"`
+	Level               int                         `json:"level"`
 	AccountType         string                      `json:"accountType,omitempty"`
 	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
 	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories"`
@@ -52,8 +52,8 @@ type AuxiliaryAccountResponse struct {
 type PeriodResponse struct {
 	Id           uuid.UUID `json:"id,omitempty"`
 	SobId        uuid.UUID `json:"sobId,omitempty"`
-	FiscalYear   int       `json:"fiscalYear,omitempty"`
-	PeriodNumber int       `json:"periodNumber,omitempty"`
+	FiscalYear   int       `json:"fiscalYear"`
+	PeriodNumber int       `json:"periodNumber"`
 	OpeningTime  time.Time `json:"openingTime"`
 	EndingTime   time.Time `json:"endingTime"`
 	IsClosed     bool      `json:"isClosed"`
@@ -107,7 +107,7 @@ type VoucherResponse struct {
 	HeaderText         string             `json:"headerText,omitempty"`
 	DocumentNumber     string             `json:"documentNumber,omitempty"`
 	VoucherType        string             `json:"voucherType,omitempty"`
-	AttachmentQuantity int                `json:"attachmentQuantity,omitempty"`
+	AttachmentQuantity int                `json:"attachmentQuantity"`
 	Creator            *UserResponse      `json:"creator"`
 	Auditor            *UserResponse      `json:"auditor"`
 	Reviewer           *UserResponse      `json:"reviewer"`
