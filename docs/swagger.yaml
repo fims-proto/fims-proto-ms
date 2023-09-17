@@ -31,13 +31,6 @@ definitions:
       updatedAt:
         type: string
     type: object
-  http.AssignAuxiliaryCategoriesToAccountRequest:
-    properties:
-      categoryKeys:
-        items:
-          type: string
-        type: array
-    type: object
   http.AuditVoucherRequest:
     properties:
       auditor:
@@ -258,6 +251,19 @@ definitions:
       startingPeriodYear:
         type: integer
     type: object
+  http.UpdateAccountRequest:
+    properties:
+      balanceDirection:
+        type: string
+      categoryKeys:
+        items:
+          type: string
+        type: array
+      levelNumber:
+        type: integer
+      title:
+        type: string
+    type: object
   http.UpdateSobRequest:
     properties:
       accountsCodeLength:
@@ -389,11 +395,10 @@ paths:
             $ref: '#/definitions/http.Error'
       tags:
       - accounts
-  /sob/{sobId}/account/{accountId}/assign-auxiliaries:
-    post:
+    patch:
       consumes:
       - application/json
-      description: Assign auxiliary categories to account
+      description: Update account
       parameters:
       - description: Sob ID
         in: path
@@ -405,12 +410,12 @@ paths:
         name: accountId
         required: true
         type: string
-      - description: Account id and category ids
+      - description: Update account request
         in: body
-        name: AssignAuxiliaryCategoriesToAccountRequest
+        name: UpdateAccountRequest
         required: true
         schema:
-          $ref: '#/definitions/http.AssignAuxiliaryCategoriesToAccountRequest'
+          $ref: '#/definitions/http.UpdateAccountRequest'
       produces:
       - application/json
       responses:

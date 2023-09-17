@@ -65,11 +65,9 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/sob/{sobId}/account/{accountId}/assign-auxiliaries": {
-            "post": {
-                "description": "Assign auxiliary categories to account",
+            },
+            "patch": {
+                "description": "Update account",
                 "consumes": [
                     "application/json"
                 ],
@@ -95,12 +93,12 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Account id and category ids",
-                        "name": "AssignAuxiliaryCategoriesToAccountRequest",
+                        "description": "Update account request",
+                        "name": "UpdateAccountRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.AssignAuxiliaryCategoriesToAccountRequest"
+                            "$ref": "#/definitions/http.UpdateAccountRequest"
                         }
                     }
                 ],
@@ -1514,17 +1512,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AssignAuxiliaryCategoriesToAccountRequest": {
-            "type": "object",
-            "properties": {
-                "categoryKeys": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "http.AuditVoucherRequest": {
             "type": "object",
             "properties": {
@@ -1860,6 +1847,26 @@ const docTemplate = `{
                 },
                 "startingPeriodYear": {
                     "type": "integer"
+                }
+            }
+        },
+        "http.UpdateAccountRequest": {
+            "type": "object",
+            "properties": {
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "categoryKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "levelNumber": {
+                    "type": "integer"
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },

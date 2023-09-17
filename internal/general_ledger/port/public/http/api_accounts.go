@@ -59,29 +59,33 @@ func (h Handler) ReadAccountById(c *gin.Context) {
 	c.JSON(http.StatusOK, accountDTOToVO(v))
 }
 
-// AssignAuxiliaryCategoriesToAccount godoc
-// @Text Assign auxiliary categories to account
-// @Description Assign auxiliary categories to account
+// UpdateAccount godoc
+// @Text Update account
+// @Description Update account
 // @Tags accounts
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
 // @Param accountId path string true "Account ID"
-// @Param AssignAuxiliaryCategoriesToAccountRequest body AssignAuxiliaryCategoriesToAccountRequest true "Account id and category ids"
+// @Param UpdateAccountRequest body UpdateAccountRequest true "Update account request"
 // @Success 204
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/account/{accountId}/assign-auxiliaries [post]
-func (h Handler) AssignAuxiliaryCategoriesToAccount(c *gin.Context) {
-	var req AssignAuxiliaryCategoriesToAccountRequest
+// @Router /sob/{sobId}/account/{accountId} [patch]
+func (h Handler) UpdateAccount(c *gin.Context) {
+	var req UpdateAccountRequest
 	if err := c.ShouldBind(&req); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	cmd := command.AssignAuxiliaryCategoryCmd{
-		AccountId:    uuid.MustParse(c.Param("accountId")),
-		CategoryKeys: req.CategoryKeys,
+	cmd := command.UpdateAccountCmd{
+		AccountId:        uuid.MustParse(c.Param("accountId")),
+		SobId:            uuid.MustParse(c.Param("sobId")),
+		Title:            req.Title,
+		LevelNumber:      req.LevelNumber,
+		BalanceDirection: req.BalanceDirection,
+		CategoryKeys:     req.CategoryKeys,
 	}
-	if err := h.app.Commands.AssignAuxiliaryCategory.Handle(c, cmd); err != nil {
+	if err := h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func ComposeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
+func composeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
 	if len(numberHierarchy) > len(codeLengths) {
 		return "", fmt.Errorf("account number hierarchy %d exceeds max depth %d", len(numberHierarchy), len(codeLengths))
 	}

@@ -23,7 +23,30 @@ type Account struct {
 	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
 }
 
+// New takes all fields except accountNumber. It's calculated from numberHierarchy
 func New(
+	id uuid.UUID,
+	sobId uuid.UUID,
+	superiorAccountId uuid.UUID,
+	title string,
+	numberHierarchy []int,
+	codeLengths []int,
+	level int,
+	accountType string,
+	balanceDirection string,
+	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
+) (*Account, error) {
+	accountNumber, err := composeAccountNumber(numberHierarchy, codeLengths)
+	if err != nil {
+		return nil, err
+	}
+
+	return NewByAllFields(id, sobId, superiorAccountId, title, accountNumber, numberHierarchy, level, accountType, balanceDirection, auxiliaryCategories)
+}
+
+// NewByAllFields only difference from New function, is NewByAllFields takes accountNumber, and doesn't validate it.
+// Typically used in persistence level
+func NewByAllFields(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	superiorAccountId uuid.UUID,

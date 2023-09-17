@@ -115,25 +115,20 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
 
-				number, err := account.ComposeAccountNumber(numberHierarchy, codeLengthLimits)
-				if err != nil {
-					return nil, fmt.Errorf("failed to compose account number: %w", err)
-				}
-
 				domainAccount, err := account.New(
 					uuid.New(),
 					sobId,
 					superiorAccountId,
 					entry.title,
-					number,
 					numberHierarchy,
+					codeLengthLimits,
 					entry.level,
 					entry.accountType,
 					entry.balanceDirection,
 					nil,
 				)
 				if err != nil {
-					return nil, fmt.Errorf("dataload failed on account %s: %w", number, err)
+					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
 				}
 				preparedAccounts[entry.number] = domainAccount
 			}

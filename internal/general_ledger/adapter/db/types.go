@@ -318,7 +318,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		return nil, err
 	}
 
-	return account.New(
+	return account.NewByAllFields(
 		po.Id,
 		po.SobId,
 		po.SuperiorAccountId,

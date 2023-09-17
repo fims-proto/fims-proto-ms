@@ -23,7 +23,7 @@ type Queries struct {
 type Commands struct {
 	Initialize command.InitializeHandler
 
-	AssignAuxiliaryCategory command.AssignAuxiliaryCategoryHandler
+	UpdateAccount command.UpdateAccountHandler
 
 	ClosePeriod command.ClosePeriodHandler
 
@@ -72,7 +72,7 @@ func (a *Application) Inject(
 	a.Commands = Commands{
 		Initialize: command.NewInitializeHandler(repo, sobService, numberingService),
 
-		AssignAuxiliaryCategory: command.NewAssignAuxiliaryCategoryHandler(repo),
+		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
 
