@@ -49,12 +49,12 @@
                         }
                     },
                     "404": {
-                        "description": ""
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -97,12 +97,12 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -170,7 +170,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -238,7 +238,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -274,18 +274,18 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": ""
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -360,7 +360,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -403,18 +403,18 @@
                 ],
                 "responses": {
                     "201": {
-                        "description": ""
+                        "description": "Created"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -489,7 +489,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -525,12 +525,12 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -605,7 +605,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -673,7 +673,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -710,7 +710,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -752,12 +752,12 @@
                         }
                     },
                     "404": {
-                        "description": ""
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -800,18 +800,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -856,18 +856,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -912,18 +912,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -968,18 +968,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -1024,12 +1024,12 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -1074,18 +1074,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -1152,7 +1152,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -1196,13 +1196,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -1233,7 +1233,7 @@
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -1270,13 +1270,13 @@
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -1311,12 +1311,12 @@
                         }
                     },
                     "404": {
-                        "description": ""
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -1352,18 +1352,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_sob_port_public_http.Error"
                         }
                     }
                 }
@@ -1398,12 +1398,12 @@
                         }
                     },
                     "404": {
-                        "description": ""
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_user_port_public_http.Error"
                         }
                     }
                 }
@@ -1439,18 +1439,18 @@
                 ],
                 "responses": {
                     "204": {
-                        "description": ""
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_user_port_public_http.Error"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/http.Error"
+                            "$ref": "#/definitions/internal_user_port_public_http.Error"
                         }
                     }
                 }
@@ -1649,17 +1649,6 @@
                     "type": "string"
                 },
                 "voucherType": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.Error": {
-            "type": "object",
-            "properties": {
-                "message": {
-                    "type": "string"
-                },
-                "slug": {
                     "type": "string"
                 }
             }
@@ -1973,14 +1962,45 @@
                 }
             }
         },
+        "internal_general_ledger_port_public_http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_general_ledger_port_public_http.UserResponse": {
             "type": "object",
             "properties": {
                 "id": {
                     "type": "string"
                 },
-                "traits": {
-                    "type": "any"
+                "traits": {}
+            }
+        },
+        "internal_sob_port_public_http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_user_port_public_http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
                 }
             }
         },
@@ -1993,9 +2013,7 @@
                 "id": {
                     "type": "string"
                 },
-                "traits": {
-                    "type": "any"
-                },
+                "traits": {},
                 "updatedAt": {
                     "type": "string"
                 }
