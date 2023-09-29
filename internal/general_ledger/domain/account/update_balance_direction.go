@@ -13,7 +13,7 @@ func (a *Account) UpdateBalanceDirection(direction string) error {
 		return err
 	}
 
-	if a.superiorAccountId != uuid.Nil {
+	if a.superiorAccountId != uuid.Nil && a.balanceDirection != balanceDirection {
 		return fmt.Errorf("balance direction cannot be update when superior account exists")
 	}
 
