@@ -862,7 +862,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Aduti voucher\", function () {",
+							"pm.test(\"Audit voucher\", function () {",
 							"    pm.response.to.have.status(204)",
 							"})",
 							""
@@ -1079,7 +1079,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Aduti voucher\", function () {",
+							"pm.test(\"Audit voucher\", function () {",
 							"    pm.response.to.have.status(204)",
 							"})",
 							""

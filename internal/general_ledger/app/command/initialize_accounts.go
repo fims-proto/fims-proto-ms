@@ -3,20 +3,20 @@ package command
 import (
 	"context"
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	sobQuery "github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/balance_direction"
-
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 )
 
 type accountEntry struct {
@@ -47,12 +47,12 @@ func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repos
 func readFromCSV() ([]accountEntry, error) {
 	workDir, err := os.Getwd()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not get working directory")
+		return nil, fmt.Errorf("could not get working directory: %w", err)
 	}
 
 	csvFile, err := os.Open(filepath.Join(workDir, "dataload", "account", "accounts_xqykjzz.csv"))
 	if err != nil {
-		return nil, errors.Wrap(err, "could not open file")
+		return nil, fmt.Errorf("could not open file: %w", err)
 	}
 
 	csvReader := csv.NewReader(csvFile)
@@ -60,7 +60,7 @@ func readFromCSV() ([]accountEntry, error) {
 	// skip first line
 	_, err = csvReader.Read()
 	if err != nil {
-		return nil, errors.Wrap(err, "could not read file")
+		return nil, fmt.Errorf("could not read file: %w", err)
 	}
 
 	var entries []accountEntry
@@ -70,11 +70,11 @@ func readFromCSV() ([]accountEntry, error) {
 			break
 		}
 		if err != nil {
-			return nil, errors.Wrap(err, "could not read file")
+			return nil, fmt.Errorf("could not read file: %w", err)
 		}
 		level, err := strconv.Atoi(line[2])
 		if err != nil {
-			return nil, errors.Wrap(err, "convert level to number failed")
+			return nil, fmt.Errorf("failed to convert level to number: %w", err)
 		}
 		balanceDirection := line[5]
 		if balanceDirection == "" {
@@ -109,20 +109,26 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					levelNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
 					superiorAccount, ok := preparedAccounts[entry.superiorNumber]
 					if !ok {
-						return nil, errors.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
+						return nil, fmt.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
 					}
 					superiorAccountId = superiorAccount.Id()
 					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
 
-				number, err := account.ComposeAccountNumber(numberHierarchy, codeLengthLimits)
+				domainAccount, err := account.New(
+					uuid.New(),
+					sobId,
+					superiorAccountId,
+					entry.title,
+					numberHierarchy,
+					codeLengthLimits,
+					entry.level,
+					entry.accountType,
+					entry.balanceDirection,
+					nil,
+				)
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to compose account number")
-				}
-
-				domainAccount, err := account.New(uuid.New(), sobId, superiorAccountId, entry.title, number, numberHierarchy, entry.level, entry.accountType, entry.balanceDirection)
-				if err != nil {
-					return nil, errors.Wrapf(err, "dataload failed on account %s", number)
+					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
 				}
 				preparedAccounts[entry.number] = domainAccount
 			}
@@ -137,7 +143,7 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 		i++
 	}
 	if len(accounts) != len(accountEntries) {
-		return nil, errors.Errorf("prepared accounts size (%d) doesn't equal to CSV entries size (%d)", len(accounts), len(accountEntries))
+		return nil, fmt.Errorf("prepared accounts size (%d) doesn't equal to CSV entries size (%d)", len(accounts), len(accountEntries))
 	}
 	return accounts, nil
 }

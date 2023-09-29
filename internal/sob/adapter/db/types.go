@@ -1,19 +1,19 @@
 package db
 
 import (
+	"fmt"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 )
 
 type sobPO struct {
 	Id                  uuid.UUID `gorm:"type:uuid"`
-	Name                string    `gorm:"uniqueIndex"`
+	Name                string    `gorm:"uniqueIndex:UQ_Sobs_Name"`
 	Description         string
 	BaseCurrency        string
 	StartingPeriodYear  int
@@ -35,7 +35,7 @@ func (s sobPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return s.TableName(), nil
 	}
-	return "", errors.Errorf("sobPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("sobPO doesn't have association named %s", entity)
 }
 
 // mappers
@@ -43,7 +43,7 @@ func (s sobPO) ResolveAssociation(entity string) (string, error) {
 func sobBOToPO(bo sob.Sob) (sobPO, error) {
 	var intArray pgtype.Int4Array
 	if err := intArray.Set(bo.AccountsCodeLength()); err != nil {
-		return sobPO{}, errors.Wrap(err, "convert []int to Int4Array failed")
+		return sobPO{}, fmt.Errorf("failed to convert []int to Int4Array: %w", err)
 	}
 
 	return sobPO{
@@ -60,7 +60,7 @@ func sobBOToPO(bo sob.Sob) (sobPO, error) {
 func sobPOToBO(po sobPO) (*sob.Sob, error) {
 	var codesLength []int
 	if err := po.AccountsCodeLength.AssignTo(&codesLength); err != nil {
-		return nil, errors.Wrap(err, "assign Int4Array to []int failed")
+		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
 	}
 
 	return sob.New(
@@ -74,10 +74,10 @@ func sobPOToBO(po sobPO) (*sob.Sob, error) {
 	)
 }
 
-func sobPOToDTO(po sobPO) (query.Sob, error) {
+func sobPOToDTO(po sobPO) query.Sob {
 	var codesLength []int
 	if err := po.AccountsCodeLength.AssignTo(&codesLength); err != nil {
-		return query.Sob{}, errors.Wrap(err, "assign Int4Array to []int failed")
+		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
 	}
 
 	return query.Sob{
@@ -88,5 +88,5 @@ func sobPOToDTO(po sobPO) (query.Sob, error) {
 		StartingPeriodYear:  po.StartingPeriodYear,
 		StartingPeriodMonth: po.StartingPeriodMonth,
 		AccountsCodeLength:  codesLength, // from 4-2-2 to [4,2,2]
-	}, nil
+	}
 }

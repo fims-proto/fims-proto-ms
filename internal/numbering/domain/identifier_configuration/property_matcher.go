@@ -1,9 +1,8 @@
 package identifier_configuration
 
 import (
+	"errors"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 type PropertyMatcher struct {

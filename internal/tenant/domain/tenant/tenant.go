@@ -1,8 +1,9 @@
 package tenant
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type Tenant struct {

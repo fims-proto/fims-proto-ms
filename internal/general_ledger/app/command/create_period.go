@@ -2,9 +2,7 @@ package command
 
 import (
 	"context"
-
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
@@ -13,7 +11,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type createPeriodCmd struct {
@@ -31,49 +28,40 @@ func createPeriod(
 ) error {
 	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, true)
 	if err != nil {
-		return errors.Wrap(err, "failed to create period domain model")
+		return fmt.Errorf("failed to create period: %w", err)
 	}
 
 	// create numbering configuration for voucher entries in this period
 	if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
-		return errors.Wrap(err, "failed to create numbering configuration for period")
+		return fmt.Errorf("failed to create period: %w", err)
 	}
 
-	return repo.CreatePeriod(ctx, p)
+	_, _, err = repo.CreatePeriodIfNotExists(ctx, p)
+	return err
 }
 
 func createPeriodIfNotExists(
 	ctx context.Context,
 	cmd createPeriodCmd,
 	repo domain.Repository,
-	readModel query.GeneralLedgerReadModel,
 	numberingService service.NumberingService,
-) (uuid.UUID, error) {
-	existedPeriod, err := readModel.PeriodByFiscalYearAndNumber(ctx, cmd.SobId, cmd.FiscalYear, cmd.Number)
-	if err == nil {
-		// period exists
-		return existedPeriod.Id, nil
-	}
-	if _, ok := err.(commonErrors.ObjectNotFoundErr); !ok {
-		return uuid.Nil, errors.Wrap(err, "failed to read period by transaction time")
-	}
-
-	// create period
-	newPeriodId := uuid.New()
-
-	p, err := period.New(newPeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, false)
+) (*period.Period, error) {
+	p, err := period.New(uuid.New() /*dummy id*/, cmd.SobId, cmd.FiscalYear, cmd.Number, false)
 	if err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to create period domain model")
+		return nil, fmt.Errorf("failed to create period: %w", err)
 	}
 
-	// create numbering configuration for voucher entries in this period
-	if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, newPeriodId); err != nil {
-		return uuid.Nil, errors.Wrap(err, "failed to create numbering configuration for period")
+	p, created, err := repo.CreatePeriodIfNotExists(ctx, p)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create period: %w", err)
 	}
 
-	if err = repo.CreatePeriod(ctx, p); err != nil {
-		return uuid.Nil, err
-	} else {
-		return newPeriodId, nil
+	if created {
+		// create numbering configuration for voucher entries in this period
+		if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, p.Id()); err != nil {
+			return nil, fmt.Errorf("failed to create period: %w", err)
+		}
 	}
+
+	return p, nil
 }

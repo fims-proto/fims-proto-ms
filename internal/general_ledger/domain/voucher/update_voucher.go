@@ -1,10 +1,10 @@
 package voucher
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
@@ -24,9 +24,9 @@ func (d *Voucher) checkUpdatePossible(user uuid.UUID) error {
 	return nil
 }
 
-func (d *Voucher) UpdateLineItems(lineItems []LineItem, user uuid.UUID) error {
+func (d *Voucher) UpdateLineItems(lineItems []*LineItem, user uuid.UUID) error {
 	if err := d.checkUpdatePossible(user); err != nil {
-		return errors.Wrap(err, "update not allowed")
+		return fmt.Errorf("update not allowed: %w", err)
 	}
 
 	totalVal, err := sumLineItems(lineItems)
@@ -42,7 +42,7 @@ func (d *Voucher) UpdateLineItems(lineItems []LineItem, user uuid.UUID) error {
 
 func (d *Voucher) UpdateTransactionTime(transactionTime time.Time, user uuid.UUID) error {
 	if err := d.checkUpdatePossible(user); err != nil {
-		return errors.Wrap(err, "update not allowed")
+		return fmt.Errorf("update not allowed: %w", err)
 	}
 
 	if transactionTime.IsZero() {
@@ -55,7 +55,7 @@ func (d *Voucher) UpdateTransactionTime(transactionTime time.Time, user uuid.UUI
 
 func (d *Voucher) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumber string, user uuid.UUID) error {
 	if err := d.checkUpdatePossible(user); err != nil {
-		return errors.Wrap(err, "update not allowed")
+		return fmt.Errorf("update not allowed: %w", err)
 	}
 
 	if periodId == uuid.Nil {
@@ -73,7 +73,7 @@ func (d *Voucher) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumb
 
 func (d *Voucher) UpdateHeaderText(headerText string, user uuid.UUID) error {
 	if err := d.checkUpdatePossible(user); err != nil {
-		return errors.Wrap(err, "update not allowed")
+		return fmt.Errorf("update not allowed: %w", err)
 	}
 
 	if headerText == "" {

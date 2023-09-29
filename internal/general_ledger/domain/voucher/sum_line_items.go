@@ -5,7 +5,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
-func sumLineItems(lineItems []LineItem) (decimal.Decimal, error) {
+func sumLineItems(lineItems []*LineItem) (decimal.Decimal, error) {
 	if len(lineItems) == 0 {
 		return decimal.Decimal{}, errors.NewSlugError("voucher-emptyLineItems")
 	}
@@ -13,6 +13,10 @@ func sumLineItems(lineItems []LineItem) (decimal.Decimal, error) {
 	var debitInTotal decimal.Decimal
 	var creditInTotal decimal.Decimal
 	for _, item := range lineItems {
+		if item == nil {
+			return decimal.Decimal{}, errors.NewSlugError("voucher-nilLineItem")
+		}
+
 		debitInTotal = debitInTotal.Add(item.Debit())
 		creditInTotal = creditInTotal.Add(item.Credit())
 	}

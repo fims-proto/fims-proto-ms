@@ -2,12 +2,12 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain"
 )
@@ -41,7 +41,7 @@ func NewGenerateNextIdentifierHandler(repo domain.Repository, readModel query.Nu
 func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateNextIdentifierCmd) error {
 	configuration, err := h.readModel.ResolveIdentifierConfiguration(ctx, cmd.TargetBusinessObject, cmd.ObjectsToMatch)
 	if err != nil {
-		return errors.Wrap(err, "failed to handle generate identifier")
+		return fmt.Errorf("failed to handle generate identifier: %w", err)
 	}
 
 	return h.repo.UpdateIdentifierConfiguration(
@@ -52,12 +52,12 @@ func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateN
 
 			identifierBO, err := identifier.New(cmd.IdentifierId, config.Id(), config.Stringify())
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to create identifier domain entity")
+				return nil, fmt.Errorf("failed to create identifier domain entity: %w", err)
 			}
 
 			err = h.repo.CreateIdentifier(ctx, identifierBO)
 			if err != nil {
-				return nil, errors.Wrap(err, "failed to create identifier")
+				return nil, fmt.Errorf("failed to create identifier: %w", err)
 			}
 
 			return config, nil

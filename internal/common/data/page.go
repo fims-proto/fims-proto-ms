@@ -1,11 +1,10 @@
 package data
 
 import (
+	"fmt"
 	"math"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
-
-	"github.com/pkg/errors"
 )
 
 type Page[T any] interface {
@@ -30,7 +29,7 @@ type pageImplWrapper[T any] struct {
 
 func NewPage[T any](content []T, p pageable.Pageable, numberOfElements int) (Page[T], error) {
 	if numberOfElements < 0 {
-		return pageImplWrapper[T]{}, errors.Errorf("invalid numberOfElements %d", numberOfElements)
+		return pageImplWrapper[T]{}, fmt.Errorf("invalid numberOfElements %d", numberOfElements)
 	}
 	total := int(math.Ceil(float64(numberOfElements) / float64(p.PageSize())))
 

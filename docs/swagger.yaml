@@ -6,6 +6,10 @@ definitions:
         type: string
       accountType:
         type: string
+      auxiliaryCategories:
+        items:
+          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+        type: array
       balanceDirection:
         type: string
       createdAt:
@@ -30,6 +34,63 @@ definitions:
   http.AuditVoucherRequest:
     properties:
       auditor:
+        type: string
+    type: object
+  http.AuxiliaryAccountResponse:
+    properties:
+      category:
+        $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.AuxiliaryCategoryResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      isStandard:
+        type: boolean
+      key:
+        type: string
+      sobId:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.AuxiliaryItemRequest:
+    properties:
+      accountKey:
+        type: string
+      categoryKey:
+        type: string
+    type: object
+  http.CreateAuxiliaryAccountRequest:
+    properties:
+      description:
+        type: string
+      key:
+        type: string
+      title:
+        type: string
+    type: object
+  http.CreateAuxiliaryCategoryRequest:
+    properties:
+      key:
+        type: string
+      title:
         type: string
     type: object
   http.CreateSobRequest:
@@ -66,13 +127,6 @@ definitions:
       voucherType:
         type: string
     type: object
-  http.Error:
-    properties:
-      message:
-        type: string
-      slug:
-        type: string
-    type: object
   http.LedgerResponse:
     properties:
       account:
@@ -102,6 +156,10 @@ definitions:
     properties:
       accountNumber:
         type: string
+      auxiliaryAccounts:
+        items:
+          $ref: '#/definitions/http.AuxiliaryItemRequest'
+        type: array
       credit:
         type: number
       debit:
@@ -117,6 +175,10 @@ definitions:
         type: string
       accountNumber:
         type: string
+      auxiliaryAccounts:
+        items:
+          $ref: '#/definitions/http.AuxiliaryAccountResponse'
+        type: array
       createdAt:
         type: string
       credit:
@@ -181,6 +243,19 @@ definitions:
         type: integer
       startingPeriodYear:
         type: integer
+    type: object
+  http.UpdateAccountRequest:
+    properties:
+      balanceDirection:
+        type: string
+      categoryKeys:
+        items:
+          type: string
+        type: array
+      levelNumber:
+        type: integer
+      title:
+        type: string
     type: object
   http.UpdateSobRequest:
     properties:
@@ -254,12 +329,32 @@ definitions:
       voucherType:
         type: string
     type: object
+  internal_general_ledger_port_public_http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
   internal_general_ledger_port_public_http.UserResponse:
     properties:
       id:
         type: string
-      traits:
-        type: any
+      traits: {}
+    type: object
+  internal_sob_port_public_http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
+  internal_user_port_public_http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
     type: object
   internal_user_port_public_http.UserResponse:
     properties:
@@ -267,8 +362,7 @@ definitions:
         type: string
       id:
         type: string
-      traits:
-        type: any
+      traits: {}
       updatedAt:
         type: string
     type: object
@@ -282,6 +376,69 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
+  /sob/{sobId}/account/{accountId}:
+    get:
+      consumes:
+      - application/json
+      description: Get an account by id
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AccountResponse'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - accounts
+    patch:
+      consumes:
+      - application/json
+      description: Update account
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: Update account request
+        in: body
+        name: UpdateAccountRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - accounts
   /sob/{sobId}/accounts:
     get:
       consumes:
@@ -325,9 +482,224 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - accounts
+  /sob/{sobId}/auxiliaries:
+    get:
+      consumes:
+      - application/json
+      description: List all auxiliary categories
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: title eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - auxiliary accounts
+    post:
+      consumes:
+      - application/json
+      description: Create auxiliary category
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Create auxiliary category request
+        in: body
+        name: CreateAuxiliaryCategoryRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateAuxiliaryCategoryRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - auxiliary accounts
+  /sob/{sobId}/auxiliary/{categoryKey}/accounts:
+    get:
+      consumes:
+      - application/json
+      description: List all auxiliary accounts
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category Key
+        in: path
+        name: categoryKey
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: title eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.AuxiliaryAccountResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - auxiliary accounts
+    post:
+      consumes:
+      - application/json
+      description: Create auxiliary account
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category Key
+        in: path
+        name: categoryKey
+        required: true
+        type: string
+      - description: Create auxiliary account request
+        in: body
+        name: CreateAuxiliaryAccountRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateAuxiliaryAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - auxiliary accounts
+  /sob/{sobId}/period/{periodId}/auxiliary-ledgers:
+    get:
+      consumes:
+      - application/json
+      description: List all auxiliary ledgers
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: title eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.LedgerResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - auxiliary ledgers
   /sob/{sobId}/period/{periodId}/close:
     post:
       consumes:
@@ -348,11 +720,11 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
   /sob/{sobId}/period/{periodId}/ledgers:
@@ -403,7 +775,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
   /sob/{sobId}/periods:
@@ -449,7 +821,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
   /sob/{sobId}/periods/current:
@@ -473,10 +845,10 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
-  /sob/{sobId}/voucher/{id}:
+  /sob/{sobId}/voucher/{voucherId}:
     get:
       consumes:
       - application/json
@@ -489,7 +861,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       produces:
@@ -500,11 +872,11 @@ paths:
           schema:
             $ref: '#/definitions/http.VoucherResponse'
         "404":
-          description: ""
+          description: Not Found
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
     patch:
@@ -519,7 +891,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       - description: Update voucher request
@@ -532,18 +904,18 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
-  /sob/{sobId}/voucher/{id}/audit:
+  /sob/{sobId}/voucher/{voucherId}/audit:
     post:
       consumes:
       - application/json
@@ -556,7 +928,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       - description: AuditVoucher voucher request, auditor user ID
@@ -569,18 +941,18 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
-  /sob/{sobId}/voucher/{id}/cancel-audit:
+  /sob/{sobId}/voucher/{voucherId}/cancel-audit:
     post:
       consumes:
       - application/json
@@ -593,7 +965,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       - description: Cancel audit voucher request, auditor user ID
@@ -606,18 +978,18 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
-  /sob/{sobId}/voucher/{id}/cancel-review:
+  /sob/{sobId}/voucher/{voucherId}/cancel-review:
     post:
       consumes:
       - application/json
@@ -630,7 +1002,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       - description: Cancel review voucher request, reviewer user ID
@@ -643,18 +1015,18 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
-  /sob/{sobId}/voucher/{id}/post:
+  /sob/{sobId}/voucher/{voucherId}/post:
     post:
       consumes:
       - application/json
@@ -667,7 +1039,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       - description: PostVoucher voucher request, poster user ID
@@ -680,14 +1052,14 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
-  /sob/{sobId}/voucher/{id}/review:
+  /sob/{sobId}/voucher/{voucherId}/review:
     post:
       consumes:
       - application/json
@@ -700,7 +1072,7 @@ paths:
         type: string
       - description: Voucher ID
         in: path
-        name: id
+        name: voucherId
         required: true
         type: string
       - description: ReviewVoucher voucher request, reviewer user ID
@@ -713,15 +1085,15 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
   /sob/{sobId}/vouchers:
@@ -766,7 +1138,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
     post:
@@ -795,11 +1167,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - vouchers
   /sobs:
@@ -819,7 +1191,7 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
       tags:
       - sobs
     post:
@@ -843,11 +1215,11 @@ paths:
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
       tags:
       - sobs
   /sobs/{sobId}:
@@ -869,11 +1241,11 @@ paths:
           schema:
             $ref: '#/definitions/http.SobResponse'
         "404":
-          description: ""
+          description: Not Found
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
       tags:
       - sobs
     patch:
@@ -896,15 +1268,15 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_sob_port_public_http.Error'
       tags:
       - sobs
   /user/{userId}:
@@ -926,11 +1298,11 @@ paths:
           schema:
             $ref: '#/definitions/internal_user_port_public_http.UserResponse'
         "404":
-          description: ""
+          description: Not Found
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_user_port_public_http.Error'
       tags:
       - users
     patch:
@@ -953,15 +1325,15 @@ paths:
       - application/json
       responses:
         "204":
-          description: ""
+          description: No Content
         "400":
           description: Bad Request
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_user_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/http.Error'
+            $ref: '#/definitions/internal_user_port_public_http.Error'
       tags:
       - users
 swagger: "2.0"

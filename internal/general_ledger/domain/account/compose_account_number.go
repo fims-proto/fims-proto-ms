@@ -4,21 +4,19 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
-func ComposeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
+func composeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
 	if len(numberHierarchy) > len(codeLengths) {
-		return "", errors.Errorf("account number hierarchy %d exceeds max depth %d", len(numberHierarchy), len(codeLengths))
+		return "", fmt.Errorf("account number hierarchy %d exceeds max depth %d", len(numberHierarchy), len(codeLengths))
 	}
 
 	for i := 0; i < len(numberHierarchy); i++ {
 		if numberHierarchy[i] < 1 {
-			return "", errors.Errorf("account number %d at level %d cannot be smaller than 1", numberHierarchy[i], i)
+			return "", fmt.Errorf("account number %d at level %d cannot be smaller than 1", numberHierarchy[i], i)
 		}
 		if len(strconv.Itoa(numberHierarchy[i])) > codeLengths[i] {
-			return "", errors.Errorf("account number %d at level %d exceeds max length (%d)", numberHierarchy[i], i, codeLengths[i])
+			return "", fmt.Errorf("account number %d at level %d exceeds max length (%d)", numberHierarchy[i], i, codeLengths[i])
 		}
 	}
 

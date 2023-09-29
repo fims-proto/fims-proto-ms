@@ -2,7 +2,7 @@ package ledger
 
 import (
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/balance_direction"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 )
 
 func (l *Ledger) UpdateBalance(debit, credit decimal.Decimal) {

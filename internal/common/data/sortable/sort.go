@@ -1,7 +1,8 @@
 package sortable
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data/field"
 )
 
@@ -23,7 +24,7 @@ func NewSort(fieldName, order string) (Sort, error) {
 		return nil, err
 	}
 	if order != "desc" && order != "asc" {
-		return nil, errors.Errorf("invalid order %s", order)
+		return nil, fmt.Errorf("invalid order %s", order)
 	}
 
 	return sortImpl{

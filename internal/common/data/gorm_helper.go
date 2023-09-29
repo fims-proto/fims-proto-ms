@@ -2,8 +2,8 @@ package data
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/schema"
@@ -15,7 +15,7 @@ func SearchEntities[PO schema.Schema, DTO any](
 	ctx context.Context,
 	r PageRequest,
 	po PO,
-	convert func(po PO) (DTO, error),
+	convert func(po PO) DTO,
 	db *gorm.DB,
 ) (Page[DTO], error) {
 	var persistentObjects []PO
@@ -23,7 +23,7 @@ func SearchEntities[PO schema.Schema, DTO any](
 
 	var count int64
 	if err := tx.Model(&po).Count(&count).Error; err != nil {
-		return nil, errors.Wrap(err, "failed to count entities")
+		return nil, fmt.Errorf("failed to count entities: %w", err)
 	}
 
 	if err := tx.
@@ -31,15 +31,12 @@ func SearchEntities[PO schema.Schema, DTO any](
 		Scopes(sortable.Sorting(r, po)).
 		Find(&persistentObjects).
 		Error; err != nil {
-		return nil, errors.Wrapf(err, "failed to search entities")
+		return nil, fmt.Errorf("failed to search entities: %w", err)
 	}
 
 	var dataTransferObjects []DTO
 	for _, persistentObject := range persistentObjects {
-		dto, err := convert(persistentObject)
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to map entity to DTO")
-		}
+		dto := convert(persistentObject)
 		dataTransferObjects = append(dataTransferObjects, dto)
 	}
 

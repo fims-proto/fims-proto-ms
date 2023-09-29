@@ -1,9 +1,8 @@
 package sortable
 
 import (
+	"fmt"
 	"strings"
-
-	"github.com/pkg/errors"
 )
 
 func NewSortableFromQuery(sort string) (Sortable, error) {
@@ -20,7 +19,7 @@ func NewSortableFromQuery(sort string) (Sortable, error) {
 		} else if len(elements) == 2 {
 			sortFields[elements[0]] = elements[1]
 		} else {
-			return nil, errors.Errorf("invalid sort query parameter %s", sort)
+			return nil, fmt.Errorf("invalid sort query parameter %s", sort)
 		}
 	}
 
@@ -28,7 +27,7 @@ func NewSortableFromQuery(sort string) (Sortable, error) {
 	for field, order := range sortFields {
 		sort, err := NewSort(field, order)
 		if err != nil {
-			return nil, errors.Wrap(err, "failed to create sorts request")
+			return nil, fmt.Errorf("failed to create sorts request: %w", err)
 		}
 		sorts = append(sorts, sort)
 	}

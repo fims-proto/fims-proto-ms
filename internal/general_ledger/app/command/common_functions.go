@@ -2,13 +2,16 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
+
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
@@ -17,43 +20,75 @@ import (
 // prepareLineItems prepares line item domain objects and performs necessary checks
 func prepareLineItems(
 	ctx context.Context,
-	readModel query.GeneralLedgerReadModel,
+	repo domain.Repository,
 	sobId uuid.UUID,
 	commands []LineItemCmd,
-) ([]voucher.LineItem, error) {
-	// validate account numbers
+) ([]*voucher.LineItem, error) {
 	var accountNumbers []string
+	var auxiliaryPair []auxiliary_account.AuxiliaryPair
 	for _, item := range commands {
 		accountNumbers = append(accountNumbers, item.AccountNumber)
+		for _, pair := range item.AuxiliaryAccounts {
+			auxiliaryPair = append(auxiliaryPair, auxiliary_account.AuxiliaryPair{
+				CategoryKey: pair.CategoryKey,
+				AccountKey:  pair.AccountKey,
+			})
+		}
 	}
 
-	accounts, err := readModel.AccountsByNumbers(ctx, sobId, accountNumbers)
+	// validate account numbers
+	accounts, err := repo.ReadAccountsByNumbers(ctx, sobId, accountNumbers)
 	if err != nil {
-		return nil, errors.Wrap(err, "unable to validate account numbers")
+		return nil, fmt.Errorf("failed to read accounts: %w", err)
 	}
 
-	accountIds := utils.SliceToMap(
+	accountsMap := utils.SliceToMap(
 		accounts,
-		func(a query.Account) string { return a.AccountNumber },
-		func(a query.Account) uuid.UUID { return a.Id },
+		func(a *account.Account) string { return a.AccountNumber() },
+		func(a *account.Account) *account.Account { return a },
 	)
 
 	for _, number := range accountNumbers {
-		if _, ok := accountIds[number]; !ok {
-			return nil, commonErrors.NewSlugError("account-invalidAccountNumber", number)
+		if _, ok := accountsMap[number]; !ok {
+			return nil, commonErrors.ErrInvalidAccountNumber(number)
+		}
+	}
+
+	// validate auxiliary account keys
+	auxiliaryAccounts, err := repo.ReadAuxiliaryAccountsByPairs(ctx, sobId, auxiliaryPair)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read auxiliary accounts: %w", err)
+	}
+
+	auxiliaryAccountsMap := utils.SliceToMap(
+		auxiliaryAccounts,
+		func(a *auxiliary_account.AuxiliaryAccount) string { return a.Category().Key() + a.Key() },
+		func(a *auxiliary_account.AuxiliaryAccount) *auxiliary_account.AuxiliaryAccount { return a },
+	)
+
+	for _, key := range auxiliaryPair {
+		if _, ok := auxiliaryAccountsMap[key.CategoryKey+key.AccountKey]; !ok {
+			return nil, commonErrors.ErrInvalidAuxiliaryAccountKey(key.CategoryKey, key.AccountKey)
 		}
 	}
 
 	// prepare line items
-	var lineItems []voucher.LineItem
+	var lineItems []*voucher.LineItem
 	for _, item := range commands {
 		itemId := item.Id
 		if itemId == uuid.Nil {
 			itemId = uuid.New()
 		}
+		a := accountsMap[item.AccountNumber]
+		var auxiliaryAccountsForItem []*auxiliary_account.AuxiliaryAccount
+		for _, key := range item.AuxiliaryAccounts {
+			auxiliaryAccountsForItem = append(auxiliaryAccountsForItem, auxiliaryAccountsMap[key.CategoryKey+key.AccountKey])
+		}
 		lineItem, err := voucher.NewLineItem(
 			itemId,
-			accountIds[item.AccountNumber],
+			a.Id(),
+			a,
+			auxiliaryAccountsForItem,
 			item.Text,
 			item.Debit,
 			item.Credit,
@@ -61,18 +96,17 @@ func prepareLineItems(
 		if err != nil {
 			return nil, err
 		}
-		lineItems = append(lineItems, *lineItem)
+		lineItems = append(lineItems, lineItem)
 	}
 
 	return lineItems, nil
 }
 
-// readOrCreatePeriodForVoucher tries to get period id by given transaction time of a voucher, and will also check if the period is closed.
+// readPeriodIdAndCheck tries to get period id by given transaction time of a voucher, and will also check if the period is closed.
 // if no period exists for given transaction time, it creates one
-func readOrCreatePeriodForVoucher(
+func readPeriodIdAndCheck(
 	ctx context.Context,
 	repo domain.Repository,
-	readModel query.GeneralLedgerReadModel,
 	numberingService service.NumberingService,
 	sobId uuid.UUID,
 	transactionTime time.Time,
@@ -80,20 +114,19 @@ func readOrCreatePeriodForVoucher(
 	fiscalYear := transactionTime.Year()
 	periodNumber := int(transactionTime.Month())
 
-	existedPeriodId, err := createPeriodIfNotExists(ctx, createPeriodCmd{
+	p, err := createPeriodIfNotExists(ctx, createPeriodCmd{
 		SobId:      sobId,
 		PeriodId:   uuid.Nil,
 		FiscalYear: fiscalYear,
 		Number:     periodNumber,
-	}, repo, readModel, numberingService)
+	}, repo, numberingService)
 	if err != nil {
 		return uuid.Nil, err
 	}
 
-	p, _ := readModel.PeriodById(ctx, existedPeriodId)
-	if p.IsClosed {
-		return uuid.Nil, commonErrors.NewSlugError("voucher-periodClosed")
+	if p.IsClosed() {
+		return uuid.Nil, commonErrors.ErrPeriodClosed()
 	}
 
-	return existedPeriodId, nil
+	return p.Id(), nil
 }

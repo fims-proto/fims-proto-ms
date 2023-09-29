@@ -1,8 +1,9 @@
 package ledger
 
 import (
+	"errors"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 )
@@ -10,16 +11,26 @@ import (
 type Ledger struct {
 	id             uuid.UUID
 	sobId          uuid.UUID
-	accountId      uuid.UUID
 	periodId       uuid.UUID
+	accountId      uuid.UUID
+	account        *account.Account
 	openingBalance decimal.Decimal
 	endingBalance  decimal.Decimal
 	periodDebit    decimal.Decimal
 	periodCredit   decimal.Decimal
-	account        account.Account
 }
 
-func New(id, sobId, accountId, periodId uuid.UUID, openingBalance, endingBalance, periodDebit, periodCredit decimal.Decimal, account account.Account) (*Ledger, error) {
+func New(
+	id uuid.UUID,
+	sobId uuid.UUID,
+	periodId uuid.UUID,
+	accountId uuid.UUID,
+	account *account.Account,
+	openingBalance decimal.Decimal,
+	endingBalance decimal.Decimal,
+	periodDebit decimal.Decimal,
+	periodCredit decimal.Decimal,
+) (*Ledger, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil ledger id")
 	}
@@ -28,12 +39,16 @@ func New(id, sobId, accountId, periodId uuid.UUID, openingBalance, endingBalance
 		return nil, errors.New("nil sob id")
 	}
 
+	if periodId == uuid.Nil {
+		return nil, errors.New("nil period id")
+	}
+
 	if accountId == uuid.Nil {
 		return nil, errors.New("nil account id")
 	}
 
-	if periodId == uuid.Nil {
-		return nil, errors.New("nil period id")
+	if account == nil {
+		return nil, errors.New("nil account")
 	}
 
 	return &Ledger{
@@ -57,12 +72,16 @@ func (l *Ledger) SobId() uuid.UUID {
 	return l.sobId
 }
 
+func (l *Ledger) PeriodId() uuid.UUID {
+	return l.periodId
+}
+
 func (l *Ledger) AccountId() uuid.UUID {
 	return l.accountId
 }
 
-func (l *Ledger) PeriodId() uuid.UUID {
-	return l.periodId
+func (l *Ledger) Account() *account.Account {
+	return l.account
 }
 
 func (l *Ledger) OpeningBalance() decimal.Decimal {
@@ -79,8 +98,4 @@ func (l *Ledger) PeriodDebit() decimal.Decimal {
 
 func (l *Ledger) PeriodCredit() decimal.Decimal {
 	return l.periodCredit
-}
-
-func (l *Ledger) Account() account.Account {
-	return l.account
 }

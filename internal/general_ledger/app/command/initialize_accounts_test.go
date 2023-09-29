@@ -4,6 +4,10 @@ import (
 	"context"
 	"testing"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -227,15 +231,51 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 
 type mockRepo struct{}
 
+func (m mockRepo) ReadAuxiliaryAccountsByPairs(context.Context, uuid.UUID, []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) Migrate(context.Context) error {
+	panic("implement me")
+}
+
+func (m mockRepo) EnableTx(context.Context, func(txCtx context.Context) error) error {
+	panic("implement me")
+}
+
 func (m mockRepo) InitialAccounts(context.Context, []*account.Account) error {
 	panic("implement me")
 }
 
-func (m mockRepo) CreatePeriod(context.Context, *period.Period) error {
+func (m mockRepo) UpdateAccount(context.Context, uuid.UUID, func(a *account.Account) (*account.Account, error)) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAllAccounts(context.Context, uuid.UUID) ([]*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAccountsByNumbers(context.Context, uuid.UUID, []string) ([]*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadSuperiorAccountsById(context.Context, uuid.UUID) ([]*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) CreatePeriodIfNotExists(context.Context, *period.Period) (*period.Period, bool, error) {
 	panic("implement me")
 }
 
 func (m mockRepo) UpdatePeriod(context.Context, uuid.UUID, func(p *period.Period) (*period.Period, error)) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadCurrentPeriod(context.Context, uuid.UUID) (*period.Period, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadPreviousPeriod(context.Context, uuid.UUID) (*period.Period, error) {
 	panic("implement me")
 }
 
@@ -247,19 +287,55 @@ func (m mockRepo) UpdateLedgersByPeriodAndAccountIds(context.Context, uuid.UUID,
 	panic("implement me")
 }
 
+func (m mockRepo) ReadLedgersByPeriod(context.Context, uuid.UUID) ([]*ledger.Ledger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadFirstLevelLedgersInPeriod(context.Context, uuid.UUID, uuid.UUID) ([]*ledger.Ledger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsProfitAndLossLedgersHavingBalanceInPeriod(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
 func (m mockRepo) CreateVoucher(context.Context, *voucher.Voucher) error {
 	panic("implement me")
 }
 
-func (m mockRepo) UpdateVoucher(context.Context, uuid.UUID, func(d *voucher.Voucher) (*voucher.Voucher, error)) error {
+func (m mockRepo) UpdateVoucher(context.Context, uuid.UUID, func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
 	panic("implement me")
 }
 
-func (m mockRepo) EnableTx(context.Context, func(txCtx context.Context) error) error {
+func (m mockRepo) ExistsVouchersNotPostedInPeriod(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
 	panic("implement me")
 }
 
-func (m mockRepo) Migrate(context.Context) error {
+func (m mockRepo) CreateAuxiliaryCategories(context.Context, []*auxiliary_category.AuxiliaryCategory) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, string) (*auxiliary_category.AuxiliaryCategory, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) CreateAuxiliaryAccounts(context.Context, []*auxiliary_account.AuxiliaryAccount) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAllAuxiliaryAccounts(context.Context, uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) CreateAuxiliaryLedgers(context.Context, []*auxiliary_ledger.AuxiliaryLedger) error {
+	panic("implement me")
+}
+
+func (m mockRepo) UpdateAuxiliaryLedgersByPeriodAndAccountIds(context.Context, uuid.UUID, []uuid.UUID, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryLedgersByPeriod(context.Context, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
 	panic("implement me")
 }
 

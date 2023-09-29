@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
@@ -10,7 +11,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type CreateSobCmd struct {
@@ -54,7 +54,7 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 		cmd.AccountsCodeLength,
 	)
 	if err != nil {
-		return errors.Wrap(err, "create sob failed")
+		return fmt.Errorf("failed to create sob: %w", err)
 	}
 
 	if err = h.repo.CreateSob(ctx, sobBO); err != nil {
@@ -63,7 +63,7 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 
 	// initialize general ledger for sob
 	if err = h.generalLedgerService.InitializeForSob(ctx, cmd.SobId); err != nil {
-		return errors.Wrapf(err, "failed to initialize accounts")
+		return fmt.Errorf("failed to initialzie account: %w", err)
 	}
 
 	return nil

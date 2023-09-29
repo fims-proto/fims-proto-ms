@@ -2,9 +2,8 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"time"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
@@ -13,7 +12,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type CreateVoucherCmd struct {
@@ -29,21 +27,12 @@ type CreateVoucherCmd struct {
 
 type CreateVoucherHandler struct {
 	repo             domain.Repository
-	readModel        query.GeneralLedgerReadModel
 	numberingService service.NumberingService
 }
 
-func NewCreateVoucherHandler(
-	repo domain.Repository,
-	readModel query.GeneralLedgerReadModel,
-	numberingService service.NumberingService,
-) CreateVoucherHandler {
+func NewCreateVoucherHandler(repo domain.Repository, numberingService service.NumberingService) CreateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
-	}
-
-	if readModel == nil {
-		panic("nil read model")
 	}
 
 	if numberingService == nil {
@@ -52,16 +41,15 @@ func NewCreateVoucherHandler(
 
 	return CreateVoucherHandler{
 		repo:             repo,
-		readModel:        readModel,
 		numberingService: numberingService,
 	}
 }
 
 func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		periodId, err := readOrCreatePeriodForVoucher(txCtx, h.repo, h.readModel, h.numberingService, cmd.SobId, cmd.TransactionTime)
+		periodId, err := readPeriodIdAndCheck(txCtx, h.repo, h.numberingService, cmd.SobId, cmd.TransactionTime)
 		if err != nil {
-			return errors.Wrap(err, "failed to read or create period")
+			return fmt.Errorf("failed to read or create period: %w", err)
 		}
 
 		return h.createVoucher(txCtx, cmd, periodId)
@@ -70,23 +58,23 @@ func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) 
 
 func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVoucherCmd, periodId uuid.UUID) error {
 	// prepare line items
-	lineItems, err := prepareLineItems(ctx, h.readModel, cmd.SobId, cmd.LineItems)
+	lineItems, err := prepareLineItems(ctx, h.repo, cmd.SobId, cmd.LineItems)
 	if err != nil {
-		return errors.Wrap(err, "failed to prepare line items")
+		return fmt.Errorf("failed to prepare line items: %w", err)
 	}
 
 	// get document number
 	identifier, err := h.numberingService.GenerateIdentifier(ctx, periodId, cmd.VoucherType)
 	if err != nil {
-		return errors.Wrap(err, "unable to generate next number")
+		return fmt.Errorf("failed to generate next number: %w", err)
 	}
 
 	newVoucher, err := voucher.New(
-		cmd.SobId,
 		cmd.VoucherId,
+		cmd.SobId,
 		periodId,
-		cmd.HeaderText,
 		cmd.VoucherType,
+		cmd.HeaderText,
 		identifier,
 		cmd.AttachmentQuantity,
 		cmd.Creator,

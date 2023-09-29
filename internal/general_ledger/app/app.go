@@ -8,20 +8,22 @@ import (
 )
 
 type Queries struct {
-	PagingAccounts        query.PagingAccountsHandler
-	AccountsByIds         query.AccountsByIdsHandler
-	AccountsByNumbers     query.AccountsByNumbersHandler
-	CurrentPeriod         query.CurrentPeriodHandler
-	PagingPeriods         query.PagingPeriodsHandler
-	PeriodsByIds          query.PeriodsByIdsHandler
-	PeriodById            query.PeriodByIdHandler
-	PagingLedgersByPeriod query.PagingLedgersByPeriodHandler
-	VoucherById           query.VoucherByIdHandler
-	PagingVouchers        query.PagingVouchersHandler
+	PagingAccounts            query.PagingAccountsHandler
+	AccountById               query.AccountByIdHandler
+	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
+	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
+	CurrentPeriod             query.CurrentPeriodHandler
+	PagingPeriods             query.PagingPeriodsHandler
+	PagingLedgersByPeriod     query.PagingLedgersByPeriodHandler
+	PagingAuxiliaryLedgers    query.PagingAuxiliaryLedgersHandler
+	VoucherById               query.VoucherByIdHandler
+	PagingVouchers            query.PagingVouchersHandler
 }
 
 type Commands struct {
 	Initialize command.InitializeHandler
+
+	UpdateAccount command.UpdateAccountHandler
 
 	ClosePeriod command.ClosePeriodHandler
 
@@ -32,6 +34,9 @@ type Commands struct {
 	CancelReviewVoucher command.CancelReviewVoucherHandler
 	UpdateVoucher       command.UpdateVoucherHandler
 	PostVoucher         command.PostVoucherHandler
+
+	CreateAuxiliaryCategory command.CreateAuxiliaryCategoryHandler
+	CreateAuxiliaryAccount  command.CreateAuxiliaryAccountHandler
 
 	Migrate command.MigrationHandler
 }
@@ -53,32 +58,34 @@ func (a *Application) Inject(
 	userService service.UserService,
 ) {
 	a.Queries = Queries{
-		PagingAccounts:    query.NewPagingAccountsHandler(readModel),
-		AccountsByNumbers: query.NewAccountsByNumbersHandler(readModel),
-		AccountsByIds:     query.NewAccountsByIdsHandler(readModel),
-
-		CurrentPeriod: query.NewCurrentPeriodHandler(readModel),
-		PagingPeriods: query.NewPagingPeriodsHandler(readModel),
-		PeriodsByIds:  query.NewPeriodsByIdsHandler(readModel),
-		PeriodById:    query.NewPeriodByIdHandler(readModel),
-
-		PagingLedgersByPeriod: query.NewPagingLedgersByPeriodHandler(readModel),
-
-		VoucherById:    query.NewVoucherByIdHandler(readModel, userService),
-		PagingVouchers: query.NewPagingVouchersHandler(readModel, userService),
+		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
+		AccountById:               query.NewAccountByIdHandler(readModel),
+		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
+		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
+		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
+		PagingPeriods:             query.NewPagingPeriodsHandler(readModel),
+		PagingLedgersByPeriod:     query.NewPagingLedgersByPeriodHandler(readModel),
+		PagingAuxiliaryLedgers:    query.NewPagingAuxiliaryLedgersHandler(readModel),
+		VoucherById:               query.NewVoucherByIdHandler(readModel, userService),
+		PagingVouchers:            query.NewPagingVouchersHandler(readModel, userService),
 	}
 	a.Commands = Commands{
-		Initialize: command.NewInitializeHandler(repo, readModel, sobService, numberingService),
+		Initialize: command.NewInitializeHandler(repo, sobService, numberingService),
 
-		ClosePeriod: command.NewClosePeriodHandler(repo, readModel, numberingService),
+		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 
-		CreateVoucher:       command.NewCreateVoucherHandler(repo, readModel, numberingService),
+		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
+
+		CreateVoucher:       command.NewCreateVoucherHandler(repo, numberingService),
 		AuditVoucher:        command.NewAuditVoucherHandler(repo),
 		CancelAuditVoucher:  command.NewCancelAuditVoucherHandler(repo),
 		ReviewVoucher:       command.NewReviewVoucherHandler(repo),
 		CancelReviewVoucher: command.NewCancelReviewVoucherHandler(repo),
-		UpdateVoucher:       command.NewUpdateVoucherHandler(repo, readModel, numberingService),
-		PostVoucher:         command.NewPostVoucherHandler(repo, readModel),
+		UpdateVoucher:       command.NewUpdateVoucherHandler(repo, numberingService),
+		PostVoucher:         command.NewPostVoucherHandler(repo),
+
+		CreateAuxiliaryCategory: command.NewCreateAuxiliaryCategoryHandler(repo),
+		CreateAuxiliaryAccount:  command.NewCreateAuxiliaryAccountHandler(repo),
 
 		Migrate: command.NewMigrationHandler(repo),
 	}

@@ -2,13 +2,14 @@ package tenantmanager
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sync"
 
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -88,7 +89,7 @@ func (t *Impl) loadOrStore(ctx context.Context, subdomain string) (value *tenant
 func (t *Impl) initiateTenant(ctx context.Context, subdomain string) (*tenant, error) {
 	queriedTenant, err := t.tenantService.ReadTenantBySubdomain(ctx, subdomain)
 	if err != nil {
-		return nil, errors.Wrap(err, "cannot load tenant")
+		return nil, fmt.Errorf("cannot load tenant: %w", err)
 	}
 
 	log.Debug(ctx, "trying to open connection for schema %s", queriedTenant.TenantId.String())
@@ -96,7 +97,7 @@ func (t *Impl) initiateTenant(ctx context.Context, subdomain string) (*tenant, e
 	// DB connection
 	db, err := t.dbConnector.Open(queriedTenant.DSN)
 	if err != nil {
-		return nil, errors.Wrap(err, "open db connection failed")
+		return nil, fmt.Errorf("failed to open db connection: %w", err)
 	}
 
 	return &tenant{

@@ -1,10 +1,10 @@
 package identifier_configuration
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type IdentifierConfiguration struct {
@@ -30,7 +30,7 @@ func New(id uuid.UUID, targetBusinessObject string, propertyMatchers []PropertyM
 	}
 
 	if counter < 0 {
-		return nil, errors.Errorf("unexpected configuration counter %d", counter)
+		return nil, fmt.Errorf("unexpected configuration counter %d", counter)
 	}
 
 	return &IdentifierConfiguration{

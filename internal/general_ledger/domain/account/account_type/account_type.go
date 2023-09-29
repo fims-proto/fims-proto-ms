@@ -1,6 +1,8 @@
 package account_type
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+)
 
 type AccountType struct {
 	slug string
@@ -36,5 +38,5 @@ func FromString(s string) (AccountType, error) {
 		return Common, nil
 	}
 
-	return Unknown, errors.Errorf("unknown account type: %s", s)
+	return Unknown, fmt.Errorf("unknown account type: %s", s)
 }
