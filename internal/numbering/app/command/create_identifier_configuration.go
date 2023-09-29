@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain"
 )
 
@@ -35,14 +35,14 @@ func (h CreateIdentifierConfigurationHandler) Handle(ctx context.Context, cmd Cr
 	for _, matcher := range cmd.PropertyMatchers {
 		propertyMatcher, err := identifier_configuration.NewPropertyMatcher(matcher.Name, matcher.Value)
 		if err != nil {
-			return errors.Wrap(err, "failed to handle configuration identifier creation")
+			return fmt.Errorf("failed to handle configuration identifier creation: %w", err)
 		}
 		propertyMatchers = append(propertyMatchers, *propertyMatcher)
 	}
 
 	configuration, err := identifier_configuration.New(cmd.IdentifierConfigurationId, cmd.TargetBusinessObject, propertyMatchers, 0, cmd.Prefix, cmd.Suffix)
 	if err != nil {
-		return errors.Wrap(err, "failed to handle configuration identifier creation")
+		return fmt.Errorf("failed to handle configuration identifier creation: %w", err)
 	}
 
 	return h.repo.CreateIdentifierConfiguration(ctx, configuration)

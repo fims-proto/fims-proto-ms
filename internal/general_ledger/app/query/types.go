@@ -10,17 +10,38 @@ import (
 )
 
 type Account struct {
-	Id                uuid.UUID
-	SobId             uuid.UUID
-	SuperiorAccountId uuid.UUID
-	Title             string
-	AccountNumber     string
-	NumberHierarchy   []int
-	Level             int
-	AccountType       string
-	BalanceDirection  string
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	Id                  uuid.UUID
+	SobId               uuid.UUID
+	SuperiorAccountId   *uuid.UUID
+	Title               string
+	AccountNumber       string
+	NumberHierarchy     []int
+	Level               int
+	AccountType         string
+	BalanceDirection    string
+	AuxiliaryCategories []AuxiliaryCategory
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
+}
+
+type AuxiliaryCategory struct {
+	Id         uuid.UUID
+	SobId      uuid.UUID
+	Key        string
+	Title      string
+	IsStandard bool
+	CreatedAt  time.Time
+	UpdatedAt  time.Time
+}
+
+type AuxiliaryAccount struct {
+	Id          uuid.UUID
+	Category    AuxiliaryCategory
+	Key         string
+	Title       string
+	Description string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 type Period struct {
@@ -50,20 +71,28 @@ type Ledger struct {
 	UpdatedAt      time.Time
 }
 
-type LineItem struct {
-	Id            uuid.UUID
-	AccountId     uuid.UUID
-	AccountNumber string
-	Text          string
-	Debit         decimal.Decimal
-	Credit        decimal.Decimal
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+type AuxiliaryLedger struct {
+	Id               uuid.UUID
+	PeriodId         uuid.UUID
+	AuxiliaryAccount AuxiliaryAccount
+	OpeningBalance   decimal.Decimal
+	EndingBalance    decimal.Decimal
+	PeriodDebit      decimal.Decimal
+	PeriodCredit     decimal.Decimal
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
-type User struct {
-	Id     uuid.UUID
-	Traits json.RawMessage
+type LineItem struct {
+	Id                uuid.UUID
+	AccountId         uuid.UUID
+	AccountNumber     string
+	AuxiliaryAccounts []AuxiliaryAccount
+	Text              string
+	Debit             decimal.Decimal
+	Credit            decimal.Decimal
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type Voucher struct {
@@ -76,10 +105,10 @@ type Voucher struct {
 	AttachmentQuantity int
 	Debit              decimal.Decimal
 	Credit             decimal.Decimal
-	Creator            User
-	Reviewer           User
-	Auditor            User
-	Poster             User
+	Creator            *User
+	Reviewer           *User
+	Auditor            *User
+	Poster             *User
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
@@ -87,4 +116,9 @@ type Voucher struct {
 	LineItems          []LineItem
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
+}
+
+type User struct {
+	Id     uuid.UUID
+	Traits json.RawMessage
 }

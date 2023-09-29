@@ -1,7 +1,8 @@
 package sob
 
 import (
-	"github.com/pkg/errors"
+	"errors"
+	"fmt"
 )
 
 func (s *Sob) UpdateName(name string) error {
@@ -25,11 +26,11 @@ func (s *Sob) UpdateAccountsCodeLength(accountsCodeLength []int) error {
 
 	for i, accountCodeLength := range accountsCodeLength {
 		if accountCodeLength < 1 || accountCodeLength > 6 {
-			return errors.Errorf("invalid account code length at level %d", i)
+			return fmt.Errorf("invalid account code length at level %d", i)
 		}
 		// account code length can only be enlarged
 		if i < len(s.accountsCodeLength) && accountCodeLength < s.accountsCodeLength[i] {
-			return errors.Errorf("cannot reduce account code length at level %d", i)
+			return fmt.Errorf("cannot reduce account code length at level %d", i)
 		}
 	}
 

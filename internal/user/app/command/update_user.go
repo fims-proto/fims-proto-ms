@@ -3,11 +3,11 @@ package command
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/user/domain"
 )
 
@@ -30,7 +30,7 @@ func NewUpdateUserHandler(repo domain.Repository) UpdateUserHandler {
 func (h UpdateUserHandler) Handle(ctx context.Context, cmd UpdateUserCmd) error {
 	return h.repo.UpsertUser(ctx, cmd.Id, func(user *user.User) (*user.User, error) {
 		if err := user.Update(cmd.Traits); err != nil {
-			return nil, errors.Wrap(err, "failed to update user")
+			return nil, fmt.Errorf("failed to update user: %w", err)
 		}
 		return user, nil
 	})

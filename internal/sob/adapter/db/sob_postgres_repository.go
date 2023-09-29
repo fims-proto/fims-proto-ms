@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/database"
@@ -9,7 +10,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -25,7 +25,7 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 	db := database.ReadDBFromContext(ctx)
 
 	if err := db.AutoMigrate(&sobPO{}); err != nil {
-		return errors.Wrap(err, "DB migration failed")
+		return fmt.Errorf("failed to migrate: %w", err)
 	}
 	return nil
 }
@@ -35,12 +35,10 @@ func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) erro
 
 	po, err := sobBOToPO(*sob)
 	if err != nil {
-		return errors.Wrap(err, "failed to sobBOToPO sob")
+		return err
 	}
 
-	return db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(&po).Error
-	})
+	return db.Create(&po).Error
 }
 
 func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {
@@ -49,22 +47,22 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 	return db.Transaction(func(tx *gorm.DB) error {
 		po := sobPO{}
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", sobId).Error; err != nil {
-			return errors.Wrap(err, "failed to find sob")
+			return fmt.Errorf("failed to find sob: %w", err)
 		}
 
 		bo, err := sobPOToBO(po)
 		if err != nil {
-			return errors.Wrap(err, "failed to unmarshal sob")
+			return err
 		}
 
 		updatedBO, err := updateFn(bo)
 		if err != nil {
-			return errors.Wrap(err, "failed to update sob in transaction")
+			return fmt.Errorf("failed to update sob: %w", err)
 		}
 
 		po, err = sobBOToPO(*updatedBO)
 		if err != nil {
-			return errors.Wrap(err, "failed to sobBOToPO sob")
+			return err
 		}
 
 		return tx.Save(&po).Error
@@ -82,13 +80,8 @@ func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (qu
 
 	dbSob := sobPO{}
 	if err := db.Where("id = ?", sobId).First(&dbSob).Error; err != nil {
-		return query.Sob{}, errors.Wrapf(err, "failed to read sob %s", sobId)
+		return query.Sob{}, fmt.Errorf("failed to read sob %s: %w", sobId, err)
 	}
 
-	querySob, err := sobPOToDTO(dbSob)
-	if err != nil {
-		return query.Sob{}, errors.Wrap(err, "failed to unmarshal sob")
-	}
-
-	return querySob, nil
+	return sobPOToDTO(dbSob), nil
 }

@@ -2,6 +2,7 @@ package ginmiddleware
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github/fims-proto/fims-proto-ms/internal/common/database"
@@ -9,7 +10,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -36,7 +36,7 @@ func ResolveTenantBySubdomain(tenantManager tenantManager) gin.HandlerFunc {
 
 		db, err := tenantManager.GetDBConnBySubdomain(c, subdomain)
 		if err != nil {
-			panic(errors.Wrapf(err, "failed to get DB connection by subdomanin %s", subdomain))
+			panic(fmt.Errorf("failed to get DB connection by subdomanin %s: %w", subdomain, err))
 		}
 
 		// set DB properties to request context

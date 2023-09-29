@@ -2,9 +2,9 @@ package command
 
 import (
 	"context"
+	"fmt"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
@@ -12,7 +12,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type UpdateVoucherCmd struct {
@@ -25,21 +24,12 @@ type UpdateVoucherCmd struct {
 
 type UpdateVoucherHandler struct {
 	repo             domain.Repository
-	readModel        query.GeneralLedgerReadModel
 	numberingService service.NumberingService
 }
 
-func NewUpdateVoucherHandler(
-	repo domain.Repository,
-	readModel query.GeneralLedgerReadModel,
-	numberingService service.NumberingService,
-) UpdateVoucherHandler {
+func NewUpdateVoucherHandler(repo domain.Repository, numberingService service.NumberingService) UpdateVoucherHandler {
 	if repo == nil {
 		panic("nil repo")
-	}
-
-	if readModel == nil {
-		panic("nil read model")
 	}
 
 	if numberingService == nil {
@@ -48,7 +38,6 @@ func NewUpdateVoucherHandler(
 
 	return UpdateVoucherHandler{
 		repo:             repo,
-		readModel:        readModel,
 		numberingService: numberingService,
 	}
 }
@@ -66,28 +55,28 @@ func (h UpdateVoucherHandler) updateVoucher(ctx context.Context, cmd UpdateVouch
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {
 			// update line items
 			if len(cmd.LineItems) > 0 {
-				lineItems, err := prepareLineItems(ctx, h.readModel, v.SobId(), cmd.LineItems)
+				lineItems, err := prepareLineItems(ctx, h.repo, v.SobId(), cmd.LineItems)
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to prepare line items")
+					return nil, fmt.Errorf("failed to prepare line items: %w", err)
 				}
 
-				if err := v.UpdateLineItems(lineItems, cmd.Updater); err != nil {
+				if err = v.UpdateLineItems(lineItems, cmd.Updater); err != nil {
 					return nil, err
 				}
 			}
 
 			// update transaction time (and period and document number, if needed)
 			if !cmd.TransactionTime.IsZero() {
-				periodId, err := readOrCreatePeriodForVoucher(ctx, h.repo, h.readModel, h.numberingService, v.SobId(), cmd.TransactionTime)
+				periodId, err := readPeriodIdAndCheck(ctx, h.repo, h.numberingService, v.SobId(), cmd.TransactionTime)
 				if err != nil {
-					return nil, errors.Wrap(err, "failed to read or create period")
+					return nil, fmt.Errorf("failed to read or create period: %w", err)
 				}
 
 				if periodId != v.PeriodId() {
 					// different period, need to regenerate voucher id
 					identifier, err := h.numberingService.GenerateIdentifier(ctx, periodId, v.VoucherType().String())
 					if err != nil {
-						return nil, errors.Wrap(err, "failed to re-generate voucher number")
+						return nil, fmt.Errorf("failed to re-generate voucher number: %w", err)
 					}
 					if err = v.UpdatePeriodAndDocumentNumber(periodId, identifier, cmd.Updater); err != nil {
 						return nil, err

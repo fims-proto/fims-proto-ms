@@ -2,11 +2,11 @@ package query
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 )
 
@@ -40,7 +40,7 @@ func (h PagingVouchersHandler) Handle(ctx context.Context, sobId uuid.UUID, page
 
 	vouchers, err = enrichUserName(ctx, h.userService, vouchers)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to enrich user in voucher")
+		return nil, fmt.Errorf("failed to enrich user in voucher: %w", err)
 	}
 
 	return data.NewPage(vouchers, pageRequest, entriesPage.NumberOfElements())

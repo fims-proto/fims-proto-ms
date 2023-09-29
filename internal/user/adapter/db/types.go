@@ -2,13 +2,13 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
 )
 
@@ -30,7 +30,7 @@ func (u userPO) TableName() string {
 func userBOToPO(bo user.User) (userPO, error) {
 	var traits pgtype.JSONB
 	if err := traits.Set(bo.Traits()); err != nil {
-		return userPO{}, errors.Wrap(err, "convert json.RawMessage to pgtype.JSONB failed")
+		return userPO{}, fmt.Errorf("failed to convert json.RawMessage to pgtype.JSONB: %w", err)
 	}
 
 	return userPO{
@@ -43,11 +43,11 @@ func userPOToBO(po userPO) (*user.User, error) {
 	var traits json.RawMessage
 	marshalJSON, err := po.Traits.MarshalJSON()
 	if err != nil {
-		return nil, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
+		return nil, fmt.Errorf("failed to convert pgtype.JSONB to json.RawMessage: %w", err)
 	}
 
 	if err = traits.UnmarshalJSON(marshalJSON); err != nil {
-		return nil, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
+		return nil, fmt.Errorf("failed to pgtype.JSONB to json.RawMessage: %w", err)
 	}
 
 	return user.New(po.Id, traits)
@@ -57,11 +57,11 @@ func userPOToDTO(po userPO) (query.User, error) {
 	var traits json.RawMessage
 	marshalJSON, err := po.Traits.MarshalJSON()
 	if err != nil {
-		return query.User{}, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
+		return query.User{}, fmt.Errorf("failed to pgtype.JSONB to json.RawMessage: %w", err)
 	}
 
 	if err = traits.UnmarshalJSON(marshalJSON); err != nil {
-		return query.User{}, errors.Wrap(err, "convert pgtype.JSONB to json.RawMessage failed")
+		return query.User{}, fmt.Errorf("failed to pgtype.JSONB to json.RawMessage: %w", err)
 	}
 
 	return query.User{

@@ -2,11 +2,12 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/tenant/app/query"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"gorm.io/gorm"
 )
 
@@ -27,9 +28,9 @@ func (t TenantPostgresRepository) TenantById(ctx context.Context, tenantId uuid.
 
 	if err := t.db.WithContext(ctx).First(&po, "id = ?", tenantId).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return query.Tenant{}, errors.Wrapf(err, "tenant %s does not exist", tenantId)
+			return query.Tenant{}, fmt.Errorf("tenant %s does not exist: %w", tenantId, err)
 		} else {
-			return query.Tenant{}, errors.Wrapf(err, "unknown error when get tenant %s", tenantId)
+			return query.Tenant{}, fmt.Errorf("unknown error when get tenant %s: %w", tenantId, err)
 		}
 	}
 
@@ -41,9 +42,9 @@ func (t TenantPostgresRepository) TenantBySubdomain(ctx context.Context, subdoma
 
 	if err := t.db.WithContext(ctx).Where("subdomain = ?", subdomain).First(&po).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return query.Tenant{}, errors.Wrapf(err, "tenant %s does not exist", subdomain)
+			return query.Tenant{}, fmt.Errorf("tenant %s does not exist: %w", subdomain, err)
 		} else {
-			return query.Tenant{}, errors.Wrapf(err, "unknown error when get tenant %s", subdomain)
+			return query.Tenant{}, fmt.Errorf("unknown error when get tenant %s: %w", subdomain, err)
 		}
 	}
 

@@ -1,9 +1,9 @@
 package filterable
 
 import (
-	"github/fims-proto/fims-proto-ms/internal/common/data/field"
+	"fmt"
 
-	"github.com/pkg/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/data/field"
 )
 
 type Filter interface {
@@ -31,11 +31,11 @@ func NewFilter[T any](fieldName string, operator Operator, values ...T) (Filter,
 	switch o {
 	case OptBtw:
 		if len(values) != 2 {
-			return nil, errors.Errorf("invalid values for operator %s", o)
+			return nil, fmt.Errorf("invalid values for operator %s", o)
 		}
 	default:
 		if len(values) == 0 {
-			return nil, errors.Errorf("invalid values for operator %s", o)
+			return nil, fmt.Errorf("invalid values for operator %s", o)
 		}
 	}
 
@@ -66,6 +66,7 @@ func (f filterImpl) Values() []any {
 }
 
 // impl for Filterable
+
 func (f filterImpl) Children() []Filterable {
 	return nil
 }

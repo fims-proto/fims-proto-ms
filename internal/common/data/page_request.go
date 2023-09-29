@@ -11,7 +11,7 @@ type PageRequest interface {
 	sortable.Sortable
 	filterable.Filterable
 	GetRawFilterable() filterable.Filterable
-	AddAndFilterable(filterbal filterable.Filterable)
+	AddAndFilterable(filterable filterable.Filterable)
 }
 
 type pageRequestImpl struct {

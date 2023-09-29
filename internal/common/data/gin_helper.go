@@ -1,6 +1,7 @@
 package data
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -9,18 +10,17 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 
 	"github.com/gin-gonic/gin"
-	"github.com/pkg/errors"
 )
 
 func NewPageRequestFromQuery(c *gin.Context) (PageRequest, error) {
 	page, err := strconv.ParseInt(c.DefaultQuery("$page", "1"), 0, 0)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse page query parameter")
+		return nil, fmt.Errorf("failed to parse page query parameter: %w", err)
 	}
 
 	size, err := strconv.ParseInt(c.DefaultQuery("$size", "40"), 0, 0)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to parse page query parameter")
+		return nil, fmt.Errorf("failed to parse page query parameter: %w", err)
 	}
 
 	p, err := pageable.NewPageableFromQuery(int(page), int(size))

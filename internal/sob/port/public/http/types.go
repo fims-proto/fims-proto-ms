@@ -36,15 +36,7 @@ type SobResponse struct {
 }
 
 func sobDTOToVO(q query.Sob) SobResponse {
-	return SobResponse{
-		Id:                  q.Id,
-		Name:                q.Name,
-		Description:         q.Description,
-		BaseCurrency:        q.BaseCurrency,
-		StartingPeriodYear:  q.StartingPeriodYear,
-		StartingPeriodMonth: q.StartingPeriodMonth,
-		AccountsCodeLength:  q.AccountsCodeLength,
-	}
+	return SobResponse(q)
 }
 
 func (r CreateSobRequest) mapToCommand() command.CreateSobCmd {

@@ -2,95 +2,143 @@ package command
 
 import (
 	"context"
+	"errors"
+	"fmt"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
 
-type InitializeLedgersCmd struct {
-	SobId    uuid.UUID
-	PeriodId uuid.UUID
+func initializeAllLedgers(ctx context.Context, repo domain.Repository, sobId uuid.UUID) error {
+	// read current period
+	currentPeriod, err := repo.ReadCurrentPeriod(ctx, sobId)
+	if err != nil {
+		return fmt.Errorf("failed to read current period: %w", err)
+	}
+
+	// read previous period
+	previousPeriod, err := repo.ReadPreviousPeriod(ctx, currentPeriod.Id())
+	if !errors.Is(err, commonErrors.ErrRecordNotFound()) {
+		return fmt.Errorf("initialize ledger failed: %w", err)
+	}
+
+	if err = initializeLedgers(ctx, repo, sobId, currentPeriod, previousPeriod); err != nil {
+		return nil
+	}
+
+	return initializeAuxiliaryLedgers(ctx, repo, sobId, currentPeriod, previousPeriod)
 }
 
-func initializeLedgers(ctx context.Context, cmd InitializeLedgersCmd, repo domain.Repository, readModel query.GeneralLedgerReadModel) error {
-	// read period
-	period, err := readModel.PeriodById(ctx, cmd.PeriodId)
-	if err != nil {
-		return errors.Wrap(err, "failed to create ledgers for period")
-	}
+func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.UUID, currentPeriod *period.Period, previousPeriod *period.Period) error {
+	// read ledgers in previous period
+	ledgersInPreviousPeriod := make(map[uuid.UUID]ledger.Ledger) // key: account id, value: ledger
 
-	// read all accounts
-	accounts, err := readModel.AllAccounts(ctx, cmd.SobId)
-	if err != nil {
-		return errors.Wrap(err, "failed to create ledgers for period")
-	}
-
-	// read all ledgers in previous period if applicable
-	ledgersInPreviousPeriod := make(map[uuid.UUID]query.Ledger) // key: Id, value: account
-
-	previousPeriodTime := period.OpeningTime.AddDate(0, -1, 0) // one month before
-
-	previousPeriod, _ := readModel.PeriodByFiscalYearAndNumber(ctx, cmd.SobId, previousPeriodTime.Year(), int(previousPeriodTime.Month()))
-	if previousPeriod.Id != uuid.Nil {
-		ledgers, err := readModel.LedgersInPeriod(ctx, cmd.SobId, previousPeriod.Id)
+	if previousPeriod != nil {
+		// normal ledgers
+		ledgers, err := repo.ReadLedgersByPeriod(ctx, previousPeriod.Id())
 		if err != nil {
-			return errors.Wrap(err, "failed to read ledgers in previous period")
+			return fmt.Errorf("failed to read ledgers in previous period: %w", err)
 		}
-
 		for _, previousLedger := range ledgers {
-			ledgersInPreviousPeriod[previousLedger.AccountId] = previousLedger
+			ledgersInPreviousPeriod[previousLedger.AccountId()] = *previousLedger
 		}
 	}
 
 	// create ledgers based on accounts
+	accounts, err := repo.ReadAllAccounts(ctx, sobId)
+	if err != nil {
+		return fmt.Errorf("failed to read accounts: %w", err)
+	}
+
 	var ledgers []*ledger.Ledger
-	for _, accountDTO := range accounts {
-		// move previous ending balance to opening balance
+	for _, account := range accounts {
+		// move previous ending balance to current balance
 		openingBalance := decimal.Zero
-		previousLedger, ok := ledgersInPreviousPeriod[accountDTO.Id]
+		endingBalance := decimal.Zero
+
+		previousLedger, ok := ledgersInPreviousPeriod[account.Id()]
 		if ok {
-			openingBalance = previousLedger.EndingBalance
+			openingBalance = previousLedger.EndingBalance()
+			endingBalance = previousLedger.EndingBalance()
 		}
 
-		accountBO, err := account.New(
-			accountDTO.Id,
-			accountDTO.SobId,
-			accountDTO.SuperiorAccountId,
-			accountDTO.Title,
-			accountDTO.AccountNumber,
-			accountDTO.NumberHierarchy,
-			accountDTO.Level,
-			accountDTO.AccountType,
-			accountDTO.BalanceDirection,
-		)
-		if err != nil {
-			// should not happen
-			return errors.Wrap(err, "should not happen, failed to create account")
-		}
-
-		domainLedger, err := ledger.New(
+		ledgerBO, err := ledger.New(
 			uuid.New(),
-			accountDTO.SobId,
-			accountDTO.Id,
-			cmd.PeriodId,
+			account.SobId(),
+			currentPeriod.Id(),
+			account.Id(),
+			account,
 			openingBalance,
+			endingBalance,
 			decimal.Zero,
 			decimal.Zero,
-			decimal.Zero,
-			*accountBO,
 		)
 		if err != nil {
-			return errors.Wrap(err, "should not happen, failed to create account")
+			return fmt.Errorf("should not happen, failed to create ledger: %w", err)
 		}
 
-		ledgers = append(ledgers, domainLedger)
+		ledgers = append(ledgers, ledgerBO)
 	}
 
 	return repo.CreateLedgers(ctx, ledgers)
+}
+
+func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sobId uuid.UUID, currentPeriod *period.Period, previousPeriod *period.Period) error {
+	// read ledgers in previous period
+	auxiliaryLedgersInPreviousPeriod := make(map[uuid.UUID]auxiliary_ledger.AuxiliaryLedger) // key: aux account id, value: aux ledger
+
+	if previousPeriod != nil {
+		// auxiliary ledgers
+		auxiliaryLedgers, err := repo.ReadAuxiliaryLedgersByPeriod(ctx, previousPeriod.Id())
+		if err != nil {
+			return fmt.Errorf("failed to read auxiliary ledgers in previous period: %w", err)
+		}
+		for _, previousLedger := range auxiliaryLedgers {
+			auxiliaryLedgersInPreviousPeriod[previousLedger.AuxiliaryAccount().Id()] = *previousLedger
+		}
+	}
+
+	// create auxiliary ledgers based on auxiliary accounts
+	auxiliaryAccounts, err := repo.ReadAllAuxiliaryAccounts(ctx, sobId)
+	if err != nil {
+		return fmt.Errorf("failed to read auxiliary accounts: %w", err)
+	}
+
+	var auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger
+	for _, auxiliaryAccount := range auxiliaryAccounts {
+		// move previous ending balance to current balance
+		openingBalance := decimal.Zero
+		endingBalance := decimal.Zero
+
+		previousAuxiliaryLedger, ok := auxiliaryLedgersInPreviousPeriod[auxiliaryAccount.Id()]
+		if ok {
+			openingBalance = previousAuxiliaryLedger.EndingBalance()
+			endingBalance = previousAuxiliaryLedger.EndingBalance()
+		}
+
+		auxiliaryLedger, err := auxiliary_ledger.New(
+			uuid.New(),
+			currentPeriod.Id(),
+			auxiliaryAccount,
+			openingBalance,
+			endingBalance,
+			decimal.Zero,
+			decimal.Zero,
+		)
+		if err != nil {
+			return fmt.Errorf("should not happen, failed to create ledger: %w", err)
+		}
+
+		auxiliaryLedgers = append(auxiliaryLedgers, auxiliaryLedger)
+	}
+
+	return repo.CreateAuxiliaryLedgers(ctx, auxiliaryLedgers)
 }

@@ -16,6 +16,14 @@ func (s SlugErr) Error() string {
 	return s.slug
 }
 
+func (s SlugErr) Is(target error) bool {
+	t, ok := target.(SlugErr)
+	if !ok {
+		return false
+	}
+	return s.slug == t.Error()
+}
+
 func NewSlugError(slug string, args ...any) SlugErr {
 	return SlugErr{
 		slug: slug,

@@ -2,13 +2,13 @@ package command
 
 import (
 	"context"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github/fims-proto/fims-proto-ms/internal/sob/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type UpdateSobCmd struct {
@@ -35,12 +35,12 @@ func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) error {
 		func(s *sob.Sob) (*sob.Sob, error) {
 			if cmd.Name != "" {
 				if err := s.UpdateName(cmd.Name); err != nil {
-					return nil, errors.Wrap(err, "sob name updating failed")
+					return nil, fmt.Errorf("failed to update sob name: %w", err)
 				}
 			}
 			if cmd.AccountsCodeLength != nil {
 				if err := s.UpdateAccountsCodeLength(cmd.AccountsCodeLength); err != nil {
-					return nil, errors.Wrap(err, "sob accounts code length updating failed")
+					return nil, fmt.Errorf("failed to update sob account code length: %w", err)
 				}
 			}
 			return s, nil

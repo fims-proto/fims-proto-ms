@@ -4,23 +4,51 @@ import (
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/common/utils"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
 type LineItem struct {
-	id        uuid.UUID
-	accountId uuid.UUID
-	text      string
-	debit     decimal.Decimal
-	credit    decimal.Decimal
+	id                uuid.UUID
+	accountId         uuid.UUID
+	account           *account.Account
+	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount
+	text              string
+	debit             decimal.Decimal
+	credit            decimal.Decimal
 }
 
-func NewLineItem(itemId, accountId uuid.UUID, text string, debit, credit decimal.Decimal) (*LineItem, error) {
-	if itemId == uuid.Nil {
+func NewLineItem(
+	id uuid.UUID,
+	accountId uuid.UUID,
+	account *account.Account,
+	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount,
+	text string,
+	debit decimal.Decimal,
+	credit decimal.Decimal,
+) (*LineItem, error) {
+	if id == uuid.Nil {
 		return nil, errors.NewSlugError("lineItem-emptyId")
 	}
 
 	if accountId == uuid.Nil {
 		return nil, errors.NewSlugError("lineItem-emptyAccountId")
+	}
+
+	if account == nil {
+		return nil, errors.NewSlugError("lineItem-nilAccount")
+	}
+
+	if len(auxiliaryAccounts) != len(account.AuxiliaryCategories()) {
+		return nil, errors.NewSlugError("lineItem-unmatchedAuxiliaryAccount")
+	}
+
+	for _, auxiliaryAccount := range auxiliaryAccounts {
+		if auxiliaryAccount == nil {
+			return nil, errors.NewSlugError("lineItem-nilAuxiliaryAccount")
+		}
 	}
 
 	if text == "" {
@@ -35,12 +63,25 @@ func NewLineItem(itemId, accountId uuid.UUID, text string, debit, credit decimal
 		return nil, errors.NewSlugError("lineItem-debitCreditDuplicated")
 	}
 
+	// validate each auxiliary account
+	categorySet := utils.SliceToSet(
+		account.AuxiliaryCategories(),
+		func(category *auxiliary_category.AuxiliaryCategory) uuid.UUID { return category.Id() },
+	)
+	for _, auxiliaryAccount := range auxiliaryAccounts {
+		if _, ok := categorySet[auxiliaryAccount.Category().Id()]; !ok {
+			return nil, errors.NewSlugError("lineItem-invalidAuxiliaryAccount", auxiliaryAccount.Title())
+		}
+	}
+
 	return &LineItem{
-		id:        itemId,
-		accountId: accountId,
-		text:      text,
-		debit:     debit,
-		credit:    credit,
+		id:                id,
+		accountId:         accountId,
+		account:           account,
+		auxiliaryAccounts: auxiliaryAccounts,
+		text:              text,
+		debit:             debit,
+		credit:            credit,
 	}, nil
 }
 
@@ -50,6 +91,14 @@ func (i LineItem) Id() uuid.UUID {
 
 func (i LineItem) AccountId() uuid.UUID {
 	return i.accountId
+}
+
+func (i LineItem) Account() *account.Account {
+	return i.account
+}
+
+func (i LineItem) AuxiliaryAccounts() []*auxiliary_account.AuxiliaryAccount {
+	return i.auxiliaryAccounts
 }
 
 func (i LineItem) Text() string {

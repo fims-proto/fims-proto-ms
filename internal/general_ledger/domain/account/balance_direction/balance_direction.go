@@ -1,6 +1,8 @@
 package balance_direction
 
-import "github.com/pkg/errors"
+import (
+	"fmt"
+)
 
 type BalanceDirection struct {
 	slug string
@@ -27,5 +29,5 @@ func FromString(s string) (BalanceDirection, error) {
 		return NotDefined, nil
 	}
 
-	return Unknown, errors.Errorf("unknown balance direction: %s", s)
+	return Unknown, fmt.Errorf("unknown balance direction: %s", s)
 }

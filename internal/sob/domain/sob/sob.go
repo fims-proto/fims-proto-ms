@@ -1,8 +1,10 @@
 package sob
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type Sob struct {
@@ -42,7 +44,7 @@ func New(id uuid.UUID, name, description, baseCurrency string, startingPeriodYea
 
 	for i, accountCodeLength := range accountsCodeLength {
 		if accountCodeLength < 1 || accountCodeLength > 6 {
-			return nil, errors.Errorf("invalid account code length at level %d", i)
+			return nil, fmt.Errorf("invalid account code length at level %d", i)
 		}
 	}
 

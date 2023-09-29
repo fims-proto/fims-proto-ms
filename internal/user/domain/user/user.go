@@ -2,9 +2,9 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
 type User struct {

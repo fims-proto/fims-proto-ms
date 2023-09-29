@@ -1,8 +1,6 @@
 package pageable
 
-import (
-	"github.com/pkg/errors"
-)
+import "errors"
 
 type Pageable interface {
 	IsPaged() bool

@@ -2,6 +2,8 @@ package db
 
 import (
 	"context"
+	"errors"
+	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/database"
 
@@ -9,7 +11,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -25,7 +26,7 @@ func (r NumberingPostgresRepository) Migrate(ctx context.Context) error {
 	db := database.ReadDBFromContext(ctx)
 
 	if err := db.AutoMigrate(&identifierConfigurationPO{}, &identifierPO{}); err != nil {
-		return errors.Wrap(err, "DB migration failed")
+		return fmt.Errorf("failed to migrate: %w", err)
 	}
 	return nil
 }
@@ -54,17 +55,17 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.C
 
 		bo, err := identifierConfigurationPOToBO(po)
 		if err != nil {
-			return errors.Wrap(err, "unmarshal identifier configuration failed")
+			return err
 		}
 
 		updatedBO, err := updateFn(bo)
 		if err != nil {
-			return errors.Wrap(err, "update identifier configuration in transaction failed")
+			return fmt.Errorf("failed to update identifier configuration: %w", err)
 		}
 
 		po, err = identifierConfigurationBOToPO(*updatedBO)
 		if err != nil {
-			return errors.Wrap(err, "marshal identifier configuration failed")
+			return err
 		}
 		return tx.Save(&po).Error
 	})
@@ -85,13 +86,13 @@ func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.
 
 	var configPOs []identifierConfigurationPO
 	if err := db.Where("target_business_object = ?", targetBusinessObject).Find(&configPOs).Error; err != nil {
-		return query.IdentifierConfiguration{}, errors.Wrap(err, "failed to find identifier configuration by business object")
+		return query.IdentifierConfiguration{}, fmt.Errorf("failed to find identifier configuration by business object: %w", err)
 	}
 
 	for _, po := range configPOs {
 		bo, err := identifierConfigurationPOToBO(po)
 		if err != nil {
-			return query.IdentifierConfiguration{}, errors.Wrap(err, "unmarshal identifier configuration failed")
+			return query.IdentifierConfiguration{}, fmt.Errorf("failed to unmarshal identifier configuration: %w", err)
 		}
 
 		if bo.IsMatchProperties(objectsToMatch) {
@@ -108,7 +109,7 @@ func (r NumberingPostgresRepository) IdentifierById(ctx context.Context, id uuid
 
 	po := identifierPO{}
 	if err := db.First(&po, "id = ?", id).Error; err != nil {
-		return query.Identifier{}, errors.Wrap(err, "failed to read identifier by id")
+		return query.Identifier{}, fmt.Errorf("failed to read identifier by id: %w", err)
 	}
 
 	return identifierPOToDTO(po), nil

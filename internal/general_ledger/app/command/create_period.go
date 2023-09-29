@@ -2,8 +2,8 @@ package command
 
 import (
 	"context"
+	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
@@ -11,61 +11,57 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
 	"github.com/google/uuid"
-	"github.com/pkg/errors"
 )
 
-type CreatePeriodCmd struct {
+type createPeriodCmd struct {
 	SobId      uuid.UUID
 	PeriodId   uuid.UUID
 	FiscalYear int
 	Number     int
 }
 
-type CreatePeriodHandler struct {
-	repo             domain.Repository
-	readModel        query.GeneralLedgerReadModel
-	numberingService service.NumberingService
-}
-
-func NewCreatePeriodHandler(repo domain.Repository, readModel query.GeneralLedgerReadModel, numberingService service.NumberingService) CreatePeriodHandler {
-	if repo == nil {
-		panic("nil account repo")
-	}
-
-	if readModel == nil {
-		panic("nil read model")
-	}
-
-	if numberingService == nil {
-		panic("nil numbering service")
-	}
-
-	return CreatePeriodHandler{
-		repo:             repo,
-		readModel:        readModel,
-		numberingService: numberingService,
-	}
-}
-
-func (h CreatePeriodHandler) Handle(ctx context.Context, cmd CreatePeriodCmd) error {
-	return createPeriod(ctx, cmd, h.repo, h.numberingService)
-}
-
 func createPeriod(
 	ctx context.Context,
-	cmd CreatePeriodCmd,
+	cmd createPeriodCmd,
 	repo domain.Repository,
 	numberingService service.NumberingService,
 ) error {
-	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number)
+	p, err := period.New(cmd.PeriodId, cmd.SobId, cmd.FiscalYear, cmd.Number, true)
 	if err != nil {
-		return errors.Wrap(err, "failed to create period domain model")
+		return fmt.Errorf("failed to create period: %w", err)
 	}
 
 	// create numbering configuration for voucher entries in this period
 	if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
-		return errors.Wrap(err, "failed to create numbering configuration for period")
+		return fmt.Errorf("failed to create period: %w", err)
 	}
 
-	return repo.CreatePeriod(ctx, p)
+	_, _, err = repo.CreatePeriodIfNotExists(ctx, p)
+	return err
+}
+
+func createPeriodIfNotExists(
+	ctx context.Context,
+	cmd createPeriodCmd,
+	repo domain.Repository,
+	numberingService service.NumberingService,
+) (*period.Period, error) {
+	p, err := period.New(uuid.New() /*dummy id*/, cmd.SobId, cmd.FiscalYear, cmd.Number, false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create period: %w", err)
+	}
+
+	p, created, err := repo.CreatePeriodIfNotExists(ctx, p)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create period: %w", err)
+	}
+
+	if created {
+		// create numbering configuration for voucher entries in this period
+		if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, p.Id()); err != nil {
+			return nil, fmt.Errorf("failed to create period: %w", err)
+		}
+	}
+
+	return p, nil
 }

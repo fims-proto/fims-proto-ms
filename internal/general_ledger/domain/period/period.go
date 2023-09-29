@@ -22,7 +22,7 @@ type Period struct {
 
 // New creates valid period domain entity by given fiscal year and number
 // Typically used when initializing first period or closing and opening a new period
-func New(id, sobId uuid.UUID, fiscalYear, periodNumber int) (*Period, error) {
+func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isCurrent bool) (*Period, error) {
 	return NewByAllFields(
 		id,
 		sobId,
@@ -30,18 +30,22 @@ func New(id, sobId uuid.UUID, fiscalYear, periodNumber int) (*Period, error) {
 		periodNumber,
 		getOpeningTime(fiscalYear, periodNumber),
 		getEndingTime(fiscalYear, periodNumber),
-		false, // current period is always open
-		true,  // current period
+		false, // never create a closed period
+		isCurrent,
 	)
 }
 
 // NewByAllFields creates valid period domain entity by given all fields
 // Typically used by other NewByXX methods or create from persistent entry
 func NewByAllFields(
-	id, sobId uuid.UUID,
-	fiscalYear, periodNumber int,
-	openingTime, endingTime time.Time,
-	isClosed, isCurrent bool,
+	id uuid.UUID,
+	sobId uuid.UUID,
+	fiscalYear int,
+	periodNumber int,
+	openingTime time.Time,
+	endingTime time.Time,
+	isClosed bool,
+	isCurrent bool,
 ) (*Period, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("period-emptyId")
@@ -90,34 +94,34 @@ func NewByAllFields(
 	}, nil
 }
 
-func (p Period) Id() uuid.UUID {
+func (p *Period) Id() uuid.UUID {
 	return p.id
 }
 
-func (p Period) SobId() uuid.UUID {
+func (p *Period) SobId() uuid.UUID {
 	return p.sobId
 }
 
-func (p Period) FiscalYear() int {
+func (p *Period) FiscalYear() int {
 	return p.fiscalYear
 }
 
-func (p Period) PeriodNumber() int {
+func (p *Period) PeriodNumber() int {
 	return p.periodNumber
 }
 
-func (p Period) OpeningTime() time.Time {
+func (p *Period) OpeningTime() time.Time {
 	return p.openingTime
 }
 
-func (p Period) EndingTime() time.Time {
+func (p *Period) EndingTime() time.Time {
 	return p.endingTime
 }
 
-func (p Period) IsClosed() bool {
+func (p *Period) IsClosed() bool {
 	return p.isClosed
 }
 
-func (p Period) IsCurrent() bool {
+func (p *Period) IsCurrent() bool {
 	return p.isCurrent
 }
