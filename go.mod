@@ -8,7 +8,6 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jackc/pgtype v1.14.0
 	github.com/nicksnyder/go-i18n/v2 v2.2.1
-	github.com/pkg/errors v0.9.1
 	github.com/shopspring/decimal v1.3.1
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4

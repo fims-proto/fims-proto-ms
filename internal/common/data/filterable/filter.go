@@ -75,7 +75,7 @@ func (f filterImpl) IsFiltered() bool {
 	return true
 }
 
-func (f filterImpl) FilterableType() FilterableType {
+func (f filterImpl) FilterableType() Type {
 	return TypeATOM
 }
 

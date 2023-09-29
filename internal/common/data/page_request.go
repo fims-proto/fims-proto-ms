@@ -62,7 +62,7 @@ func (p pageRequestImpl) Children() []filterable.Filterable {
 	return p.f.Children()
 }
 
-func (p pageRequestImpl) FilterableType() filterable.FilterableType {
+func (p pageRequestImpl) FilterableType() filterable.Type {
 	return filterable.TypeRequest
 }
 

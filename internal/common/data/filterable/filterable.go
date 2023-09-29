@@ -1,39 +1,39 @@
 package filterable
 
 import (
+	"fmt"
 	"strconv"
-
-	"github.com/pkg/errors"
 )
 
-type FilterableType int
+type Type int
 
 const (
-	TypeATOM    FilterableType = 1 << iota // identity one child filters
-	TypeAND                                // and
-	TypeOR                                 // or
-	TypeNOT                                // not, only one child filter
-	TypeNONE                               // empty not a filter
-	TypeRequest                            // current filterblae is pageRequestImpl, should not go into assembleSQL
+	TypeATOM    Type = 1 << iota // identity one child filters
+	TypeAND                      // and
+	TypeOR                       // or
+	TypeNOT                      // not, only one child filter
+	TypeNONE                     // empty not a filter
+	TypeRequest                  // current filterable is pageRequestImpl, should not go into assembleSQL
 )
 
 type Filterable interface {
 	IsFiltered() bool
 	Children() []Filterable // child filters
-	FilterableType() FilterableType
+	FilterableType() Type
 }
 
 type filterableImpl struct {
-	filterableType FilterableType
+	filterableType Type
 	children       []Filterable
 }
 
 // new
+
 func Unfiltered() Filterable {
 	return &filterableImpl{filterableType: TypeNONE, children: nil}
 }
 
-func NewFilterable(fType FilterableType, filters ...Filterable) Filterable {
+func NewFilterable(fType Type, filters ...Filterable) Filterable {
 	return &filterableImpl{filterableType: fType, children: filters}
 }
 
@@ -51,7 +51,7 @@ func (f *filterableImpl) Children() []Filterable {
 	return f.children
 }
 
-func (f *filterableImpl) FilterableType() FilterableType {
+func (f *filterableImpl) FilterableType() Type {
 	return f.filterableType
 }
 
@@ -59,7 +59,7 @@ func (fe *FilterAST) ParseAsFilterable() (Filterable, error) {
 	node := fe.AST()
 	node = node.up
 	if node.pegRule != ruleExpr {
-		return nil, errors.Errorf("Parse failed at %s", node.String())
+		return nil, fmt.Errorf("parse failed at %s", node.String())
 	}
 
 	return fe.ParseExpr(node)
@@ -68,7 +68,7 @@ func (fe *FilterAST) ParseAsFilterable() (Filterable, error) {
 func (fe *FilterAST) ParseExpr(node *node32) (Filterable, error) {
 	node = node.up
 	if node == nil {
-		return nil, errors.Errorf("Pase failed at %s", node.String())
+		return nil, fmt.Errorf("parse failed at %s", node.String())
 	}
 	switch node.pegRule {
 	case ruleAndExpr:
@@ -89,7 +89,7 @@ func (fe *FilterAST) ParseExpr(node *node32) (Filterable, error) {
 		}
 	default:
 		{
-			return nil, errors.New("unknow rule type")
+			return nil, fmt.Errorf("unknow rule type")
 		}
 	}
 }
@@ -110,7 +110,7 @@ func (fe *FilterAST) ParseAndExpr(node *node32) (Filterable, error) {
 	if children != nil {
 		return NewFilterable(TypeAND, children...), nil
 	}
-	return nil, errors.Errorf("no child for andExpr")
+	return nil, fmt.Errorf("no child for andExpr")
 }
 
 func (fe *FilterAST) ParseOrExpr(node *node32) (Filterable, error) {
@@ -129,7 +129,7 @@ func (fe *FilterAST) ParseOrExpr(node *node32) (Filterable, error) {
 	if children != nil {
 		return NewFilterable(TypeOR, children...), nil
 	}
-	return nil, errors.Errorf("no child for orExpr")
+	return nil, fmt.Errorf("no child for orExpr")
 }
 
 func (fe *FilterAST) ParseNotExpr(node *node32) (Filterable, error) {
@@ -186,7 +186,7 @@ func (fe *FilterAST) ParseAtomExpr(node *node32) (Filterable, error) {
 		}
 	default:
 		{
-			return nil, errors.New("unknow ruleType")
+			return nil, fmt.Errorf("unknown ruleType")
 		}
 	}
 	field := node.up.next.next
