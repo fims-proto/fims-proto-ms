@@ -72,25 +72,15 @@ func (fe *FilterAST) ParseExpr(node *node32) (Filterable, error) {
 	}
 	switch node.pegRule {
 	case ruleAndExpr:
-		{
-			return fe.ParseAndExpr(node)
-		}
+		return fe.ParseAndExpr(node)
 	case ruleOrExpr:
-		{
-			return fe.ParseOrExpr(node)
-		}
+		return fe.ParseOrExpr(node)
 	case ruleNotExpr:
-		{
-			return fe.ParseNotExpr(node)
-		}
+		return fe.ParseNotExpr(node)
 	case ruleAtomExpr:
-		{
-			return fe.ParseAtomExpr(node)
-		}
+		return fe.ParseAtomExpr(node)
 	default:
-		{
-			return nil, fmt.Errorf("unknow rule type")
-		}
+		return nil, fmt.Errorf("unknow rule type")
 	}
 }
 
@@ -149,45 +139,25 @@ func (fe *FilterAST) ParseAtomExpr(node *node32) (Filterable, error) {
 	var op Operator
 	switch node.pegRule {
 	case ruleEqExpr:
-		{
-			op = OptEq
-		}
+		op = OptEq
 	case ruleLtExpr:
-		{
-			op = OptLt
-		}
+		op = OptLt
 	case ruleLteExpr:
-		{
-			op = OptLte
-		}
+		op = OptLte
 	case ruleGtExpr:
-		{
-			op = OptGt
-		}
+		op = OptGt
 	case ruleGteExpr:
-		{
-			op = OptGte
-		}
+		op = OptGte
 	case ruleBtwExpr:
-		{
-			op = OptBtw
-		}
+		op = OptBtw
 	case ruleStwExpr:
-		{
-			op = OptStw
-		}
+		op = OptStw
 	case ruleCtnExpr:
-		{
-			op = OptCtn
-		}
+		op = OptCtn
 	case ruleInExpr:
-		{
-			op = OptIn
-		}
+		op = OptIn
 	default:
-		{
-			return nil, fmt.Errorf("unknown ruleType")
-		}
+		return nil, fmt.Errorf("unknown ruleType")
 	}
 	field := node.up.next.next
 	fieldName := string(fe.buffer[field.begin:field.end])
