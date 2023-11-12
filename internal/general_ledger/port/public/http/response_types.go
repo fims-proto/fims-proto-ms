@@ -90,8 +90,7 @@ type AuxiliaryLedgerResponse struct {
 
 type LineItemResponse struct {
 	Id                uuid.UUID                  `json:"id,omitempty"`
-	AccountId         uuid.UUID                  `json:"accountId,omitempty"`
-	AccountNumber     string                     `json:"accountNumber,omitempty"`
+	Account           AccountResponse            `json:"account"`
 	AuxiliaryAccounts []AuxiliaryAccountResponse `json:"auxiliaryAccounts,omitempty"`
 	Text              string                     `json:"text,omitempty"`
 	Credit            decimal.Decimal            `json:"credit"`
@@ -208,8 +207,7 @@ func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
 	}
 	return LineItemResponse{
 		Id:                dto.Id,
-		AccountId:         dto.AccountId,
-		AccountNumber:     dto.AccountNumber,
+		Account:           accountDTOToVO(dto.Account),
 		AuxiliaryAccounts: auxiliaryAccounts,
 		Text:              dto.Text,
 		Credit:            dto.Credit,

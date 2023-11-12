@@ -32,7 +32,7 @@ func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryAccounts(ctx context
 
 func (r GeneralLedgerPostgresReadRepository) SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, database.ReadDBFromContext(ctx).Joins("Account"))
+	return data.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, database.ReadDBFromContext(ctx).InnerJoins("Account"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryLedgers(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.AuxiliaryLedger], error) {
@@ -71,8 +71,9 @@ func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, vo
 	db := database.ReadDBFromContext(ctx)
 
 	po := voucherPO{Id: voucherId}
-	if err := db.Preload("LineItems.Account").
-		Preload("LineItems.AuxiliaryAccounts").
+	if err := db.
+		Preload("LineItems.Account.AuxiliaryCategories").
+		Preload("LineItems.AuxiliaryAccounts.Category").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return query.Voucher{}, err

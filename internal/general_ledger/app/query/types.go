@@ -85,8 +85,7 @@ type AuxiliaryLedger struct {
 
 type LineItem struct {
 	Id                uuid.UUID
-	AccountId         uuid.UUID
-	AccountNumber     string
+	Account           Account
 	AuxiliaryAccounts []AuxiliaryAccount
 	Text              string
 	Debit             decimal.Decimal

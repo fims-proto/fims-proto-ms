@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"gorm.io/gorm"
-
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
@@ -263,23 +261,6 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("lineItemPO doesn't have association named %s", entity)
 }
 
-// hooks
-
-func (v voucherPO) BeforeUpdate(db *gorm.DB) error {
-	if db.Statement.Changed("LineItems") {
-		// remove existing line item first
-		for _, item := range v.LineItems {
-			if err := db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
-				return fmt.Errorf("failed to remove line item auxiliary account associations: %w", err)
-			}
-		}
-		if err := db.Where("voucher_id = ?", v.Id).Delete(&lineItemPO{}).Error; err != nil {
-			return fmt.Errorf("failed to delete line items: %w", err)
-		}
-	}
-	return nil
-}
-
 // mappers
 
 func accountBOToPO(bo account.Account) accountPO {
@@ -359,6 +340,8 @@ func accountPOToDTO(po accountPO) query.Account {
 		AccountType:         po.AccountType,
 		BalanceDirection:    po.BalanceDirection,
 		AuxiliaryCategories: categoryDTOs,
+		CreatedAt:           po.CreatedAt,
+		UpdatedAt:           po.UpdatedAt,
 	}
 }
 
@@ -695,8 +678,7 @@ func lineItemPOToDTO(po lineItemPO) query.LineItem {
 
 	return query.LineItem{
 		Id:                po.Id,
-		AccountId:         po.AccountId,
-		AccountNumber:     accountDTO.AccountNumber,
+		Account:           accountDTO,
 		AuxiliaryAccounts: auxiliaryAccounts,
 		Text:              po.Text,
 		Debit:             po.Debit,

@@ -1726,11 +1726,8 @@ const docTemplate = `{
         "http.LineItemResponse": {
             "type": "object",
             "properties": {
-                "accountId": {
-                    "type": "string"
-                },
-                "accountNumber": {
-                    "type": "string"
+                "account": {
+                    "$ref": "#/definitions/http.AccountResponse"
                 },
                 "auxiliaryAccounts": {
                     "type": "array",

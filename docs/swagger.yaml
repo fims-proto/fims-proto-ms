@@ -171,10 +171,8 @@ definitions:
     type: object
   http.LineItemResponse:
     properties:
-      accountId:
-        type: string
-      accountNumber:
-        type: string
+      account:
+        $ref: '#/definitions/http.AccountResponse'
       auxiliaryAccounts:
         items:
           $ref: '#/definitions/http.AuxiliaryAccountResponse'

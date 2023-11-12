@@ -26,7 +26,7 @@ func initializeAllLedgers(ctx context.Context, repo domain.Repository, sobId uui
 
 	// read previous period
 	previousPeriod, err := repo.ReadPreviousPeriod(ctx, currentPeriod.Id())
-	if !errors.Is(err, commonErrors.ErrRecordNotFound()) {
+	if err != nil && !errors.Is(err, commonErrors.ErrRecordNotFound()) {
 		return fmt.Errorf("initialize ledger failed: %w", err)
 	}
 
