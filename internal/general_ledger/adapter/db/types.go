@@ -74,14 +74,16 @@ type periodPO struct {
 }
 
 type ledgerPO struct {
-	Id             uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId          uuid.UUID `gorm:"type:uuid"`
-	AccountId      uuid.UUID `gorm:"type:uuid"`
-	PeriodId       uuid.UUID `gorm:"type:uuid"`
-	OpeningBalance decimal.Decimal
-	EndingBalance  decimal.Decimal
-	PeriodDebit    decimal.Decimal
-	PeriodCredit   decimal.Decimal
+	Id                   uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId                uuid.UUID `gorm:"type:uuid"`
+	AccountId            uuid.UUID `gorm:"type:uuid"`
+	PeriodId             uuid.UUID `gorm:"type:uuid"`
+	OpeningDebitBalance  decimal.Decimal
+	OpeningCreditBalance decimal.Decimal
+	PeriodDebit          decimal.Decimal
+	PeriodCredit         decimal.Decimal
+	EndingDebitBalance   decimal.Decimal
+	EndingCreditBalance  decimal.Decimal
 
 	Account accountPO `gorm:"foreignKey:AccountId"`
 
@@ -447,14 +449,16 @@ func periodPOToDTO(po periodPO) query.Period {
 
 func ledgerBOToPO(bo ledger.Ledger) ledgerPO {
 	return ledgerPO{
-		Id:             bo.Id(),
-		SobId:          bo.SobId(),
-		AccountId:      bo.AccountId(),
-		PeriodId:       bo.PeriodId(),
-		OpeningBalance: bo.OpeningBalance(),
-		EndingBalance:  bo.EndingBalance(),
-		PeriodDebit:    bo.PeriodDebit(),
-		PeriodCredit:   bo.PeriodCredit(),
+		Id:                   bo.Id(),
+		SobId:                bo.SobId(),
+		AccountId:            bo.AccountId(),
+		PeriodId:             bo.PeriodId(),
+		OpeningDebitBalance:  bo.OpeningDebitBalance(),
+		OpeningCreditBalance: bo.OpeningCreditBalance(),
+		PeriodDebit:          bo.PeriodDebit(),
+		PeriodCredit:         bo.PeriodCredit(),
+		EndingDebitBalance:   bo.EndingDebitBalance(),
+		EndingCreditBalance:  bo.EndingCreditBalance(),
 	}
 }
 
@@ -470,10 +474,12 @@ func ledgerPOToBO(po ledgerPO) (*ledger.Ledger, error) {
 		po.PeriodId,
 		po.AccountId,
 		accountBO,
-		po.OpeningBalance,
-		po.EndingBalance,
+		po.OpeningDebitBalance,
+		po.OpeningCreditBalance,
 		po.PeriodDebit,
 		po.PeriodCredit,
+		po.EndingDebitBalance,
+		po.EndingCreditBalance,
 	)
 }
 
@@ -481,17 +487,19 @@ func ledgerPOToDTO(po ledgerPO) query.Ledger {
 	accountDTO := accountPOToDTO(po.Account)
 
 	return query.Ledger{
-		Id:             po.Id,
-		SobId:          po.SobId,
-		AccountId:      po.AccountId,
-		PeriodId:       po.PeriodId,
-		OpeningBalance: po.OpeningBalance,
-		EndingBalance:  po.EndingBalance,
-		PeriodDebit:    po.PeriodDebit,
-		PeriodCredit:   po.PeriodCredit,
-		Account:        accountDTO,
-		CreatedAt:      po.CreatedAt,
-		UpdatedAt:      po.UpdatedAt,
+		Id:                   po.Id,
+		SobId:                po.SobId,
+		AccountId:            po.AccountId,
+		PeriodId:             po.PeriodId,
+		OpeningDebitBalance:  po.OpeningDebitBalance,
+		OpeningCreditBalance: po.OpeningCreditBalance,
+		PeriodDebit:          po.PeriodDebit,
+		PeriodCredit:         po.PeriodCredit,
+		EndingDebitBalance:   po.EndingDebitBalance,
+		EndingCreditBalance:  po.EndingCreditBalance,
+		Account:              accountDTO,
+		CreatedAt:            po.CreatedAt,
+		UpdatedAt:            po.UpdatedAt,
 	}
 }
 

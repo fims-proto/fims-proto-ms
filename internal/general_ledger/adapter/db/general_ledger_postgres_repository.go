@@ -296,7 +296,7 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 	var count int64
 	err := db.Model(&ledgerPO{}).
 		Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
-		Where("ending_balance <> '0'").
+		Where("ending_debit_balance <> ending_credit_balance").
 		InnerJoins("Account", db.Where(accountPO{AccountType: accountType.ProfitAndLoss.String()})).
 		Count(&count).
 		Error
