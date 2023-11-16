@@ -121,23 +121,29 @@ func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sob
 	var auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger
 	for _, auxiliaryAccount := range auxiliaryAccounts {
 		// move previous ending balance to current balance
-		openingBalance := decimal.Zero
-		endingBalance := decimal.Zero
+		openingDebitBalance := decimal.Zero
+		openingCreditBalance := decimal.Zero
+		endingDebitBalance := decimal.Zero
+		endingCreditBalance := decimal.Zero
 
 		previousAuxiliaryLedger, ok := auxiliaryLedgersInPreviousPeriod[auxiliaryAccount.Id()]
 		if ok {
-			openingBalance = previousAuxiliaryLedger.EndingBalance()
-			endingBalance = previousAuxiliaryLedger.EndingBalance()
+			openingDebitBalance = previousAuxiliaryLedger.EndingDebitBalance()
+			openingCreditBalance = previousAuxiliaryLedger.EndingCreditBalance()
+			endingDebitBalance = previousAuxiliaryLedger.EndingDebitBalance()
+			endingCreditBalance = previousAuxiliaryLedger.EndingCreditBalance()
 		}
 
 		auxiliaryLedger, err := auxiliary_ledger.New(
 			uuid.New(),
 			currentPeriod.Id(),
 			auxiliaryAccount,
-			openingBalance,
-			endingBalance,
+			openingDebitBalance,
+			openingCreditBalance,
 			decimal.Zero,
 			decimal.Zero,
+			endingDebitBalance,
+			endingCreditBalance,
 		)
 		if err != nil {
 			return fmt.Errorf("should not happen, failed to create ledger: %w", err)

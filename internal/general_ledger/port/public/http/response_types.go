@@ -79,15 +79,17 @@ type LedgerResponse struct {
 }
 
 type AuxiliaryLedgerResponse struct {
-	Id               uuid.UUID                `json:"id,omitempty"`
-	PeriodId         uuid.UUID                `json:"periodId,omitempty"`
-	AuxiliaryAccount AuxiliaryAccountResponse `json:"auxiliaryAccount"`
-	OpeningBalance   decimal.Decimal          `json:"openingBalance"`
-	EndingBalance    decimal.Decimal          `json:"endingBalance"`
-	PeriodDebit      decimal.Decimal          `json:"periodDebit"`
-	PeriodCredit     decimal.Decimal          `json:"periodCredit"`
-	CreatedAt        time.Time                `json:"createdAt"`
-	UpdatedAt        time.Time                `json:"updatedAt"`
+	Id                   uuid.UUID                `json:"id,omitempty"`
+	PeriodId             uuid.UUID                `json:"periodId,omitempty"`
+	AuxiliaryAccount     AuxiliaryAccountResponse `json:"auxiliaryAccount"`
+	OpeningDebitBalance  decimal.Decimal          `json:"openingBalance"`
+	OpeningCreditBalance decimal.Decimal          `json:"openingCreditBalance"`
+	PeriodDebit          decimal.Decimal          `json:"periodDebit"`
+	PeriodCredit         decimal.Decimal          `json:"periodCredit"`
+	EndingDebitBalance   decimal.Decimal          `json:"endingBalance"`
+	EndingCreditBalance  decimal.Decimal          `json:"endingCreditBalance"`
+	CreatedAt            time.Time                `json:"createdAt"`
+	UpdatedAt            time.Time                `json:"updatedAt"`
 }
 
 type LineItemResponse struct {
@@ -192,15 +194,17 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 
 func auxiliaryLedgerDTOToVO(dto query.AuxiliaryLedger) AuxiliaryLedgerResponse {
 	return AuxiliaryLedgerResponse{
-		Id:               dto.Id,
-		PeriodId:         dto.PeriodId,
-		AuxiliaryAccount: auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
-		OpeningBalance:   dto.OpeningBalance,
-		EndingBalance:    dto.EndingBalance,
-		PeriodDebit:      dto.PeriodDebit,
-		PeriodCredit:     dto.PeriodCredit,
-		CreatedAt:        dto.CreatedAt,
-		UpdatedAt:        dto.UpdatedAt,
+		Id:                   dto.Id,
+		PeriodId:             dto.PeriodId,
+		AuxiliaryAccount:     auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
+		OpeningDebitBalance:  dto.OpeningDebitBalance,
+		OpeningCreditBalance: dto.OpeningCreditBalance,
+		PeriodDebit:          dto.PeriodDebit,
+		PeriodCredit:         dto.PeriodCredit,
+		EndingDebitBalance:   dto.EndingDebitBalance,
+		EndingCreditBalance:  dto.EndingCreditBalance,
+		CreatedAt:            dto.CreatedAt,
+		UpdatedAt:            dto.UpdatedAt,
 	}
 }
 

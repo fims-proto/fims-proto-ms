@@ -83,6 +83,8 @@ func (h CreateAuxiliaryAccountHandler) createLedger(ctx context.Context, auxilia
 		decimal.Zero,
 		decimal.Zero,
 		decimal.Zero,
+		decimal.Zero,
+		decimal.Zero,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create auxiliary ledger: %w", err)

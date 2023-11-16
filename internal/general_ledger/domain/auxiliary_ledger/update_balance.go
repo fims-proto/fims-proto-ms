@@ -8,8 +8,6 @@ func (l *AuxiliaryLedger) UpdateBalance(debit, credit decimal.Decimal) {
 	l.periodDebit = l.periodDebit.Add(debit)
 	l.periodCredit = l.periodCredit.Add(credit)
 
-	adding := l.periodDebit
-	subtracting := l.periodCredit
-
-	l.endingBalance = l.openingBalance.Add(adding).Sub(subtracting)
+	l.endingDebitBalance = l.openingDebitBalance.Add(l.periodDebit)
+	l.endingCreditBalance = l.openingCreditBalance.Add(l.periodCredit)
 }
