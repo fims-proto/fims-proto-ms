@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
@@ -65,18 +63,14 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 
 	// sum
 	for _, l := range ledgers {
+		totalOpeningDebit = totalOpeningDebit.Add(l.OpeningDebitBalance())
+		totalEndingDebit = totalEndingDebit.Add(l.EndingDebitBalance())
+
 		totalPeriodDebit = totalPeriodDebit.Add(l.PeriodDebit())
 		totalPeriodCredit = totalPeriodCredit.Add(l.PeriodCredit())
 
-		if l.Account().BalanceDirection() == balance_direction.Debit {
-			totalOpeningDebit = totalOpeningDebit.Add(l.OpeningBalance())
-			totalEndingDebit = totalEndingDebit.Add(l.EndingBalance())
-		} else if l.Account().BalanceDirection() == balance_direction.Credit {
-			totalOpeningCredit = totalOpeningCredit.Add(l.OpeningBalance())
-			totalEndingCredit = totalEndingCredit.Add(l.EndingBalance())
-		} else {
-			return commonErrors.NewSlugError("period-close-unknownAccountBalanceDirection", l.Account().AccountNumber())
-		}
+		totalOpeningCredit = totalOpeningCredit.Add(l.OpeningCreditBalance())
+		totalEndingCredit = totalEndingCredit.Add(l.EndingCreditBalance())
 	}
 
 	if !totalOpeningDebit.Equal(totalOpeningCredit) {

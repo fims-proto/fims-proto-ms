@@ -296,8 +296,8 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 	var count int64
 	err := db.Model(&ledgerPO{}).
 		Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
-		Where("ending_balance <> '0'").
-		Joins("Account", db.Where(accountPO{AccountType: accountType.ProfitAndLoss.String()})).
+		Where("ending_debit_balance <> ending_credit_balance").
+		InnerJoins("Account", db.Where(accountPO{AccountType: accountType.ProfitAndLoss.String()})).
 		Count(&count).
 		Error
 
@@ -309,7 +309,7 @@ func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx conte
 
 	var ledgerPOs []ledgerPO
 	if err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
-		Joins("Account", db.Where(accountPO{Level: 1})).
+		InnerJoins("Account", db.Where(accountPO{Level: 1})).
 		Find(&ledgerPOs).Error; err != nil {
 		return nil, err
 	}
@@ -347,6 +347,18 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 	}
 
 	po = voucherBOToPO(*updatedBO)
+
+	// remove existing link between line item and auxiliary account
+	for _, item := range po.LineItems {
+		if err = db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
+			return fmt.Errorf("failed to remove line item auxiliary account associations: %w", err)
+		}
+	}
+
+	// remove existing line items
+	if err = db.Where("voucher_id = ?", po.Id).Delete(&lineItemPO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete line items: %w", err)
+	}
 
 	return db.Save(&po).Error
 }
@@ -459,7 +471,12 @@ func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByPeriod(ctx contex
 	db := database.ReadDBFromContext(ctx)
 
 	var auxiliaryLedgerPOs []auxiliaryLedgerPO
-	if err := db.Where(auxiliaryLedgerPO{PeriodId: periodId}).Preload("AuxiliaryAccount").Find(&auxiliaryLedgerPOs).Error; err != nil {
+	if err := db.
+		Where(auxiliaryLedgerPO{PeriodId: periodId}).
+		InnerJoins("AuxiliaryAccount").
+		InnerJoins("AuxiliaryAccount.Category").
+		Find(&auxiliaryLedgerPOs).
+		Error; err != nil {
 		return nil, err
 	}
 

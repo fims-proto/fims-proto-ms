@@ -1671,13 +1671,19 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "endingBalance": {
+                "endingCreditBalance": {
+                    "type": "number"
+                },
+                "endingDebitBalance": {
                     "type": "number"
                 },
                 "id": {
                     "type": "string"
                 },
-                "openingBalance": {
+                "openingCreditBalance": {
+                    "type": "number"
+                },
+                "openingDebitBalance": {
                     "type": "number"
                 },
                 "periodCredit": {
@@ -1726,11 +1732,8 @@ const docTemplate = `{
         "http.LineItemResponse": {
             "type": "object",
             "properties": {
-                "accountId": {
-                    "type": "string"
-                },
-                "accountNumber": {
-                    "type": "string"
+                "account": {
+                    "$ref": "#/definitions/http.AccountResponse"
                 },
                 "auxiliaryAccounts": {
                     "type": "array",

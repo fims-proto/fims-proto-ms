@@ -63,35 +63,38 @@ type PeriodResponse struct {
 }
 
 type LedgerResponse struct {
-	Id             uuid.UUID       `json:"id,omitempty"`
-	SobId          uuid.UUID       `json:"sobId,omitempty"`
-	AccountId      uuid.UUID       `json:"accountId,omitempty"`
-	PeriodId       uuid.UUID       `json:"periodId,omitempty"`
-	OpeningBalance decimal.Decimal `json:"openingBalance"`
-	EndingBalance  decimal.Decimal `json:"endingBalance"`
-	PeriodDebit    decimal.Decimal `json:"periodDebit"`
-	PeriodCredit   decimal.Decimal `json:"periodCredit"`
-	Account        AccountResponse `json:"account"`
-	CreatedAt      time.Time       `json:"createdAt"`
-	UpdatedAt      time.Time       `json:"updatedAt"`
+	Id                   uuid.UUID       `json:"id,omitempty"`
+	SobId                uuid.UUID       `json:"sobId,omitempty"`
+	AccountId            uuid.UUID       `json:"accountId,omitempty"`
+	PeriodId             uuid.UUID       `json:"periodId,omitempty"`
+	OpeningDebitBalance  decimal.Decimal `json:"openingDebitBalance"`
+	OpeningCreditBalance decimal.Decimal `json:"openingCreditBalance"`
+	PeriodDebit          decimal.Decimal `json:"periodDebit"`
+	PeriodCredit         decimal.Decimal `json:"periodCredit"`
+	EndingDebitBalance   decimal.Decimal `json:"endingDebitBalance"`
+	EndingCreditBalance  decimal.Decimal `json:"endingCreditBalance"`
+	Account              AccountResponse `json:"account"`
+	CreatedAt            time.Time       `json:"createdAt"`
+	UpdatedAt            time.Time       `json:"updatedAt"`
 }
 
 type AuxiliaryLedgerResponse struct {
-	Id               uuid.UUID                `json:"id,omitempty"`
-	PeriodId         uuid.UUID                `json:"periodId,omitempty"`
-	AuxiliaryAccount AuxiliaryAccountResponse `json:"auxiliaryAccount"`
-	OpeningBalance   decimal.Decimal          `json:"openingBalance"`
-	EndingBalance    decimal.Decimal          `json:"endingBalance"`
-	PeriodDebit      decimal.Decimal          `json:"periodDebit"`
-	PeriodCredit     decimal.Decimal          `json:"periodCredit"`
-	CreatedAt        time.Time                `json:"createdAt"`
-	UpdatedAt        time.Time                `json:"updatedAt"`
+	Id                   uuid.UUID                `json:"id,omitempty"`
+	PeriodId             uuid.UUID                `json:"periodId,omitempty"`
+	AuxiliaryAccount     AuxiliaryAccountResponse `json:"auxiliaryAccount"`
+	OpeningDebitBalance  decimal.Decimal          `json:"openingBalance"`
+	OpeningCreditBalance decimal.Decimal          `json:"openingCreditBalance"`
+	PeriodDebit          decimal.Decimal          `json:"periodDebit"`
+	PeriodCredit         decimal.Decimal          `json:"periodCredit"`
+	EndingDebitBalance   decimal.Decimal          `json:"endingBalance"`
+	EndingCreditBalance  decimal.Decimal          `json:"endingCreditBalance"`
+	CreatedAt            time.Time                `json:"createdAt"`
+	UpdatedAt            time.Time                `json:"updatedAt"`
 }
 
 type LineItemResponse struct {
 	Id                uuid.UUID                  `json:"id,omitempty"`
-	AccountId         uuid.UUID                  `json:"accountId,omitempty"`
-	AccountNumber     string                     `json:"accountNumber,omitempty"`
+	Account           AccountResponse            `json:"account"`
 	AuxiliaryAccounts []AuxiliaryAccountResponse `json:"auxiliaryAccounts,omitempty"`
 	Text              string                     `json:"text,omitempty"`
 	Credit            decimal.Decimal            `json:"credit"`
@@ -173,31 +176,35 @@ func periodDTOToVO(dto query.Period) PeriodResponse {
 
 func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 	return LedgerResponse{
-		Id:             dto.Id,
-		SobId:          dto.SobId,
-		AccountId:      dto.AccountId,
-		PeriodId:       dto.PeriodId,
-		OpeningBalance: dto.OpeningBalance,
-		EndingBalance:  dto.EndingBalance,
-		PeriodDebit:    dto.PeriodDebit,
-		PeriodCredit:   dto.PeriodCredit,
-		Account:        accountDTOToVO(dto.Account),
-		CreatedAt:      dto.CreatedAt,
-		UpdatedAt:      dto.UpdatedAt,
+		Id:                   dto.Id,
+		SobId:                dto.SobId,
+		AccountId:            dto.AccountId,
+		PeriodId:             dto.PeriodId,
+		OpeningDebitBalance:  dto.OpeningDebitBalance,
+		OpeningCreditBalance: dto.OpeningCreditBalance,
+		PeriodDebit:          dto.PeriodDebit,
+		PeriodCredit:         dto.PeriodCredit,
+		EndingDebitBalance:   dto.EndingDebitBalance,
+		EndingCreditBalance:  dto.EndingCreditBalance,
+		Account:              accountDTOToVO(dto.Account),
+		CreatedAt:            dto.CreatedAt,
+		UpdatedAt:            dto.UpdatedAt,
 	}
 }
 
 func auxiliaryLedgerDTOToVO(dto query.AuxiliaryLedger) AuxiliaryLedgerResponse {
 	return AuxiliaryLedgerResponse{
-		Id:               dto.Id,
-		PeriodId:         dto.PeriodId,
-		AuxiliaryAccount: auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
-		OpeningBalance:   dto.OpeningBalance,
-		EndingBalance:    dto.EndingBalance,
-		PeriodDebit:      dto.PeriodDebit,
-		PeriodCredit:     dto.PeriodCredit,
-		CreatedAt:        dto.CreatedAt,
-		UpdatedAt:        dto.UpdatedAt,
+		Id:                   dto.Id,
+		PeriodId:             dto.PeriodId,
+		AuxiliaryAccount:     auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
+		OpeningDebitBalance:  dto.OpeningDebitBalance,
+		OpeningCreditBalance: dto.OpeningCreditBalance,
+		PeriodDebit:          dto.PeriodDebit,
+		PeriodCredit:         dto.PeriodCredit,
+		EndingDebitBalance:   dto.EndingDebitBalance,
+		EndingCreditBalance:  dto.EndingCreditBalance,
+		CreatedAt:            dto.CreatedAt,
+		UpdatedAt:            dto.UpdatedAt,
 	}
 }
 
@@ -208,8 +215,7 @@ func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
 	}
 	return LineItemResponse{
 		Id:                dto.Id,
-		AccountId:         dto.AccountId,
-		AccountNumber:     dto.AccountNumber,
+		Account:           accountDTOToVO(dto.Account),
 		AuxiliaryAccounts: auxiliaryAccounts,
 		Text:              dto.Text,
 		Credit:            dto.Credit,

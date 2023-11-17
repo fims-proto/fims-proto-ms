@@ -58,35 +58,38 @@ type Period struct {
 }
 
 type Ledger struct {
-	Id             uuid.UUID
-	SobId          uuid.UUID
-	AccountId      uuid.UUID
-	PeriodId       uuid.UUID
-	OpeningBalance decimal.Decimal
-	EndingBalance  decimal.Decimal
-	PeriodDebit    decimal.Decimal
-	PeriodCredit   decimal.Decimal
-	Account        Account
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	Id                   uuid.UUID
+	SobId                uuid.UUID
+	AccountId            uuid.UUID
+	PeriodId             uuid.UUID
+	OpeningDebitBalance  decimal.Decimal
+	OpeningCreditBalance decimal.Decimal
+	PeriodDebit          decimal.Decimal
+	PeriodCredit         decimal.Decimal
+	EndingDebitBalance   decimal.Decimal
+	EndingCreditBalance  decimal.Decimal
+	Account              Account
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
 }
 
 type AuxiliaryLedger struct {
-	Id               uuid.UUID
-	PeriodId         uuid.UUID
-	AuxiliaryAccount AuxiliaryAccount
-	OpeningBalance   decimal.Decimal
-	EndingBalance    decimal.Decimal
-	PeriodDebit      decimal.Decimal
-	PeriodCredit     decimal.Decimal
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
+	Id                   uuid.UUID
+	PeriodId             uuid.UUID
+	AuxiliaryAccount     AuxiliaryAccount
+	OpeningDebitBalance  decimal.Decimal
+	OpeningCreditBalance decimal.Decimal
+	PeriodDebit          decimal.Decimal
+	PeriodCredit         decimal.Decimal
+	EndingDebitBalance   decimal.Decimal
+	EndingCreditBalance  decimal.Decimal
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
 }
 
 type LineItem struct {
 	Id                uuid.UUID
-	AccountId         uuid.UUID
-	AccountNumber     string
+	Account           Account
 	AuxiliaryAccounts []AuxiliaryAccount
 	Text              string
 	Debit             decimal.Decimal
