@@ -24,7 +24,8 @@ type accountEntry struct {
 	level            int
 	title            string
 	superiorNumber   string
-	accountType      string
+	class            int
+	group            int
 	balanceDirection string
 }
 
@@ -72,20 +73,29 @@ func readFromCSV() ([]accountEntry, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not read file: %w", err)
 		}
-		level, err := strconv.Atoi(line[2])
+		level, err := strconv.Atoi(line[3])
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert level to number: %w", err)
 		}
-		balanceDirection := line[5]
+		classId, err := strconv.Atoi(line[0])
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert class id to number: %w", err)
+		}
+		groupId, err := strconv.Atoi(line[1])
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert group id to number: %w", err)
+		}
+		balanceDirection := line[6]
 		if balanceDirection == "" {
 			balanceDirection = balance_direction.NotDefined.String()
 		}
 		entries = append(entries, accountEntry{
-			number:           line[1],
+			number:           line[2],
 			level:            level,
-			title:            line[3],
-			superiorNumber:   line[4],
-			accountType:      line[0],
+			title:            line[4],
+			superiorNumber:   line[5],
+			class:            classId,
+			group:            groupId,
 			balanceDirection: balanceDirection,
 		})
 	}
@@ -123,7 +133,8 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					numberHierarchy,
 					codeLengthLimits,
 					entry.level,
-					entry.accountType,
+					entry.class,
+					entry.group,
 					entry.balanceDirection,
 					nil,
 				)

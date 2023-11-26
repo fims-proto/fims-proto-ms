@@ -1470,9 +1470,6 @@ const docTemplate = `{
                 "accountNumber": {
                     "type": "string"
                 },
-                "accountType": {
-                    "type": "string"
-                },
                 "auxiliaryCategories": {
                     "type": "array",
                     "items": {
@@ -1482,8 +1479,14 @@ const docTemplate = `{
                 "balanceDirection": {
                     "type": "string"
                 },
+                "class": {
+                    "type": "integer"
+                },
                 "createdAt": {
                     "type": "string"
+                },
+                "group": {
+                    "type": "integer"
                 },
                 "id": {
                     "type": "string"
@@ -1852,6 +1855,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "group": {
+                    "type": "integer"
                 },
                 "levelNumber": {
                     "type": "integer"

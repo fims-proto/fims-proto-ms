@@ -4,16 +4,18 @@ definitions:
     properties:
       accountNumber:
         type: string
-      accountType:
-        type: string
       auxiliaryCategories:
         items:
           $ref: '#/definitions/http.AuxiliaryCategoryResponse'
         type: array
       balanceDirection:
         type: string
+      class:
+        type: integer
       createdAt:
         type: string
+      group:
+        type: integer
       id:
         type: string
       level:
@@ -254,6 +256,8 @@ definitions:
         items:
           type: string
         type: array
+      group:
+        type: integer
       levelNumber:
         type: integer
       title:

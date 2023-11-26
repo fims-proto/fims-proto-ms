@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
@@ -18,7 +18,8 @@ type Account struct {
 	accountNumber       string
 	numberHierarchy     []int
 	level               int
-	accountType         account_type.AccountType
+	class               class.Class
+	group               class.Group
 	balanceDirection    balance_direction.BalanceDirection
 	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
 }
@@ -32,7 +33,8 @@ func New(
 	numberHierarchy []int,
 	codeLengths []int,
 	level int,
-	accountType string,
+	classId int,
+	groupId int,
 	balanceDirection string,
 	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
 ) (*Account, error) {
@@ -41,7 +43,7 @@ func New(
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, title, accountNumber, numberHierarchy, level, accountType, balanceDirection, auxiliaryCategories)
+	return NewByAllFields(id, sobId, superiorAccountId, title, accountNumber, numberHierarchy, level, classId, groupId, balanceDirection, auxiliaryCategories)
 }
 
 // NewByAllFields only difference from New function, is NewByAllFields takes accountNumber, and doesn't validate it.
@@ -54,7 +56,8 @@ func NewByAllFields(
 	accountNumber string,
 	numberHierarchy []int,
 	level int,
-	accountType string,
+	classId int,
+	groupId int,
 	balanceDirection string,
 	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
 ) (*Account, error) {
@@ -86,8 +89,9 @@ func NewByAllFields(
 		return nil, fmt.Errorf("level %d not match to number hierarchy %v", level, numberHierarchy)
 	}
 
-	at, err := account_type.FromString(accountType)
-	if err != nil {
+	c := class.Class(classId)
+	g := class.Group(groupId)
+	if err := class.Validate(c, g); err != nil {
 		return nil, err
 	}
 
@@ -110,7 +114,8 @@ func NewByAllFields(
 		accountNumber:       accountNumber,
 		numberHierarchy:     numberHierarchy,
 		level:               level,
-		accountType:         at,
+		class:               c,
+		group:               g,
 		balanceDirection:    bd,
 		auxiliaryCategories: auxiliaryCategories,
 	}, nil
@@ -144,8 +149,12 @@ func (a *Account) Level() int {
 	return a.level
 }
 
-func (a *Account) AccountType() account_type.AccountType {
-	return a.accountType
+func (a *Account) Class() class.Class {
+	return a.class
+}
+
+func (a *Account) Group() class.Group {
+	return a.group
 }
 
 func (a *Account) BalanceDirection() balance_direction.BalanceDirection {

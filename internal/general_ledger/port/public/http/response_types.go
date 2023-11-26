@@ -22,7 +22,8 @@ type AccountResponse struct {
 	AccountNumber       string                      `json:"accountNumber,omitempty"`
 	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
 	Level               int                         `json:"level"`
-	AccountType         string                      `json:"accountType,omitempty"`
+	Class               int                         `json:"class"`
+	Group               int                         `json:"group"`
 	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
 	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories"`
 	CreatedAt           time.Time                   `json:"createdAt"`
@@ -146,7 +147,8 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		AccountNumber:       dto.AccountNumber,
 		NumberHierarchy:     dto.NumberHierarchy,
 		Level:               dto.Level,
-		AccountType:         dto.AccountType,
+		Class:               dto.Class,
+		Group:               dto.Group,
 		BalanceDirection:    dto.BalanceDirection,
 		AuxiliaryCategories: categories,
 		CreatedAt:           dto.CreatedAt,

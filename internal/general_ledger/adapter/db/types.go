@@ -26,7 +26,8 @@ type accountPO struct {
 	AccountNumber     string           `gorm:"uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
 	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[]"`
 	Level             int
-	AccountType       string
+	Class             int
+	Group             int
 	BalanceDirection  string
 
 	AuxiliaryCategories []auxiliaryCategoryPO `gorm:"many2many:account_auxiliary_category_links;joinForeignKey:AccountId;joinReferences:AuxiliaryCategoryId"`
@@ -286,7 +287,8 @@ func accountBOToPO(bo account.Account) accountPO {
 		AccountNumber:       bo.AccountNumber(),
 		NumberHierarchy:     int4array,
 		Level:               bo.Level(),
-		AccountType:         bo.AccountType().String(),
+		Class:               int(bo.Class()),
+		Group:               int(bo.Group()),
 		BalanceDirection:    bo.BalanceDirection().String(),
 		AuxiliaryCategories: categoryPOs,
 	}
@@ -311,7 +313,8 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		po.AccountNumber,
 		numberHierarchy,
 		po.Level,
-		po.AccountType,
+		po.Class,
+		po.Group,
 		po.BalanceDirection,
 		categoryBOs,
 	)
@@ -341,7 +344,8 @@ func accountPOToDTO(po accountPO) query.Account {
 		AccountNumber:       po.AccountNumber,
 		NumberHierarchy:     numberHierarchy,
 		Level:               po.Level,
-		AccountType:         po.AccountType,
+		Class:               po.Class,
+		Group:               po.Group,
 		BalanceDirection:    po.BalanceDirection,
 		AuxiliaryCategories: categoryDTOs,
 		CreatedAt:           po.CreatedAt,

@@ -6,11 +6,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
+
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/database"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	accountType "github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/account_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
@@ -297,7 +298,7 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 	err := db.Model(&ledgerPO{}).
 		Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
 		Where("ending_debit_balance <> ending_credit_balance").
-		InnerJoins("Account", db.Where(accountPO{AccountType: accountType.ProfitAndLoss.String()})).
+		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses)})).
 		Count(&count).
 		Error
 
