@@ -2,12 +2,12 @@ basePath: /fims/api/v1
 definitions:
   http.AccountClass:
     properties:
-      class:
-        type: string
       groups:
         items:
           type: string
         type: array
+      id:
+        type: string
     type: object
   http.AccountResponse:
     properties:
@@ -266,7 +266,7 @@ definitions:
           type: string
         type: array
       group:
-        type: integer
+        type: string
       levelNumber:
         type: integer
       title:

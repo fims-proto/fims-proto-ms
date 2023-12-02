@@ -1495,14 +1495,14 @@
         "http.AccountClass": {
             "type": "object",
             "properties": {
-                "class": {
-                    "type": "string"
-                },
                 "groups": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -1899,7 +1899,7 @@
                     }
                 },
                 "group": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "levelNumber": {
                     "type": "integer"

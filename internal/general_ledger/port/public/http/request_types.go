@@ -13,7 +13,7 @@ type UpdateAccountRequest struct {
 	Title            string   `json:"title,omitempty"`
 	LevelNumber      int      `json:"levelNumber,omitempty"`
 	BalanceDirection string   `json:"balanceDirection,omitempty"`
-	Group            int      `json:"group"`
+	Group            string   `json:"group"`
 	CategoryKeys     []string `json:"categoryKeys,omitempty"`
 }
 

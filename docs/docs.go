@@ -1501,14 +1501,14 @@ const docTemplate = `{
         "http.AccountClass": {
             "type": "object",
             "properties": {
-                "class": {
-                    "type": "string"
-                },
                 "groups": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
+                },
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -1905,7 +1905,7 @@ const docTemplate = `{
                     }
                 },
                 "group": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "levelNumber": {
                     "type": "integer"

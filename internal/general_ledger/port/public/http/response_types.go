@@ -16,8 +16,8 @@ type Error struct {
 }
 
 type AccountClass struct {
-	Class  string
-	Groups []string
+	Class  string   `json:"id"`
+	Groups []string `json:"groups"`
 }
 
 type AccountResponse struct {

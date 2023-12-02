@@ -104,15 +104,21 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	group, err := strconv.Atoi(req.Group)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	cmd := command.UpdateAccountCmd{
 		AccountId:        uuid.MustParse(c.Param("accountId")),
 		SobId:            uuid.MustParse(c.Param("sobId")),
 		Title:            req.Title,
 		LevelNumber:      req.LevelNumber,
 		BalanceDirection: req.BalanceDirection,
+		Group:            group,
 		CategoryKeys:     req.CategoryKeys,
 	}
-	if err := h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
+	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}
