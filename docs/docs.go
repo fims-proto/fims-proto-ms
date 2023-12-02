@@ -1528,13 +1528,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "class": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "createdAt": {
                     "type": "string"
                 },
                 "group": {
-                    "type": "integer"
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
