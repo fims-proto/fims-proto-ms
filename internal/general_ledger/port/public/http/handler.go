@@ -18,6 +18,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
+	r.GET("/sob/:sobId/account-classes", h.ReadAccountClasses)
 	r.GET("/sob/:sobId/accounts", h.ReadPagingAccounts)
 	r.GET("/sob/:sobId/account/:accountId", h.ReadAccountById)
 	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)

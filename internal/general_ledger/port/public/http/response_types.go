@@ -14,6 +14,11 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
+type AccountClass struct {
+	Class  string
+	Groups []string
+}
+
 type AccountResponse struct {
 	Id                  uuid.UUID                   `json:"id,omitempty"`
 	SobId               uuid.UUID                   `json:"sobId,omitempty"`

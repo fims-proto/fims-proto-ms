@@ -19,6 +19,40 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/sob/{sobId}/account-classes": {
+            "get": {
+                "description": "List allowed account classes and their allowed groups",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.AccountClass"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/account/{accountId}": {
             "get": {
                 "description": "Get an account by id",
@@ -1464,6 +1498,20 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "http.AccountClass": {
+            "type": "object",
+            "properties": {
+                "class": {
+                    "type": "string"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "http.AccountResponse": {
             "type": "object",
             "properties": {
