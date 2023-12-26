@@ -1,0 +1,86 @@
+# Copyright 2010 The Go Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style
+# license that can be found in the LICENSE file.
+
+package filterable
+
+type FilterAST Peg {
+}
+
+F   <- Spacing Expr EOT
+ExprList <- Expr (COMMA Spacing Expr)+
+Expr <- (
+         NotExpr /
+         AndExpr /
+         OrExpr /
+         AtomExpr
+         ) Spacing
+AtomExpr <- (        
+            EqExpr /
+            NeExpr /
+            LtExpr /
+            GtExpr /
+            LteExpr /
+            GteExpr /
+            InExpr /
+            StwExpr /
+            BtwExpr /
+            CtnExpr /
+            )   Spacing
+NotExpr <- NOT LPAR Expr RPAR
+AndExpr <- AND LPAR ExprList RPAR
+OrExpr  <- OR LPAR ExprList RPAR
+EqExpr  <- EQ LPAR Identifier COMMA Literal RPAR
+NeExpr  <- NE LPAR Identifier COMMA Literal RPAR
+LtExpr  <- LT LPAR Identifier COMMA Literal RPAR
+GtExpr  <- GT LPAR Identifier COMMA Literal RPAR
+LteExpr <- LTE LPAR Identifier COMMA Literal RPAR
+GteExpr <- GTE LPAR Identifier COMMA Literal RPAR 
+InExpr  <- IN LPAR Identifier COMMA LiteralList RPAR
+StwExpr <- STW LPAR Identifier COMMA Literal RPAR
+BtwExpr <- BTW LPAR Identifier COMMA Literal COMMA Literal RPAR
+CtnExpr <- CTN LPAR Identifier COMMA Literal RPAR
+
+Identifier	<- < IdentStart IdentCont* > Spacing
+IdentStart	<- [[a-z_]]
+IdentCont	<- IdentStart / [0-9]
+Literal <- (StringLiteral
+            / NumLiteral)
+            Spacing
+LiteralList    <- Literal (COMMA Spacing Literal)+
+StringLiteral <- '\"' (Escape / !["\\\n\r] .)* '\"'
+
+Escape <- '\\' ([btnfr"'\\] / OctalEscape / UnicodeEscape)
+
+OctalEscape
+   <- [0-3][0-7][0-7]
+    / [0-7][0-7]
+    / [0-7]
+
+UnicodeEscape
+   <- 'u'+ HexDigit HexDigit HexDigit HexDigit
+
+NumLiteral <- Digits [.] Digits?
+            / Digits
+Digits <- [0-9]([_]*[0-9])*
+
+HexDigit <- [a-f] / [A-F] / [0-9]
+
+NOT       <-  'not'       Spacing
+AND       <-  'and'       Spacing
+OR        <-  'or'        Spacing
+EQ        <-  'eq'        Spacing
+NE        <-  'ne'        Spacing # none equal
+LT        <-  'lt'        Spacing
+GT        <-  'gt'        Spacing
+IN        <-  'in'        Spacing
+LTE       <-  'lte'       Spacing
+GTE       <-  'gte'       Spacing
+BTW       <-  'btw'       Spacing # between
+STW       <-  'stw'       Spacing # startWith
+CTN       <-  'ctn'       Spacing # contain
+LPAR      <-  '('         Spacing
+RPAR      <-  ')'         Spacing
+COMMA     <-  ','         Spacing
+Spacing   <- ( ' ' / '\t' )*
+EOT       <-  !.

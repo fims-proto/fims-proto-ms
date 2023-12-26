@@ -20,19 +20,16 @@ type filterImpl struct {
 
 // new
 
-func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
+func NewFilter[T any](fieldName string, operator Operator, values ...T) (Filter, error) {
 	f, err := field.New(fieldName)
 	if err != nil {
 		return nil, err
 	}
 
-	o, err := newOperator(operator)
-	if err != nil {
-		return nil, err
-	}
+	o := operator
 
 	switch o {
-	case OptBt:
+	case OptBtw:
 		if len(values) != 2 {
 			return nil, fmt.Errorf("invalid values for operator %s", o)
 		}
@@ -54,7 +51,7 @@ func NewFilter[T any](fieldName, operator string, values ...T) (Filter, error) {
 	}, nil
 }
 
-// impl
+// impl for Filter
 
 func (f filterImpl) Field() field.Field {
 	return f.field
@@ -68,26 +65,41 @@ func (f filterImpl) Values() []any {
 	return f.values
 }
 
+// impl for Filterable
+
+func (f filterImpl) Children() []Filterable {
+	return nil
+}
+
+func (f filterImpl) IsFiltered() bool {
+	return true
+}
+
+func (f filterImpl) FilterableType() Type {
+	return TypeATOM
+}
+
 // misc
 
 type Operator int
 
 const (
-	OptEq         Operator = 1 << iota // equal
-	OptBt                              // between
-	OptLt                              // less than
-	OptLte                             // less than equal
-	OptGt                              // greater than
-	OptGte                             // greater than equal
-	OptIn                              // in
-	OptStartsWith                      // starts with
+	OptBtw Operator = 1 << iota // between
+	OptCtn                      // contain
+	OptEq                       // equal
+	OptGt                       // greater than
+	OptGte                      // greater than equal
+	OptIn                       // in
+	OptLt                       // less than
+	OptLte                      // less than equal
+	OptStw                      // starts with
 )
 
 func (o Operator) String() string {
 	switch o {
 	case OptEq:
 		return "="
-	case OptBt:
+	case OptBtw:
 		return "BETWEEN"
 	case OptLt:
 		return "<"
@@ -99,32 +111,11 @@ func (o Operator) String() string {
 		return ">="
 	case OptIn:
 		return "IN"
-	case OptStartsWith:
+	case OptStw:
 		return "startsWith"
+	case OptCtn:
+		return "contain"
 	default:
 		return "unknown"
-	}
-}
-
-func newOperator(o string) (Operator, error) {
-	switch o {
-	case "eq":
-		return OptEq, nil
-	case "bt":
-		return OptBt, nil
-	case "lt":
-		return OptLt, nil
-	case "lte":
-		return OptLte, nil
-	case "gt":
-		return OptGt, nil
-	case "gte":
-		return OptGte, nil
-	case "in":
-		return OptIn, nil
-	case "startsWith":
-		return OptStartsWith, nil
-	default:
-		return 0, fmt.Errorf("operator %s not supported", o)
 	}
 }

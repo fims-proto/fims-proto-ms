@@ -50,8 +50,8 @@ func (r GeneralLedgerPostgresReadRepository) SearchVouchers(ctx context.Context,
 }
 
 func (r GeneralLedgerPostgresReadRepository) PagingLedgersByPeriod(ctx context.Context, sobId, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
-	periodIdFilter, _ := filterable.NewFilter("periodId", "eq", periodId)
-	pageRequest.AddFilter(periodIdFilter)
+	periodIdFilter, _ := filterable.NewFilter("periodId", filterable.OptEq, periodId)
+	pageRequest.AddAndFilterable(filterable.NewFilterableAtom(periodIdFilter))
 	return r.SearchLedgers(ctx, sobId, pageRequest)
 }
 
@@ -84,7 +84,7 @@ func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, vo
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
 	if sobId != uuid.Nil {
-		sobIdFilter, _ := filterable.NewFilter("sobId", "eq", sobId.String())
-		pageRequest.AddFilter(sobIdFilter)
+		sobIdFilter, _ := filterable.NewFilter("sobId", filterable.OptEq, sobId.String())
+		pageRequest.AddAndFilterable(filterable.NewFilterableAtom(sobIdFilter))
 	}
 }

@@ -8,6 +8,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/schema"
 	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
+
 	"gorm.io/gorm"
 )
 
@@ -19,7 +20,7 @@ func SearchEntities[PO schema.Schema, DTO any](
 	db *gorm.DB,
 ) (Page[DTO], error) {
 	var persistentObjects []PO
-	tx := db.Scopes(filterable.Filtering(r, po)).Session(&gorm.Session{}) // new session
+	tx := db.Scopes(filterable.Filtering(r.GetRawFilterable(), po)).Session(&gorm.Session{}) // new session
 
 	var count int64
 	if err := tx.Model(&po).Count(&count).Error; err != nil {
