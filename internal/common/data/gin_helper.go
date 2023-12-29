@@ -3,6 +3,7 @@ package data
 import (
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
@@ -31,13 +32,16 @@ func NewPageRequestFromQuery(c *gin.Context) (PageRequest, error) {
 	sort := c.Query("$sort")
 	sorts, err := sortable.NewSortableFromQuery(sort)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse page sort parameter: %w", err)
 	}
 
-	filter := c.Query("$filter")
+	filter, err := url.QueryUnescape(c.Query("$filter"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to unescape from filter query: %w", err)
+	}
 	filters, err := filterable.NewFilterableFromQuery(filter)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to parse page filter parameter:%w", err)
 	}
 
 	return NewPageRequest(p, sorts, filters), nil
