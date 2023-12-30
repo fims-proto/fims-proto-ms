@@ -2,7 +2,7 @@ package filterable
 
 func NewFilterableFromQuery(filter string) (Filterable, error) {
 	if filter == "" {
-		return Unfiltered(), nil // TODO Lond create Unfiltered type
+		return Unfiltered(), nil // TODO Lind create Unfiltered type
 	}
 	filterExpr := &FilterAST{Buffer: filter}
 	if err := filterExpr.Init(); err != nil {
