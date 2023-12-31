@@ -27,5 +27,5 @@ func (c Class) String() string {
 	if ok {
 		return s
 	}
-	return fmt.Sprintf("unknown class [%d]", c)
+	return fmt.Sprintf("unknown account class [%d]", c)
 }
