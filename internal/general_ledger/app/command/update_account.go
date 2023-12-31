@@ -17,6 +17,7 @@ type UpdateAccountCmd struct {
 	Title            string
 	LevelNumber      int
 	BalanceDirection string
+	Group            int
 	CategoryKeys     []string
 }
 
@@ -62,6 +63,12 @@ func (h UpdateAccountHandler) Handle(ctx context.Context, cmd UpdateAccountCmd) 
 		if cmd.BalanceDirection != "" {
 			if err := a.UpdateBalanceDirection(cmd.BalanceDirection); err != nil {
 				return nil, fmt.Errorf("failed to update balance direction: %w", err)
+			}
+		}
+
+		if cmd.Group != 0 {
+			if err := a.UpdateGroup(cmd.Group); err != nil {
+				return nil, fmt.Errorf("failed to update group: %w", err)
 			}
 		}
 

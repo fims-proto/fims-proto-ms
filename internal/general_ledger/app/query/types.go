@@ -17,7 +17,8 @@ type Account struct {
 	AccountNumber       string
 	NumberHierarchy     []int
 	Level               int
-	AccountType         string
+	Class               int
+	Group               int
 	BalanceDirection    string
 	AuxiliaryCategories []AuxiliaryCategory
 	CreatedAt           time.Time

@@ -1,10 +1,17 @@
 basePath: /fims/api/v1
 definitions:
+  http.AccountClass:
+    properties:
+      groups:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+    type: object
   http.AccountResponse:
     properties:
       accountNumber:
-        type: string
-      accountType:
         type: string
       auxiliaryCategories:
         items:
@@ -12,7 +19,11 @@ definitions:
         type: array
       balanceDirection:
         type: string
+      class:
+        type: string
       createdAt:
+        type: string
+      group:
         type: string
       id:
         type: string
@@ -254,6 +265,8 @@ definitions:
         items:
           type: string
         type: array
+      group:
+        type: string
       levelNumber:
         type: integer
       title:
@@ -378,6 +391,28 @@ info:
   title: FIMS prototype
   version: "0.1"
 paths:
+  /sob/{sobId}/account-classes:
+    get:
+      consumes:
+      - application/json
+      description: List allowed account classes and their allowed groups
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.AccountClass'
+            type: array
+      tags:
+      - accounts
   /sob/{sobId}/account/{accountId}:
     get:
       consumes:

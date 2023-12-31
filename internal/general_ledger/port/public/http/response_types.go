@@ -1,6 +1,7 @@
 package http
 
 import (
+	"strconv"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,6 +15,11 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
+type AccountClass struct {
+	Class  string   `json:"id"`
+	Groups []string `json:"groups"`
+}
+
 type AccountResponse struct {
 	Id                  uuid.UUID                   `json:"id,omitempty"`
 	SobId               uuid.UUID                   `json:"sobId,omitempty"`
@@ -22,7 +28,8 @@ type AccountResponse struct {
 	AccountNumber       string                      `json:"accountNumber,omitempty"`
 	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
 	Level               int                         `json:"level"`
-	AccountType         string                      `json:"accountType,omitempty"`
+	Class               string                      `json:"class"`
+	Group               string                      `json:"group"`
 	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
 	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories"`
 	CreatedAt           time.Time                   `json:"createdAt"`
@@ -146,7 +153,8 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		AccountNumber:       dto.AccountNumber,
 		NumberHierarchy:     dto.NumberHierarchy,
 		Level:               dto.Level,
-		AccountType:         dto.AccountType,
+		Class:               strconv.Itoa(dto.Class),
+		Group:               strconv.Itoa(dto.Group),
 		BalanceDirection:    dto.BalanceDirection,
 		AuxiliaryCategories: categories,
 		CreatedAt:           dto.CreatedAt,

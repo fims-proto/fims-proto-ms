@@ -2,13 +2,40 @@ package http
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 )
+
+// ReadAccountClasses godoc
+// @Text List allowed account classes and their allowed groups
+// @Description List allowed account classes and their allowed groups
+// @Tags accounts
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Success 200 {array} AccountClass
+// @Router /sob/{sobId}/account-classes [get]
+func (h Handler) ReadAccountClasses(c *gin.Context) {
+	var resp []AccountClass
+	for _, c := range class.Classes {
+		var groups []string
+		for _, g := range c.Groups {
+			groups = append(groups, strconv.Itoa(int(g)))
+		}
+		resp = append(resp, AccountClass{
+			Class:  strconv.Itoa(int(c.Class)),
+			Groups: groups,
+		})
+	}
+
+	c.JSON(http.StatusOK, resp)
+}
 
 // ReadPagingAccounts godoc
 // @Text List all accounts
@@ -77,15 +104,21 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
+	group, err := strconv.Atoi(req.Group)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
 	cmd := command.UpdateAccountCmd{
 		AccountId:        uuid.MustParse(c.Param("accountId")),
 		SobId:            uuid.MustParse(c.Param("sobId")),
 		Title:            req.Title,
 		LevelNumber:      req.LevelNumber,
 		BalanceDirection: req.BalanceDirection,
+		Group:            group,
 		CategoryKeys:     req.CategoryKeys,
 	}
-	if err := h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
+	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

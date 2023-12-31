@@ -32,7 +32,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            1,
 		title:            "库存现金",
 		superiorNumber:   "",
-		accountType:      "assets",
+		class:            1,
+		group:            101,
 		balanceDirection: "debit",
 	},
 	{
@@ -40,7 +41,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            1,
 		title:            "银行存款",
 		superiorNumber:   "",
-		accountType:      "assets",
+		class:            1,
+		group:            101,
 		balanceDirection: "debit",
 	},
 	{
@@ -48,7 +50,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            2,
 		title:            "中国银行存款",
 		superiorNumber:   "1002",
-		accountType:      "assets",
+		class:            1,
+		group:            101,
 		balanceDirection: "debit",
 	},
 	{
@@ -56,7 +59,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            2,
 		title:            "招商银行存款",
 		superiorNumber:   "1002",
-		accountType:      "assets",
+		class:            1,
+		group:            101,
 		balanceDirection: "debit",
 	},
 	{
@@ -64,7 +68,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            1,
 		title:            "管理费用",
 		superiorNumber:   "",
-		accountType:      "profit_and_loss",
+		class:            5,
+		group:            501,
 		balanceDirection: "not_defined",
 	},
 	{
@@ -72,7 +77,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            2,
 		title:            "办公费",
 		superiorNumber:   "6602",
-		accountType:      "profit_and_loss",
+		class:            5,
+		group:            503,
 		balanceDirection: "not_defined",
 	},
 	{
@@ -80,7 +86,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            3,
 		title:            "办公室租金",
 		superiorNumber:   "6602001",
-		accountType:      "profit_and_loss",
+		class:            5,
+		group:            503,
 		balanceDirection: "not_defined",
 	},
 	{
@@ -88,7 +95,8 @@ var sampleAccountEntries = []accountEntry{
 		level:            3,
 		title:            "文具费用",
 		superiorNumber:   "6602001",
-		accountType:      "profit_and_loss",
+		class:            5,
+		group:            503,
 		balanceDirection: "not_defined",
 	},
 }
