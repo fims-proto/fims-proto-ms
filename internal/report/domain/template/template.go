@@ -1,8 +1,9 @@
 package report
 
 import (
+	reportClass "github/fims-proto/fims-proto-ms/internal/report/domain/template/class"
+
 	"github.com/google/uuid"
-	reportClass "github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
 )
 
 type Template struct {
