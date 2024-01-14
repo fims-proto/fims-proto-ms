@@ -1,4 +1,4 @@
-package report
+package template
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/report/domain/template/data_source"
@@ -8,22 +8,19 @@ import (
 )
 
 type Item struct {
-	id                    uuid.UUID
-	parent_id             uuid.UUID // if parent_id == id it is a root item
-	breakdonItems         []uuid.UUID
-	text                  string
-	dataSource            data_source.DataSource
-	formulas              []Formula
-	values                []Cell[decimal.Decimal]
-	sumFactor             int
-	level                 int
-	rowNumber             int
-	sequence              int
-	displayBreakdownItems bool
-	displaySumFactor      bool
-	displayRowNumber      bool
-	isDeletable           bool
-	isDraggable           bool
-	isAbleToAddChild      bool
-	isAbleToAddSibling    bool
+	id                 uuid.UUID
+	text               string
+	dataSource         data_source.DataSource
+	formulas           []Formula
+	values             []Cell[decimal.Decimal]
+	sumFactor          int
+	level              int
+	rowNumber          int
+	sequence           int
+	displaySumFactor   bool
+	displayRowNumber   bool
+	isDeletable        bool
+	isDraggable        bool
+	isAbleToAddChild   bool
+	isAbleToAddSibling bool
 }

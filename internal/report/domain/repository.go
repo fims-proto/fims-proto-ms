@@ -2,9 +2,9 @@ package domain
 
 import (
 	"context"
-	"text/template"
 
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/template"
 
 	"github.com/google/uuid"
 )
@@ -18,20 +18,21 @@ type Repository interface {
 	ReadTemplateById(ctx context.Context, templateId uuid.UUID) (*template.Template, error)
 
 	ApplyTemplateToReport(ctx context.Context, templateId uuid.UUID, reportId uuid.UUID) (report.Report, error)
-	CreatetTemplate(ctx context.Context, template *template.Template) (*template.Template, error)
+	CreateTemplate(ctx context.Context, t *template.Template) error
 	UpdateTemplate(
 		ctx context.Context,
-		template *template.Template,
+		templateId uuid.UUID,
 		updateFn func(t *template.Template) (*template.Template, error),
 	) error
+	DeepCopyTemplate(ctx context.Context, refTemplateId uuid.UUID) (*template.Template, error)
 
 	ReadAllReportsId(ctx context.Context) ([]uuid.UUID, error)
 	ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error)
-	CreateReport(ctx context.Context, template *template.Template) (*report.Report, error)
-	SaveNewTemplateFromReport(ctx context.Context, report report.Report) (*template.Template, error)
+	CreateReport(ctx context.Context, r *report.Report) error
+	ExportTemplateFromReport(ctx context.Context, report report.Report) (*template.Template, error)
 	UpdateReport(
 		ctx context.Context,
-		report *report.Report,
+		reportId uuid.UUID,
 		updateFn func(t *template.Template) (*template.Template, error),
 	) error
 }

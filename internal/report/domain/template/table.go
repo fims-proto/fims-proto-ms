@@ -1,4 +1,4 @@
-package report
+package template
 
 type Table struct {
 	header Header
