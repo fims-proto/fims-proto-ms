@@ -1,0 +1,8 @@
+app:
+  port: 5002
+postgres:
+  dsn: "host=localhost port=5432 user=fims password=DtrEmef4Q4avBmUK dbname=postgres sslmode=disable TimeZone=UTC"
+logger:
+  debug: true
+  jsonEncoding: false
+  showSql: true
