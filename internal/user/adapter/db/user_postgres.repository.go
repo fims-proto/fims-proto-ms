@@ -4,24 +4,26 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/common/database"
-
-	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
-
 	"github.com/google/uuid"
+	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
+	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type UserPostgresRepository struct{}
+type UserPostgresRepository struct {
+	dataSource datasource.DataSource
+}
 
-func NewUserPostgresRepository() *UserPostgresRepository {
-	return &UserPostgresRepository{}
+func NewUserPostgresRepository(dataSource datasource.DataSource) *UserPostgresRepository {
+	return &UserPostgresRepository{
+		dataSource: dataSource,
+	}
 }
 
 func (r UserPostgresRepository) Migrate(ctx context.Context) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	if err := db.AutoMigrate(&userPO{}); err != nil {
 		return fmt.Errorf("failed to migrate: %w", err)
@@ -30,7 +32,7 @@ func (r UserPostgresRepository) Migrate(ctx context.Context) error {
 }
 
 func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID, updateFn func(*user.User) (*user.User, error)) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
 		po := userPO{}
@@ -63,7 +65,7 @@ func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID
 // queries
 
 func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (query.User, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	po := userPO{}
 	if err := db.Where("id = ?", id).First(&po).Error; err != nil {
@@ -79,7 +81,7 @@ func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (que
 }
 
 func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID) ([]query.User, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	if len(ids) == 0 {
 		return nil, nil
