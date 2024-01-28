@@ -1,18 +1,16 @@
 package main
 
 import (
-	"bytes"
-	"flag"
-	"fmt"
 	"net/http"
 	"strings"
+
+	"github/fims-proto/fims-proto-ms/internal/common/config"
 
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
 
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "github/fims-proto/fims-proto-ms/docs"
@@ -48,16 +46,15 @@ import (
 func main() {
 	defer cleanup()
 
-	flag.Parse()
-	loadConfig()
+	config.Initialize()
 
-	log.InitLogger()
+	log.Initialize()
 
 	// i18n
 	localizer := localization.NewLocalizer("./i18n", "zh-CN")
 
 	var dataSource datasource.DataSource
-	if viper.GetBool("app.multiTenancy") {
+	if config.GetBool("app.multiTenancy") {
 		dataSource = multitenant_datasource.NewMultiTenantDataSource()
 	} else {
 		dataSource = dedicated_datasource.NewDedicatedDataSource()
@@ -131,7 +128,7 @@ func main() {
 	generalLedgerPrivateHttpPort.InitRouter(generalLedgerPrivateHttpPort.NewHandler(&generalLedgerApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
-	if strings.HasPrefix(viper.GetString("profile"), "dev") {
+	if strings.HasPrefix(config.GetString("profile"), "dev") {
 		// gin-swagger
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		// devops
@@ -142,45 +139,8 @@ func main() {
 	log.InfoWithoutCxt("All module routers initiated")
 
 	log.InfoWithoutCxt("Starting gin engine...")
-	if err := router.Run(":" + viper.GetString("app.port")); err != nil {
+	if err := router.Run(":" + config.GetString("app.port")); err != nil {
 		panic(err.Error())
-	}
-}
-
-func loadConfig() {
-	// environment variables
-	if err := viper.BindEnv("profile", "PROFILE"); err != nil {
-		panic(fmt.Errorf("failed to bind ENV profile: %w", err))
-	}
-	viper.SetDefault("profile", "dev")
-
-	_ = viper.BindEnv("postgres.dsn", "DSN")
-
-	// read config
-	profile := viper.GetString("profile")
-	viper.SetConfigName(fmt.Sprintf("application-%s", profile))
-	viper.AddConfigPath("./config/")
-	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("failed to load config file: %w", err))
-	}
-
-	// check mandatory and set defaults:
-	checkResult := bytes.Buffer{}
-	// app
-	viper.SetDefault("app.port", "5002")
-	// postgres
-	if !viper.IsSet("postgres.dsn") {
-		checkResult.WriteString("postgres.dsn; ")
-	}
-	// logger
-	viper.SetDefault("logger.debug", false)
-	viper.SetDefault("logger.jsonEncoding", true)
-	viper.SetDefault("logger.showSql", false)
-
-	viper.SetDefault("app.multiTenancy", false)
-
-	if checkResult.Len() > 0 {
-		panic("config missing: " + checkResult.String())
 	}
 }
 

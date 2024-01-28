@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
+	"github/fims-proto/fims-proto-ms/internal/common/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -30,7 +30,7 @@ func (d Connector) GetConnection(dsn string) (*gorm.DB, error) {
 
 func (d Connector) get(dsn string) (*gorm.DB, error) {
 	logLevel := logger.Warn
-	if viper.GetBool("logger.showSql") {
+	if config.GetBool("logger.showSql") {
 		logLevel = logger.Info
 	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{

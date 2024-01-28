@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/spf13/viper"
+	"github/fims-proto/fims-proto-ms/internal/common/config"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"gorm.io/gorm"
@@ -19,7 +19,7 @@ func NewDedicatedDataSource() *DedicatedDataSource {
 	return &DedicatedDataSource{
 		get: sync.OnceValue(func() *gorm.DB {
 			connector := datasource.NewConnector()
-			connection, err := connector.GetConnection(viper.GetString("postgres.dsn"))
+			connection, err := connector.GetConnection(config.GetString("postgres.dsn"))
 			if err != nil {
 				panic(err)
 			}
