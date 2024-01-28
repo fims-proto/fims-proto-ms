@@ -4,28 +4,28 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/spf13/viper"
+	"github/fims-proto/fims-proto-ms/internal/common/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
 
 var logger *zap.Logger
 
-func InitLogger() {
-	config := zap.NewProductionConfig()
+func Initialize() {
+	zapConfig := zap.NewProductionConfig()
 	encoderConfig := zap.NewProductionEncoderConfig()
 	encoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
-	config.EncoderConfig = encoderConfig
+	zapConfig.EncoderConfig = encoderConfig
 
-	if viper.GetBool("logger.debug") {
-		config.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
+	if config.GetBool("logger.debug") {
+		zapConfig.Level = zap.NewAtomicLevelAt(zap.DebugLevel)
 	}
-	if !viper.GetBool("logger.jsonEncoding") {
-		config.Encoding = "console"
+	if !config.GetBool("logger.jsonEncoding") {
+		zapConfig.Encoding = "console"
 	}
 
 	var err error
-	logger, err = config.Build(zap.AddCallerSkip(2))
+	logger, err = zapConfig.Build(zap.AddCallerSkip(2))
 	if err != nil {
 		panic(err)
 	}
