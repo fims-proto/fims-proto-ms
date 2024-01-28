@@ -6,16 +6,18 @@ import (
 	"gorm.io/gorm"
 )
 
-type ctxDBKey struct{}
+type ctxDBKey string
+
+const key ctxDBKey = "dataSource"
 
 func GetIfAbsentInContext(ctx context.Context, getter func() *gorm.DB) *gorm.DB {
-	db := ctx.Value(ctxDBKey{}).(*gorm.DB)
-	if db != nil {
-		return db
+	db, ok := ctx.Value(key).(*gorm.DB)
+	if !ok || db == nil {
+		return getter()
 	}
-	return getter()
+	return db
 }
 
 func WrapInNewContext(parent context.Context, db *gorm.DB) context.Context {
-	return context.WithValue(parent, ctxDBKey{}, db)
+	return context.WithValue(parent, key, db)
 }
