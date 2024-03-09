@@ -17,6 +17,7 @@ func Initialize() {
 	viper.MustBindEnv("profile", "PROFILE")
 	viper.MustBindEnv("postgres.dsn", "DSN")
 	viper.MustBindEnv("app.port", "PORT")
+	viper.MustBindEnv("gin.releaseMode", "GIN_MODE")
 
 	// read config
 	profile := viper.GetString("profile")

@@ -110,6 +110,7 @@ func main() {
 
 	log.InfoWithoutCxt("All module applications initiated")
 
+	gin.SetMode(config.GetString("gin.releaseMode"))
 	router := gin.Default()
 	router.GET("/health/ping", func(c *gin.Context) { c.String(http.StatusOK, "Pong") })
 	router.Use(datasource.ResolveSubdomain())
