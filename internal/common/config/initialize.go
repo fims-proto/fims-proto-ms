@@ -16,6 +16,7 @@ func Initialize() {
 	flag.Parse()
 	viper.MustBindEnv("profile", "PROFILE")
 	viper.MustBindEnv("postgres.dsn", "DSN")
+	viper.MustBindEnv("app.port", "PORT")
 
 	// read config
 	profile := viper.GetString("profile")

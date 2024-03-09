@@ -1,0 +1,6 @@
+app:
+  port: 8080
+logger:
+  debug: false
+  jsonEncoding: true
+  showSql: false

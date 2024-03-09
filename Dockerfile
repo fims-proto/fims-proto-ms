@@ -10,7 +10,7 @@ RUN go build -o /go/bin/app -v ./...
 COPY ./config /go/bin/app/config
 COPY ./dataload /go/bin/app/dataload
 
-# final stage
+# production stage
 FROM alpine:latest AS production-stage
 RUN apk --no-cache add -U ca-certificates
 COPY --from=build-stage /go/bin/app /app
