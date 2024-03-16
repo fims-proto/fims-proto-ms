@@ -8,6 +8,8 @@ RUN go build -o /go/bin/app -v ./...
 # static files
 COPY ./config /go/bin/app/config
 COPY ./dataload /go/bin/app/dataload
+COPY ./docs /go/bin/app/docs
+COPY ./i18n /go/bin/app/i18n
 
 # production stage
 FROM alpine:latest AS production-stage
