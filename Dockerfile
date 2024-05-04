@@ -1,20 +1,19 @@
 # build stage
 FROM golang:alpine AS build-stage
-RUN apk add --no-cache git
+RUN apk update
 WORKDIR /go/src/app
 COPY . .
 RUN mkdir -p /go/bin/app
-RUN go get -d -v ./...
 RUN go build -o /go/bin/app -v ./...
 # static files
 COPY ./config /go/bin/app/config
 COPY ./dataload /go/bin/app/dataload
+COPY ./docs /go/bin/app/docs
+COPY ./i18n /go/bin/app/i18n
 
-# final stage
+# production stage
 FROM alpine:latest AS production-stage
-RUN apk --no-cache add -U ca-certificates
+RUN apk update
 COPY --from=build-stage /go/bin/app /app
 ENTRYPOINT /app/cmd
-LABEL Name=fimsprotoms Version=0.0.1
-EXPOSE 5002
 WORKDIR /app

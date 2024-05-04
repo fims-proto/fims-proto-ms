@@ -8,7 +8,9 @@ func setDefaults() {
 	viper.SetDefault("app.port", "80")
 	viper.SetDefault("app.multiTenancy", false)
 
-	viper.SetDefault("logger.debug", false)
-	viper.SetDefault("logger.jsonEncoding", true)
-	viper.SetDefault("logger.showSql", false)
+	viper.SetDefault("gin.releaseMode", "debug")
+
+	viper.SetDefault("logger.debug", true)
+	viper.SetDefault("logger.jsonEncoding", false)
+	viper.SetDefault("logger.showSql", true)
 }
