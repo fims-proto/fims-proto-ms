@@ -17,6 +17,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
 
+// initializeAllLedgers creates ledgers for current period.
+// If it's first period in the SoB, the opening balances are zero.
 func initializeAllLedgers(ctx context.Context, repo domain.Repository, sobId uuid.UUID) error {
 	// read current period
 	currentPeriod, err := repo.ReadCurrentPeriod(ctx, sobId)
