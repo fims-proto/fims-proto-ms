@@ -1,5 +1,7 @@
 package errors
 
+import "errors"
+
 const unknownErrorSlug = "unknown-error"
 
 type slugErrResponse struct {
@@ -17,7 +19,8 @@ func (s SlugErr) Error() string {
 }
 
 func (s SlugErr) Is(target error) bool {
-	t, ok := target.(SlugErr)
+	var t SlugErr
+	ok := errors.As(target, &t)
 	if !ok {
 		return false
 	}
