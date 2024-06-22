@@ -28,6 +28,7 @@ type AccountResponse struct {
 	AccountNumber       string                      `json:"accountNumber,omitempty"`
 	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
 	Level               int                         `json:"level"`
+	IsLeaf              bool                        `json:"isLeaf"`
 	Class               string                      `json:"class"`
 	Group               string                      `json:"group"`
 	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
@@ -153,6 +154,7 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		AccountNumber:       dto.AccountNumber,
 		NumberHierarchy:     dto.NumberHierarchy,
 		Level:               dto.Level,
+		IsLeaf:              dto.IsLeaf,
 		Class:               strconv.Itoa(dto.Class),
 		Group:               strconv.Itoa(dto.Group),
 		BalanceDirection:    dto.BalanceDirection,

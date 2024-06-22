@@ -27,6 +27,8 @@ definitions:
         type: string
       id:
         type: string
+      isLeaf:
+        type: boolean
       level:
         type: integer
       numberHierarchy:
@@ -137,6 +139,22 @@ definitions:
         type: string
       voucherType:
         type: string
+    type: object
+  http.InitializeLedgersBalanceItemRequest:
+    properties:
+      accountNumber:
+        type: string
+      openingBalance:
+        type: number
+    type: object
+  http.InitializeLedgersBalanceRequest:
+    properties:
+      ledgers:
+        items:
+          $ref: '#/definitions/http.InitializeLedgersBalanceItemRequest'
+        type: array
+    required:
+    - ledgers
     type: object
   http.LedgerResponse:
     properties:
@@ -686,6 +704,38 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - auxiliary accounts
+  /sob/{sobId}/ledgers/initialize:
+    post:
+      consumes:
+      - application/json
+      description: Initialize ledgers in first period of current SoB
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Ledgers with opening balance
+        in: body
+        name: InitializeLedgersBalanceRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.InitializeLedgersBalanceRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
   /sob/{sobId}/period/{periodId}/auxiliary-ledgers:
     get:
       consumes:

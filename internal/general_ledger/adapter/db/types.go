@@ -26,6 +26,7 @@ type accountPO struct {
 	AccountNumber     string           `gorm:"uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
 	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[]"`
 	Level             int
+	IsLeaf            bool
 	Class             int
 	Group             int
 	BalanceDirection  string
@@ -287,6 +288,7 @@ func accountBOToPO(bo account.Account) accountPO {
 		AccountNumber:       bo.AccountNumber(),
 		NumberHierarchy:     int4array,
 		Level:               bo.Level(),
+		IsLeaf:              bo.IsLeaf(),
 		Class:               int(bo.Class()),
 		Group:               int(bo.Group()),
 		BalanceDirection:    bo.BalanceDirection().String(),
@@ -309,10 +311,40 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		po.Id,
 		po.SobId,
 		po.SuperiorAccountId,
+		nil,
 		po.Title,
 		po.AccountNumber,
 		numberHierarchy,
 		po.Level,
+		po.IsLeaf,
+		po.Class,
+		po.Group,
+		po.BalanceDirection,
+		categoryBOs,
+	)
+}
+
+func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*account.Account, error) {
+	var numberHierarchy []int
+	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
+		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
+	}
+
+	categoryBOs, err := pos2bos(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
+	if err != nil {
+		return nil, err
+	}
+
+	return account.NewByAllFields(
+		po.Id,
+		po.SobId,
+		po.SuperiorAccountId,
+		superior,
+		po.Title,
+		po.AccountNumber,
+		numberHierarchy,
+		po.Level,
+		po.IsLeaf,
 		po.Class,
 		po.Group,
 		po.BalanceDirection,
@@ -344,6 +376,7 @@ func accountPOToDTO(po accountPO) query.Account {
 		AccountNumber:       po.AccountNumber,
 		NumberHierarchy:     numberHierarchy,
 		Level:               po.Level,
+		IsLeaf:              po.IsLeaf,
 		Class:               po.Class,
 		Group:               po.Group,
 		BalanceDirection:    po.BalanceDirection,

@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -30,4 +32,30 @@ func (h Handler) ReadPagingLedgersByPeriod(c *gin.Context) {
 		},
 		ledgerDTOToVO,
 	)
+}
+
+// InitializeLedgers godoc
+// @Text Initialize ledgers in first period of current SoB
+// @Description Initialize ledgers in first period of current SoB
+// @Tags ledgers
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Param InitializeLedgersBalanceRequest body InitializeLedgersBalanceRequest true "Ledgers with opening balance"
+// @Success 204
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/ledgers/initialize [post]
+func (h Handler) InitializeLedgers(c *gin.Context) {
+	var req InitializeLedgersBalanceRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.app.Commands.InitializeLedgersBalance.Handle(c, req.mapToCommand(uuid.MustParse(c.Param("sobId")))); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

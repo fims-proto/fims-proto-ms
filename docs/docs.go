@@ -460,6 +460,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/ledgers/initialize": {
+            "post": {
+                "description": "Initialize ledgers in first period of current SoB",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Ledgers with opening balance",
+                        "name": "InitializeLedgersBalanceRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.InitializeLedgersBalanceRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/period/{periodId}/auxiliary-ledgers": {
             "get": {
                 "description": "List all auxiliary ledgers",
@@ -1539,6 +1588,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "isLeaf": {
+                    "type": "boolean"
+                },
                 "level": {
                     "type": "integer"
                 },
@@ -1707,6 +1759,31 @@ const docTemplate = `{
                 },
                 "voucherType": {
                     "type": "string"
+                }
+            }
+        },
+        "http.InitializeLedgersBalanceItemRequest": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "openingBalance": {
+                    "type": "number"
+                }
+            }
+        },
+        "http.InitializeLedgersBalanceRequest": {
+            "type": "object",
+            "required": [
+                "ledgers"
+            ],
+            "properties": {
+                "ledgers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.InitializeLedgersBalanceItemRequest"
+                    }
                 }
             }
         },

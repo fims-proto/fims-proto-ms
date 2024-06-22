@@ -19,6 +19,7 @@ import (
 
 // initializeAllLedgers creates ledgers for current period.
 // If it's first period in the SoB, the opening balances are zero.
+// Initializing the opening balance for the first period is handled by InitializeLedgersBalanceHandler
 func initializeAllLedgers(ctx context.Context, repo domain.Repository, sobId uuid.UUID) error {
 	// read current period
 	currentPeriod, err := repo.ReadCurrentPeriod(ctx, sobId)

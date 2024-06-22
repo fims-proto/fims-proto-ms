@@ -21,7 +21,8 @@ type Queries struct {
 }
 
 type Commands struct {
-	Initialize command.InitializeHandler
+	Initialize               command.InitializeHandler
+	InitializeLedgersBalance command.InitializeLedgersBalanceHandler
 
 	UpdateAccount command.UpdateAccountHandler
 
@@ -70,7 +71,8 @@ func (a *Application) Inject(
 		PagingVouchers:            query.NewPagingVouchersHandler(readModel, userService),
 	}
 	a.Commands = Commands{
-		Initialize: command.NewInitializeHandler(repo, sobService, numberingService),
+		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
+		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
 
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 
