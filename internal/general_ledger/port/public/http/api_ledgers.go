@@ -34,6 +34,33 @@ func (h Handler) ReadPagingLedgersByPeriod(c *gin.Context) {
 	)
 }
 
+// ReadFirstPeriodLedgers godoc
+// @Text List ledgers in first period
+// @Description List ledgers in first period
+// @Tags ledgers
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Success 200 {array} LedgerResponse
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/first-period/ledgers [get]
+func (h Handler) ReadFirstPeriodLedgers(c *gin.Context) {
+	period, ledgers, err := h.app.Queries.FirstPeriodLedgers.Handle(c, uuid.MustParse(c.Param("sobId")))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	var ledgersResponses []LedgerResponse
+	for _, ledger := range ledgers {
+		ledgersResponses = append(ledgersResponses, ledgerDTOToVO(ledger))
+	}
+	c.JSON(http.StatusOK, PeriodAndLedgerResponse{
+		Period:  periodDTOToVO(period),
+		Ledgers: ledgersResponses,
+	})
+}
+
 // InitializeLedgers godoc
 // @Text Initialize ledgers in first period of current SoB
 // @Description Initialize ledgers in first period of current SoB

@@ -704,6 +704,32 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - auxiliary accounts
+  /sob/{sobId}/first-period/ledgers:
+    get:
+      consumes:
+      - application/json
+      description: List ledgers in first period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.LedgerResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
   /sob/{sobId}/ledgers/initialize:
     post:
       consumes:

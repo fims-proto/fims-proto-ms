@@ -86,6 +86,11 @@ type LedgerResponse struct {
 	UpdatedAt            time.Time       `json:"updatedAt"`
 }
 
+type PeriodAndLedgerResponse struct {
+	Period  PeriodResponse   `json:"period"`
+	Ledgers []LedgerResponse `json:"ledgers"`
+}
+
 type AuxiliaryLedgerResponse struct {
 	Id                   uuid.UUID                `json:"id,omitempty"`
 	PeriodId             uuid.UUID                `json:"periodId,omitempty"`

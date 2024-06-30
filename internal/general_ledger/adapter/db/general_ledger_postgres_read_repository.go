@@ -2,6 +2,10 @@ package db
 
 import (
 	"context"
+	"errors"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -53,12 +57,6 @@ func (r GeneralLedgerPostgresReadRepository) SearchVouchers(ctx context.Context,
 	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, r.dataSource.GetConnection(ctx).Preload("LineItems.Account").Joins("Period"))
 }
 
-func (r GeneralLedgerPostgresReadRepository) PagingLedgersByPeriod(ctx context.Context, sobId, periodId uuid.UUID, pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
-	periodIdFilter, _ := filterable.NewFilter("periodId", filterable.OptEq, periodId)
-	pageRequest.AddAndFilterable(filterable.NewFilterableAtom(periodIdFilter))
-	return r.SearchLedgers(ctx, sobId, pageRequest)
-}
-
 func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -69,6 +67,20 @@ func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, 
 	}
 
 	return periodPOToDTO(po), nil
+}
+
+func (r GeneralLedgerPostgresReadRepository) FirstPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po periodPO
+	err := db.Order("opening_time asc").Where(periodPO{SobId: sobId}).First(&po).Error
+	if err == nil {
+		return periodPOToDTO(po), nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return query.Period{}, commonErrors.ErrRecordNotFound()
+	}
+	return query.Period{}, err
 }
 
 func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, voucherId uuid.UUID) (query.Voucher, error) {
