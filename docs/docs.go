@@ -485,10 +485,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerResponse"
-                            }
+                            "$ref": "#/definitions/http.PeriodAndLedgersResponse"
                         }
                     },
                     "500": {
@@ -1926,6 +1923,20 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "http.PeriodAndLedgersResponse": {
+            "type": "object",
+            "properties": {
+                "ledgers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerResponse"
+                    }
+                },
+                "period": {
+                    "$ref": "#/definitions/http.PeriodResponse"
                 }
             }
         },

@@ -41,7 +41,7 @@ func (h Handler) ReadPagingLedgersByPeriod(c *gin.Context) {
 // @Accept application/json
 // @Produce application/json
 // @Param sobId path string true "Sob ID"
-// @Success 200 {array} LedgerResponse
+// @Success 200 {object} PeriodAndLedgersResponse
 // @Failure 500 {object} Error
 // @Router /sob/{sobId}/first-period/ledgers [get]
 func (h Handler) ReadFirstPeriodLedgers(c *gin.Context) {
@@ -55,7 +55,7 @@ func (h Handler) ReadFirstPeriodLedgers(c *gin.Context) {
 	for _, ledger := range ledgers {
 		ledgersResponses = append(ledgersResponses, ledgerDTOToVO(ledger))
 	}
-	c.JSON(http.StatusOK, PeriodAndLedgerResponse{
+	c.JSON(http.StatusOK, PeriodAndLedgersResponse{
 		Period:  periodDTOToVO(period),
 		Ledgers: ledgersResponses,
 	})

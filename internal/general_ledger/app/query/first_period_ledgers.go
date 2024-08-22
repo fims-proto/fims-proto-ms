@@ -35,9 +35,15 @@ func (h FirstPeriodLedgersHandler) Handle(ctx context.Context, sobId uuid.UUID) 
 	if err != nil {
 		panic(fmt.Errorf("failed to build filter 'periodId': %w", err))
 	}
+
+	sort, err := sortable.NewSort("account.accountNumber", "asc")
+	if err != nil {
+		panic(fmt.Errorf("failed to build sort 'account.accountNumber': %w", err))
+	}
+
 	ledgerRequest := data.NewPageRequest(
 		pageable.Unpaged(),
-		sortable.Unsorted(),
+		sortable.New(sort),
 		filterable.NewFilterableAtom(periodIdFilter),
 	)
 	ledgers, err := h.readModel.SearchLedgers(ctx, sobId, ledgerRequest)

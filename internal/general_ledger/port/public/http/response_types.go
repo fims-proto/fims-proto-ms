@@ -86,7 +86,7 @@ type LedgerResponse struct {
 	UpdatedAt            time.Time       `json:"updatedAt"`
 }
 
-type PeriodAndLedgerResponse struct {
+type PeriodAndLedgersResponse struct {
 	Period  PeriodResponse   `json:"period"`
 	Ledgers []LedgerResponse `json:"ledgers"`
 }
