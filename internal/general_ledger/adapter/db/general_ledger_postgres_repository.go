@@ -414,6 +414,7 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Preload("LineItems.Account.AuxiliaryCategories").
 		Preload("LineItems.AuxiliaryAccounts.Category").
+		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
 	}

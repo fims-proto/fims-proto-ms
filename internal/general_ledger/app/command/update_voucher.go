@@ -67,18 +67,18 @@ func (h UpdateVoucherHandler) updateVoucher(ctx context.Context, cmd UpdateVouch
 
 			// update transaction time (and period and document number, if needed)
 			if !cmd.TransactionTime.IsZero() {
-				periodId, err := readPeriodIdAndCheck(ctx, h.repo, h.numberingService, v.SobId(), cmd.TransactionTime)
+				p, err := readPeriodIdAndCheck(ctx, h.repo, h.numberingService, v.SobId(), cmd.TransactionTime)
 				if err != nil {
 					return nil, fmt.Errorf("failed to read or create period: %w", err)
 				}
 
-				if periodId != v.PeriodId() {
+				if p.Id() != v.PeriodId() {
 					// different period, need to regenerate voucher id
-					identifier, err := h.numberingService.GenerateIdentifier(ctx, periodId, v.VoucherType().String())
+					identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), v.VoucherType().String())
 					if err != nil {
 						return nil, fmt.Errorf("failed to re-generate voucher number: %w", err)
 					}
-					if err = v.UpdatePeriodAndDocumentNumber(periodId, identifier, cmd.Updater); err != nil {
+					if err = v.UpdatePeriodAndDocumentNumber(p.Id(), identifier, cmd.Updater); err != nil {
 						return nil, err
 					}
 				}

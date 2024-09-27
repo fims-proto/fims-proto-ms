@@ -22,7 +22,6 @@ type LineItem struct {
 
 func NewLineItem(
 	id uuid.UUID,
-	accountId uuid.UUID,
 	account *account.Account,
 	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount,
 	text string,
@@ -33,12 +32,12 @@ func NewLineItem(
 		return nil, errors.NewSlugError("lineItem-emptyId")
 	}
 
-	if accountId == uuid.Nil {
-		return nil, errors.NewSlugError("lineItem-emptyAccountId")
-	}
-
 	if account == nil {
 		return nil, errors.NewSlugError("lineItem-nilAccount")
+	}
+
+	if account.Id() == uuid.Nil {
+		return nil, errors.NewSlugError("lineItem-emptyAccountId")
 	}
 
 	if len(auxiliaryAccounts) != len(account.AuxiliaryCategories()) {
@@ -76,7 +75,7 @@ func NewLineItem(
 
 	return &LineItem{
 		id:                id,
-		accountId:         accountId,
+		accountId:         account.Id(),
 		account:           account,
 		auxiliaryAccounts: auxiliaryAccounts,
 		text:              text,

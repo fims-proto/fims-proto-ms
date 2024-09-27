@@ -626,10 +626,15 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 		return nil, err
 	}
 
+	periodBO, err := periodPOToBO(po.Period)
+	if err != nil {
+		return nil, err
+	}
+
 	return voucher.New(
 		po.Id,
 		po.SobId,
-		po.PeriodId,
+		periodBO,
 		po.VoucherType,
 		po.HeaderText,
 		po.DocumentNumber,
@@ -712,7 +717,6 @@ func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 
 	return voucher.NewLineItem(
 		po.Id,
-		po.AccountId,
 		accountBO,
 		auxiliaryAccountBOs,
 		po.Text,

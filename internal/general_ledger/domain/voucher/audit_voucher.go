@@ -5,8 +5,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
-func (d *Voucher) Audit(auditor uuid.UUID) error {
-	if d.isAudited {
+func (v *Voucher) Audit(auditor uuid.UUID) error {
+	if v.isAudited {
 		return errors.NewSlugError("voucher-audit-repeatAudit")
 	}
 
@@ -14,33 +14,33 @@ func (d *Voucher) Audit(auditor uuid.UUID) error {
 		return errors.NewSlugError("voucher-audit-emptyAuditor")
 	}
 
-	if auditor == d.creator {
+	if auditor == v.creator {
 		return errors.NewSlugError("voucher-audit-auditorSameAsCreator")
 	}
 
-	if d.reviewer != uuid.Nil && auditor == d.reviewer {
+	if v.reviewer != uuid.Nil && auditor == v.reviewer {
 		return errors.NewSlugError("voucher-audit-auditorSameAsReviewer")
 	}
 
-	d.isAudited = true
-	d.auditor = auditor
+	v.isAudited = true
+	v.auditor = auditor
 	return nil
 }
 
-func (d *Voucher) CancelAudit(auditor uuid.UUID) error {
-	if !d.isAudited {
+func (v *Voucher) CancelAudit(auditor uuid.UUID) error {
+	if !v.isAudited {
 		return errors.NewSlugError("voucher-cancelAudit-notAudited")
 	}
 
-	if d.auditor != auditor {
+	if v.auditor != auditor {
 		return errors.NewSlugError("voucher-cancelAudit-differentAuditor")
 	}
 
-	if d.isPosted {
+	if v.isPosted {
 		return errors.NewSlugError("voucher-cancelAudit-posted")
 	}
 
-	d.isAudited = false
-	d.auditor = uuid.Nil
+	v.isAudited = false
+	v.auditor = uuid.Nil
 	return nil
 }

@@ -8,6 +8,7 @@ import (
 )
 
 type Queries struct {
+	AllAccounts               query.AllAccountsHandler
 	PagingAccounts            query.PagingAccountsHandler
 	AccountById               query.AccountByIdHandler
 	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
@@ -60,6 +61,7 @@ func (a *Application) Inject(
 	userService service.UserService,
 ) {
 	a.Queries = Queries{
+		AllAccounts:               query.NewAllAccountsHandler(readModel),
 		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
 		AccountById:               query.NewAccountByIdHandler(readModel),
 		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
