@@ -16,17 +16,21 @@ type Account struct {
 	id                  uuid.UUID
 	sobId               uuid.UUID
 	superiorAccountId   uuid.UUID
+	superiorAccount     *Account
 	title               string
 	accountNumber       string
 	numberHierarchy     []int
 	level               int
+	isLeaf              bool
 	class               class.Class
 	group               class.Group
 	balanceDirection    balance_direction.BalanceDirection
 	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
 }
 
-// New takes all fields except accountNumber. It's calculated from numberHierarchy
+// New takes all fields except:
+// - accountNumber: it's calculated from numberHierarchy
+// - superiorAccount: this method cannot create an entity with such nested structure
 func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
@@ -35,6 +39,7 @@ func New(
 	numberHierarchy []int,
 	codeLengths []int,
 	level int,
+	isLeaf bool,
 	classId int,
 	groupId int,
 	balanceDirection string,
@@ -45,19 +50,21 @@ func New(
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, title, accountNumber, numberHierarchy, level, classId, groupId, balanceDirection, auxiliaryCategories)
+	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection, auxiliaryCategories)
 }
 
-// NewByAllFields only difference from New function, is NewByAllFields takes accountNumber, and doesn't validate it.
+// NewByAllFields takes all attributes of Account, and doesn't validate accountNumber field
 // Typically used in persistence level
 func NewByAllFields(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	superiorAccountId uuid.UUID,
+	superiorAccount *Account,
 	title string,
 	accountNumber string,
 	numberHierarchy []int,
 	level int,
+	isLeaf bool,
 	classId int,
 	groupId int,
 	balanceDirection string,
@@ -112,10 +119,12 @@ func NewByAllFields(
 		id:                  id,
 		sobId:               sobId,
 		superiorAccountId:   superiorAccountId,
+		superiorAccount:     superiorAccount,
 		title:               title,
 		accountNumber:       accountNumber,
 		numberHierarchy:     numberHierarchy,
 		level:               level,
+		isLeaf:              isLeaf,
 		class:               c,
 		group:               g,
 		balanceDirection:    bd,
@@ -157,6 +166,10 @@ func (a *Account) SuperiorAccountId() uuid.UUID {
 	return a.superiorAccountId
 }
 
+func (a *Account) SuperiorAccount() *Account {
+	return a.superiorAccount
+}
+
 func (a *Account) Title() string {
 	return a.title
 }
@@ -171,6 +184,10 @@ func (a *Account) NumberHierarchy() []int {
 
 func (a *Account) Level() int {
 	return a.level
+}
+
+func (a *Account) IsLeaf() bool {
+	return a.isLeaf
 }
 
 func (a *Account) Class() class.Class {

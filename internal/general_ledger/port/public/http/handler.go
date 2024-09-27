@@ -19,7 +19,8 @@ func NewHandler(app *app.Application) Handler {
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/account-classes", h.ReadAccountClasses)
-	r.GET("/sob/:sobId/accounts", h.ReadPagingAccounts)
+	r.GET("/sob/:sobId/accounts", h.ReadAccounts)
+	r.GET("/sob/:sobId/search-accounts", h.SearchAccounts)
 	r.GET("/sob/:sobId/account/:accountId", h.ReadAccountById)
 	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)
 
@@ -28,6 +29,8 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/auxiliary/:categoryKey/accounts", h.ReadPagingAuxiliaryAccounts)
 	r.POST("/sob/:sobId/auxiliary/:categoryKey/accounts", h.CreateAuxiliaryAccount)
 
+	r.GET("/sob/:sobId/first-period/ledgers", h.ReadFirstPeriodLedgers)
+	r.POST("/sob/:sobId/ledgers/initialize", h.InitializeLedgers)
 	r.GET("/sob/:sobId/periods", h.ReadPagingPeriods)
 	r.GET("/sob/:sobId/periods/current", h.ReadSobCurrentPeriod)
 	r.GET("/sob/:sobId/period/:periodId/ledgers", h.ReadPagingLedgersByPeriod)

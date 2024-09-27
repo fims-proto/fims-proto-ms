@@ -5,13 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
-
 	"github.com/google/uuid"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type CreateVoucherCmd struct {
@@ -47,16 +45,16 @@ func NewCreateVoucherHandler(repo domain.Repository, numberingService service.Nu
 
 func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		periodId, err := readPeriodIdAndCheck(txCtx, h.repo, h.numberingService, cmd.SobId, cmd.TransactionTime)
+		p, err := readPeriodIdAndCheck(txCtx, h.repo, h.numberingService, cmd.SobId, cmd.TransactionTime)
 		if err != nil {
 			return fmt.Errorf("failed to read or create period: %w", err)
 		}
 
-		return h.createVoucher(txCtx, cmd, periodId)
+		return h.createVoucher(txCtx, cmd, p)
 	})
 }
 
-func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVoucherCmd, periodId uuid.UUID) error {
+func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVoucherCmd, p *period.Period) error {
 	// prepare line items
 	lineItems, err := prepareLineItems(ctx, h.repo, cmd.SobId, cmd.LineItems)
 	if err != nil {
@@ -64,7 +62,7 @@ func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVouch
 	}
 
 	// get document number
-	identifier, err := h.numberingService.GenerateIdentifier(ctx, periodId, cmd.VoucherType)
+	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), cmd.VoucherType)
 	if err != nil {
 		return fmt.Errorf("failed to generate next number: %w", err)
 	}
@@ -72,7 +70,7 @@ func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVouch
 	newVoucher, err := voucher.New(
 		cmd.VoucherId,
 		cmd.SobId,
-		periodId,
+		p,
 		cmd.VoucherType,
 		cmd.HeaderText,
 		identifier,

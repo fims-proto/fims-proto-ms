@@ -3,17 +3,18 @@ package voucher
 import (
 	"time"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher/voucher_type"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher/voucher_type"
 )
 
 type Voucher struct {
 	id                 uuid.UUID
 	sobId              uuid.UUID
 	periodId           uuid.UUID
+	period             *period.Period
 	voucherType        voucher_type.VoucherType
 	headerText         string
 	documentNumber     string
@@ -34,7 +35,7 @@ type Voucher struct {
 func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
-	periodId uuid.UUID,
+	period *period.Period,
 	voucherType string,
 	headerText string,
 	documentNumber string,
@@ -57,7 +58,11 @@ func New(
 		return nil, errors.NewSlugError("emptySobId")
 	}
 
-	if periodId == uuid.Nil {
+	if period == nil {
+		return nil, errors.NewSlugError("voucher-emptyPeriod")
+	}
+
+	if period.Id() == uuid.Nil {
 		return nil, errors.NewSlugError("voucher-emptyPeriodId")
 	}
 
@@ -110,7 +115,8 @@ func New(
 	return &Voucher{
 		id:                 id,
 		sobId:              sobId,
-		periodId:           periodId,
+		periodId:           period.Id(),
+		period:             period,
 		headerText:         headerText,
 		voucherType:        dt,
 		documentNumber:     documentNumber,
@@ -129,74 +135,78 @@ func New(
 	}, nil
 }
 
-func (d *Voucher) SobId() uuid.UUID {
-	return d.sobId
+func (v *Voucher) SobId() uuid.UUID {
+	return v.sobId
 }
 
-func (d *Voucher) Id() uuid.UUID {
-	return d.id
+func (v *Voucher) Id() uuid.UUID {
+	return v.id
 }
 
-func (d *Voucher) PeriodId() uuid.UUID {
-	return d.periodId
+func (v *Voucher) PeriodId() uuid.UUID {
+	return v.periodId
 }
 
-func (d *Voucher) HeaderText() string {
-	return d.headerText
+func (v *Voucher) Period() *period.Period {
+	return v.period
 }
 
-func (d *Voucher) VoucherType() voucher_type.VoucherType {
-	return d.voucherType
+func (v *Voucher) HeaderText() string {
+	return v.headerText
 }
 
-func (d *Voucher) DocumentNumber() string {
-	return d.documentNumber
+func (v *Voucher) VoucherType() voucher_type.VoucherType {
+	return v.voucherType
 }
 
-func (d *Voucher) AttachmentQuantity() int {
-	return d.attachmentQuantity
+func (v *Voucher) DocumentNumber() string {
+	return v.documentNumber
 }
 
-func (d *Voucher) Debit() decimal.Decimal {
-	return d.debit
+func (v *Voucher) AttachmentQuantity() int {
+	return v.attachmentQuantity
 }
 
-func (d *Voucher) Credit() decimal.Decimal {
-	return d.credit
+func (v *Voucher) Debit() decimal.Decimal {
+	return v.debit
 }
 
-func (d *Voucher) Creator() uuid.UUID {
-	return d.creator
+func (v *Voucher) Credit() decimal.Decimal {
+	return v.credit
 }
 
-func (d *Voucher) Reviewer() uuid.UUID {
-	return d.reviewer
+func (v *Voucher) Creator() uuid.UUID {
+	return v.creator
 }
 
-func (d *Voucher) Auditor() uuid.UUID {
-	return d.auditor
+func (v *Voucher) Reviewer() uuid.UUID {
+	return v.reviewer
 }
 
-func (d *Voucher) Poster() uuid.UUID {
-	return d.poster
+func (v *Voucher) Auditor() uuid.UUID {
+	return v.auditor
 }
 
-func (d *Voucher) IsReviewed() bool {
-	return d.isReviewed
+func (v *Voucher) Poster() uuid.UUID {
+	return v.poster
 }
 
-func (d *Voucher) IsAudited() bool {
-	return d.isAudited
+func (v *Voucher) IsReviewed() bool {
+	return v.isReviewed
 }
 
-func (d *Voucher) IsPosted() bool {
-	return d.isPosted
+func (v *Voucher) IsAudited() bool {
+	return v.isAudited
 }
 
-func (d *Voucher) TransactionTime() time.Time {
-	return d.transactionTime
+func (v *Voucher) IsPosted() bool {
+	return v.isPosted
 }
 
-func (d *Voucher) LineItems() []*LineItem {
-	return d.lineItems
+func (v *Voucher) TransactionTime() time.Time {
+	return v.transactionTime
+}
+
+func (v *Voucher) LineItems() []*LineItem {
+	return v.lineItems
 }

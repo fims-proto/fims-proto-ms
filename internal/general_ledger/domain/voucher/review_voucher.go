@@ -5,8 +5,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
-func (d *Voucher) Review(reviewer uuid.UUID) error {
-	if d.isReviewed {
+func (v *Voucher) Review(reviewer uuid.UUID) error {
+	if v.isReviewed {
 		return errors.NewSlugError("voucher-review-repeatReview")
 	}
 
@@ -14,33 +14,33 @@ func (d *Voucher) Review(reviewer uuid.UUID) error {
 		return errors.NewSlugError("voucher-review-emptyReviewer")
 	}
 
-	if reviewer == d.creator {
+	if reviewer == v.creator {
 		return errors.NewSlugError("voucher-review-reviewerSameAsCreator")
 	}
 
-	if d.auditor != uuid.Nil && reviewer == d.auditor {
+	if v.auditor != uuid.Nil && reviewer == v.auditor {
 		return errors.NewSlugError("voucher-review-reviewerSameAsAuditor")
 	}
 
-	d.isReviewed = true
-	d.reviewer = reviewer
+	v.isReviewed = true
+	v.reviewer = reviewer
 	return nil
 }
 
-func (d *Voucher) CancelReview(reviewer uuid.UUID) error {
-	if !d.isReviewed {
+func (v *Voucher) CancelReview(reviewer uuid.UUID) error {
+	if !v.isReviewed {
 		return errors.NewSlugError("voucher-cancelReview-notReviewed")
 	}
 
-	if d.reviewer != reviewer {
+	if v.reviewer != reviewer {
 		return errors.NewSlugError("voucher-cancelReview-differentReviewer")
 	}
 
-	if d.isPosted {
+	if v.isPosted {
 		return errors.NewSlugError("voucher-cancelReview-posted")
 	}
 
-	d.isReviewed = false
-	d.reviewer = uuid.Nil
+	v.isReviewed = false
+	v.reviewer = uuid.Nil
 	return nil
 }

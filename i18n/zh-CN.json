@@ -39,6 +39,8 @@
   "voucher-cancelReview-differentReviewer": "取消复核须由复核人本人操作",
   "voucher-cancelReview-posted": "凭证已登账，不能取消复核",
 
+  "voucher-post-periodClosed": "账期已关闭",
+  "voucher-post-periodNotCurrent": "账期尚未开放",
   "voucher-post-repeatPost": "凭证已登账，不能重复登账",
   "voucher-post-notAudited": "凭证尚未审核",
   "voucher-post-notReviewed": "凭证尚未复核",
