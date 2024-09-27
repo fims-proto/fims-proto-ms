@@ -17,6 +17,7 @@ type Account struct {
 	AccountNumber       string
 	NumberHierarchy     []int
 	Level               int
+	IsLeaf              bool
 	Class               int
 	Group               int
 	BalanceDirection    string

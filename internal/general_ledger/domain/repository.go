@@ -29,6 +29,8 @@ type Repository interface {
 	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)
 	ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error)
 	ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error)
+	ReadAccountsWithSuperiorsByIds(ctx context.Context, sobId uuid.UUID, accountIds []uuid.UUID) ([]*account.Account, error)
+	ReadAllSubAccountsWithSuperiors(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)
 
 	CreatePeriodIfNotExists(ctx context.Context, period *period.Period) (*period.Period, bool, error)
 	UpdatePeriod(
@@ -38,6 +40,7 @@ type Repository interface {
 	) error
 	ReadCurrentPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
 	ReadPreviousPeriod(ctx context.Context, currentPeriodId uuid.UUID) (*period.Period, error)
+	ReadFirstPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
 
 	CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error
 	UpdateLedgersByPeriodAndAccountIds(

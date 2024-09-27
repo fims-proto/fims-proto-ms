@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -104,6 +105,14 @@ func readFromCSV() ([]accountEntry, error) {
 }
 
 func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthLimits []int) ([]*account.Account, error) {
+	var superiorNumbers []string
+	for _, entry := range accountEntries {
+		if entry.superiorNumber != "" {
+			superiorNumbers = append(superiorNumbers, entry.superiorNumber)
+		}
+	}
+	slices.Sort(superiorNumbers)
+
 	preparedAccounts := make(map[string]*account.Account)
 	for i := 0; i < len(codeLengthLimits); i++ {
 		for _, entry := range accountEntries {
@@ -125,6 +134,9 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
 				}
 
+				// when an account is not superior for all other accounts, it's a leaf
+				_, found := slices.BinarySearch(superiorNumbers, entry.number)
+
 				domainAccount, err := account.New(
 					uuid.New(),
 					sobId,
@@ -133,6 +145,7 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					numberHierarchy,
 					codeLengthLimits,
 					entry.level,
+					!found,
 					entry.class,
 					entry.group,
 					entry.balanceDirection,

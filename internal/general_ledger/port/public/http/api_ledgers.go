@@ -1,6 +1,8 @@
 package http
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -30,4 +32,57 @@ func (h Handler) ReadPagingLedgersByPeriod(c *gin.Context) {
 		},
 		ledgerDTOToVO,
 	)
+}
+
+// ReadFirstPeriodLedgers godoc
+// @Text List ledgers in first period
+// @Description List ledgers in first period
+// @Tags ledgers
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Success 200 {object} PeriodAndLedgersResponse
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/first-period/ledgers [get]
+func (h Handler) ReadFirstPeriodLedgers(c *gin.Context) {
+	period, ledgers, err := h.app.Queries.FirstPeriodLedgers.Handle(c, uuid.MustParse(c.Param("sobId")))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	var ledgersResponses []LedgerResponse
+	for _, ledger := range ledgers {
+		ledgersResponses = append(ledgersResponses, ledgerDTOToVO(ledger))
+	}
+	c.JSON(http.StatusOK, PeriodAndLedgersResponse{
+		Period:  periodDTOToVO(period),
+		Ledgers: ledgersResponses,
+	})
+}
+
+// InitializeLedgers godoc
+// @Text Initialize ledgers in first period of current SoB
+// @Description Initialize ledgers in first period of current SoB
+// @Tags ledgers
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Param InitializeLedgersBalanceRequest body InitializeLedgersBalanceRequest true "Ledgers with opening balance"
+// @Success 204
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/ledgers/initialize [post]
+func (h Handler) InitializeLedgers(c *gin.Context) {
+	var req InitializeLedgersBalanceRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	if err := h.app.Commands.InitializeLedgersBalance.Handle(c, req.mapToCommand(uuid.MustParse(c.Param("sobId")))); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

@@ -1,18 +1,19 @@
 package main
 
 import (
-	"bytes"
-	"flag"
-	"fmt"
 	"net/http"
 	"strings"
 
+	"github/fims-proto/fims-proto-ms/internal/common/config"
+
+	"github/fims-proto/fims-proto-ms/internal/common/datasource"
+	"github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
+	"github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
+
 	"github.com/gin-gonic/gin"
-	"github.com/spf13/viper"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "github/fims-proto/fims-proto-ms/docs"
-	"github/fims-proto/fims-proto-ms/internal/common/database"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -35,12 +36,6 @@ import (
 	sobPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/http"
 	sobIntraPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/intraprocess"
 	sobPublicHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/public/http"
-	tenantDb "github/fims-proto/fims-proto-ms/internal/tenant/adapter/db"
-	tenantApp "github/fims-proto/fims-proto-ms/internal/tenant/app"
-	ginMiddleware "github/fims-proto/fims-proto-ms/internal/tenant/lib/gin-middleware"
-	tenantManager "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-manager"
-	tenantService "github/fims-proto/fims-proto-ms/internal/tenant/lib/tenant-service"
-	tenantIntraPort "github/fims-proto/fims-proto-ms/internal/tenant/port/private/intraprocess"
 	userAdapter "github/fims-proto/fims-proto-ms/internal/user/adapter/db"
 	userApp "github/fims-proto/fims-proto-ms/internal/user/app"
 	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
@@ -49,36 +44,28 @@ import (
 )
 
 func main() {
-	flag.Parse()
-
-	loadConfig()
-
-	log.InitLogger()
 	defer cleanup()
 
-	dbConnector := database.NewConnector()
+	config.Initialize()
 
-	dbConnection, err := dbConnector.Open(viper.GetString("postgres.dsn"))
-	if err != nil {
-		panic(fmt.Errorf("failed to initialize dbConnection connection: %w", err))
-	}
-
-	tenantPostgresRepository := tenantDb.NewTenantPostgresRepository(dbConnection)
-	tenantApplication := tenantApp.NewApplication(tenantPostgresRepository)
-	tenantInterface := tenantIntraPort.NewTenantInterface(&tenantApplication)
-	tenantServiceImpl := tenantService.NewTenantService(tenantInterface)
-
-	tenantManagerImpl := tenantManager.NewTenantManager(tenantServiceImpl, dbConnector)
+	log.Initialize()
 
 	// i18n
 	localizer := localization.NewLocalizer("./i18n", "zh-CN")
 
+	var dataSource datasource.DataSource
+	if config.GetBool("app.multiTenancy") {
+		dataSource = multitenant_datasource.NewMultiTenantDataSource()
+	} else {
+		dataSource = dedicated_datasource.NewDedicatedDataSource()
+	}
+
 	// repositories
-	sobRepository := sobAdapter.NewSobPostgresRepository()
-	generalLedgerRepository := generalLedgerAdapter.NewGeneralLedgerPostgresRepository()
-	generalLedgerReadRepository := generalLedgerAdapter.NewGeneralLedgerPostgresReadRepository()
-	numberingRepository := numberingAdapter.NewNumberingPostgresRepository()
-	userRepository := userAdapter.NewUserPostgresRepository()
+	sobRepository := sobAdapter.NewSobPostgresRepository(dataSource)
+	generalLedgerRepository := generalLedgerAdapter.NewGeneralLedgerPostgresRepository(dataSource)
+	generalLedgerReadRepository := generalLedgerAdapter.NewGeneralLedgerPostgresReadRepository(dataSource)
+	numberingRepository := numberingAdapter.NewNumberingPostgresRepository(dataSource)
+	userRepository := userAdapter.NewUserPostgresRepository(dataSource)
 
 	// application - will be passed by reference, in order to make injection work
 	sobApplication := sobApp.NewApplication()
@@ -123,9 +110,10 @@ func main() {
 
 	log.InfoWithoutCxt("All module applications initiated")
 
+	gin.SetMode(config.GetString("gin.releaseMode"))
 	router := gin.Default()
 	router.GET("/health/ping", func(c *gin.Context) { c.String(http.StatusOK, "Pong") })
-	router.Use(ginMiddleware.ResolveTenantBySubdomain(tenantManagerImpl))
+	router.Use(datasource.ResolveSubdomain())
 	router.Use(commonErrors.ErrorHandler(localizer))
 
 	// public http API
@@ -141,7 +129,7 @@ func main() {
 	generalLedgerPrivateHttpPort.InitRouter(generalLedgerPrivateHttpPort.NewHandler(&generalLedgerApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
-	if strings.HasPrefix(viper.GetString("profile"), "dev") {
+	if strings.HasPrefix(config.GetString("profile"), "dev") {
 		// gin-swagger
 		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 		// devops
@@ -152,43 +140,8 @@ func main() {
 	log.InfoWithoutCxt("All module routers initiated")
 
 	log.InfoWithoutCxt("Starting gin engine...")
-	if err := router.Run(":" + viper.GetString("app.port")); err != nil {
+	if err := router.Run(":" + config.GetString("app.port")); err != nil {
 		panic(err.Error())
-	}
-}
-
-func loadConfig() {
-	// environment variables
-	if err := viper.BindEnv("profile", "PROFILE"); err != nil {
-		panic(fmt.Errorf("failed to bind ENV profile: %w", err))
-	}
-	viper.SetDefault("profile", "dev")
-
-	_ = viper.BindEnv("postgres.dsn", "DSN")
-
-	// read config
-	profile := viper.GetString("profile")
-	viper.SetConfigName(fmt.Sprintf("application-%s", profile))
-	viper.AddConfigPath("./config/")
-	if err := viper.ReadInConfig(); err != nil {
-		panic(fmt.Errorf("failed to load config file: %w", err))
-	}
-
-	// check mandatory and set defaults:
-	checkResult := bytes.Buffer{}
-	// app
-	viper.SetDefault("app.port", "5002")
-	// postgres
-	if !viper.IsSet("postgres.dsn") {
-		checkResult.WriteString("postgres.dsn; ")
-	}
-	// logger
-	viper.SetDefault("logger.debug", false)
-	viper.SetDefault("logger.jsonEncoding", true)
-	viper.SetDefault("logger.showSql", false)
-
-	if checkResult.Len() > 0 {
-		panic("config missing: " + checkResult.String())
 	}
 }
 

@@ -8,12 +8,14 @@ import (
 )
 
 type Queries struct {
+	AllAccounts               query.AllAccountsHandler
 	PagingAccounts            query.PagingAccountsHandler
 	AccountById               query.AccountByIdHandler
 	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
 	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
 	CurrentPeriod             query.CurrentPeriodHandler
 	PagingPeriods             query.PagingPeriodsHandler
+	FirstPeriodLedgers        query.FirstPeriodLedgersHandler
 	PagingLedgersByPeriod     query.PagingLedgersByPeriodHandler
 	PagingAuxiliaryLedgers    query.PagingAuxiliaryLedgersHandler
 	VoucherById               query.VoucherByIdHandler
@@ -21,7 +23,8 @@ type Queries struct {
 }
 
 type Commands struct {
-	Initialize command.InitializeHandler
+	Initialize               command.InitializeHandler
+	InitializeLedgersBalance command.InitializeLedgersBalanceHandler
 
 	UpdateAccount command.UpdateAccountHandler
 
@@ -58,19 +61,22 @@ func (a *Application) Inject(
 	userService service.UserService,
 ) {
 	a.Queries = Queries{
+		AllAccounts:               query.NewAllAccountsHandler(readModel),
 		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
 		AccountById:               query.NewAccountByIdHandler(readModel),
 		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
 		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
 		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
 		PagingPeriods:             query.NewPagingPeriodsHandler(readModel),
+		FirstPeriodLedgers:        query.NewFirstPeriodLedgersHandler(readModel),
 		PagingLedgersByPeriod:     query.NewPagingLedgersByPeriodHandler(readModel),
 		PagingAuxiliaryLedgers:    query.NewPagingAuxiliaryLedgersHandler(readModel),
 		VoucherById:               query.NewVoucherByIdHandler(readModel, userService),
 		PagingVouchers:            query.NewPagingVouchersHandler(readModel, userService),
 	}
 	a.Commands = Commands{
-		Initialize: command.NewInitializeHandler(repo, sobService, numberingService),
+		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
+		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
 
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 

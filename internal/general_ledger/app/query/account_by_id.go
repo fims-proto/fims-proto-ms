@@ -29,7 +29,7 @@ func NewAccountByIdHandler(readModel GeneralLedgerReadModel) AccountByIdHandler 
 func (h AccountByIdHandler) Handle(ctx context.Context, accountId uuid.UUID) (Account, error) {
 	idFilter, err := filterable.NewFilter("id", filterable.OptEq, accountId)
 	if err != nil {
-		return Account{}, fmt.Errorf("failed to build filter: %w", err)
+		panic("failed to create filter 'id'")
 	}
 
 	accounts, err := h.readModel.SearchAccounts(ctx, uuid.Nil, data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.NewFilterableAtom(idFilter)))

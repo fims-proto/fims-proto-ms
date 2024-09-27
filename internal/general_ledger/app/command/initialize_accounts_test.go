@@ -203,34 +203,42 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 					assert.Equal(t, tt.wantNumber["库存现金"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1001}, acc.NumberHierarchy())
 					assert.Equal(t, 1, acc.Level())
+					assert.True(t, acc.IsLeaf())
 				case "银行存款":
 					assert.Equal(t, tt.wantNumber["银行存款"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1002}, acc.NumberHierarchy())
 					assert.Equal(t, 1, acc.Level())
+					assert.False(t, acc.IsLeaf())
 				case "中国银行存款":
 					assert.Equal(t, tt.wantNumber["中国银行存款"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1002, 1}, acc.NumberHierarchy())
 					assert.Equal(t, 2, acc.Level())
+					assert.True(t, acc.IsLeaf())
 				case "招商银行存款":
 					assert.Equal(t, tt.wantNumber["招商银行存款"], acc.AccountNumber())
 					assert.EqualValues(t, []int{1002, 2}, acc.NumberHierarchy())
 					assert.Equal(t, 2, acc.Level())
+					assert.True(t, acc.IsLeaf())
 				case "管理费用":
 					assert.Equal(t, tt.wantNumber["管理费用"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602}, acc.NumberHierarchy())
 					assert.Equal(t, 1, acc.Level())
+					assert.False(t, acc.IsLeaf())
 				case "办公费":
 					assert.Equal(t, tt.wantNumber["办公费"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1}, acc.NumberHierarchy())
 					assert.Equal(t, 2, acc.Level())
+					assert.False(t, acc.IsLeaf())
 				case "办公室租金":
 					assert.Equal(t, tt.wantNumber["办公室租金"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 1}, acc.NumberHierarchy())
 					assert.Equal(t, 3, acc.Level())
+					assert.True(t, acc.IsLeaf())
 				case "文具费用":
 					assert.Equal(t, tt.wantNumber["文具费用"], acc.AccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 2}, acc.NumberHierarchy())
 					assert.Equal(t, 3, acc.Level())
+					assert.True(t, acc.IsLeaf())
 				}
 			}
 		})
@@ -344,6 +352,18 @@ func (m mockRepo) UpdateAuxiliaryLedgersByPeriodAndAccountIds(context.Context, u
 }
 
 func (m mockRepo) ReadAuxiliaryLedgersByPeriod(context.Context, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAccountsWithSuperiorsByIds(context.Context, uuid.UUID, []uuid.UUID) ([]*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAllSubAccountsWithSuperiors(context.Context, uuid.UUID) ([]*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadFirstPeriod(context.Context, uuid.UUID) (*period.Period, error) {
 	panic("implement me")
 }
 

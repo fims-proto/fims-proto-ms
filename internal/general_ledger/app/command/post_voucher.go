@@ -113,7 +113,7 @@ func (h PostVoucherHandler) postVoucher(ctx context.Context, cmd PostVoucherCmd)
 func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd) error {
 	accountCommands := cmd.records
 	for _, record := range cmd.records {
-		//  read all superior accounts
+		// read all superior accounts
 		superiorAccounts, err := h.repo.ReadSuperiorAccountsById(ctx, record.accountId)
 		if err != nil {
 			return fmt.Errorf("failed to read superior accounts: %w", err)
@@ -151,7 +151,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 					return nil, fmt.Errorf("should not happen, failed to find account %s in accountsMap", l.AccountId())
 				}
 
-				l.UpdateBalance(record.debit, record.credit)
+				l.UpdateEndingBalance(record.debit, record.credit)
 			}
 
 			return ledgers, nil

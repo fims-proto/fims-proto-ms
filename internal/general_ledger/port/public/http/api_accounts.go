@@ -37,9 +37,33 @@ func (h Handler) ReadAccountClasses(c *gin.Context) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// ReadPagingAccounts godoc
+// ReadAccounts godoc
 // @Text List all accounts
 // @Description List all accounts
+// @Tags accounts
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Success 200 {array} AccountResponse
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/accounts [get]
+func (h Handler) ReadAccounts(c *gin.Context) {
+	accounts, err := h.app.Queries.AllAccounts.Handle(c, uuid.MustParse(c.Param("sobId")))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	var accountsResponse []AccountResponse
+	for _, a := range accounts {
+		accountsResponse = append(accountsResponse, accountDTOToVO(a))
+	}
+	c.JSON(http.StatusOK, accountsResponse)
+}
+
+// SearchAccounts godoc
+// @Text Search accounts with filters
+// @Description Search accounts with filters
 // @Tags accounts
 // @Accept application/json
 // @Produce application/json
@@ -50,8 +74,8 @@ func (h Handler) ReadAccountClasses(c *gin.Context) {
 // @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
 // @Success 200 {array} AccountResponse
 // @Failure 500 {object} Error
-// @Router /sob/{sobId}/accounts [get]
-func (h Handler) ReadPagingAccounts(c *gin.Context) {
+// @Router /sob/{sobId}/search-accounts [get]
+func (h Handler) SearchAccounts(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.Account], error) {

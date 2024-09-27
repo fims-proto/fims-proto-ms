@@ -70,6 +70,15 @@ type UpdateVoucherRequest struct {
 	Updater         uuid.UUID         `json:"updater"`
 }
 
+type InitializeLedgersBalanceRequest struct {
+	Ledgers []InitializeLedgersBalanceItemRequest `json:"ledgers" binding:"required"`
+}
+
+type InitializeLedgersBalanceItemRequest struct {
+	AccountNumber  string          `json:"accountNumber"`
+	OpeningBalance decimal.Decimal `json:"openingBalance"`
+}
+
 // mapper
 
 func (r LineItemRequest) mapToCommand() command.LineItemCmd {
@@ -105,5 +114,20 @@ func (r CreateVoucherRequest) mapToCommand(sobId uuid.UUID) command.CreateVouche
 		LineItems:          itemCmd,
 		Creator:            uuid.MustParse(r.Creator),
 		TransactionTime:    r.TransactionTime,
+	}
+}
+
+func (r InitializeLedgersBalanceRequest) mapToCommand(sobId uuid.UUID) command.InitializeLedgersBalanceCmd {
+	var itemCmd []command.InitializeLedgersBalanceItemCmd
+	for _, l := range r.Ledgers {
+		itemCmd = append(itemCmd, command.InitializeLedgersBalanceItemCmd{
+			AccountNumber:  l.AccountNumber,
+			OpeningBalance: l.OpeningBalance,
+		})
+	}
+
+	return command.InitializeLedgersBalanceCmd{
+		SobId:   sobId,
+		Ledgers: itemCmd,
 	}
 }

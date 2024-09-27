@@ -24,7 +24,7 @@ func NewPagingAuxiliaryAccountsHandler(readModel GeneralLedgerReadModel) PagingA
 func (h PagingAuxiliaryAccountsHandler) Handle(ctx context.Context, categoryKey string, pageRequest data.PageRequest) (data.Page[AuxiliaryAccount], error) {
 	filter, err := filterable.NewFilter("category.key", filterable.OptEq, categoryKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build filter: %w", err)
+		panic(fmt.Errorf("failed to build filter: %w", err))
 	}
 
 	pageRequest.AddAndFilterable(filterable.NewFilterableAtom(filter))

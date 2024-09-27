@@ -3,6 +3,8 @@ package account
 import (
 	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
@@ -14,17 +16,21 @@ type Account struct {
 	id                  uuid.UUID
 	sobId               uuid.UUID
 	superiorAccountId   uuid.UUID
+	superiorAccount     *Account
 	title               string
 	accountNumber       string
 	numberHierarchy     []int
 	level               int
+	isLeaf              bool
 	class               class.Class
 	group               class.Group
 	balanceDirection    balance_direction.BalanceDirection
 	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
 }
 
-// New takes all fields except accountNumber. It's calculated from numberHierarchy
+// New takes all fields except:
+// - accountNumber: it's calculated from numberHierarchy
+// - superiorAccount: this method cannot create an entity with such nested structure
 func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
@@ -33,6 +39,7 @@ func New(
 	numberHierarchy []int,
 	codeLengths []int,
 	level int,
+	isLeaf bool,
 	classId int,
 	groupId int,
 	balanceDirection string,
@@ -43,19 +50,21 @@ func New(
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, title, accountNumber, numberHierarchy, level, classId, groupId, balanceDirection, auxiliaryCategories)
+	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection, auxiliaryCategories)
 }
 
-// NewByAllFields only difference from New function, is NewByAllFields takes accountNumber, and doesn't validate it.
+// NewByAllFields takes all attributes of Account, and doesn't validate accountNumber field
 // Typically used in persistence level
 func NewByAllFields(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	superiorAccountId uuid.UUID,
+	superiorAccount *Account,
 	title string,
 	accountNumber string,
 	numberHierarchy []int,
 	level int,
+	isLeaf bool,
 	classId int,
 	groupId int,
 	balanceDirection string,
@@ -110,15 +119,39 @@ func NewByAllFields(
 		id:                  id,
 		sobId:               sobId,
 		superiorAccountId:   superiorAccountId,
+		superiorAccount:     superiorAccount,
 		title:               title,
 		accountNumber:       accountNumber,
 		numberHierarchy:     numberHierarchy,
 		level:               level,
+		isLeaf:              isLeaf,
 		class:               c,
 		group:               g,
 		balanceDirection:    bd,
 		auxiliaryCategories: auxiliaryCategories,
 	}, nil
+}
+
+func composeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
+	if len(numberHierarchy) > len(codeLengths) {
+		return "", fmt.Errorf("account number hierarchy %d exceeds max depth %d", len(numberHierarchy), len(codeLengths))
+	}
+
+	for i := 0; i < len(numberHierarchy); i++ {
+		if numberHierarchy[i] < 1 {
+			return "", fmt.Errorf("account number %d at level %d cannot be smaller than 1", numberHierarchy[i], i)
+		}
+		if len(strconv.Itoa(numberHierarchy[i])) > codeLengths[i] {
+			return "", fmt.Errorf("account number %d at level %d exceeds max length (%d)", numberHierarchy[i], i, codeLengths[i])
+		}
+	}
+
+	var builder strings.Builder
+	for i, number := range numberHierarchy {
+		builder.WriteString(fmt.Sprintf("%0*d", codeLengths[i], number))
+	}
+
+	return builder.String(), nil
 }
 
 func (a *Account) Id() uuid.UUID {
@@ -131,6 +164,10 @@ func (a *Account) SobId() uuid.UUID {
 
 func (a *Account) SuperiorAccountId() uuid.UUID {
 	return a.superiorAccountId
+}
+
+func (a *Account) SuperiorAccount() *Account {
+	return a.superiorAccount
 }
 
 func (a *Account) Title() string {
@@ -147,6 +184,10 @@ func (a *Account) NumberHierarchy() []int {
 
 func (a *Account) Level() int {
 	return a.level
+}
+
+func (a *Account) IsLeaf() bool {
+	return a.isLeaf
 }
 
 func (a *Account) Class() class.Class {

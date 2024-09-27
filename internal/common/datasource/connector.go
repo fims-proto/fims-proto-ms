@@ -1,28 +1,26 @@
-package database
+package datasource
 
 import (
 	"fmt"
 	"time"
 
-	"gorm.io/gorm/schema"
-
-	"github.com/spf13/viper"
-
-	"gorm.io/gorm/logger"
-
+	"github/fims-proto/fims-proto-ms/internal/common/config"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
+// Connector is the basic component to get *gorm.DB by given DSN
 type Connector struct{}
 
 func NewConnector() Connector {
 	return Connector{}
 }
 
-func (d Connector) Open(dsn string) (*gorm.DB, error) {
+func (d Connector) GetConnection(dsn string) (*gorm.DB, error) {
 	db, err := retry(100, 3*time.Second, func() (any, error) {
-		return d.open(dsn)
+		return d.get(dsn)
 	})
 	if err != nil {
 		return nil, err
@@ -30,9 +28,9 @@ func (d Connector) Open(dsn string) (*gorm.DB, error) {
 	return db.(*gorm.DB), nil
 }
 
-func (d Connector) open(dsn string) (*gorm.DB, error) {
+func (d Connector) get(dsn string) (*gorm.DB, error) {
 	logLevel := logger.Warn
-	if viper.GetBool("logger.showSql") {
+	if config.GetBool("logger.showSql") {
 		logLevel = logger.Info
 	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
@@ -42,7 +40,7 @@ func (d Connector) open(dsn string) (*gorm.DB, error) {
 		Logger: logger.Default.LogMode(logLevel),
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to open connection: %w", err)
+		return nil, fmt.Errorf("failed to get connection: %w", err)
 	}
 	sqlDB, err := db.DB()
 	if err != nil {
@@ -55,7 +53,7 @@ func (d Connector) open(dsn string) (*gorm.DB, error) {
 	return db, nil
 }
 
-func retry(tryTimes int, interval time.Duration, task func() (interface{}, error)) (returning interface{}, err error) {
+func retry(tryTimes int, interval time.Duration, task func() (any, error)) (returning any, err error) {
 	for i := 0; i < tryTimes; i++ {
 		returning, err = task()
 		if err == nil {

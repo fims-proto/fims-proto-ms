@@ -8,24 +8,24 @@ import (
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
-func (d *Voucher) checkUpdatePossible(user uuid.UUID) error {
-	if d.isAudited {
+func (v *Voucher) checkUpdatePossible(user uuid.UUID) error {
+	if v.isAudited {
 		return commonErrors.NewSlugError("voucher-update-audited")
 	}
 
-	if d.isReviewed {
+	if v.isReviewed {
 		return commonErrors.NewSlugError("voucher-update-reviewed")
 	}
 
-	if user != d.creator {
+	if user != v.creator {
 		return commonErrors.NewSlugError("voucher-update-notCreator")
 	}
 
 	return nil
 }
 
-func (d *Voucher) UpdateLineItems(lineItems []*LineItem, user uuid.UUID) error {
-	if err := d.checkUpdatePossible(user); err != nil {
+func (v *Voucher) UpdateLineItems(lineItems []*LineItem, user uuid.UUID) error {
+	if err := v.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
 
@@ -34,14 +34,14 @@ func (d *Voucher) UpdateLineItems(lineItems []*LineItem, user uuid.UUID) error {
 		return err
 	}
 
-	d.credit = totalVal
-	d.debit = totalVal
-	d.lineItems = lineItems
+	v.credit = totalVal
+	v.debit = totalVal
+	v.lineItems = lineItems
 	return nil
 }
 
-func (d *Voucher) UpdateTransactionTime(transactionTime time.Time, user uuid.UUID) error {
-	if err := d.checkUpdatePossible(user); err != nil {
+func (v *Voucher) UpdateTransactionTime(transactionTime time.Time, user uuid.UUID) error {
+	if err := v.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
 
@@ -49,12 +49,12 @@ func (d *Voucher) UpdateTransactionTime(transactionTime time.Time, user uuid.UUI
 		return commonErrors.NewSlugError("voucher-zeroTransactionTime")
 	}
 
-	d.transactionTime = transactionTime
+	v.transactionTime = transactionTime
 	return nil
 }
 
-func (d *Voucher) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumber string, user uuid.UUID) error {
-	if err := d.checkUpdatePossible(user); err != nil {
+func (v *Voucher) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumber string, user uuid.UUID) error {
+	if err := v.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
 
@@ -66,13 +66,13 @@ func (d *Voucher) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumb
 		return commonErrors.NewSlugError("voucher-emptyNumber")
 	}
 
-	d.periodId = periodId
-	d.documentNumber = documentNumber
+	v.periodId = periodId
+	v.documentNumber = documentNumber
 	return nil
 }
 
-func (d *Voucher) UpdateHeaderText(headerText string, user uuid.UUID) error {
-	if err := d.checkUpdatePossible(user); err != nil {
+func (v *Voucher) UpdateHeaderText(headerText string, user uuid.UUID) error {
+	if err := v.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
 
@@ -80,6 +80,6 @@ func (d *Voucher) UpdateHeaderText(headerText string, user uuid.UUID) error {
 		return commonErrors.NewSlugError("voucher-emptyHeaderText")
 	}
 
-	d.headerText = headerText
+	v.headerText = headerText
 	return nil
 }

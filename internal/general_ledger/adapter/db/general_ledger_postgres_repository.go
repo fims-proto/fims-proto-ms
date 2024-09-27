@@ -6,12 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
+	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/common/database"
+	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
@@ -22,14 +23,18 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-type GeneralLedgerPostgresRepository struct{}
+type GeneralLedgerPostgresRepository struct {
+	dataSource datasource.DataSource
+}
 
-func NewGeneralLedgerPostgresRepository() *GeneralLedgerPostgresRepository {
-	return &GeneralLedgerPostgresRepository{}
+func NewGeneralLedgerPostgresRepository(dataSource datasource.DataSource) *GeneralLedgerPostgresRepository {
+	return &GeneralLedgerPostgresRepository{
+		dataSource: dataSource,
+	}
 }
 
 func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	return db.AutoMigrate(
 		&accountPO{},
@@ -44,11 +49,7 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 }
 
 func (r GeneralLedgerPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error {
-	db := database.ReadDBFromContext(ctx)
-
-	return db.Transaction(func(tx *gorm.DB) error {
-		return txFn(database.NewContextWithDB(ctx, tx))
-	})
+	return r.dataSource.EnableTransaction(ctx, txFn)
 }
 
 func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, accounts []*account.Account) error {
@@ -56,7 +57,7 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 		return errors.New("empty Account list")
 	}
 
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	// delete all within sob
 	if err := db.Where("sob_id = ?", accounts[0].SobId()).Delete(&accountPO{}).Error; err != nil {
@@ -69,7 +70,7 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateAccount(ctx context.Context, accountId uuid.UUID, updateFn func(a *account.Account) (*account.Account, error)) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	po := accountPO{Id: accountId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).Preload("AuxiliaryCategories").First(&po).Error; err != nil {
@@ -100,7 +101,7 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(ctx context.Context, acco
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var accountPOs []accountPO
 	if err := db.Where(accountPO{SobId: sobId}).Find(&accountPOs).Error; err != nil {
@@ -111,7 +112,7 @@ func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, so
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	if len(accountNumbers) == 0 {
 		return nil, nil
@@ -140,7 +141,7 @@ func (r GeneralLedgerPostgresRepository) ReadSuperiorAccountsById(ctx context.Co
 		WHERE id != ?`
 	rawSql = strings.Join(strings.Fields(rawSql), " ") // normalize whitespaces
 
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var accountPOs []accountPO
 	if err := db.Raw(rawSql, accountId, accountId).Scan(&accountPOs).Error; err != nil {
@@ -150,8 +151,74 @@ func (r GeneralLedgerPostgresRepository) ReadSuperiorAccountsById(ctx context.Co
 	return pos2bos(accountPOs, accountPOToBO)
 }
 
+func (r GeneralLedgerPostgresRepository) ReadAccountsWithSuperiorsByIds(ctx context.Context, sobId uuid.UUID, accountIds []uuid.UUID) ([]*account.Account, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var accountPOs []accountPO
+	if err := db.Where("sob_id = ? AND id IN ?", sobId, accountIds).Find(&accountPOs).Error; err != nil {
+		return nil, err
+	}
+
+	// check if superiors exist, if yes get superiors first
+	var superiorIds []uuid.UUID
+	for _, po := range accountPOs {
+		if po.SuperiorAccountId != uuid.Nil {
+			superiorIds = append(superiorIds, po.SuperiorAccountId)
+		}
+	}
+	var superiorAccountBOs []*account.Account
+	if len(superiorIds) > 0 {
+		var err error
+		superiorAccountBOs, err = r.ReadAccountsWithSuperiorsByIds(ctx, sobId, superiorIds)
+		if err != nil {
+			return nil, err
+		}
+	}
+	superiorAccountMap := utils.SliceToMap(superiorAccountBOs, func(e *account.Account) uuid.UUID {
+		return e.Id()
+	}, func(e *account.Account) *account.Account {
+		return e
+	})
+
+	// convert
+	var result []*account.Account
+	for _, po := range accountPOs {
+		var sa *account.Account
+		if po.SuperiorAccountId != uuid.Nil {
+			var ok bool
+			sa, ok = superiorAccountMap[po.SuperiorAccountId]
+			if !ok {
+				return nil, fmt.Errorf("superior account not found for %s", po.AccountNumber)
+			}
+		}
+		a, err := accountPOToBOWithSuperior(po, sa)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, a)
+	}
+
+	return result, nil
+}
+
+func (r GeneralLedgerPostgresRepository) ReadAllSubAccountsWithSuperiors(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	// leaf accounts
+	var subAccountPOs []accountPO
+	if err := db.Select("id").Where(accountPO{SobId: sobId, IsLeaf: true}).Find(&subAccountPOs).Error; err != nil {
+		return nil, err
+	}
+	var subAccountIds []uuid.UUID
+	for _, po := range subAccountPOs {
+		subAccountIds = append(subAccountIds, po.Id)
+	}
+
+	return r.ReadAccountsWithSuperiorsByIds(ctx, sobId, subAccountIds)
+}
+
 func (r GeneralLedgerPostgresRepository) CreatePeriodIfNotExists(ctx context.Context, p *period.Period) (*period.Period, bool, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var existedPeriod periodPO
 	err := db.Where(periodPO{SobId: p.SobId(), FiscalYear: p.FiscalYear(), PeriodNumber: p.PeriodNumber()}).First(&existedPeriod).Error
@@ -183,7 +250,7 @@ func (r GeneralLedgerPostgresRepository) CreatePeriodIfNotExists(ctx context.Con
 }
 
 func (r GeneralLedgerPostgresRepository) UpdatePeriod(ctx context.Context, periodId uuid.UUID, updateFn func(p *period.Period) (*period.Period, error)) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	po := periodPO{Id: periodId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
@@ -206,7 +273,7 @@ func (r GeneralLedgerPostgresRepository) UpdatePeriod(ctx context.Context, perio
 }
 
 func (r GeneralLedgerPostgresRepository) ReadCurrentPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var po periodPO
 	err := db.Where(periodPO{SobId: sobId, IsCurrent: true}).Take(&po).Error
@@ -220,7 +287,7 @@ func (r GeneralLedgerPostgresRepository) ReadCurrentPeriod(ctx context.Context, 
 }
 
 func (r GeneralLedgerPostgresRepository) ReadPreviousPeriod(ctx context.Context, currentPeriodId uuid.UUID) (*period.Period, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	currentPO := periodPO{Id: currentPeriodId}
 
@@ -246,8 +313,22 @@ func (r GeneralLedgerPostgresRepository) ReadPreviousPeriod(ctx context.Context,
 	return periodPOToBO(previousPO)
 }
 
+func (r GeneralLedgerPostgresRepository) ReadFirstPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po periodPO
+	err := db.Order("opening_time asc").Where(periodPO{SobId: sobId}).First(&po).Error
+	if err == nil {
+		return periodPOToBO(po)
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, commonErrors.ErrRecordNotFound()
+	}
+	return nil, err
+}
+
 func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	pos := bos2pos(ledgers, ledgerBOToPO)
 
@@ -255,7 +336,7 @@ func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledg
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx context.Context, periodId uuid.UUID, accountIds []uuid.UUID, updateFn func(accounts []*ledger.Ledger) ([]*ledger.Ledger, error)) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var ledgerPOs []ledgerPO
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
@@ -281,7 +362,7 @@ func (r GeneralLedgerPostgresRepository) UpdateLedgersByPeriodAndAccountIds(ctx 
 }
 
 func (r GeneralLedgerPostgresRepository) ReadLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*ledger.Ledger, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var ledgerPOs []ledgerPO
 	if err := db.Where(ledgerPO{PeriodId: periodId}).Preload("Account").Find(&ledgerPOs).Error; err != nil {
@@ -292,7 +373,7 @@ func (r GeneralLedgerPostgresRepository) ReadLedgersByPeriod(ctx context.Context
 }
 
 func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var count int64
 	err := db.Model(&ledgerPO{}).
@@ -306,7 +387,7 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 }
 
 func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var ledgerPOs []ledgerPO
 	if err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
@@ -319,7 +400,7 @@ func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx conte
 }
 
 func (r GeneralLedgerPostgresRepository) CreateVoucher(ctx context.Context, v *voucher.Voucher) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	po := voucherBOToPO(*v)
 
@@ -327,12 +408,13 @@ func (r GeneralLedgerPostgresRepository) CreateVoucher(ctx context.Context, v *v
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, voucherId uuid.UUID, updateFn func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	po := voucherPO{Id: voucherId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Preload("LineItems.Account.AuxiliaryCategories").
 		Preload("LineItems.AuxiliaryAccounts.Category").
+		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
 	}
@@ -365,7 +447,7 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(ctx context.Context, vouc
 }
 
 func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var count int64
 	err := db.Model(&voucherPO{}).
@@ -377,7 +459,7 @@ func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx con
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	pos := bos2pos(categories, auxiliaryCategoryBOToPO)
 
@@ -385,7 +467,7 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryCategories(ctx context.C
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var po auxiliaryCategoryPO
 	if err := db.Where(auxiliaryCategoryPO{Key: key}).First(&po).Error; err != nil {
@@ -396,7 +478,7 @@ func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoryByKey(ctx context.
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	pos := bos2pos(accounts, auxiliaryAccountBOToPO)
 
@@ -404,7 +486,7 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccounts(ctx context.Con
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAuxiliaryAccountsByPairs(ctx context.Context, sobId uuid.UUID, pairs []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	if len(pairs) == 0 {
 		return nil, nil
@@ -424,7 +506,7 @@ func (r GeneralLedgerPostgresRepository) ReadAuxiliaryAccountsByPairs(ctx contex
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var auxiliaryAccountPOs []auxiliaryAccountPO
 	if err := db.InnerJoins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Find(&auxiliaryAccountPOs).Error; err != nil {
@@ -435,7 +517,7 @@ func (r GeneralLedgerPostgresRepository) ReadAllAuxiliaryAccounts(ctx context.Co
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	pos := bos2pos(ledgers, auxiliaryLedgerBOToPO)
 
@@ -443,7 +525,7 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryLedgers(ctx context.Cont
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccountIds(ctx context.Context, periodId uuid.UUID, auxiliaryAccountIds []uuid.UUID, updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var auxiliaryLedgerPOs []auxiliaryLedgerPO
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
@@ -469,7 +551,7 @@ func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccoun
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
-	db := database.ReadDBFromContext(ctx)
+	db := r.dataSource.GetConnection(ctx)
 
 	var auxiliaryLedgerPOs []auxiliaryLedgerPO
 	if err := db.
