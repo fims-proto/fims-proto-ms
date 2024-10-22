@@ -15,6 +15,8 @@ type GenerateReportCmd struct {
 	TemplateId       uuid.UUID
 	ReportId         uuid.UUID
 	SobId            uuid.UUID
+	Title            string
+	AmountTypes      []string
 	PeriodFiscalYear int
 	PeriodNumber     int
 }
@@ -62,7 +64,7 @@ func (h GenerateHandler) handle(ctx context.Context, cmd GenerateReportCmd) erro
 	}
 
 	reportGenerator := generator.NewGenerator(reportTemplate, h.generalLedgerService)
-	newReport, err := reportGenerator.Generate(ctx, cmd.ReportId, periodId)
+	newReport, err := reportGenerator.Generate(ctx, cmd.ReportId, periodId, cmd.Title, cmd.AmountTypes)
 	if err != nil {
 		return fmt.Errorf("failed to generate report: %w", err)
 	}

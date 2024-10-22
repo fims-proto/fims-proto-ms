@@ -102,9 +102,13 @@ func New(
 }
 
 // Instantiate deep copies report instance from template
-func (r *Report) Instantiate(reportId uuid.UUID, periodId uuid.UUID) (*Report, error) {
+func (r *Report) Instantiate(reportId uuid.UUID, periodId uuid.UUID, title string, amountTypes []string) (*Report, error) {
 	if !r.template {
 		return nil, errors.NewSlugError("report-copyTemplate")
+	}
+
+	if title == "" {
+		title = r.title
 	}
 
 	var newSections []*Section
@@ -112,19 +116,22 @@ func (r *Report) Instantiate(reportId uuid.UUID, periodId uuid.UUID) (*Report, e
 		newSections = append(newSections, section.copy())
 	}
 
-	var newAmountTypes []string
+	var oldAmountTypes []string
 	for _, amountType := range r.amountTypes {
-		newAmountTypes = append(newAmountTypes, amountType.String())
+		oldAmountTypes = append(oldAmountTypes, amountType.String())
+	}
+	if amountTypes == nil {
+		amountTypes = oldAmountTypes
 	}
 
 	return New(
 		reportId,
 		r.sobId,
 		periodId,
-		r.title,
+		title,
 		false,
 		r.class.String(),
-		newAmountTypes,
+		amountTypes,
 		newSections,
 	)
 }

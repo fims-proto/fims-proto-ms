@@ -122,10 +122,16 @@ definitions:
     type: object
   http.GenerateReportRequest:
     properties:
+      amountTypes:
+        items:
+          type: string
+        type: array
       periodFiscalYear:
         type: integer
       periodNumber:
         type: integer
+      title:
+        type: string
     type: object
   http.InitializeLedgersBalanceItemRequest:
     properties:

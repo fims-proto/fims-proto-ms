@@ -46,8 +46,14 @@ func (g *Generator) Report() *report.Report {
 }
 
 // Generate accept report template and instantiate it as report instance with period id, then generate the amounts of it.
-func (g *Generator) Generate(ctx context.Context, newReportId, periodId uuid.UUID) (*report.Report, error) {
-	newReport, err := g.r.Instantiate(newReportId, periodId)
+func (g *Generator) Generate(
+	ctx context.Context,
+	newReportId,
+	periodId uuid.UUID,
+	title string,
+	amountTypes []string,
+) (*report.Report, error) {
+	newReport, err := g.r.Instantiate(newReportId, periodId, title, amountTypes)
 	if err != nil {
 		return nil, err
 	}

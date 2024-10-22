@@ -2018,11 +2018,20 @@ const docTemplate = `{
         "http.GenerateReportRequest": {
             "type": "object",
             "properties": {
+                "amountTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "periodFiscalYear": {
                     "type": "integer"
                 },
                 "periodNumber": {
                     "type": "integer"
+                },
+                "title": {
+                    "type": "string"
                 }
             }
         },

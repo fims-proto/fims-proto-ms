@@ -82,6 +82,8 @@ func (h Handler) GenerateReport(c *gin.Context) {
 		TemplateId:       uuid.MustParse(c.Param("reportId")),
 		ReportId:         newReportId,
 		SobId:            uuid.MustParse(c.Param("sobId")),
+		Title:            req.Title,
+		AmountTypes:      req.AmountTypes,
 		PeriodFiscalYear: req.PeriodFiscalYear,
 		PeriodNumber:     req.PeriodNumber,
 	}
