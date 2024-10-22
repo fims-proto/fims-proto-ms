@@ -26,20 +26,30 @@ type CreateSobCmd struct {
 type CreateSobHandler struct {
 	repo                 domain.Repository
 	generalLedgerService service.GeneralLedgerService
+	reportService        service.ReportService
 }
 
-func NewCreateSobHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService) CreateSobHandler {
+func NewCreateSobHandler(
+	repo domain.Repository,
+	generalLedgerService service.GeneralLedgerService,
+	reportService service.ReportService,
+) CreateSobHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
 	if generalLedgerService == nil {
-		panic("nil account service")
+		panic("nil general ledger service")
+	}
+
+	if reportService == nil {
+		panic("nil report service")
 	}
 
 	return CreateSobHandler{
 		repo:                 repo,
 		generalLedgerService: generalLedgerService,
+		reportService:        reportService,
 	}
 }
 
@@ -61,9 +71,14 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 		return err
 	}
 
-	// initialize general ledger for sob
-	if err = h.generalLedgerService.InitializeForSob(ctx, cmd.SobId); err != nil {
-		return fmt.Errorf("failed to initialzie account: %w", err)
+	// initialize general ledger
+	if err = h.generalLedgerService.InitializeGeneralLedger(ctx, cmd.SobId); err != nil {
+		return fmt.Errorf("failed to initialzie general ledger: %w", err)
+	}
+
+	// initialize reports
+	if err = h.reportService.InitializeReport(ctx, cmd.SobId); err != nil {
+		return fmt.Errorf("failed to initialize report: %w", err)
 	}
 
 	return nil

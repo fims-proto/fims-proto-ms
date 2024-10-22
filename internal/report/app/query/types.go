@@ -1,114 +1,73 @@
 package query
 
 import (
-	"encoding/json"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
-// summary info when query to list all reports
-type ReportInfo struct {
-	Id         uuid.UUID
-	TemplateId uuid.UUID
-	PeriodId   uuid.UUID
-	Title      string
-	Level      int
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-}
-
 type Report struct {
-	Id        uuid.UUID
-	PeriodId  uuid.UUID
+	Id          uuid.UUID
+	SobId       uuid.UUID
+	Period      *Period
+	Title       string
+	Template    bool
+	Class       string
+	AmountTypes []string
+	Sections    []Section
+
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	Template  Template
 }
 
-type Account struct {
+type Section struct {
+	Id       uuid.UUID
+	Title    string
+	Amounts  []decimal.Decimal
+	Sections []Section
+	Items    []Item
+}
+
+type Item struct {
 	Id               uuid.UUID
-	SobId            uuid.UUID
-	Title            string
-	AccountNumber    string
-	NumberHierarchy  []int
+	Text             string
 	Level            int
-	Class            int
-	Group            int
-	BalanceDirection string
-	CreatedAt        time.Time
-	UpdatedAt        time.Time
-}
-
-type TemplateInfo struct {
-	Id        uuid.UUID
-	SobId     uuid.UUID
-	Title     string
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-type Template struct {
-	Id        uuid.UUID
-	SobId     uuid.UUID
-	Title     string
-	Tables    []Table
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
-type Table struct {
-	Header Header
-	Items  []LineItem
-}
-
-type Header struct {
-	Text    string
-	Columns []string
-}
-
-type Period struct {
-	Id           uuid.UUID
-	SobId        uuid.UUID
-	FiscalYear   int
-	PeriodNumber int
-	OpeningTime  time.Time
-	EndingTime   time.Time
-	IsClosed     bool
-	IsCurrent    bool
-	CreatedAt    time.Time
-	UpdatedAt    time.Time
-}
-
-type LineItem struct {
-	Id                 uuid.UUID
-	Text               string
-	DataSource         string
-	Formulas           []Formula
-	Values             []decimal.Decimal
-	SumFactor          int
-	Level              int
-	RowNumber          int
-	Sequence           int
-	DisplaySumFactor   bool
-	DisplayRowNumber   bool
-	IsDeletable        bool
-	IsDraggable        bool
-	IsAbleToAddChild   bool
-	IsAbleToAddSibling bool
+	SumFactor        int
+	DisplaySumFactor bool
+	DataSource       string
+	Formulas         []Formula
+	Amounts          []decimal.Decimal
+	IsBreakdownItem  bool
+	IsDeletable      bool
+	IsTextModifiable bool
+	IsDraggable      bool
+	IsAbleToAddChild bool
+	IsAbleToAddLeaf  bool
 }
 
 type Formula struct {
-	Id               uuid.UUID
-	AccountId        uuid.UUID
-	ItemId           uuid.UUID
-	isAccountFormula bool
-	sumFactor        int
-	rule             string
+	Id        uuid.UUID
+	Account   Account
+	SumFactor int
+	Rule      string
+	Amounts   []decimal.Decimal
 }
 
-type User struct {
-	Id     uuid.UUID
-	Traits json.RawMessage
+type Period struct {
+	FiscalYear   int
+	PeriodNumber int
+}
+
+type Account struct {
+	Id                uuid.UUID
+	SobId             uuid.UUID
+	SuperiorAccountId *uuid.UUID
+	Title             string
+	AccountNumber     string
+	Level             int
+	IsLeaf            bool
+	Class             int
+	Group             int
+	BalanceDirection  string
 }

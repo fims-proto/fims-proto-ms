@@ -4,13 +4,12 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
-
-	"github.com/google/uuid"
 )
 
 type ReportByIdHandler struct {
@@ -27,15 +26,19 @@ func NewReportByIdHandler(readModel ReportReadModel) ReportByIdHandler {
 	}
 }
 
-func (h ReportByIdHandler) Handle(ctx context.Context, ReportId uuid.UUID) (Report, error) {
-	idFilter, err := filterable.NewFilter("id", filterable.OptEq, ReportId)
+func (h ReportByIdHandler) Handle(ctx context.Context, reportId uuid.UUID) (Report, error) {
+	idFilter, err := filterable.NewFilter("id", filterable.OptEq, reportId)
 	if err != nil {
-		return Report{}, fmt.Errorf("failed to build filter: %w", err)
+		panic("failed to create filter 'id'")
 	}
 
-	reports, err := h.readModel.SearchReports(ctx, uuid.Nil, data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.NewFilterableAtom(idFilter)))
+	reports, err := h.readModel.SearchReport(
+		ctx,
+		uuid.Nil,
+		data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), filterable.NewFilterableAtom(idFilter)),
+	)
 	if err != nil {
-		return Report{}, fmt.Errorf("failed to search Reports: %w", err)
+		return Report{}, fmt.Errorf("failed to search reports: %w", err)
 	}
 	if reports.NumberOfElements() != 1 {
 		return Report{}, commonErrors.ErrRecordNotFound()

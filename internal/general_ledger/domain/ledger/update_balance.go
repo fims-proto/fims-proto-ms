@@ -9,8 +9,16 @@ func (l *Ledger) UpdateEndingBalance(debit, credit decimal.Decimal) {
 	l.periodDebit = l.periodDebit.Add(debit)
 	l.periodCredit = l.periodCredit.Add(credit)
 
-	l.endingDebitBalance = l.openingDebitBalance.Add(l.periodDebit)
-	l.endingCreditBalance = l.openingCreditBalance.Add(l.periodCredit)
+	// 1. ending balance = (opening debit - opening credit) + (period debit - period credit)
+	// 2. if ending balance positive, save it as ending debit, otherwise ending credit
+	endingBalance := (l.openingDebitBalance.Sub(l.openingCreditBalance)).Add(l.periodDebit.Sub(l.periodCredit))
+	if endingBalance.IsPositive() {
+		l.endingDebitBalance = endingBalance
+		l.endingCreditBalance = decimal.Zero
+	} else {
+		l.endingCreditBalance = endingBalance.Neg()
+		l.endingDebitBalance = decimal.Zero
+	}
 }
 
 func (l *Ledger) UpdateOpeningBalance(balance decimal.Decimal) {

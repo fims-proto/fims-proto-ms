@@ -33,7 +33,10 @@ func (r NumberingPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
-func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.Context, domainConfig *identifier_configuration.IdentifierConfiguration) error {
+func (r NumberingPostgresRepository) CreateIdentifierConfiguration(
+	ctx context.Context,
+	domainConfig *identifier_configuration.IdentifierConfiguration,
+) error {
 	db := r.dataSource.GetConnection(ctx)
 
 	dbConfig, err := identifierConfigurationBOToPO(*domainConfig)
@@ -46,12 +49,16 @@ func (r NumberingPostgresRepository) CreateIdentifierConfiguration(ctx context.C
 	})
 }
 
-func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(ctx context.Context, id uuid.UUID, updateFn func(config *identifier_configuration.IdentifierConfiguration) (*identifier_configuration.IdentifierConfiguration, error)) error {
+func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(
+	ctx context.Context,
+	id uuid.UUID,
+	updateFn func(config *identifier_configuration.IdentifierConfiguration) (*identifier_configuration.IdentifierConfiguration, error),
+) error {
 	db := r.dataSource.GetConnection(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		po := identifierConfigurationPO{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", id).Error; err != nil {
+		po := identifierConfigurationPO{Id: id}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
 			return err
 		}
 
@@ -83,7 +90,11 @@ func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *i
 	})
 }
 
-func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.Context, targetBusinessObject string, objectsToMatch map[string]string) (query.IdentifierConfiguration, error) {
+func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(
+	ctx context.Context,
+	targetBusinessObject string,
+	objectsToMatch map[string]string,
+) (query.IdentifierConfiguration, error) {
 	db := r.dataSource.GetConnection(ctx)
 
 	var configPOs []identifierConfigurationPO
@@ -109,8 +120,8 @@ func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(ctx context.
 func (r NumberingPostgresRepository) IdentifierById(ctx context.Context, id uuid.UUID) (query.Identifier, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := identifierPO{}
-	if err := db.First(&po, "id = ?", id).Error; err != nil {
+	po := identifierPO{Id: id}
+	if err := db.First(&po).Error; err != nil {
 		return query.Identifier{}, fmt.Errorf("failed to read identifier by id: %w", err)
 	}
 

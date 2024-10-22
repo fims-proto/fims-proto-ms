@@ -11,7 +11,7 @@ import (
 )
 
 // ReadAllVouchers godoc
-// @Text List all voucher by sob
+// @Text List all vouchers by sob
 // @Description List all vouchers by sob with pagination
 // @Tags vouchers
 // @Accept application/json

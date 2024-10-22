@@ -1,49 +1,35 @@
 package command
 
-import (
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
-)
-
-type TemplateCmd struct {
-	Id     uuid.UUID
-	SobId  uuid.UUID
-	Title  string
-	Tables []TableCmd
+type InitializeCmdReport struct {
+	Title       string                 `json:"title"`
+	Class       string                 `json:"class"`
+	AmountTypes []string               `json:"amountTypes"`
+	Sections    []InitializeCmdSection `json:"sections"`
 }
 
-type TableCmd struct {
-	Header HeaderCmd
-	Items  []LineItemCmd
+type InitializeCmdSection struct {
+	Title    string                 `json:"title"`
+	Sections []InitializeCmdSection `json:"sections"`
+	Items    []InitializeCmdItem    `json:"items"`
 }
 
-type HeaderCmd struct {
-	Text    string
-	Columns []string
+type InitializeCmdItem struct {
+	Text             string                 `json:"text"`
+	Level            int                    `json:"level"`
+	SumFactor        int                    `json:"sumFactor"`
+	DisplaySumFactor bool                   `json:"displaySumFactor"`
+	DataSource       string                 `json:"dataSource"`
+	Formulas         []InitializeCmdFormula `json:"formulas"`
+	IsBreakdownItem  bool                   `json:"isBreakdownItem"`
+	IsDeletable      bool                   `json:"isDeletable"`
+	IsTextModifiable bool                   `json:"isTextModifiable"`
+	IsDraggable      bool                   `json:"isDraggable"`
+	IsAbleToAddChild bool                   `json:"isAbleToAddChild"`
+	IsAbleToAddLeaf  bool                   `json:"isAbleToAddLeaf"`
 }
 
-type LineItemCmd struct {
-	Id                 uuid.UUID
-	Text               string
-	DataSource         string
-	Formulas           []FormulaCmd
-	Values             []decimal.Decimal
-	SumFactor          int
-	Level              int
-	RowNumber          int
-	Sequence           int
-	DisplaySumFactor   bool
-	DisplayRowNumber   bool
-	IsDeletable        bool
-	IsDraggable        bool
-	IsAbleToAddChild   bool
-	IsAbleToAddSibling bool
-}
-
-type FormulaCmd struct {
-	AccountId        uuid.UUID
-	ItemId           uuid.UUID
-	isAccountFormula bool
-	sumFactor        int
-	rule             string
+type InitializeCmdFormula struct {
+	AccountNumber string `json:"accountNumber"`
+	SumFactor     int    `json:"sumFactor"`
+	Rule          string `json:"rule"`
 }

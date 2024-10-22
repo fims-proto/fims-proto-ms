@@ -85,7 +85,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.AccountResponse"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
                         }
                     },
                     "404": {
@@ -175,7 +175,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.AccountResponse"
+                                "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
                             }
                         }
                     },
@@ -764,7 +764,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.PeriodResponse"
+                                "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                             }
                         }
                     },
@@ -802,13 +802,219 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.PeriodResponse"
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}": {
+            "get": {
+                "description": "Show report by sob and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}/generate": {
+            "post": {
+                "description": "Generate report",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Generate report request",
+                        "name": "GenerateReportRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.GenerateReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}/regenerate": {
+            "post": {
+                "description": "Regenerate report",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/reports": {
+            "get": {
+                "description": "List all reports by sob with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.ReportResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
                     }
                 }
@@ -869,7 +1075,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/http.AccountResponse"
+                                "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
                             }
                         }
                     },
@@ -1638,59 +1844,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "auxiliaryCategories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                    }
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "class": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "group": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isLeaf": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "numberHierarchy": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "http.AuditVoucherRequest": {
             "type": "object",
             "properties": {
@@ -1839,6 +1992,40 @@ const docTemplate = `{
                 }
             }
         },
+        "http.FormulaResponse": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/internal_report_port_public_http.AccountResponse"
+                },
+                "amounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "rule": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.GenerateReportRequest": {
+            "type": "object",
+            "properties": {
+                "periodFiscalYear": {
+                    "type": "integer"
+                },
+                "periodNumber": {
+                    "type": "integer"
+                }
+            }
+        },
         "http.InitializeLedgersBalanceItemRequest": {
             "type": "object",
             "properties": {
@@ -1864,11 +2051,64 @@ const docTemplate = `{
                 }
             }
         },
+        "http.ItemResponse": {
+            "type": "object",
+            "properties": {
+                "amounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "dataSource": {
+                    "type": "string"
+                },
+                "displaySumFactor": {
+                    "type": "boolean"
+                },
+                "formulas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.FormulaResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAbleToAddChild": {
+                    "type": "boolean"
+                },
+                "isAbleToAddLeaf": {
+                    "type": "boolean"
+                },
+                "isBreakdownItem": {
+                    "type": "boolean"
+                },
+                "isDeletable": {
+                    "type": "boolean"
+                },
+                "isDraggable": {
+                    "type": "boolean"
+                },
+                "isTextModifiable": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "http.LedgerResponse": {
             "type": "object",
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/http.AccountResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
                 },
                 "accountId": {
                     "type": "string"
@@ -1938,7 +2178,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/http.AccountResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
                 },
                 "auxiliaryAccounts": {
                     "type": "array",
@@ -1976,42 +2216,7 @@ const docTemplate = `{
                     }
                 },
                 "period": {
-                    "$ref": "#/definitions/http.PeriodResponse"
-                }
-            }
-        },
-        "http.PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "endingTime": {
-                    "type": "string"
-                },
-                "fiscalYear": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isClosed": {
-                    "type": "boolean"
-                },
-                "isCurrent": {
-                    "type": "boolean"
-                },
-                "openingTime": {
-                    "type": "string"
-                },
-                "periodNumber": {
-                    "type": "integer"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                 }
             }
         },
@@ -2023,10 +2228,80 @@ const docTemplate = `{
                 }
             }
         },
+        "http.ReportResponse": {
+            "type": "object",
+            "properties": {
+                "amountTypes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "class": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "period": {
+                    "$ref": "#/definitions/internal_report_port_public_http.PeriodResponse"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.SectionResponse"
+                    }
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "template": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "http.ReviewVoucherRequest": {
             "type": "object",
             "properties": {
                 "reviewer": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.SectionResponse": {
+            "type": "object",
+            "properties": {
+                "amounts": {
+                    "type": "array",
+                    "items": {
+                        "type": "number"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.ItemResponse"
+                    }
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.SectionResponse"
+                    }
+                },
+                "title": {
                     "type": "string"
                 }
             }
@@ -2171,7 +2446,7 @@ const docTemplate = `{
                     }
                 },
                 "period": {
-                    "$ref": "#/definitions/http.PeriodResponse"
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                 },
                 "poster": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
@@ -2193,6 +2468,59 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_general_ledger_port_public_http.AccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "auxiliaryCategories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                    }
+                },
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "numberHierarchy": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_general_ledger_port_public_http.Error": {
             "type": "object",
             "properties": {
@@ -2204,6 +2532,41 @@ const docTemplate = `{
                 }
             }
         },
+        "internal_general_ledger_port_public_http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "endingTime": {
+                    "type": "string"
+                },
+                "fiscalYear": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isClosed": {
+                    "type": "boolean"
+                },
+                "isCurrent": {
+                    "type": "boolean"
+                },
+                "openingTime": {
+                    "type": "string"
+                },
+                "periodNumber": {
+                    "type": "integer"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "internal_general_ledger_port_public_http.UserResponse": {
             "type": "object",
             "properties": {
@@ -2211,6 +2574,63 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "traits": {}
+            }
+        },
+        "internal_report_port_public_http.AccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_report_port_public_http.Error": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
+        "internal_report_port_public_http.PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "fiscalYear": {
+                    "type": "integer"
+                },
+                "periodNumber": {
+                    "type": "integer"
+                }
             }
         },
         "internal_sob_port_public_http.Error": {

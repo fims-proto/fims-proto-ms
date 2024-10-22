@@ -35,11 +35,7 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	po, err := sobBOToPO(*sob)
-	if err != nil {
-		return err
-	}
-
+	po := sobBOToPO(*sob)
 	return db.Create(&po).Error
 }
 
@@ -47,8 +43,8 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 	db := r.dataSource.GetConnection(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		po := sobPO{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", sobId).Error; err != nil {
+		po := sobPO{Id: sobId}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
 			return fmt.Errorf("failed to find sob: %w", err)
 		}
 
@@ -62,26 +58,25 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 			return fmt.Errorf("failed to update sob: %w", err)
 		}
 
-		po, err = sobBOToPO(*updatedBO)
-		if err != nil {
-			return err
-		}
-
+		po = sobBOToPO(*updatedBO)
 		return tx.Save(&po).Error
 	})
 }
 
 // Queries
 
-func (r SobPostgresRepository) SearchSobs(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.Sob], error) {
+func (r SobPostgresRepository) SearchSobs(
+	ctx context.Context,
+	pageRequest data.PageRequest,
+) (data.Page[query.Sob], error) {
 	return data.SearchEntities(ctx, pageRequest, sobPO{}, sobPOToDTO, r.dataSource.GetConnection(ctx))
 }
 
 func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	dbSob := sobPO{}
-	if err := db.Where("id = ?", sobId).First(&dbSob).Error; err != nil {
+	dbSob := sobPO{Id: sobId}
+	if err := db.First(&dbSob).Error; err != nil {
 		return query.Sob{}, fmt.Errorf("failed to read sob %s: %w", sobId, err)
 	}
 

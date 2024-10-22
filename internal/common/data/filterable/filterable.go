@@ -166,10 +166,7 @@ func (fe *FilterAST) ParseAtomExpr(node *node32) (Filterable, error) {
 		return nil, err
 	}
 	fImpl := filter.(filterImpl)
-	if err == nil {
-		return fImpl, err
-	}
-	return nil, err
+	return fImpl, err
 }
 
 func (fe *FilterAST) ParseLiterals(node *node32) []any {

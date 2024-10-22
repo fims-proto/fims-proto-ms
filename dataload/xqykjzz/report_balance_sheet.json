@@ -1,0 +1,732 @@
+{
+  "title": "资产负债表",
+  "class": "balance_sheet",
+  "amountTypes": [
+    "year_opening_balance",
+    "period_ending_balance"
+  ],
+  "sections": [
+    {
+      "title": "资产",
+      "sections": [
+        {
+          "title": "流动资产",
+          "items": [
+            {
+              "text": "货币资金",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1001",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1002",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1012",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "短期投资",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1101",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应收票据",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1121",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应收账款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1122",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "预付账款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1123",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应收股利",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1131",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应收利息",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1132",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "其他应收款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1221",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "存货",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1401",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1402",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1403",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1404",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1405",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1407",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1408",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1411",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1421",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4001",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4101",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4401",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4403",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "原材料",
+              "level": 2,
+              "sumFactor": 0,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1403",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1404",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ],
+              "isBreakdownItem": true
+            },
+            {
+              "text": "在产品",
+              "level": 2,
+              "sumFactor": 0,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "4001",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4101",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4401",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "4403",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ],
+              "isBreakdownItem": true
+            },
+            {
+              "text": "库存商品",
+              "level": 2,
+              "sumFactor": 0,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1405",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1407",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ],
+              "isBreakdownItem": true
+            },
+            {
+              "text": "周转材料",
+              "level": 2,
+              "sumFactor": 0,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1411",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ],
+              "isBreakdownItem": true
+            },
+            {
+              "text": "其他流动资产",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": []
+            }
+          ]
+        },
+        {
+          "title": "非流动资产",
+          "items": [
+            {
+              "text": "长期债券投资",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1501",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "长期股权投资",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1511",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "固定资产原价",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1601",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "累计折旧",
+              "level": 1,
+              "sumFactor": -1,
+              "displaySumFactor": true,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1602",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "固定资产账面价值",
+              "level": 1,
+              "sumFactor": 0,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1601",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1602",
+                  "sumFactor": -1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "在建工程",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1604",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "工程物资",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1605",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "固定资产清理",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1606",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "生产性生物资产",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1621",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1622",
+                  "sumFactor": -1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "无形资产",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1701",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "1702",
+                  "sumFactor": -1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "开发支出",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "4301",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "长期待摊费用",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1801",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "其他非流动资产",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "1901",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "负债和所有者权益",
+      "sections": [
+        {
+          "title": "流动负债",
+          "items": [
+            {
+              "text": "短期借款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2001",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应付票据",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2201",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应付账款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2202",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "预收账款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2203",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应付职工薪酬",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2211",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应交税费",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2221",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应付利息",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2231",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "应付利润",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2232",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "其他应付款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2241",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "其他流动负债",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": []
+            }
+          ]
+        },
+        {
+          "title": "非流动负债",
+          "items": [
+            {
+              "text": "长期借款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2501",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "长期应付款",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2701",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "递延收益",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "2401",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "其他非流动负债",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": []
+            }
+          ]
+        },
+        {
+          "title": "所有者权益",
+          "items": [
+            {
+              "text": "实收资本（或股本）",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "3001",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "资本公积",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "3002",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "盈余公积",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "3101",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            },
+            {
+              "text": "未分配利润",
+              "level": 1,
+              "sumFactor": 1,
+              "dataSource": "formulas",
+              "formulas": [
+                {
+                  "accountNumber": "3103",
+                  "sumFactor": 1,
+                  "rule": "net"
+                },
+                {
+                  "accountNumber": "3104",
+                  "sumFactor": 1,
+                  "rule": "net"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

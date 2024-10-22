@@ -3,7 +3,7 @@ package command
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	"github/fims-proto/fims-proto-ms/internal/report/domain"
 )
 
 type MigrationHandler struct {

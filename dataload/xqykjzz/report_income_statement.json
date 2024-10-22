@@ -1,0 +1,330 @@
+{
+  "title": "利润表",
+  "class": "income_statement",
+  "amountTypes": [
+    "year_to_date_amount",
+    "period_amount"
+  ],
+  "sections": [
+    {
+      "title": "利润表",
+      "items": [
+        {
+          "text": "一、营业收入",
+          "level": 1,
+          "sumFactor": 1,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5001",
+              "sumFactor": 1,
+              "rule": "transaction"
+            },
+            {
+              "accountNumber": "5051",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "营业成本",
+          "level": 2,
+          "sumFactor": -1,
+          "displaySumFactor": true,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5401",
+              "sumFactor": 1,
+              "rule": "transaction"
+            },
+            {
+              "accountNumber": "5402",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "营业税金及附加",
+          "level": 2,
+          "sumFactor": -1,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5403",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "消费税",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "营业税",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "城市维护建设税",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "资源税",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "土地增值税",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "城镇土地使用税、房产税、车船税、印花税",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "教育费附加、矿产资源补偿费、排污费",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "销售费用",
+          "level": 2,
+          "sumFactor": -1,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5601",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "商品维修费",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "广告费和业务宣传费",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "管理费用",
+          "level": 2,
+          "sumFactor": -1,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5602",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "开办费",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "业务招待费",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "研究费用",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "财务费用",
+          "level": 2,
+          "sumFactor": -1,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5603",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "利息费用（收入以\"-\"号填列）",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "投资收益（损失以\"-\"号填列）",
+          "level": 2,
+          "sumFactor": 1,
+          "displaySumFactor": true,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5111",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "二、营业利润（亏损以\"-\"号填列）",
+          "level": 1,
+          "sumFactor": 0,
+          "dataSource": "sum"
+        },
+        {
+          "text": "营业外收入",
+          "level": 2,
+          "sumFactor": 1,
+          "displaySumFactor": true,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5301",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "政府补助",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "营业外支出",
+          "level": 2,
+          "sumFactor": -1,
+          "displaySumFactor": true,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5711",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "坏账损失",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "无法收回的长期债券投资损失",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "无法收回的长期股权投资损失",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "自然灾害等不可抗力因素造成的损失",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "税收滞纳金",
+          "level": 3,
+          "sumFactor": 0,
+          "dataSource": "formulas",
+          "formulas": [],
+          "isBreakdownItem": true
+        },
+        {
+          "text": "三、利润总额（亏损以\"-\"号填列）",
+          "level": 1,
+          "sumFactor": 0,
+          "dataSource": "sum"
+        },
+        {
+          "text": "所得税费用",
+          "level": 2,
+          "sumFactor": -1,
+          "displaySumFactor": true,
+          "dataSource": "formulas",
+          "formulas": [
+            {
+              "accountNumber": "5801",
+              "sumFactor": 1,
+              "rule": "transaction"
+            }
+          ]
+        },
+        {
+          "text": "四、净利润（亏损以\"-\"号填列）",
+          "level": 1,
+          "sumFactor": 0,
+          "dataSource": "sum"
+        }
+      ]
+    }
+  ]
+}

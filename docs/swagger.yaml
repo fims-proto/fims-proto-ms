@@ -9,41 +9,6 @@ definitions:
       id:
         type: string
     type: object
-  http.AccountResponse:
-    properties:
-      accountNumber:
-        type: string
-      auxiliaryCategories:
-        items:
-          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-        type: array
-      balanceDirection:
-        type: string
-      class:
-        type: string
-      createdAt:
-        type: string
-      group:
-        type: string
-      id:
-        type: string
-      isLeaf:
-        type: boolean
-      level:
-        type: integer
-      numberHierarchy:
-        items:
-          type: integer
-        type: array
-      sobId:
-        type: string
-      superiorAccountId:
-        type: string
-      title:
-        type: string
-      updatedAt:
-        type: string
-    type: object
   http.AuditVoucherRequest:
     properties:
       auditor:
@@ -140,6 +105,28 @@ definitions:
       voucherType:
         type: string
     type: object
+  http.FormulaResponse:
+    properties:
+      account:
+        $ref: '#/definitions/internal_report_port_public_http.AccountResponse'
+      amounts:
+        items:
+          type: number
+        type: array
+      id:
+        type: string
+      rule:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
+  http.GenerateReportRequest:
+    properties:
+      periodFiscalYear:
+        type: integer
+      periodNumber:
+        type: integer
+    type: object
   http.InitializeLedgersBalanceItemRequest:
     properties:
       accountNumber:
@@ -156,10 +143,45 @@ definitions:
     required:
     - ledgers
     type: object
+  http.ItemResponse:
+    properties:
+      amounts:
+        items:
+          type: number
+        type: array
+      dataSource:
+        type: string
+      displaySumFactor:
+        type: boolean
+      formulas:
+        items:
+          $ref: '#/definitions/http.FormulaResponse'
+        type: array
+      id:
+        type: string
+      isAbleToAddChild:
+        type: boolean
+      isAbleToAddLeaf:
+        type: boolean
+      isBreakdownItem:
+        type: boolean
+      isDeletable:
+        type: boolean
+      isDraggable:
+        type: boolean
+      isTextModifiable:
+        type: boolean
+      level:
+        type: integer
+      sumFactor:
+        type: integer
+      text:
+        type: string
+    type: object
   http.LedgerResponse:
     properties:
       account:
-        $ref: '#/definitions/http.AccountResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
       accountId:
         type: string
       createdAt:
@@ -205,7 +227,7 @@ definitions:
   http.LineItemResponse:
     properties:
       account:
-        $ref: '#/definitions/http.AccountResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
       auxiliaryAccounts:
         items:
           $ref: '#/definitions/http.AuxiliaryAccountResponse'
@@ -230,39 +252,62 @@ definitions:
           $ref: '#/definitions/http.LedgerResponse'
         type: array
       period:
-        $ref: '#/definitions/http.PeriodResponse'
-    type: object
-  http.PeriodResponse:
-    properties:
-      createdAt:
-        type: string
-      endingTime:
-        type: string
-      fiscalYear:
-        type: integer
-      id:
-        type: string
-      isClosed:
-        type: boolean
-      isCurrent:
-        type: boolean
-      openingTime:
-        type: string
-      periodNumber:
-        type: integer
-      sobId:
-        type: string
-      updatedAt:
-        type: string
+        $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
     type: object
   http.PostVoucherRequest:
     properties:
       poster:
         type: string
     type: object
+  http.ReportResponse:
+    properties:
+      amountTypes:
+        items:
+          type: string
+        type: array
+      class:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      period:
+        $ref: '#/definitions/internal_report_port_public_http.PeriodResponse'
+      sections:
+        items:
+          $ref: '#/definitions/http.SectionResponse'
+        type: array
+      sobId:
+        type: string
+      template:
+        type: boolean
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   http.ReviewVoucherRequest:
     properties:
       reviewer:
+        type: string
+    type: object
+  http.SectionResponse:
+    properties:
+      amounts:
+        items:
+          type: number
+        type: array
+      id:
+        type: string
+      items:
+        items:
+          $ref: '#/definitions/http.ItemResponse'
+        type: array
+      sections:
+        items:
+          $ref: '#/definitions/http.SectionResponse'
+        type: array
+      title:
         type: string
     type: object
   http.SobResponse:
@@ -357,7 +402,7 @@ definitions:
           $ref: '#/definitions/http.LineItemResponse'
         type: array
       period:
-        $ref: '#/definitions/http.PeriodResponse'
+        $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
       poster:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       reviewer:
@@ -371,6 +416,41 @@ definitions:
       voucherType:
         type: string
     type: object
+  internal_general_ledger_port_public_http.AccountResponse:
+    properties:
+      accountNumber:
+        type: string
+      auxiliaryCategories:
+        items:
+          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+        type: array
+      balanceDirection:
+        type: string
+      class:
+        type: string
+      createdAt:
+        type: string
+      group:
+        type: string
+      id:
+        type: string
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      numberHierarchy:
+        items:
+          type: integer
+        type: array
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   internal_general_ledger_port_public_http.Error:
     properties:
       message:
@@ -378,11 +458,71 @@ definitions:
       slug:
         type: string
     type: object
+  internal_general_ledger_port_public_http.PeriodResponse:
+    properties:
+      createdAt:
+        type: string
+      endingTime:
+        type: string
+      fiscalYear:
+        type: integer
+      id:
+        type: string
+      isClosed:
+        type: boolean
+      isCurrent:
+        type: boolean
+      openingTime:
+        type: string
+      periodNumber:
+        type: integer
+      sobId:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   internal_general_ledger_port_public_http.UserResponse:
     properties:
       id:
         type: string
       traits: {}
+    type: object
+  internal_report_port_public_http.AccountResponse:
+    properties:
+      accountNumber:
+        type: string
+      balanceDirection:
+        type: string
+      class:
+        type: integer
+      group:
+        type: integer
+      id:
+        type: string
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+    type: object
+  internal_report_port_public_http.Error:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
+  internal_report_port_public_http.PeriodResponse:
+    properties:
+      fiscalYear:
+        type: integer
+      periodNumber:
+        type: integer
     type: object
   internal_sob_port_public_http.Error:
     properties:
@@ -462,7 +602,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.AccountResponse'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
         "404":
           description: Not Found
         "500":
@@ -521,7 +661,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.AccountResponse'
+              $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -916,7 +1056,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.PeriodResponse'
+              $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -941,13 +1081,149 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.PeriodResponse'
+            $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
+  /sob/{sobId}/report/{reportId}:
+    get:
+      consumes:
+      - application/json
+      description: Show report by sob and id
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report ID
+        in: path
+        name: reportId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}/generate:
+    post:
+      consumes:
+      - application/json
+      description: Generate report
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Generate report request
+        in: body
+        name: GenerateReportRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.GenerateReportRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}/regenerate:
+    post:
+      consumes:
+      - application/json
+      description: Regenerate report
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      tags:
+      - reports
+  /sob/{sobId}/reports:
+    get:
+      consumes:
+      - application/json
+      description: List all reports by sob with pagination
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.ReportResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      tags:
+      - reports
   /sob/{sobId}/search-accounts:
     get:
       consumes:
@@ -986,7 +1262,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/http.AccountResponse'
+              $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
             type: array
         "500":
           description: Internal Server Error
