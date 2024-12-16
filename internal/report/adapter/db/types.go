@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 	"maps"
+	"slices"
 	"strings"
 	"time"
 
@@ -22,7 +23,7 @@ type reportPO struct {
 	Template    bool
 	Class       string
 	AmountTypes pgtype.TextArray `gorm:"type:text[]"`
-	Sections    []sectionPO      `gorm:"foreignKey:ReportId"`
+	Sections    []*sectionPO     `gorm:"foreignKey:ReportId"`
 
 	Period *periodPO `gorm:"foreignKey:PeriodId"`
 
@@ -35,9 +36,10 @@ type sectionPO struct {
 	ReportId  uuid.UUID  `gorm:"type:uuid"`
 	SectionId *uuid.UUID `gorm:"type:uuid"`
 	Title     string
+	Sequence  int              // sequence within the whole report
 	Amounts   pgtype.TextArray `gorm:"type:text[]"`
-	Sections  []sectionPO      `gorm:"foreignKey:SectionId"`
-	Items     []itemPO         `gorm:"foreignKey:SectionId"`
+	Sections  []*sectionPO     `gorm:"foreignKey:SectionId"`
+	Items     []*itemPO        `gorm:"foreignKey:SectionId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -48,10 +50,11 @@ type itemPO struct {
 	SectionId        uuid.UUID `gorm:"type:uuid"`
 	Text             string
 	Level            int
+	Sequence         int // sequence within the parent
 	SumFactor        int
 	DisplaySumFactor bool
 	DataSource       string
-	Formulas         []formulaPO      `gorm:"foreignKey:ItemId"`
+	Formulas         []*formulaPO     `gorm:"foreignKey:ItemId"`
 	Amounts          pgtype.TextArray `gorm:"type:text[]"`
 	IsBreakdownItem  bool
 	IsDeletable      bool
@@ -68,6 +71,7 @@ type formulaPO struct {
 	Id        uuid.UUID `gorm:"type:uuid;primaryKey"`
 	ItemId    uuid.UUID `gorm:"type:uuid"`
 	AccountId uuid.UUID `gorm:"type:uuid"`
+	Sequence  int       // sequence within the parent
 	SumFactor int
 	Rule      string
 	Amounts   pgtype.TextArray `gorm:"type:text[]"`
@@ -146,8 +150,8 @@ func (f formulaPO) ResolveAssociation(entity string) (string, error) {
 
 // mappers
 
-func reportBOToPO(bo *report.Report) reportPO {
-	var sectionPOs []sectionPO
+func reportBOToPO(bo *report.Report) *reportPO {
+	var sectionPOs []*sectionPO
 	for _, section := range bo.Sections() {
 		sectionPOs = append(sectionPOs, sectionBOToPO(section, bo.Id(), uuid.Nil))
 	}
@@ -162,7 +166,7 @@ func reportBOToPO(bo *report.Report) reportPO {
 		panic(fmt.Errorf("failed to convert []string to TextArray: %w", err))
 	}
 
-	return reportPO{
+	po := &reportPO{
 		Id:          bo.Id(),
 		SobId:       bo.SobId(),
 		PeriodId:    converter.UUIDToPtr(bo.PeriodId()),
@@ -172,15 +176,17 @@ func reportBOToPO(bo *report.Report) reportPO {
 		AmountTypes: textArray,
 		Sections:    sectionPOs,
 	}
+	assignSequence(po.Sections)
+	return po
 }
 
-func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) sectionPO {
-	var subSections []sectionPO
+func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) *sectionPO {
+	var subSections []*sectionPO
 	for _, subSection := range bo.Sections() {
 		subSections = append(subSections, sectionBOToPO(subSection, reportId, bo.Id()))
 	}
 
-	var items []itemPO
+	var items []*itemPO
 	for _, item := range bo.Items() {
 		items = append(items, itemBOToPO(item, bo.Id()))
 	}
@@ -190,7 +196,7 @@ func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) 
 		panic(fmt.Errorf("failed to convert []decimal.Decimal to TextArray: %w", err))
 	}
 
-	return sectionPO{
+	return &sectionPO{
 		Id:        bo.Id(),
 		ReportId:  reportId,
 		SectionId: converter.UUIDToPtr(sectionId),
@@ -201,8 +207,8 @@ func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) 
 	}
 }
 
-func itemBOToPO(bo *report.Item, sectionId uuid.UUID) itemPO {
-	var formulas []formulaPO
+func itemBOToPO(bo *report.Item, sectionId uuid.UUID) *itemPO {
+	var formulas []*formulaPO
 	for _, formula := range bo.Formulas() {
 		formulas = append(formulas, formulaBOToPO(formula, bo.Id()))
 	}
@@ -212,7 +218,7 @@ func itemBOToPO(bo *report.Item, sectionId uuid.UUID) itemPO {
 		panic(fmt.Errorf("failed to convert []decimal.Decimal to TextArray: %w", err))
 	}
 
-	return itemPO{
+	return &itemPO{
 		Id:               bo.Id(),
 		SectionId:        sectionId,
 		Text:             bo.Text(),
@@ -231,13 +237,13 @@ func itemBOToPO(bo *report.Item, sectionId uuid.UUID) itemPO {
 	}
 }
 
-func formulaBOToPO(bo *report.Formula, itemId uuid.UUID) formulaPO {
+func formulaBOToPO(bo *report.Formula, itemId uuid.UUID) *formulaPO {
 	amounts, err := decimalArrayToTextArray(bo.Amounts())
 	if err != nil {
 		panic(fmt.Errorf("failed to convert []decimal.Decimal to TextArray: %w", err))
 	}
 
-	return formulaPO{
+	return &formulaPO{
 		Id:        bo.Id(),
 		ItemId:    itemId,
 		AccountId: bo.AccountId(),
@@ -247,9 +253,9 @@ func formulaBOToPO(bo *report.Formula, itemId uuid.UUID) formulaPO {
 	}
 }
 
-func reportPOToBO(po reportPO) (*report.Report, error) {
+func reportPOToBO(po *reportPO) (*report.Report, error) {
 	// restore the section structure
-	restructureSections(&po)
+	restructureAndSort(po)
 
 	var amountTypes []string
 	if err := po.AmountTypes.AssignTo(&amountTypes); err != nil {
@@ -273,7 +279,7 @@ func reportPOToBO(po reportPO) (*report.Report, error) {
 	)
 }
 
-func sectionPOToBO(po sectionPO) (*report.Section, error) {
+func sectionPOToBO(po *sectionPO) (*report.Section, error) {
 	subSections, err := converter.POsToBOs(po.Sections, sectionPOToBO)
 	if err != nil {
 		return nil, err
@@ -298,7 +304,7 @@ func sectionPOToBO(po sectionPO) (*report.Section, error) {
 	)
 }
 
-func itemPOToBO(po itemPO) (*report.Item, error) {
+func itemPOToBO(po *itemPO) (*report.Item, error) {
 	formulas, err := converter.POsToBOs(po.Formulas, formulaPOToBO)
 	if err != nil {
 		return nil, err
@@ -327,7 +333,7 @@ func itemPOToBO(po itemPO) (*report.Item, error) {
 	)
 }
 
-func formulaPOToBO(po formulaPO) (*report.Formula, error) {
+func formulaPOToBO(po *formulaPO) (*report.Formula, error) {
 	amounts, err := textArrayToDecimalArray(po.Amounts)
 	if err != nil {
 		return nil, err
@@ -344,7 +350,7 @@ func formulaPOToBO(po formulaPO) (*report.Formula, error) {
 
 func reportPOToDTO(po reportPO) query.Report {
 	// restore the section structure
-	restructureSections(&po)
+	restructureAndSort(&po)
 
 	var amountTypes []string
 	if err := po.AmountTypes.AssignTo(&amountTypes); err != nil {
@@ -365,7 +371,7 @@ func reportPOToDTO(po reportPO) query.Report {
 	}
 }
 
-func sectionPOToDTO(po sectionPO) query.Section {
+func sectionPOToDTO(po *sectionPO) query.Section {
 	amounts, err := textArrayToDecimalArray(po.Amounts)
 	if err != nil {
 		panic(fmt.Errorf("failed to assign TextArray to []decimal.Decimal: %w", err))
@@ -380,7 +386,7 @@ func sectionPOToDTO(po sectionPO) query.Section {
 	}
 }
 
-func itemPOToDTO(po itemPO) query.Item {
+func itemPOToDTO(po *itemPO) query.Item {
 	amounts, err := textArrayToDecimalArray(po.Amounts)
 	if err != nil {
 		panic(fmt.Errorf("failed to assign TextArray to []decimal.Decimal: %w", err))
@@ -404,7 +410,7 @@ func itemPOToDTO(po itemPO) query.Item {
 	}
 }
 
-func formulaPOToDTO(po formulaPO) query.Formula {
+func formulaPOToDTO(po *formulaPO) query.Formula {
 	amounts, err := textArrayToDecimalArray(po.Amounts)
 	if err != nil {
 		panic(fmt.Errorf("failed to assign TextArray to []decimal.Decimal: %w", err))
@@ -449,13 +455,32 @@ func accountPOToDTO(po accountPO) query.Account {
 	}
 }
 
+// assignSequence assigns correct Sequence field to section, item and formula
+// in during runtime, the sequence is guaranteed by slice, however after it's saved into the database, Sequence field is how we can know the sequence
+func assignSequence(sections []*sectionPO) {
+	for i, section := range sections {
+		section.Sequence = i
+
+		// item and formula
+		for j, item := range section.Items {
+			item.Sequence = j
+			for k, formula := range item.Formulas {
+				formula.Sequence = k
+			}
+		}
+
+		assignSequence(section.Sections)
+	}
+}
+
+// restructureAndSort restores the correct sections level, and sort sections, items and formulas based on Sequence fields
 // since sectionPO has both reportId and sectionId field, a subsection can have both of the fields.
 // this could cause the reportPO having a flat section list (subsection is not nested in the higher level section), since sections is retrieved by foreign key reportId
-// restructureSections can help restore the correct sections level
-func restructureSections(r *reportPO) {
+func restructureAndSort(r *reportPO) {
+	// restructure sections first
 	sectionMap := make(map[uuid.UUID]*sectionPO)
 	for _, section := range r.Sections {
-		sectionMap[section.Id] = &section
+		sectionMap[section.Id] = section
 	}
 
 	// assign subsections
@@ -471,8 +496,30 @@ func restructureSections(r *reportPO) {
 	r.Sections = nil
 	for section := range maps.Values(sectionMap) {
 		if section.SectionId == nil {
-			r.Sections = append(r.Sections, *section)
+			r.Sections = append(r.Sections, section)
 		}
+	}
+
+	// sort
+	for _, section := range r.Sections {
+		sortRecursive(section)
+	}
+	slices.SortFunc(r.Sections, func(a, b *sectionPO) int { return a.Sequence - b.Sequence })
+}
+
+func sortRecursive(s *sectionPO) {
+	// formulas
+	for _, item := range s.Items {
+		slices.SortFunc(item.Formulas, func(a, b *formulaPO) int { return a.Sequence - b.Sequence })
+	}
+
+	// items
+	slices.SortFunc(s.Items, func(a, b *itemPO) int { return a.Sequence - b.Sequence })
+
+	// sub sections
+	slices.SortFunc(s.Sections, func(a, b *sectionPO) int { return a.Sequence - b.Sequence })
+	for _, subSection := range s.Sections {
+		sortRecursive(subSection)
 	}
 }
 

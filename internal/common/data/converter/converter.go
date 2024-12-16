@@ -2,7 +2,7 @@ package converter
 
 import "github.com/google/uuid"
 
-func BOsToPOs[B any, P any](bos []*B, convertFn func(bo *B) P) []P {
+func BOsToPOs[B any, P any](bos []B, convertFn func(bo B) P) []P {
 	var pos []P
 	for _, bo := range bos {
 		po := convertFn(bo)
@@ -11,8 +11,8 @@ func BOsToPOs[B any, P any](bos []*B, convertFn func(bo *B) P) []P {
 	return pos
 }
 
-func POsToBOs[B any, P any](pos []P, convertFn func(po P) (*B, error)) ([]*B, error) {
-	var bos []*B
+func POsToBOs[B any, P any](pos []P, convertFn func(po P) (B, error)) ([]B, error) {
+	var bos []B
 	for _, po := range pos {
 		bo, err := convertFn(po)
 		if err != nil {

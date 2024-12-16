@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
@@ -63,7 +64,7 @@ func (r ReportPostgresRepository) UpdateReport(
 		return err
 	}
 
-	bo, err := reportPOToBO(po)
+	bo, err := reportPOToBO(&po)
 	if err != nil {
 		return err
 	}
@@ -89,5 +90,42 @@ func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId u
 		return nil, err
 	}
 
-	return reportPOToBO(po)
+	return reportPOToBO(&po)
+}
+
+func (r ReportPostgresRepository) UpdateItem(
+	ctx context.Context,
+	itemId uuid.UUID,
+	updateFn func(i *report.Item) (*report.Item, error),
+) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	// read item
+	po := itemPO{Id: itemId}
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Preload("Formulas.Account").
+		First(&po).Error; err != nil {
+		return err
+	}
+
+	bo, err := itemPOToBO(&po)
+	if err != nil {
+		return err
+	}
+
+	// delegate update
+	updatedBO, err := updateFn(bo)
+	if err != nil {
+		return err
+	}
+
+	// save
+	// for now item update doesn't support change section, so we use the section id from the original po
+	updatedPO := itemBOToPO(updatedBO, po.SectionId)
+	// TODO, reveal sequence field
+	// delete formulas first
+	if err = db.Where("item_id = ?", updatedPO.Id).Delete(&formulaPO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete formulas: %w", err)
+	}
+	return db.Save(&updatedPO).Error
 }

@@ -18,6 +18,8 @@ type Commands struct {
 	Generate   command.GenerateHandler
 	Regenerate command.RegenerateHandler
 
+	UpdateItem command.UpdateItemHandler
+
 	Migrate command.MigrationHandler
 }
 
@@ -44,6 +46,8 @@ func (a *Application) Inject(
 
 		Generate:   command.NewGenerateHandler(repo, generalLedgerService),
 		Regenerate: command.NewRegenerateHandler(repo, generalLedgerService),
+
+		UpdateItem: command.NewUpdateItemHandler(repo, generalLedgerService),
 
 		Migrate: command.NewMigrationHandler(repo),
 	}

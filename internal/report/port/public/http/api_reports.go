@@ -118,3 +118,32 @@ func (h Handler) RegenerateReport(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// UpdateItem godoc
+// @Text Update a report item
+// @Description Update a report item
+// @Tags reports
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Param reportId path string true "Report ID"
+// @Param itemId path string true "Item ID"
+// @Param UpdateItemRequest body UpdateItemRequest true "Update report item request"
+// @Success 204
+// @Failure 400 {object} Error
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/report/{reportId}/item/{itemId} [patch]
+func (h Handler) UpdateItem(c *gin.Context) {
+	var req UpdateItemRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	cmd := req.mapToCommand(uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("itemId")))
+	if err := h.app.Commands.UpdateItem.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

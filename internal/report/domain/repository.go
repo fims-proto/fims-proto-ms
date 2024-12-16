@@ -18,4 +18,10 @@ type Repository interface {
 		updateFn func(r *report.Report) (*report.Report, error),
 	) error
 	ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error)
+
+	UpdateItem(
+		ctx context.Context,
+		itemId uuid.UUID,
+		updateFn func(i *report.Item) (*report.Item, error),
+	) error
 }

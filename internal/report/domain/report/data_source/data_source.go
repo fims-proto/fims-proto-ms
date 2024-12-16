@@ -14,11 +14,13 @@ var (
 	unknown  = DataSource{""}
 	Formulas = DataSource{"formulas"}
 	Sum      = DataSource{"sum"}
+	None     = DataSource{"none"}
 )
 
 var stringToDataSource = map[string]DataSource{
 	"formulas": Formulas,
 	"sum":      Sum,
+	"none":     None,
 }
 
 func FromString(s string) (DataSource, error) {

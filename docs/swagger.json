@@ -907,6 +907,69 @@
                 }
             }
         },
+        "/sob/{sobId}/report/{reportId}/item/{itemId}": {
+            "patch": {
+                "description": "Update a report item",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update report item request",
+                        "name": "UpdateItemRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/report/{reportId}/regenerate": {
             "post": {
                 "description": "Regenerate report",
@@ -2357,6 +2420,40 @@
                     "type": "integer"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateItemFormulaRequest": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "rule": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.UpdateItemRequest": {
+            "type": "object",
+            "properties": {
+                "dataSource": {
+                    "type": "string"
+                },
+                "formulas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateItemFormulaRequest"
+                    }
+                },
+                "sumFactor": {
+                    "type": "integer"
+                },
+                "text": {
                     "type": "string"
                 }
             }

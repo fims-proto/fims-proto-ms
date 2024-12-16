@@ -63,6 +63,10 @@ func NewItem(
 		return nil, err
 	}
 
+	if newDataSource != data_source.Formulas && len(formulas) > 0 {
+		return nil, commonerrors.NewSlugError("report-item-invalidDataSourceWithFormulas")
+	}
+
 	if level == 0 && isBreakdownItem {
 		return nil, commonerrors.NewSlugError("report-item-rootLevelIsBreakdownItem")
 	}

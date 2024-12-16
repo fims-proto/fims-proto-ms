@@ -78,8 +78,7 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 		return
 	}
 	cmd := req.mapToCommand(uuid.MustParse(c.Param("sobId")))
-	err := h.app.Commands.CreateVoucher.Handle(c, cmd)
-	if err != nil {
+	if err := h.app.Commands.CreateVoucher.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

@@ -7,7 +7,7 @@
   ],
   "sections": [
     {
-      "title": "利润表",
+      "title": "项目",
       "items": [
         {
           "text": "一、营业收入",
@@ -29,7 +29,7 @@
         },
         {
           "text": "营业成本",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "displaySumFactor": true,
           "dataSource": "formulas",
@@ -48,7 +48,7 @@
         },
         {
           "text": "营业税金及附加",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "dataSource": "formulas",
           "formulas": [
@@ -61,7 +61,7 @@
         },
         {
           "text": "消费税",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -69,7 +69,7 @@
         },
         {
           "text": "营业税",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -77,7 +77,7 @@
         },
         {
           "text": "城市维护建设税",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -85,7 +85,7 @@
         },
         {
           "text": "资源税",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -93,7 +93,7 @@
         },
         {
           "text": "土地增值税",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -101,7 +101,7 @@
         },
         {
           "text": "城镇土地使用税、房产税、车船税、印花税",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -109,7 +109,7 @@
         },
         {
           "text": "教育费附加、矿产资源补偿费、排污费",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -117,7 +117,7 @@
         },
         {
           "text": "销售费用",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "dataSource": "formulas",
           "formulas": [
@@ -130,7 +130,7 @@
         },
         {
           "text": "商品维修费",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -138,7 +138,7 @@
         },
         {
           "text": "广告费和业务宣传费",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -146,7 +146,7 @@
         },
         {
           "text": "管理费用",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "dataSource": "formulas",
           "formulas": [
@@ -159,7 +159,7 @@
         },
         {
           "text": "开办费",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -167,7 +167,7 @@
         },
         {
           "text": "业务招待费",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -175,7 +175,7 @@
         },
         {
           "text": "研究费用",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -183,7 +183,7 @@
         },
         {
           "text": "财务费用",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "dataSource": "formulas",
           "formulas": [
@@ -196,7 +196,7 @@
         },
         {
           "text": "利息费用（收入以\"-\"号填列）",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -204,7 +204,7 @@
         },
         {
           "text": "投资收益（损失以\"-\"号填列）",
-          "level": 2,
+          "level": 1,
           "sumFactor": 1,
           "displaySumFactor": true,
           "dataSource": "formulas",
@@ -224,7 +224,7 @@
         },
         {
           "text": "营业外收入",
-          "level": 2,
+          "level": 1,
           "sumFactor": 1,
           "displaySumFactor": true,
           "dataSource": "formulas",
@@ -238,7 +238,7 @@
         },
         {
           "text": "政府补助",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -246,7 +246,7 @@
         },
         {
           "text": "营业外支出",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "displaySumFactor": true,
           "dataSource": "formulas",
@@ -260,7 +260,7 @@
         },
         {
           "text": "坏账损失",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -268,7 +268,7 @@
         },
         {
           "text": "无法收回的长期债券投资损失",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -276,7 +276,7 @@
         },
         {
           "text": "无法收回的长期股权投资损失",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -284,7 +284,7 @@
         },
         {
           "text": "自然灾害等不可抗力因素造成的损失",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -292,7 +292,7 @@
         },
         {
           "text": "税收滞纳金",
-          "level": 3,
+          "level": 2,
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
@@ -306,7 +306,7 @@
         },
         {
           "text": "所得税费用",
-          "level": 2,
+          "level": 1,
           "sumFactor": -1,
           "displaySumFactor": true,
           "dataSource": "formulas",

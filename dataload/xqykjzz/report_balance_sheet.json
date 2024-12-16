@@ -485,182 +485,187 @@
       "title": "负债和所有者权益",
       "sections": [
         {
-          "title": "流动负债",
-          "items": [
+          "title": "负债",
+          "sections": [
             {
-              "text": "短期借款",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
+              "title": "流动负债",
+              "items": [
                 {
-                  "accountNumber": "2001",
+                  "text": "短期借款",
+                  "level": 1,
                   "sumFactor": 1,
-                  "rule": "net"
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2001",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "应付票据",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2201",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "应付账款",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2202",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "预收账款",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2203",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "应付职工薪酬",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2211",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "应交税费",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2221",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "应付利息",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2231",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "应付利润",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2232",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "其他应付款",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2241",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "其他流动负债",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": []
                 }
               ]
             },
             {
-              "text": "应付票据",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
+              "title": "非流动负债",
+              "items": [
                 {
-                  "accountNumber": "2201",
+                  "text": "长期借款",
+                  "level": 1,
                   "sumFactor": 1,
-                  "rule": "net"
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2501",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "长期应付款",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2701",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "递延收益",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": [
+                    {
+                      "accountNumber": "2401",
+                      "sumFactor": 1,
+                      "rule": "net"
+                    }
+                  ]
+                },
+                {
+                  "text": "其他非流动负债",
+                  "level": 1,
+                  "sumFactor": 1,
+                  "dataSource": "formulas",
+                  "formulas": []
                 }
               ]
-            },
-            {
-              "text": "应付账款",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2202",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "预收账款",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2203",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "应付职工薪酬",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2211",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "应交税费",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2221",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "应付利息",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2231",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "应付利润",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2232",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "其他应付款",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2241",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "其他流动负债",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": []
-            }
-          ]
-        },
-        {
-          "title": "非流动负债",
-          "items": [
-            {
-              "text": "长期借款",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2501",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "长期应付款",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2701",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "递延收益",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "2401",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ]
-            },
-            {
-              "text": "其他非流动负债",
-              "level": 1,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": []
             }
           ]
         },
