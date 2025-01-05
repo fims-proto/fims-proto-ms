@@ -41,12 +41,6 @@ func NewInitializeHandler(repo domain.Repository, generalLedgerService service.G
 }
 
 func (h *InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error {
-	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		return h.handle(txCtx, cmd)
-	})
-}
-
-func (h *InitializeHandler) handle(ctx context.Context, cmd InitializeCmd) error {
 	workDir, err := os.Getwd()
 	if err != nil {
 		return fmt.Errorf("could not get working directory: %w", err)
@@ -94,8 +88,8 @@ func (h *InitializeHandler) handle(ctx context.Context, cmd InitializeCmd) error
 
 func (h *InitializeHandler) convertReport(sobId uuid.UUID, cmd InitializeCmdReport) (*report.Report, error) {
 	var sections []*report.Section
-	for _, cmdSection := range cmd.Sections {
-		section, err := h.convertSection(cmdSection)
+	for i, cmdSection := range cmd.Sections {
+		section, err := h.convertSection(cmdSection, i+1)
 		if err != nil {
 			return nil, err
 		}
@@ -114,10 +108,10 @@ func (h *InitializeHandler) convertReport(sobId uuid.UUID, cmd InitializeCmdRepo
 	)
 }
 
-func (h *InitializeHandler) convertSection(cmd InitializeCmdSection) (*report.Section, error) {
+func (h *InitializeHandler) convertSection(cmd InitializeCmdSection, sequence int) (*report.Section, error) {
 	var subSections []*report.Section
-	for _, cmdSubSection := range cmd.Sections {
-		subSection, err := h.convertSection(cmdSubSection)
+	for i, cmdSubSection := range cmd.Sections {
+		subSection, err := h.convertSection(cmdSubSection, i+1)
 		if err != nil {
 			return nil, err
 		}
@@ -125,8 +119,8 @@ func (h *InitializeHandler) convertSection(cmd InitializeCmdSection) (*report.Se
 	}
 
 	var items []*report.Item
-	for _, cmdItem := range cmd.Items {
-		item, err := h.convertItem(cmdItem)
+	for i, cmdItem := range cmd.Items {
+		item, err := h.convertItem(cmdItem, i+1)
 		if err != nil {
 			return nil, err
 		}
@@ -136,16 +130,17 @@ func (h *InitializeHandler) convertSection(cmd InitializeCmdSection) (*report.Se
 	return report.NewSection(
 		uuid.New(),
 		cmd.Title,
+		sequence,
 		nil,
 		subSections,
 		items,
 	)
 }
 
-func (h *InitializeHandler) convertItem(cmd InitializeCmdItem) (*report.Item, error) {
+func (h *InitializeHandler) convertItem(cmd InitializeCmdItem, sequence int) (*report.Item, error) {
 	var formulas []*report.Formula
-	for _, cmdFormula := range cmd.Formulas {
-		formula, err := h.convertFormula(cmdFormula)
+	for i, cmdFormula := range cmd.Formulas {
+		formula, err := h.convertFormula(cmdFormula, i+1)
 		if err != nil {
 			return nil, err
 		}
@@ -156,21 +151,20 @@ func (h *InitializeHandler) convertItem(cmd InitializeCmdItem) (*report.Item, er
 		uuid.New(),
 		cmd.Text,
 		cmd.Level,
+		sequence,
 		cmd.SumFactor,
 		cmd.DisplaySumFactor,
 		cmd.DataSource,
 		formulas,
 		nil,
+		cmd.IsEditable,
 		cmd.IsBreakdownItem,
-		cmd.IsDeletable,
-		cmd.IsTextModifiable,
-		cmd.IsDraggable,
 		cmd.IsAbleToAddChild,
 		cmd.IsAbleToAddLeaf,
 	)
 }
 
-func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula) (*report.Formula, error) {
+func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence int) (*report.Formula, error) {
 	accountId, ok := h.accounts[cmd.AccountNumber]
 	if !ok {
 		return nil, fmt.Errorf("could not find account number %s", cmd.AccountNumber)
@@ -178,6 +172,7 @@ func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula) (*report.Fo
 
 	return report.NewFormula(
 		uuid.New(),
+		sequence,
 		accountId,
 		cmd.SumFactor,
 		cmd.Rule,

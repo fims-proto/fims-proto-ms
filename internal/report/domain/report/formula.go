@@ -11,6 +11,7 @@ import (
 
 type Formula struct {
 	id        uuid.UUID
+	sequence  int // sequence within the parent, starts from 1
 	accountId uuid.UUID
 	sumFactor int
 	rule      formula_rule.FormulaRule
@@ -19,6 +20,7 @@ type Formula struct {
 
 func NewFormula(
 	id uuid.UUID,
+	sequence int,
 	accountId uuid.UUID,
 	sumFactor int,
 	rule string,
@@ -26,6 +28,10 @@ func NewFormula(
 ) (*Formula, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("formula id cannot be nil")
+	}
+
+	if sequence == 0 {
+		return nil, commonerrors.NewSlugError("report-formula-zeroSequence")
 	}
 
 	if accountId == uuid.Nil {
@@ -43,6 +49,7 @@ func NewFormula(
 
 	return &Formula{
 		id:        id,
+		sequence:  sequence,
 		accountId: accountId,
 		sumFactor: sumFactor,
 		rule:      newRule,
@@ -53,6 +60,7 @@ func NewFormula(
 func (f *Formula) copy() *Formula {
 	newFormula, _ := NewFormula(
 		uuid.New(),
+		f.sequence,
 		f.accountId,
 		f.sumFactor,
 		f.rule.String(),
@@ -67,6 +75,10 @@ func (f *Formula) SetAmounts(amounts []decimal.Decimal) {
 
 func (f *Formula) Id() uuid.UUID {
 	return f.id
+}
+
+func (f *Formula) Sequence() int {
+	return f.sequence
 }
 
 func (f *Formula) AccountId() uuid.UUID {

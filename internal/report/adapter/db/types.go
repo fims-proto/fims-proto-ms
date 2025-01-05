@@ -36,7 +36,7 @@ type sectionPO struct {
 	ReportId  uuid.UUID  `gorm:"type:uuid"`
 	SectionId *uuid.UUID `gorm:"type:uuid"`
 	Title     string
-	Sequence  int              // sequence within the whole report
+	Sequence  int
 	Amounts   pgtype.TextArray `gorm:"type:text[]"`
 	Sections  []*sectionPO     `gorm:"foreignKey:SectionId"`
 	Items     []*itemPO        `gorm:"foreignKey:SectionId"`
@@ -50,16 +50,14 @@ type itemPO struct {
 	SectionId        uuid.UUID `gorm:"type:uuid"`
 	Text             string
 	Level            int
-	Sequence         int // sequence within the parent
+	Sequence         int
 	SumFactor        int
 	DisplaySumFactor bool
 	DataSource       string
 	Formulas         []*formulaPO     `gorm:"foreignKey:ItemId"`
 	Amounts          pgtype.TextArray `gorm:"type:text[]"`
+	IsEditable       bool
 	IsBreakdownItem  bool
-	IsDeletable      bool
-	IsTextModifiable bool
-	IsDraggable      bool
 	IsAbleToAddChild bool
 	IsAbleToAddLeaf  bool
 
@@ -176,7 +174,6 @@ func reportBOToPO(bo *report.Report) *reportPO {
 		AmountTypes: textArray,
 		Sections:    sectionPOs,
 	}
-	assignSequence(po.Sections)
 	return po
 }
 
@@ -201,6 +198,7 @@ func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) 
 		ReportId:  reportId,
 		SectionId: converter.UUIDToPtr(sectionId),
 		Title:     bo.Title(),
+		Sequence:  bo.Sequence(),
 		Amounts:   amounts,
 		Sections:  subSections,
 		Items:     items,
@@ -223,15 +221,14 @@ func itemBOToPO(bo *report.Item, sectionId uuid.UUID) *itemPO {
 		SectionId:        sectionId,
 		Text:             bo.Text(),
 		Level:            bo.Level(),
+		Sequence:         bo.Sequence(),
 		SumFactor:        bo.SumFactor(),
 		DisplaySumFactor: bo.DisplaySumFactor(),
 		DataSource:       bo.DataSource().String(),
 		Formulas:         formulas,
 		Amounts:          amounts,
+		IsEditable:       bo.IsEditable(),
 		IsBreakdownItem:  bo.IsBreakdownItem(),
-		IsDeletable:      bo.IsDeletable(),
-		IsTextModifiable: bo.IsTextModifiable(),
-		IsDraggable:      bo.IsDraggable(),
 		IsAbleToAddChild: bo.IsAbleToAddChild(),
 		IsAbleToAddLeaf:  bo.IsAbleToAddLeaf(),
 	}
@@ -246,6 +243,7 @@ func formulaBOToPO(bo *report.Formula, itemId uuid.UUID) *formulaPO {
 	return &formulaPO{
 		Id:        bo.Id(),
 		ItemId:    itemId,
+		Sequence:  bo.Sequence(),
 		AccountId: bo.AccountId(),
 		SumFactor: bo.SumFactor(),
 		Rule:      bo.Rule().String(),
@@ -298,6 +296,7 @@ func sectionPOToBO(po *sectionPO) (*report.Section, error) {
 	return report.NewSection(
 		po.Id,
 		po.Title,
+		po.Sequence,
 		amounts,
 		subSections,
 		items,
@@ -319,15 +318,14 @@ func itemPOToBO(po *itemPO) (*report.Item, error) {
 		po.Id,
 		po.Text,
 		po.Level,
+		po.Sequence,
 		po.SumFactor,
 		po.DisplaySumFactor,
 		po.DataSource,
 		formulas,
 		amounts,
+		po.IsEditable,
 		po.IsBreakdownItem,
-		po.IsDeletable,
-		po.IsTextModifiable,
-		po.IsDraggable,
 		po.IsAbleToAddChild,
 		po.IsAbleToAddLeaf,
 	)
@@ -341,6 +339,7 @@ func formulaPOToBO(po *formulaPO) (*report.Formula, error) {
 
 	return report.NewFormula(
 		po.Id,
+		po.Sequence,
 		po.AccountId,
 		po.SumFactor,
 		po.Rule,
@@ -380,6 +379,7 @@ func sectionPOToDTO(po *sectionPO) query.Section {
 	return query.Section{
 		Id:       po.Id,
 		Title:    po.Title,
+		Sequence: po.Sequence,
 		Amounts:  amounts,
 		Sections: converter.POsToDTOs(po.Sections, sectionPOToDTO),
 		Items:    converter.POsToDTOs(po.Items, itemPOToDTO),
@@ -396,15 +396,14 @@ func itemPOToDTO(po *itemPO) query.Item {
 		Id:               po.Id,
 		Text:             po.Text,
 		Level:            po.Level,
+		Sequence:         po.Sequence,
 		SumFactor:        po.SumFactor,
 		DisplaySumFactor: po.DisplaySumFactor,
 		DataSource:       po.DataSource,
 		Formulas:         converter.POsToDTOs(po.Formulas, formulaPOToDTO),
 		Amounts:          amounts,
+		IsEditable:       po.IsEditable,
 		IsBreakdownItem:  po.IsBreakdownItem,
-		IsDeletable:      po.IsDeletable,
-		IsTextModifiable: po.IsTextModifiable,
-		IsDraggable:      po.IsDraggable,
 		IsAbleToAddChild: po.IsAbleToAddChild,
 		IsAbleToAddLeaf:  po.IsAbleToAddLeaf,
 	}
@@ -418,6 +417,7 @@ func formulaPOToDTO(po *formulaPO) query.Formula {
 
 	return query.Formula{
 		Id:        po.Id,
+		Sequence:  po.Sequence,
 		Account:   accountPOToDTO(po.Account),
 		SumFactor: po.SumFactor,
 		Rule:      po.Rule,
@@ -452,24 +452,6 @@ func accountPOToDTO(po accountPO) query.Account {
 		Class:             po.Class,
 		Group:             po.Group,
 		BalanceDirection:  po.BalanceDirection,
-	}
-}
-
-// assignSequence assigns correct Sequence field to section, item and formula
-// in during runtime, the sequence is guaranteed by slice, however after it's saved into the database, Sequence field is how we can know the sequence
-func assignSequence(sections []*sectionPO) {
-	for i, section := range sections {
-		section.Sequence = i
-
-		// item and formula
-		for j, item := range section.Items {
-			item.Sequence = j
-			for k, formula := range item.Formulas {
-				formula.Sequence = k
-			}
-		}
-
-		assignSequence(section.Sections)
 	}
 }
 

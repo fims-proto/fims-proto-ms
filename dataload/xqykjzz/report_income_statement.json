@@ -25,7 +25,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "营业成本",
@@ -44,7 +45,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "营业税金及附加",
@@ -57,7 +59,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "消费税",
@@ -65,6 +68,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -73,6 +77,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -81,6 +86,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -89,6 +95,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -97,6 +104,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -105,6 +113,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -113,6 +122,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -126,7 +136,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "商品维修费",
@@ -134,6 +145,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -142,6 +154,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -155,7 +168,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "开办费",
@@ -163,6 +177,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -171,6 +186,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -179,6 +195,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -192,7 +209,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "利息费用（收入以\"-\"号填列）",
@@ -200,6 +218,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -214,7 +233,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "二、营业利润（亏损以\"-\"号填列）",
@@ -234,7 +254,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "政府补助",
@@ -242,6 +263,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -256,7 +278,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "坏账损失",
@@ -264,6 +287,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -272,6 +296,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -280,6 +305,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -288,6 +314,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -296,6 +323,7 @@
           "sumFactor": 0,
           "dataSource": "formulas",
           "formulas": [],
+          "isEditable": true,
           "isBreakdownItem": true
         },
         {
@@ -316,7 +344,8 @@
               "sumFactor": 1,
               "rule": "transaction"
             }
-          ]
+          ],
+          "isEditable": true
         },
         {
           "text": "四、净利润（亏损以\"-\"号填列）",

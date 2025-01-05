@@ -101,19 +101,15 @@ func (g *Generator) processSectionAmounts(ctx context.Context, section *report.S
 	}
 
 	// sum items amounts
-	itemAmounts := make([]decimal.Decimal, len(g.r.AmountTypes()))
 	for _, item := range section.Items() {
-		if err := g.processItemAmounts(ctx, item, itemAmounts); err != nil {
+		if err := g.processItemAmounts(ctx, item, amounts); err != nil {
 			return err
 		}
 		for i := range g.r.AmountTypes() {
-			itemAmounts[i] = itemAmounts[i].Add(item.Amounts()[i].Mul(decimal.NewFromInt(int64(item.SumFactor()))))
+			amounts[i] = amounts[i].Add(item.Amounts()[i].Mul(decimal.NewFromInt(int64(item.SumFactor()))))
 		}
 	}
 
-	for i := range g.r.AmountTypes() {
-		amounts[i] = amounts[i].Add(itemAmounts[i])
-	}
 	section.SetAmounts(amounts)
 	return nil
 }

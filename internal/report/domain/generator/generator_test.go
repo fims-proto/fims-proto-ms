@@ -120,24 +120,23 @@ var ledgerSamples = []ledgerSample{
 }
 
 func prepareReport(t *testing.T) *report.Report {
-	formula0000 := prepareFormula(t, accountId0000, 1, "net")
-	formula0001 := prepareFormula(t, accountId0001, 1, "debit")
-	formula0020 := prepareFormula(t, accountId0020, 1, "credit")
-	formula0021 := prepareFormula(t, accountId0021, -1, "net")
-	formula100 := prepareFormula(t, accountId100, 1, "debit")
-	formula110 := prepareFormula(t, accountId110, 1, "credit")
+	formula0000 := prepareFormula(t, 1, accountId0000, 1, "net")
+	formula0001 := prepareFormula(t, 2, accountId0001, 1, "debit")
+	formula0020 := prepareFormula(t, 1, accountId0020, 1, "credit")
+	formula0021 := prepareFormula(t, 2, accountId0021, -1, "net")
+	formula100 := prepareFormula(t, 1, accountId100, 1, "debit")
+	formula110 := prepareFormula(t, 1, accountId110, 1, "credit")
 
 	item000, err := report.NewItem(
 		uuid.New(),
 		"item_000",
 		1,
 		1,
+		1,
 		false,
 		"formulas",
 		[]*report.Formula{formula0000, formula0001},
 		nil,
-		false,
-		false,
 		false,
 		false,
 		false,
@@ -149,13 +148,12 @@ func prepareReport(t *testing.T) *report.Report {
 		uuid.New(),
 		"item_001",
 		1,
+		2,
 		0,
 		false,
 		"sum",
 		nil,
 		nil,
-		false,
-		false,
 		false,
 		false,
 		false,
@@ -167,13 +165,12 @@ func prepareReport(t *testing.T) *report.Report {
 		uuid.New(),
 		"item_002",
 		1,
+		3,
 		1,
 		false,
 		"formulas",
 		[]*report.Formula{formula0020, formula0021},
 		nil,
-		false,
-		false,
 		false,
 		false,
 		false,
@@ -186,12 +183,11 @@ func prepareReport(t *testing.T) *report.Report {
 		"item_10",
 		1,
 		1,
+		1,
 		false,
 		"formulas",
 		[]*report.Formula{formula100},
 		nil,
-		false,
-		false,
 		false,
 		false,
 		false,
@@ -203,13 +199,12 @@ func prepareReport(t *testing.T) *report.Report {
 		uuid.New(),
 		"item_11",
 		1,
+		2,
 		-1,
 		false,
 		"formulas",
 		[]*report.Formula{formula110},
 		nil,
-		false,
-		false,
 		false,
 		false,
 		false,
@@ -220,6 +215,7 @@ func prepareReport(t *testing.T) *report.Report {
 	section00, err := report.NewSection(
 		uuid.New(),
 		"section_00",
+		1,
 		nil,
 		nil,
 		[]*report.Item{item000, item001, item002},
@@ -229,6 +225,7 @@ func prepareReport(t *testing.T) *report.Report {
 	section0, err := report.NewSection(
 		uuid.New(),
 		"section_A",
+		1,
 		nil,
 		[]*report.Section{section00},
 		nil,
@@ -238,6 +235,7 @@ func prepareReport(t *testing.T) *report.Report {
 	section1, err := report.NewSection(
 		uuid.New(),
 		"section_B",
+		2,
 		nil,
 		nil,
 		[]*report.Item{item10, item11},
@@ -259,8 +257,8 @@ func prepareReport(t *testing.T) *report.Report {
 	return r
 }
 
-func prepareFormula(t *testing.T, accountId uuid.UUID, sumFactor int, rule string) *report.Formula {
-	formula, err := report.NewFormula(uuid.New(), accountId, sumFactor, rule, nil)
+func prepareFormula(t *testing.T, sequence int, accountId uuid.UUID, sumFactor int, rule string) *report.Formula {
+	formula, err := report.NewFormula(uuid.New(), sequence, accountId, sumFactor, rule, nil)
 	assert.NoError(t, err)
 	return formula
 }

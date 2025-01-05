@@ -24,6 +24,7 @@ type Report struct {
 type Section struct {
 	Id       uuid.UUID
 	Title    string
+	Sequence int
 	Amounts  []decimal.Decimal
 	Sections []Section
 	Items    []Item
@@ -33,21 +34,21 @@ type Item struct {
 	Id               uuid.UUID
 	Text             string
 	Level            int
+	Sequence         int
 	SumFactor        int
 	DisplaySumFactor bool
 	DataSource       string
 	Formulas         []Formula
 	Amounts          []decimal.Decimal
+	IsEditable       bool
 	IsBreakdownItem  bool
-	IsDeletable      bool
-	IsTextModifiable bool
-	IsDraggable      bool
 	IsAbleToAddChild bool
 	IsAbleToAddLeaf  bool
 }
 
 type Formula struct {
 	Id        uuid.UUID
+	Sequence  int
 	Account   Account
 	SumFactor int
 	Rule      string

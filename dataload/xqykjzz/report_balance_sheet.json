@@ -10,11 +10,15 @@
       "title": "资产",
       "sections": [
         {
-          "title": "流动资产",
           "items": [
             {
-              "text": "货币资金",
+              "text": "流动资产：",
               "level": 1,
+              "dataSource": "none"
+            },
+            {
+              "text": "货币资金",
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -33,11 +37,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "短期投资",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -46,11 +51,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "应收票据",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -59,11 +65,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "应收账款",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -72,11 +79,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "预付账款",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -85,11 +93,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "应收股利",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -98,11 +107,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "应收利息",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -111,11 +121,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "其他应收款",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -124,11 +135,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "存货",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -197,11 +209,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "原材料",
-              "level": 2,
+              "level": 3,
               "sumFactor": 0,
               "dataSource": "formulas",
               "formulas": [
@@ -216,11 +229,12 @@
                   "rule": "net"
                 }
               ],
+              "isEditable": true,
               "isBreakdownItem": true
             },
             {
               "text": "在产品",
-              "level": 2,
+              "level": 3,
               "sumFactor": 0,
               "dataSource": "formulas",
               "formulas": [
@@ -245,11 +259,12 @@
                   "rule": "net"
                 }
               ],
+              "isEditable": true,
               "isBreakdownItem": true
             },
             {
               "text": "库存商品",
-              "level": 2,
+              "level": 3,
               "sumFactor": 0,
               "dataSource": "formulas",
               "formulas": [
@@ -264,11 +279,12 @@
                   "rule": "net"
                 }
               ],
+              "isEditable": true,
               "isBreakdownItem": true
             },
             {
               "text": "周转材料",
-              "level": 2,
+              "level": 3,
               "sumFactor": 0,
               "dataSource": "formulas",
               "formulas": [
@@ -278,23 +294,34 @@
                   "rule": "net"
                 }
               ],
+              "isEditable": true,
               "isBreakdownItem": true
             },
             {
               "text": "其他流动资产",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
-              "formulas": []
+              "formulas": [],
+              "isEditable": true
+            },
+            {
+              "text": "流动资产合计",
+              "level": 1,
+              "dataSource": "sum"
             }
           ]
         },
         {
-          "title": "非流动资产",
           "items": [
             {
-              "text": "长期债券投资",
+              "text": "非流动资产：",
               "level": 1,
+              "dataSource": "none"
+            },
+            {
+              "text": "长期债券投资",
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -303,11 +330,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "长期股权投资",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -316,11 +344,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "固定资产原价",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -329,11 +358,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "累计折旧",
-              "level": 1,
+              "level": 2,
               "sumFactor": -1,
               "displaySumFactor": true,
               "dataSource": "formulas",
@@ -343,11 +373,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "固定资产账面价值",
-              "level": 1,
+              "level": 2,
               "sumFactor": 0,
               "dataSource": "formulas",
               "formulas": [
@@ -365,7 +396,7 @@
             },
             {
               "text": "在建工程",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -374,11 +405,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "工程物资",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -387,11 +419,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "固定资产清理",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -400,11 +433,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "生产性生物资产",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -418,11 +452,12 @@
                   "sumFactor": -1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "无形资产",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -436,11 +471,12 @@
                   "sumFactor": -1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "开发支出",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -449,11 +485,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "长期待摊费用",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -462,11 +499,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "其他非流动资产",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -475,9 +513,22 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
+            },
+            {
+              "text": "非流动资产合计",
+              "level": 1,
+              "dataSource": "sum"
             }
           ]
+        }
+      ],
+      "items": [
+        {
+          "text": "资产总计",
+          "level": 1,
+          "dataSource": "sum"
         }
       ]
     },
@@ -485,14 +536,17 @@
       "title": "负债和所有者权益",
       "sections": [
         {
-          "title": "负债",
           "sections": [
             {
-              "title": "流动负债",
               "items": [
                 {
-                  "text": "短期借款",
+                  "text": "流动负债：",
                   "level": 1,
+                  "dataSource": "none"
+                },
+                {
+                  "text": "短期借款",
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -501,11 +555,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "应付票据",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -514,11 +569,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "应付账款",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -527,11 +583,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "预收账款",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -540,11 +597,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "应付职工薪酬",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -553,11 +611,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "应交税费",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -566,11 +625,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "应付利息",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -579,11 +639,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "应付利润",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -592,11 +653,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "其他应付款",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -605,23 +667,34 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "其他流动负债",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
-                  "formulas": []
+                  "formulas": [],
+                  "isEditable": true
+                },
+                {
+                  "text": "流动负债合计",
+                  "level": 1,
+                  "dataSource": "sum"
                 }
               ]
             },
             {
-              "title": "非流动负债",
               "items": [
                 {
-                  "text": "长期借款",
+                  "text": "非流动负债：",
                   "level": 1,
+                  "dataSource": "none"
+                },
+                {
+                  "text": "长期借款",
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -630,11 +703,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "长期应付款",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -643,11 +717,12 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "递延收益",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [
@@ -656,25 +731,43 @@
                       "sumFactor": 1,
                       "rule": "net"
                     }
-                  ]
+                  ],
+                  "isEditable": true
                 },
                 {
                   "text": "其他非流动负债",
-                  "level": 1,
+                  "level": 2,
                   "sumFactor": 1,
                   "dataSource": "formulas",
-                  "formulas": []
+                  "formulas": [],
+                  "isEditable": true
+                },
+                {
+                  "text": "非流动负债合计",
+                  "level": 1,
+                  "dataSource": "sum"
                 }
               ]
+            }
+          ],
+          "items": [
+            {
+              "text": "负债合计",
+              "level": 1,
+              "dataSource": "sum"
             }
           ]
         },
         {
-          "title": "所有者权益",
           "items": [
             {
-              "text": "实收资本（或股本）",
+              "text": "所有者权益：",
               "level": 1,
+              "dataSource": "none"
+            },
+            {
+              "text": "实收资本（或股本）",
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -683,11 +776,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "资本公积",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -696,11 +790,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "盈余公积",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -709,11 +804,12 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
             },
             {
               "text": "未分配利润",
-              "level": 1,
+              "level": 2,
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [
@@ -727,9 +823,22 @@
                   "sumFactor": 1,
                   "rule": "net"
                 }
-              ]
+              ],
+              "isEditable": true
+            },
+            {
+              "text": "所有者权益合计",
+              "level": 1,
+              "dataSource": "sum"
             }
           ]
+        }
+      ],
+      "items": [
+        {
+          "text": "负债和所有者权益总计",
+          "level": 1,
+          "dataSource": "sum"
         }
       ]
     }

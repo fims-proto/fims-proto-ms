@@ -77,6 +77,9 @@ func (r ReportPostgresRepository) UpdateReport(
 
 	// save
 	updatedPO := reportBOToPO(updatedBO)
+	// TODO even the formula amounts in the updatedPO is correct, seems the db.Save cannot update the nested object.
+	// TODO this could also happen to items and sections
+	// TODO maybe need to updated recursively from bottom to top?
 	return db.Save(&updatedPO).Error
 }
 
@@ -120,9 +123,8 @@ func (r ReportPostgresRepository) UpdateItem(
 	}
 
 	// save
-	// for now item update doesn't support change section, so we use the section id from the original po
+	// use the section id from the original po
 	updatedPO := itemBOToPO(updatedBO, po.SectionId)
-	// TODO, reveal sequence field
 	// delete formulas first
 	if err = db.Where("item_id = ?", updatedPO.Id).Delete(&formulaPO{}).Error; err != nil {
 		return fmt.Errorf("failed to delete formulas: %w", err)

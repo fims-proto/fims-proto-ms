@@ -11,6 +11,7 @@ import (
 type Section struct {
 	id       uuid.UUID
 	title    string
+	sequence int // sequence within the parent, starts from 1
 	amounts  []decimal.Decimal
 	sections []*Section
 	items    []*Item
@@ -19,6 +20,7 @@ type Section struct {
 func NewSection(
 	id uuid.UUID,
 	title string,
+	sequence int,
 	amounts []decimal.Decimal,
 	sections []*Section,
 	items []*Item,
@@ -27,17 +29,18 @@ func NewSection(
 		return nil, errors.New("section id cannot be nil")
 	}
 
-	if len(sections) == 0 && len(items) == 0 {
-		return nil, commonerrors.NewSlugError("report-section-emptySectionsAndItems")
+	if sequence == 0 {
+		return nil, commonerrors.NewSlugError("report-section-zeroSequence")
 	}
 
-	if len(sections) > 0 && len(items) > 0 {
-		return nil, commonerrors.NewSlugError("report-section-sectionsAndItemsConflict")
+	if len(sections) == 0 && len(items) == 0 {
+		return nil, commonerrors.NewSlugError("report-section-emptySectionsAndItems")
 	}
 
 	return &Section{
 		id:       id,
 		title:    title,
+		sequence: sequence,
 		amounts:  amounts,
 		sections: sections,
 		items:    items,
@@ -58,6 +61,7 @@ func (s *Section) copy() *Section {
 	newSection, _ := NewSection(
 		uuid.New(),
 		s.title,
+		s.sequence,
 		nil,
 		newSections,
 		newItems,
@@ -75,6 +79,10 @@ func (s *Section) Id() uuid.UUID {
 
 func (s *Section) Title() string {
 	return s.title
+}
+
+func (s *Section) Sequence() int {
+	return s.sequence
 }
 
 func (s *Section) Amounts() []decimal.Decimal {

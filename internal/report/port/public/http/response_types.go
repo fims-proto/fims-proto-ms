@@ -35,7 +35,8 @@ type PeriodResponse struct {
 
 type SectionResponse struct {
 	Id       uuid.UUID         `json:"id,omitempty"`
-	Title    string            `json:"title"`
+	Title    string            `json:"title,omitempty"`
+	Sequence int               `json:"sequence"`
 	Amounts  []decimal.Decimal `json:"amounts,omitempty"`
 	Sections []SectionResponse `json:"sections,omitempty"`
 	Items    []ItemResponse    `json:"items,omitempty"`
@@ -45,21 +46,21 @@ type ItemResponse struct {
 	Id               uuid.UUID         `json:"id,omitempty"`
 	Text             string            `json:"text"`
 	Level            int               `json:"level"`
+	Sequence         int               `json:"sequence"`
 	SumFactor        int               `json:"sumFactor"`
 	DisplaySumFactor bool              `json:"displaySumFactor,omitempty"`
 	DataSource       string            `json:"dataSource"`
 	Formulas         []FormulaResponse `json:"formulas,omitempty"`
 	Amounts          []decimal.Decimal `json:"amounts,omitempty"`
+	IsEditable       bool              `json:"isEditable,omitempty"`
 	IsBreakdownItem  bool              `json:"isBreakdownItem,omitempty"`
-	IsDeletable      bool              `json:"isDeletable,omitempty"`
-	IsTextModifiable bool              `json:"isTextModifiable,omitempty"`
-	IsDraggable      bool              `json:"isDraggable,omitempty"`
 	IsAbleToAddChild bool              `json:"isAbleToAddChild,omitempty"`
 	IsAbleToAddLeaf  bool              `json:"isAbleToAddLeaf,omitempty"`
 }
 
 type FormulaResponse struct {
 	Id        uuid.UUID         `json:"id"`
+	Sequence  int               `json:"sequence"`
 	Account   AccountResponse   `json:"account"`
 	SumFactor int               `json:"sumFactor"`
 	Rule      string            `json:"rule"`
@@ -100,6 +101,7 @@ func sectionDTOToVO(dto query.Section) SectionResponse {
 	return SectionResponse{
 		Id:       dto.Id,
 		Title:    dto.Title,
+		Sequence: dto.Sequence,
 		Amounts:  dto.Amounts,
 		Sections: converter.DTOsToVOs(dto.Sections, sectionDTOToVO),
 		Items:    converter.DTOsToVOs(dto.Items, itemDTOToVO),
@@ -111,15 +113,14 @@ func itemDTOToVO(dto query.Item) ItemResponse {
 		Id:               dto.Id,
 		Text:             dto.Text,
 		Level:            dto.Level,
+		Sequence:         dto.Sequence,
 		SumFactor:        dto.SumFactor,
 		DisplaySumFactor: dto.DisplaySumFactor,
 		DataSource:       dto.DataSource,
 		Formulas:         converter.DTOsToVOs(dto.Formulas, formulaDTOToVO),
 		Amounts:          dto.Amounts,
+		IsEditable:       dto.IsEditable,
 		IsBreakdownItem:  dto.IsBreakdownItem,
-		IsDeletable:      dto.IsDeletable,
-		IsTextModifiable: dto.IsTextModifiable,
-		IsDraggable:      dto.IsDraggable,
 		IsAbleToAddChild: dto.IsAbleToAddChild,
 		IsAbleToAddLeaf:  dto.IsAbleToAddLeaf,
 	}
@@ -128,6 +129,7 @@ func itemDTOToVO(dto query.Item) ItemResponse {
 func formulaDTOToVO(dto query.Formula) FormulaResponse {
 	return FormulaResponse{
 		Id:        dto.Id,
+		Sequence:  dto.Sequence,
 		Account:   accountDTOToVO(dto.Account),
 		SumFactor: dto.SumFactor,
 		Rule:      dto.Rule,

@@ -2073,6 +2073,9 @@ const docTemplate = `{
                 "rule": {
                     "type": "string"
                 },
+                "sequence": {
+                    "type": "integer"
+                },
                 "sumFactor": {
                     "type": "integer"
                 }
@@ -2156,16 +2159,13 @@ const docTemplate = `{
                 "isBreakdownItem": {
                     "type": "boolean"
                 },
-                "isDeletable": {
-                    "type": "boolean"
-                },
-                "isDraggable": {
-                    "type": "boolean"
-                },
-                "isTextModifiable": {
+                "isEditable": {
                     "type": "boolean"
                 },
                 "level": {
+                    "type": "integer"
+                },
+                "sequence": {
                     "type": "integer"
                 },
                 "sumFactor": {
@@ -2372,6 +2372,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/http.SectionResponse"
                     }
+                },
+                "sequence": {
+                    "type": "integer"
                 },
                 "title": {
                     "type": "string"

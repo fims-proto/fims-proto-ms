@@ -20,10 +20,8 @@ type InitializeCmdItem struct {
 	DisplaySumFactor bool                   `json:"displaySumFactor"`
 	DataSource       string                 `json:"dataSource"`
 	Formulas         []InitializeCmdFormula `json:"formulas"`
+	IsEditable       bool                   `json:"isEditable"`
 	IsBreakdownItem  bool                   `json:"isBreakdownItem"`
-	IsDeletable      bool                   `json:"isDeletable"`
-	IsTextModifiable bool                   `json:"isTextModifiable"`
-	IsDraggable      bool                   `json:"isDraggable"`
 	IsAbleToAddChild bool                   `json:"isAbleToAddChild"`
 	IsAbleToAddLeaf  bool                   `json:"isAbleToAddLeaf"`
 }

@@ -35,9 +35,11 @@ func NewUpdateItemHandler(repo domain.Repository, generalLedgerService service.G
 	if repo == nil {
 		panic("nil repo")
 	}
+
 	if generalLedgerService == nil {
 		panic("nil general ledger service")
 	}
+
 	return UpdateItemHandler{
 		repo:                 repo,
 		generalLedgerService: generalLedgerService,
@@ -71,12 +73,12 @@ func (h UpdateItemHandler) Handle(ctx context.Context, cmd UpdateItemCmd) error 
 
 		// prepare formulas
 		var formulas []*report.Formula
-		for _, formulaCmd := range cmd.Formulas {
+		for index, formulaCmd := range cmd.Formulas {
 			accountId, ok := accountIds[formulaCmd.AccountNumber]
 			if !ok {
 				return nil, fmt.Errorf("failed to find account id by account number: %s", formulaCmd.AccountNumber)
 			}
-			formula, err := report.NewFormula(uuid.New(), accountId, formulaCmd.SumFactor, formulaCmd.Rule, nil)
+			formula, err := report.NewFormula(uuid.New(), index+1, accountId, formulaCmd.SumFactor, formulaCmd.Rule, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create formula: %w", err)
 			}
