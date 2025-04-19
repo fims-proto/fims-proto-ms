@@ -8,6 +8,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -77,10 +78,7 @@ func (r ReportPostgresRepository) UpdateReport(
 
 	// save
 	updatedPO := reportBOToPO(updatedBO)
-	// TODO even the formula amounts in the updatedPO is correct, seems the db.Save cannot update the nested object.
-	// TODO this could also happen to items and sections
-	// TODO maybe need to updated recursively from bottom to top?
-	return db.Save(&updatedPO).Error
+	return db.Session(&gorm.Session{FullSaveAssociations: true}).Updates(&updatedPO).Error
 }
 
 func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error) {

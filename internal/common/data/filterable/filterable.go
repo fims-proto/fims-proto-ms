@@ -66,10 +66,10 @@ func (fe *FilterAST) ParseAsFilterable() (Filterable, error) {
 }
 
 func (fe *FilterAST) ParseExpr(node *node32) (Filterable, error) {
-	node = node.up
-	if node == nil {
+	if node.up == nil {
 		return nil, fmt.Errorf("parse failed at %s", node.String())
 	}
+	node = node.up
 	switch node.pegRule {
 	case ruleAndExpr:
 		return fe.ParseAndExpr(node)
