@@ -8,7 +8,7 @@ peg:
 
 .PHONY: swag
 swag:
-	swag init -g api/api.go
+	swag init -g api/api.go -o docs/swagger_generated
 
 .PHONY: fmt
 fmt:
