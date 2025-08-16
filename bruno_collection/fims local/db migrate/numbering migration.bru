@@ -1,0 +1,17 @@
+meta {
+  name: numbering migration
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{base_path_private}}/internal/numbering/migrate
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

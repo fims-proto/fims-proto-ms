@@ -1,0 +1,23 @@
+meta {
+  name: cancel audit
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-audit
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "auditor": "{{user_3}}"
+  }
+}
+
+tests {
+  test("Cancel audit voucher", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

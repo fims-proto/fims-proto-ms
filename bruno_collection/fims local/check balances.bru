@@ -1,0 +1,157 @@
+meta {
+  name: check balances
+  type: http
+  seq: 24
+}
+
+get {
+  url: {{base_path}}/sob/{{sob}}/period/{{current_period}}/ledgers?$size=999
+  body: none
+  auth: none
+}
+
+params:query {
+  $size: 999
+}
+
+tests {
+  test("Ledgers exists (count more than 0)", function () {
+      expect(res.getBody().content.length).to.gt(0)
+  })
+  
+  test("Ledgers have right opening balance", function () {
+      const tobeTested = {
+          "1001": {
+              "tested": false,
+              "expectedDebitBalance": "98400",
+              "expectedCreditBalance": "0"
+          },
+          "1002": {
+              "tested": false,
+              "expectedDebitBalance": "285000",
+              "expectedCreditBalance": "0"
+          },
+          "100201": {
+              "tested": false,
+              "expectedDebitBalance": "285000",
+              "expectedCreditBalance": "0"
+          },
+          "1601": {
+              "tested": false,
+              "expectedDebitBalance": "18500",
+              "expectedCreditBalance": "0"
+          },
+          "160101": {
+              "tested": false,
+              "expectedDebitBalance": "18500",
+              "expectedCreditBalance": "0"
+          },
+          "1701": {
+              "tested": false,
+              "expectedDebitBalance": "36000",
+              "expectedCreditBalance": "0"
+          },
+          "170101": {
+              "tested": false,
+              "expectedDebitBalance": "36000",
+              "expectedCreditBalance": "0"
+          },
+          "1702": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "1000"
+          },
+          "1801": {
+              "tested": false,
+              "expectedDebitBalance": "57500",
+              "expectedCreditBalance": "0"
+          },
+          "180101": {
+              "tested": false,
+              "expectedDebitBalance": "57500",
+              "expectedCreditBalance": "0"
+          },
+          "2211": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "10000"
+          },
+          "221101": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "10000"
+          },
+          "3001": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "500000"
+          },
+          "300101": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "300000"
+          },
+          "300102": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "200000"
+          },
+          "3103": {
+              "tested": false,
+              "expectedDebitBalance": "15600",
+              "expectedCreditBalance": "0"
+          },
+          "5602": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "0"
+          },
+          "560201": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "0"
+          },
+          "560202": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "0"
+          },
+          "560203": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "0"
+          },
+          "560204": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "0"
+          },
+          "560205": {
+              "tested": false,
+              "expectedDebitBalance": "0",
+              "expectedCreditBalance": "0"
+          }
+      }
+  
+      const ls = res.getBody().content
+  
+      for (let i = 0; i < ls.length; i++) {
+          const accountNumber = ls[i].account.accountNumber
+          if (tobeTested.hasOwnProperty(accountNumber)) {
+              tobeTested[accountNumber].tested = true
+              tobeTested[accountNumber].openingDebitBalance = ls[i].openingDebitBalance
+              tobeTested[accountNumber].openingCreditBalance = ls[i].openingCreditBalance
+              tobeTested[accountNumber].endingDebitBalance = ls[i].endingDebitBalance
+              tobeTested[accountNumber].endingCreditBalance = ls[i].endingCreditBalance
+          }
+      }
+  
+      for (let key in tobeTested) {
+          expect(tobeTested[key].tested, `${key} not tested`).to.be.true
+          expect(tobeTested[key].expectedDebitBalance, `${key} wrong opening debit balance`).to.be.eq(tobeTested[key].openingDebitBalance)
+          expect(tobeTested[key].expectedCreditBalance, `${key} wrong opening credit balance`).to.be.eq(tobeTested[key].openingCreditBalance)
+          expect(tobeTested[key].expectedDebitBalance, `${key} wrong ending debit balance`).to.be.eq(tobeTested[key].endingDebitBalance)
+          expect(tobeTested[key].expectedCreditBalance, `${key} wrong ending credit balance`).to.be.eq(tobeTested[key].endingCreditBalance)
+      }
+  })
+}

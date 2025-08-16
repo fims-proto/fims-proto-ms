@@ -1,0 +1,23 @@
+meta {
+  name: attempt post voucher
+  type: http
+  seq: 17
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "poster": "{{user_1}}"
+  }
+}
+
+tests {
+  test("Post voucher failed", function () {
+      expect(res.getStatus()).to.equal(400);
+  });
+}

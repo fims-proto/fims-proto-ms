@@ -1,0 +1,17 @@
+meta {
+  name: report migration
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{base_path_private}}/internal/reports/migrate
+  body: none
+  auth: none
+}
+
+tests {
+  test("Status code is 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

@@ -1,0 +1,28 @@
+meta {
+  name: post voucher
+  type: http
+  seq: 20
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "poster": "{{user_1}}"
+  }
+}
+
+tests {
+  test("Post voucher", function () {
+      expect(res.getStatus()).to.equal(204)
+  })
+  
+  const voucherIds = bru.getVar("voucher_ids")
+  if (voucherIds && bru.getVar("voucher_index") < voucherIds.length) {
+      bru.setNextRequest("read voucher")
+  }
+}

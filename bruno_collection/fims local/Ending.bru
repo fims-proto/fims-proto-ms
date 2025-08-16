@@ -1,0 +1,17 @@
+meta {
+  name: Ending
+  type: http
+  seq: 25
+}
+
+get {
+  url: {{base_path_private}}/health/ping
+  body: none
+  auth: none
+}
+
+tests {
+  bru.setNextRequest(null)
+  
+  bru.deleteAllVars()
+}
