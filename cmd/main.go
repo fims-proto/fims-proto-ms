@@ -4,14 +4,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "github/fims-proto/fims-proto-ms/docs"
+	_ "github/fims-proto/fims-proto-ms/docs/swagger_generated"
 	"github/fims-proto/fims-proto-ms/internal/common/config"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
-	"github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
-	"github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
+	dedicated_datasource "github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
+	multitenant_datasource "github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -45,6 +42,10 @@ import (
 	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
 	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
 	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
+
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {

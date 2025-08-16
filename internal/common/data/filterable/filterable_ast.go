@@ -338,7 +338,6 @@ func Size(size int) func(*FilterAST) error {
 		return nil
 	}
 }
-
 func (p *FilterAST) Init(options ...func(*FilterAST) error) error {
 	var (
 		max                  token32
