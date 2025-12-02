@@ -3,8 +3,9 @@ package account
 import (
 	"fmt"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+
+	"github.com/google/uuid"
 )
 
 func (a *Account) UpdateBalanceDirection(direction string) error {

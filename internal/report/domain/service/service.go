@@ -3,8 +3,9 @@ package service
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/general_ledger"
+
+	"github.com/google/uuid"
 )
 
 type GeneralLedgerService interface {

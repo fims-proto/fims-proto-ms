@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
+
+	"github.com/google/uuid"
 )
 
 type propertyMatcher struct {

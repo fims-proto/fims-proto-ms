@@ -1,8 +1,9 @@
 package ledger
 
 import (
-	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
+
+	"github.com/shopspring/decimal"
 )
 
 func (l *Ledger) UpdateEndingBalance(debit, credit decimal.Decimal) {

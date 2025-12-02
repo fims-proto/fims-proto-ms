@@ -1,5 +1,110 @@
 basePath: /fims/api/v1
 definitions:
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.AuxiliaryAccountResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.LedgerResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_ReportResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.ReportResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_SobResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.SobResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.VoucherResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
   http.AccountClass:
     properties:
       groups:
@@ -872,9 +977,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.AuxiliaryAccountResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1015,9 +1118,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.LedgerResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1093,9 +1194,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.LedgerResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1139,9 +1238,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1341,9 +1438,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.ReportResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_ReportResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1387,9 +1482,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1680,9 +1773,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.VoucherResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1733,9 +1824,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.SobResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_SobResponse'
         "500":
           description: Internal Server Error
           schema:

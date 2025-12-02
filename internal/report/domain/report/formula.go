@@ -3,10 +3,11 @@ package report
 import (
 	"errors"
 
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Formula struct {

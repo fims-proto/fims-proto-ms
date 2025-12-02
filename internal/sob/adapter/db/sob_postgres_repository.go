@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

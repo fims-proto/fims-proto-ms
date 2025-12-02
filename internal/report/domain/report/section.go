@@ -3,9 +3,10 @@ package report
 import (
 	"errors"
 
+	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 type Section struct {

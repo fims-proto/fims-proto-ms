@@ -8,11 +8,12 @@ import (
 	"slices"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/general_ledger"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/general_ledger/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type aggregatedLedger struct {

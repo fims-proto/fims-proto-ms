@@ -8,10 +8,11 @@ peg:
 
 .PHONY: swag
 swag:
-	swag init -g api/api.go -o docs/swagger_generated
+	swag init -g api/api.go -o docs/swagger_generated --parseDependencyLevel 1
 
 .PHONY: fmt
 fmt:
+	swag fmt
 	gofumpt -l -w internal/ cmd/
 
 .PHONY: lint

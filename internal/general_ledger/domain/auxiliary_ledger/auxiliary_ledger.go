@@ -3,9 +3,10 @@ package auxiliary_ledger
 import (
 	"errors"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 )
 
 type AuxiliaryLedger struct {

@@ -12,9 +12,10 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
 
 // initializeAllLedgers creates ledgers for current period.

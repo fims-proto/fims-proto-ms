@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/report/app/command"
+
+	"github.com/google/uuid"
 )
 
 type GenerateReportRequest struct {

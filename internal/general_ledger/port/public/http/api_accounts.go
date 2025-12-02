@@ -14,14 +14,15 @@ import (
 )
 
 // ReadAccountClasses godoc
-// @Text List allowed account classes and their allowed groups
-// @Description List allowed account classes and their allowed groups
-// @Tags accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Success 200 {array} AccountClass
-// @Router /sob/{sobId}/account-classes [get]
+//
+//	@Text			List allowed account classes and their allowed groups
+//	@Description	List allowed account classes and their allowed groups
+//	@Tags			accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path	string	true	"Sob ID"
+//	@Success		200		{array}	AccountClass
+//	@Router			/sob/{sobId}/account-classes [get]
 func (h Handler) ReadAccountClasses(c *gin.Context) {
 	var resp []AccountClass
 	for _, c := range class.Classes {
@@ -39,15 +40,16 @@ func (h Handler) ReadAccountClasses(c *gin.Context) {
 }
 
 // ReadAccounts godoc
-// @Text List all accounts
-// @Description List all accounts
-// @Tags accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Success 200 {array} AccountResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/accounts [get]
+//
+//	@Text			List all accounts
+//	@Description	List all accounts
+//	@Tags			accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Success		200		{array}		AccountResponse
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/accounts [get]
 func (h Handler) ReadAccounts(c *gin.Context) {
 	accounts, err := h.app.Queries.AllAccounts.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
@@ -63,19 +65,20 @@ func (h Handler) ReadAccounts(c *gin.Context) {
 }
 
 // SearchAccounts godoc
-// @Text Search accounts with filters
-// @Description Search accounts with filters
-// @Tags accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param $page query int false "page number" default(1)
-// @Param $size query int false "page size" default(40)
-// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
-// @Success 200 {array} AccountResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/search-accounts [get]
+//
+//	@Text			Search accounts with filters
+//	@Description	Search accounts with filters
+//	@Tags			accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			$page	query		int		false	"page number"			default(1)
+//	@Param			$size	query		int		false	"page size"				default(40)
+//	@Param			$sort	query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter	query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
+//	@Success		200		{object}	data.PageResponse[AccountResponse]
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/search-accounts [get]
 func (h Handler) SearchAccounts(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -87,17 +90,18 @@ func (h Handler) SearchAccounts(c *gin.Context) {
 }
 
 // ReadAccountById godoc
-// @Text Get an account by id
-// @Description Get an account by id
-// @Tags accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param accountId path string true "Account ID"
-// @Success 200 {object} AccountResponse
-// @Failure 404
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/account/{accountId} [get]
+//
+//	@Text			Get an account by id
+//	@Description	Get an account by id
+//	@Tags			accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Success		200			{object}	AccountResponse
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/account/{accountId} [get]
 func (h Handler) ReadAccountById(c *gin.Context) {
 	v, err := h.app.Queries.AccountById.Handle(c, uuid.MustParse(c.Param("accountId")))
 	if err != nil {
@@ -112,16 +116,17 @@ func (h Handler) ReadAccountById(c *gin.Context) {
 }
 
 // CreateAccount godoc
-// @Text Create account
-// @Description Create account
-// @Tags accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param CreateAccountRequest body CreateAccountRequest true "Create account request"
-// @Success 201 {object} AccountResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/accounts [post]
+//
+//	@Text			Create account
+//	@Description	Create account
+//	@Tags			accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId					path		string					true	"Sob ID"
+//	@Param			CreateAccountRequest	body		CreateAccountRequest	true	"Create account request"
+//	@Success		201						{object}	AccountResponse
+//	@Failure		500						{object}	Error
+//	@Router			/sob/{sobId}/accounts [post]
 func (h Handler) CreateAccount(c *gin.Context) {
 	var req CreateAccountRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -163,17 +168,18 @@ func (h Handler) CreateAccount(c *gin.Context) {
 }
 
 // UpdateAccount godoc
-// @Text Update account
-// @Description Update account
-// @Tags accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param accountId path string true "Account ID"
-// @Param UpdateAccountRequest body UpdateAccountRequest true "Update account request"
-// @Success 204
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/account/{accountId} [patch]
+//
+//	@Text			Update account
+//	@Description	Update account
+//	@Tags			accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId					path	string					true	"Sob ID"
+//	@Param			accountId				path	string					true	"Account ID"
+//	@Param			UpdateAccountRequest	body	UpdateAccountRequest	true	"Update account request"
+//	@Success		204
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/account/{accountId} [patch]
 func (h Handler) UpdateAccount(c *gin.Context) {
 	var req UpdateAccountRequest
 	if err := c.ShouldBind(&req); err != nil {

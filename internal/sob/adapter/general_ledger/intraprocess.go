@@ -3,9 +3,10 @@ package general_ledger
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/port/private/intraprocess"
+
+	"github.com/google/uuid"
 )
 
 type IntraProcessAdapter struct {

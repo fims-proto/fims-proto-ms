@@ -6,8 +6,9 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
+
+	"github.com/google/uuid"
 )
 
 type userPO struct {

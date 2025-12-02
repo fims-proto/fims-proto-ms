@@ -6,8 +6,9 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain"
+
+	"github.com/google/uuid"
 )
 
 type CreateIdentifierConfigurationCmd struct {

@@ -1,8 +1,9 @@
 package voucher
 
 import (
-	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
+
+	"github.com/shopspring/decimal"
 )
 
 func sumLineItems(lineItems []*LineItem) (decimal.Decimal, error) {

@@ -3,9 +3,10 @@ package intraprocess
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/user/app"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
+
+	"github.com/google/uuid"
 )
 
 type UserInterface struct {

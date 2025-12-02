@@ -15,7 +15,7 @@ type Page[T any] interface {
 	NumberOfElements() int
 }
 
-type pageImpl[T any] struct {
+type PageResponse[T any] struct {
 	Content          []T `json:"content"`
 	PageNumber       int `json:"pageNumber"`
 	PageSize         int `json:"pageSize"`
@@ -24,7 +24,7 @@ type pageImpl[T any] struct {
 }
 
 type pageImplWrapper[T any] struct {
-	*pageImpl[T]
+	*PageResponse[T]
 }
 
 func NewPage[T any](content []T, p pageable.Pageable, numberOfElements int) (Page[T], error) {
@@ -34,7 +34,7 @@ func NewPage[T any](content []T, p pageable.Pageable, numberOfElements int) (Pag
 	total := int(math.Ceil(float64(numberOfElements) / float64(p.PageSize())))
 
 	return pageImplWrapper[T]{
-		&pageImpl[T]{
+		&PageResponse[T]{
 			Content:          content,
 			PageNumber:       p.PageNumber(),
 			PageSize:         p.PageSize(),
@@ -45,21 +45,21 @@ func NewPage[T any](content []T, p pageable.Pageable, numberOfElements int) (Pag
 }
 
 func (p pageImplWrapper[T]) Content() []T {
-	return p.pageImpl.Content
+	return p.PageResponse.Content
 }
 
 func (p pageImplWrapper[T]) PageNumber() int {
-	return p.pageImpl.PageNumber
+	return p.PageResponse.PageNumber
 }
 
 func (p pageImplWrapper[T]) PageSize() int {
-	return p.pageImpl.PageSize
+	return p.PageResponse.PageSize
 }
 
 func (p pageImplWrapper[T]) TotalPage() int {
-	return p.pageImpl.TotalPage
+	return p.PageResponse.TotalPage
 }
 
 func (p pageImplWrapper[T]) NumberOfElements() int {
-	return p.pageImpl.NumberOfElements
+	return p.PageResponse.NumberOfElements
 }

@@ -3,8 +3,9 @@ package domain
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+
+	"github.com/google/uuid"
 )
 
 type Repository interface {

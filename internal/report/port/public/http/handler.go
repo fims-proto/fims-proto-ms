@@ -1,8 +1,9 @@
 package http
 
 import (
-	"github.com/gin-gonic/gin"
 	"github/fims-proto/fims-proto-ms/internal/report/app"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {

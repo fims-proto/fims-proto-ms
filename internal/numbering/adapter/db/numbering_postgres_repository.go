@@ -5,11 +5,12 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )

@@ -3,10 +3,11 @@ package ledger
 import (
 	"errors"
 
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Ledger struct {

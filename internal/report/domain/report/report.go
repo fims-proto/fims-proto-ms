@@ -3,10 +3,11 @@ package report
 import (
 	"slices"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
+
+	"github.com/google/uuid"
 )
 
 type Report struct {

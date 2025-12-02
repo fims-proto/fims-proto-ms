@@ -1,8 +1,9 @@
 package voucher
 
 import (
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
+
+	"github.com/google/uuid"
 )
 
 func (v *Voucher) Post(poster uuid.UUID) error {

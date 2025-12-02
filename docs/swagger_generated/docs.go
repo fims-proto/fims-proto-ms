@@ -407,10 +407,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.AuxiliaryAccountResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse"
                         }
                     },
                     "500": {
@@ -622,10 +619,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse"
                         }
                     },
                     "500": {
@@ -738,10 +732,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse"
                         }
                     },
                     "500": {
@@ -806,10 +797,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse"
                         }
                     },
                     "500": {
@@ -1112,10 +1100,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.ReportResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_ReportResponse"
                         }
                     },
                     "500": {
@@ -1180,10 +1165,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse"
                         }
                     },
                     "500": {
@@ -1622,10 +1604,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.VoucherResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse"
                         }
                     },
                     "500": {
@@ -1703,10 +1682,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.SobResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_SobResponse"
                         }
                     },
                     "500": {
@@ -1937,6 +1913,167 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_ReportResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.ReportResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_SobResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.SobResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.VoucherResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
         "http.AccountClass": {
             "type": "object",
             "properties": {

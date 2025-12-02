@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 func trialBalance(ctx context.Context, repo domain.Repository, sobId, periodId uuid.UUID) error {

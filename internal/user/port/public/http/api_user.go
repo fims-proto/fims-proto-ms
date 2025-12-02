@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/user/app"
 	"github/fims-proto/fims-proto-ms/internal/user/app/command"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -22,16 +23,17 @@ func NewHandler(app *app.Application) Handler {
 }
 
 // ReadUserById godoc
-// @Text Show user by id
-// @Description Show user by id
-// @Tags users
-// @Accept application/json
-// @Produce application/json
-// @Param userId path string true "Updater ID"
-// @Success 200 {object} UserResponse
-// @Failure 404
-// @Failure 500 {object} Error
-// @Router /user/{userId} [get]
+//
+//	@Text			Show user by id
+//	@Description	Show user by id
+//	@Tags			users
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			userId	path		string	true	"Updater ID"
+//	@Success		200		{object}	UserResponse
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/user/{userId} [get]
 func (h Handler) ReadUserById(c *gin.Context) {
 	user, err := h.app.Queries.UserById.Handle(c, uuid.MustParse(c.Param("userId")))
 	if err != nil {
@@ -46,17 +48,18 @@ func (h Handler) ReadUserById(c *gin.Context) {
 }
 
 // UpdateUser godoc
-// @Text Update user
-// @Description Update user
-// @Tags users
-// @Accept application/json
-// @Produce application/json
-// @Param userId path string true "Updater ID"
-// @Param UpdateUserRequest body UpdateUserRequest true "Update user request"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /user/{userId} [patch]
+//
+//	@Text			Update user
+//	@Description	Update user
+//	@Tags			users
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			userId				path	string				true	"Updater ID"
+//	@Param			UpdateUserRequest	body	UpdateUserRequest	true	"Update user request"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/user/{userId} [patch]
 func (h Handler) UpdateUser(c *gin.Context) {
 	var req UpdateUserRequest
 	if err := c.ShouldBind(&req); err != nil {

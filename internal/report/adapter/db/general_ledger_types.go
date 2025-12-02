@@ -1,9 +1,10 @@
 package db
 
 import (
+	"github/fims-proto/fims-proto-ms/internal/report/domain/general_ledger"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/general_ledger"
 )
 
 type ledgerPO struct {
