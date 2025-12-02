@@ -4,12 +4,13 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ReadAccountClasses godoc
@@ -108,6 +109,57 @@ func (h Handler) ReadAccountById(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, accountDTOToVO(v))
+}
+
+// CreateAccount godoc
+// @Text Create account
+// @Description Create account
+// @Tags accounts
+// @Accept application/json
+// @Produce application/json
+// @Param sobId path string true "Sob ID"
+// @Param CreateAccountRequest body CreateAccountRequest true "Create account request"
+// @Success 201 {object} AccountResponse
+// @Failure 500 {object} Error
+// @Router /sob/{sobId}/accounts [post]
+func (h Handler) CreateAccount(c *gin.Context) {
+	var req CreateAccountRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	classReq, err := strconv.Atoi(req.Class)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	group, err := strconv.Atoi(req.Group)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	cmd := command.CreateAccountCmd{
+		AccountId:             uuid.New(),
+		SobId:                 uuid.MustParse(c.Param("sobId")),
+		Title:                 req.Title,
+		LevelNumber:           req.LevelNumber,
+		BalanceDirection:      req.BalanceDirection,
+		Class:                 classReq,
+		Group:                 group,
+		SuperiorAccountNumber: req.SuperiorAccountNumber,
+		CategoryKeys:          req.CategoryKeys,
+	}
+
+	if err := h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	createdAccount, err := h.app.Queries.AccountById.Handle(c, cmd.AccountId)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, accountDTOToVO(createdAccount))
 }
 
 // UpdateAccount godoc

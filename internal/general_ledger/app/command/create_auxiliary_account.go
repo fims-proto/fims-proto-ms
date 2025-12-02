@@ -4,16 +4,18 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type CreateAuxiliaryAccountCmd struct {
 	AccountId   uuid.UUID
+	SobId       uuid.UUID
 	CategoryKey string
 	Key         string
 	Title       string
@@ -46,7 +48,7 @@ func (h CreateAuxiliaryAccountHandler) Handle(ctx context.Context, cmd CreateAux
 }
 
 func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd CreateAuxiliaryAccountCmd) (*auxiliary_account.AuxiliaryAccount, error) {
-	category, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, cmd.CategoryKey)
+	category, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, cmd.SobId, cmd.CategoryKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get auxiliary category: %w", err)
 	}

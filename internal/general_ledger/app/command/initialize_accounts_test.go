@@ -331,10 +331,6 @@ func (m mockRepo) CreateAuxiliaryCategories(context.Context, []*auxiliary_catego
 	panic("implement me")
 }
 
-func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, string) (*auxiliary_category.AuxiliaryCategory, error) {
-	panic("implement me")
-}
-
 func (m mockRepo) CreateAuxiliaryAccounts(context.Context, []*auxiliary_account.AuxiliaryAccount) error {
 	panic("implement me")
 }
@@ -364,6 +360,22 @@ func (m mockRepo) ReadAllSubAccountsWithSuperiors(context.Context, uuid.UUID) ([
 }
 
 func (m mockRepo) ReadFirstPeriod(context.Context, uuid.UUID) (*period.Period, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) CreateAccount(context.Context, *account.Account) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAccountByNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, uuid.UUID, string) (*auxiliary_category.AuxiliaryCategory, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryCategoriesByKeys(context.Context, uuid.UUID, []string) ([]*auxiliary_category.AuxiliaryCategory, error) {
 	panic("implement me")
 }
 

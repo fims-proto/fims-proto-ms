@@ -3,11 +3,12 @@ package http
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ReadPagingAuxiliaryCategories godoc
@@ -53,7 +54,7 @@ func (h Handler) ReadPagingAuxiliaryAccounts(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.AuxiliaryAccount], error) {
-			return h.app.Queries.PagingAuxiliaryAccounts.Handle(c, c.Param("categoryKey"), pageRequest)
+			return h.app.Queries.PagingAuxiliaryAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), c.Param("categoryKey"), pageRequest)
 		},
 		auxiliaryAccountDTOToVO,
 	)
@@ -112,6 +113,7 @@ func (h Handler) CreateAuxiliaryAccount(c *gin.Context) {
 	}
 	cmd := command.CreateAuxiliaryAccountCmd{
 		AccountId:   uuid.New(),
+		SobId:       uuid.MustParse(c.Param("sobId")),
 		CategoryKey: c.Param("categoryKey"),
 		Key:         req.Key,
 		Title:       req.Title,

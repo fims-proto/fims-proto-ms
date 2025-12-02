@@ -119,6 +119,7 @@ func (h Handler) UpdateSob(c *gin.Context) {
 	cmd := command.UpdateSobCmd{
 		SobId:              uuid.MustParse(c.Param("sobId")),
 		Name:               req.Name,
+		Description:        req.Description,
 		AccountsCodeLength: req.AccountsCodeLength,
 	}
 	if err := h.app.Commands.UpdateSob.Handle(c, cmd); err != nil {

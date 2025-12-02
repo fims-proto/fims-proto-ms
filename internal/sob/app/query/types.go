@@ -1,6 +1,10 @@
 package query
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Sob struct {
 	Id                  uuid.UUID
@@ -10,4 +14,6 @@ type Sob struct {
 	StartingPeriodYear  int
 	StartingPeriodMonth int
 	AccountsCodeLength  []int
+	CreatedAt           time.Time
+	UpdatedAt           time.Time
 }

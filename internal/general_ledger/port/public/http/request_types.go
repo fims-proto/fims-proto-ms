@@ -9,6 +9,16 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+type CreateAccountRequest struct {
+	Title                 string   `json:"title"`
+	LevelNumber           int      `json:"levelNumber"`
+	SuperiorAccountNumber string   `json:"superiorAccountNumber,omitempty"`
+	BalanceDirection      string   `json:"balanceDirection"`
+	Class                 string   `json:"class,omitempty"`
+	Group                 string   `json:"group,omitempty"`
+	CategoryKeys          []string `json:"categoryKeys,omitempty"`
+}
+
 type UpdateAccountRequest struct {
 	Title            string   `json:"title,omitempty"`
 	LevelNumber      int      `json:"levelNumber,omitempty"`

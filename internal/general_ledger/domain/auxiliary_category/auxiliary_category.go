@@ -2,6 +2,7 @@ package auxiliary_category
 
 import (
 	"errors"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -33,8 +34,16 @@ func New(
 		return nil, errors.New("nil auxiliary category key")
 	}
 
+	if utf8.RuneCountInString(key) > 20 {
+		return nil, errors.New("auxiliary category key too long")
+	}
+
 	if title == "" {
 		return nil, errors.New("nil auxiliary category title")
+	}
+
+	if utf8.RuneCountInString(title) > 50 {
+		return nil, errors.New("auxiliary category title too long")
 	}
 
 	return &AuxiliaryCategory{

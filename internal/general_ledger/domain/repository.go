@@ -11,9 +11,10 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
+
+	"github.com/google/uuid"
 )
 
 type Repository interface {
@@ -21,12 +22,14 @@ type Repository interface {
 	EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error
 
 	InitialAccounts(ctx context.Context, accounts []*account.Account) error
+	CreateAccount(ctx context.Context, account *account.Account) error
 	UpdateAccount(
 		ctx context.Context,
 		accountId uuid.UUID,
 		updateFn func(a *account.Account) (*account.Account, error),
 	) error
 	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)
+	ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error)
 	ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error)
 	ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error)
 	ReadAccountsWithSuperiorsByIds(ctx context.Context, sobId uuid.UUID, accountIds []uuid.UUID) ([]*account.Account, error)
@@ -62,7 +65,8 @@ type Repository interface {
 	ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
 	CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error
-	ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error)
+	ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error)
+	ReadAuxiliaryCategoriesByKeys(ctx context.Context, sobId uuid.UUID, keys []string) ([]*auxiliary_category.AuxiliaryCategory, error)
 
 	CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error
 	ReadAuxiliaryAccountsByPairs(ctx context.Context, sobId uuid.UUID, pairs []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error)

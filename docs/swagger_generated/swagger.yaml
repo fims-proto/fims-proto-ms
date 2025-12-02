@@ -55,6 +55,25 @@ definitions:
       categoryKey:
         type: string
     type: object
+  http.CreateAccountRequest:
+    properties:
+      balanceDirection:
+        type: string
+      categoryKeys:
+        items:
+          type: string
+        type: array
+      class:
+        type: string
+      group:
+        type: string
+      levelNumber:
+        type: integer
+      superiorAccountNumber:
+        type: string
+      title:
+        type: string
+    type: object
   http.CreateAuxiliaryAccountRequest:
     properties:
       description:
@@ -326,6 +345,8 @@ definitions:
         type: array
       baseCurrency:
         type: string
+      createdAt:
+        type: string
       description:
         type: string
       id:
@@ -336,6 +357,8 @@ definitions:
         type: integer
       startingPeriodYear:
         type: integer
+      updatedAt:
+        type: string
     type: object
   http.UpdateAccountRequest:
     properties:
@@ -380,6 +403,8 @@ definitions:
         items:
           type: integer
         type: array
+      description:
+        type: string
       name:
         type: string
     type: object
@@ -693,6 +718,35 @@ paths:
             items:
               $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
             type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - accounts
+    post:
+      consumes:
+      - application/json
+      description: Create account
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Create account request
+        in: body
+        name: CreateAccountRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
         "500":
           description: Internal Server Error
           schema:

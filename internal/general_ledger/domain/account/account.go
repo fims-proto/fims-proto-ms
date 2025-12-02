@@ -5,11 +5,13 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
+
+	"github.com/google/uuid"
 )
 
 type Account struct {
@@ -84,6 +86,10 @@ func NewByAllFields(
 
 	if title == "" {
 		return nil, errors.New("empty account title")
+	}
+
+	if utf8.RuneCountInString(title) > 50 {
+		return nil, errors.New("account title exceeds max length (50)")
 	}
 
 	if accountNumber == "" {

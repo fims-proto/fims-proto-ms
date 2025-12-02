@@ -32,7 +32,7 @@ type AccountResponse struct {
 	Class               string                      `json:"class"`
 	Group               string                      `json:"group"`
 	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
-	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories"`
+	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories,omitempty"`
 	CreatedAt           time.Time                   `json:"createdAt"`
 	UpdatedAt           time.Time                   `json:"updatedAt"`
 }

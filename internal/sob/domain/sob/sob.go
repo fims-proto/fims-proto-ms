@@ -3,6 +3,7 @@ package sob
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/google/uuid"
 )
@@ -26,11 +27,19 @@ func New(id uuid.UUID, name, description, baseCurrency string, startingPeriodYea
 		return nil, errors.New("empty sob name")
 	}
 
+	if utf8.RuneCountInString(name) > 50 {
+		return nil, errors.New("sob name too long")
+	}
+
+	if utf8.RuneCountInString(description) > 500 {
+		return nil, errors.New("sob description too long")
+	}
+
 	if baseCurrency == "" {
 		return nil, errors.New("empty base currency")
 	}
 
-	if startingPeriodYear < 1970 || startingPeriodYear > 9999 {
+	if startingPeriodYear < 2000 || startingPeriodYear > 3000 {
 		return nil, errors.New("invalid starting period year")
 	}
 

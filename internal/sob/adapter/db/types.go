@@ -4,10 +4,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
 )
 
 type sobPO struct {
@@ -88,5 +89,7 @@ func sobPOToDTO(po sobPO) query.Sob {
 		StartingPeriodYear:  po.StartingPeriodYear,
 		StartingPeriodMonth: po.StartingPeriodMonth,
 		AccountsCodeLength:  codesLength,
+		CreatedAt:           po.CreatedAt,
+		UpdatedAt:           po.UpdatedAt,
 	}
 }

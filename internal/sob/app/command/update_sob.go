@@ -14,6 +14,7 @@ import (
 type UpdateSobCmd struct {
 	SobId              uuid.UUID
 	Name               string
+	Description        *string
 	AccountsCodeLength []int
 }
 
@@ -38,6 +39,13 @@ func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) error {
 					return nil, fmt.Errorf("failed to update sob name: %w", err)
 				}
 			}
+
+			if cmd.Description != nil {
+				if err := s.UpdateDescription(*cmd.Description); err != nil {
+					return nil, fmt.Errorf("failed to update sob description: %w", err)
+				}
+			}
+
 			if cmd.AccountsCodeLength != nil {
 				if err := s.UpdateAccountsCodeLength(cmd.AccountsCodeLength); err != nil {
 					return nil, fmt.Errorf("failed to update sob account code length: %w", err)

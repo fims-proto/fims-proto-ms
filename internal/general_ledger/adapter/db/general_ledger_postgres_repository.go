@@ -9,7 +9,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
@@ -20,6 +19,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -74,6 +75,14 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 	return db.Omit("AuxiliaryCategories").CreateInBatches(&pos, 100).Error
 }
 
+func (r GeneralLedgerPostgresRepository) CreateAccount(ctx context.Context, a *account.Account) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	po := accountBOToPO(a)
+
+	return db.Omit("AuxiliaryCategories").Create(&po).Error
+}
+
 func (r GeneralLedgerPostgresRepository) UpdateAccount(
 	ctx context.Context,
 	accountId uuid.UUID,
@@ -122,24 +131,52 @@ func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, so
 	return converter.POsToBOs(accountPOs, accountPOToBO)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(
-	ctx context.Context,
-	sobId uuid.UUID,
-	accountNumbers []string,
-) ([]*account.Account, error) {
+func (r GeneralLedgerPostgresRepository) ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
+
+	var po accountPO
+	if err := db.Where(accountPO{SobId: sobId, AccountNumber: accountNumber}).First(&po).Error; err != nil {
+		return nil, err
+	}
+
+	return accountPOToBO(po)
+}
+
+func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	// unique account numbers
+	accountNumbers = utils.Unique(accountNumbers)
 
 	if len(accountNumbers) == 0 {
 		return nil, nil
 	}
 
-	var accountPOs []accountPO
+	var pos []accountPO
 	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).
-		Preload("AuxiliaryCategories").Find(&accountPOs).Error; err != nil {
+		Preload("AuxiliaryCategories").Find(&pos).Error; err != nil {
 		return nil, err
 	}
 
-	return converter.POsToBOs(accountPOs, accountPOToBO)
+	if len(pos) != len(accountNumbers) {
+		return nil, fmt.Errorf("not all accounts found for sob %s and account numbers %v", sobId, accountNumbers)
+	}
+
+	// check if all keys are found
+	for _, accountNumber := range accountNumbers {
+		found := false
+		for _, po := range pos {
+			if po.AccountNumber == accountNumber {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("account with number %s not found for sob %s", accountNumber, sobId)
+		}
+	}
+
+	return converter.POsToBOs(pos, accountPOToBO)
 }
 
 func (r GeneralLedgerPostgresRepository) ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error) {
@@ -173,6 +210,9 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsWithSuperiorsByIds(
 	accountIds []uuid.UUID,
 ) ([]*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
+
+	// unique account ids
+	accountIds = utils.Unique(accountIds)
 
 	var accountPOs []accountPO
 	if err := db.Where("sob_id = ? AND id IN ?", sobId, accountIds).Find(&accountPOs).Error; err != nil {
@@ -366,6 +406,9 @@ func (r GeneralLedgerPostgresRepository) UpdateLedgersByPeriodAndAccountIds(
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
+	// unique account ids
+	accountIds = utils.Unique(accountIds)
+
 	var ledgerPOs []ledgerPO
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("period_id = ? AND account_id IN ?", periodId, accountIds).
@@ -501,15 +544,51 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryCategories(ctx context.C
 	return db.CreateInBatches(&pos, 100).Error
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error) {
+func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error) {
 	db := r.dataSource.GetConnection(ctx)
 
 	var po auxiliaryCategoryPO
-	if err := db.Where(auxiliaryCategoryPO{Key: key}).First(&po).Error; err != nil {
+	if err := db.Where(auxiliaryCategoryPO{SobId: sobId, Key: key}).First(&po).Error; err != nil {
 		return nil, err
 	}
 
 	return auxiliaryCategoryPOToBO(po)
+}
+
+func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoriesByKeys(ctx context.Context, sobId uuid.UUID, keys []string) ([]*auxiliary_category.AuxiliaryCategory, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	// unique keys
+	keys = utils.Unique(keys)
+
+	if len(keys) == 0 {
+		return nil, nil
+	}
+
+	var pos []auxiliaryCategoryPO
+	if err := db.Where("sob_id = ? AND key IN ?", sobId, keys).Find(&pos).Error; err != nil {
+		return nil, err
+	}
+
+	if len(pos) != len(keys) {
+		return nil, fmt.Errorf("not all auxiliary categories found for sob %s and keys %v", sobId, keys)
+	}
+
+	// check if all keys are found
+	for _, key := range keys {
+		found := false
+		for _, po := range pos {
+			if po.Key == key {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, fmt.Errorf("auxiliary category with key %s not found for sob %s", key, sobId)
+		}
+	}
+
+	return converter.POsToBOs(pos, auxiliaryCategoryPOToBO)
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error {
@@ -575,6 +654,9 @@ func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccoun
 	updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
 ) error {
 	db := r.dataSource.GetConnection(ctx)
+
+	// unique account ids
+	auxiliaryAccountIds = utils.Unique(auxiliaryAccountIds)
 
 	var auxiliaryLedgerPOs []auxiliaryLedgerPO
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).

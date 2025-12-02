@@ -4,11 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/general_ledger"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -81,6 +82,9 @@ func (s GeneralLedgerPostgresService) ReadAccountIdsByNumbers(
 	accountNumbers []string,
 ) (map[string]uuid.UUID, error) {
 	db := s.dataSource.GetConnection(ctx)
+
+	// unique account numbers
+	accountNumbers = utils.Unique(accountNumbers)
 
 	var pos []accountPO
 	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).Find(&pos).Error; err != nil {

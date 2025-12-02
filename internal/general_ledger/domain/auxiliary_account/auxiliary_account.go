@@ -2,9 +2,11 @@ package auxiliary_account
 
 import (
 	"errors"
+	"unicode/utf8"
+
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 )
 
 type AuxiliaryAccount struct {
@@ -34,8 +36,20 @@ func New(
 		return nil, errors.New("nil auxiliary account key")
 	}
 
+	if utf8.RuneCountInString(key) > 20 {
+		return nil, errors.New("auxiliary account key too long")
+	}
+
 	if title == "" {
 		return nil, errors.New("nil auxiliary account title")
+	}
+
+	if utf8.RuneCountInString(title) > 50 {
+		return nil, errors.New("auxiliary account title too long")
+	}
+
+	if utf8.RuneCountInString(description) > 500 {
+		return nil, errors.New("auxiliary account description too long")
 	}
 
 	return &AuxiliaryAccount{

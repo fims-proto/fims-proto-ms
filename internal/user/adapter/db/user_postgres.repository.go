@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
+	"github/fims-proto/fims-proto-ms/internal/common/utils"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -75,6 +78,9 @@ func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (que
 
 func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID) ([]query.User, error) {
 	db := r.dataSource.GetConnection(ctx)
+
+	// unique ids
+	ids = utils.Unique(ids)
 
 	if len(ids) == 0 {
 		return nil, nil

@@ -4,12 +4,13 @@ import (
 	"context"
 	"errors"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -43,8 +44,11 @@ func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryCategories(
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryAccounts(
 	ctx context.Context,
+	sobId uuid.UUID,
 	pageRequest data.PageRequest,
 ) (data.Page[query.AuxiliaryAccount], error) {
+	sobIdFilter, _ := filterable.NewFilter("category.sobId", filterable.OptEq, sobId.String())
+	pageRequest.AddAndFilterable(filterable.NewFilterableAtom(sobIdFilter))
 	return data.SearchEntities(ctx, pageRequest, auxiliaryAccountPO{}, auxiliaryAccountPOToDTO, r.dataSource.GetConnection(ctx).InnerJoins("Category"))
 }
 

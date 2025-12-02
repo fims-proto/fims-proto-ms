@@ -26,6 +26,7 @@ type Commands struct {
 	Initialize               command.InitializeHandler
 	InitializeLedgersBalance command.InitializeLedgersBalanceHandler
 
+	CreateAccount command.CreateAccountHandler
 	UpdateAccount command.UpdateAccountHandler
 
 	ClosePeriod command.ClosePeriodHandler
@@ -78,6 +79,7 @@ func (a *Application) Inject(
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
 		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
 
+		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),

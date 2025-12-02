@@ -11,12 +11,13 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
-	"github.com/google/uuid"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+
+	"github.com/google/uuid"
 )
 
 // prepareLineItems prepares line item domain objects and performs necessary checks
@@ -49,12 +50,6 @@ func prepareLineItems(
 		func(a *account.Account) string { return a.AccountNumber() },
 		func(a *account.Account) *account.Account { return a },
 	)
-
-	for _, number := range accountNumbers {
-		if _, ok := accountsMap[number]; !ok {
-			return nil, commonErrors.ErrInvalidAccountNumber(number)
-		}
-	}
 
 	// validate auxiliary account keys
 	auxiliaryAccounts, err := repo.ReadAuxiliaryAccountsByPairs(ctx, sobId, auxiliaryPair)

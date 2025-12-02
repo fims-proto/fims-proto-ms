@@ -186,6 +186,50 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Create account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create account request",
+                        "name": "CreateAccountRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateAccountRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
             }
         },
         "/sob/{sobId}/auxiliaries": {
@@ -1978,6 +2022,35 @@ const docTemplate = `{
                 }
             }
         },
+        "http.CreateAccountRequest": {
+            "type": "object",
+            "properties": {
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "categoryKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "class": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "levelNumber": {
+                    "type": "integer"
+                },
+                "superiorAccountNumber": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "http.CreateAuxiliaryAccountRequest": {
             "type": "object",
             "properties": {
@@ -2393,6 +2466,9 @@ const docTemplate = `{
                 "baseCurrency": {
                     "type": "string"
                 },
+                "createdAt": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -2407,6 +2483,9 @@ const docTemplate = `{
                 },
                 "startingPeriodYear": {
                     "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -2475,6 +2554,9 @@ const docTemplate = `{
                     "items": {
                         "type": "integer"
                     }
+                },
+                "description": {
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"

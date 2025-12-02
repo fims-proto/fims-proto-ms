@@ -3,6 +3,7 @@ package sob
 import (
 	"errors"
 	"fmt"
+	"unicode/utf8"
 )
 
 func (s *Sob) UpdateName(name string) error {
@@ -10,7 +11,20 @@ func (s *Sob) UpdateName(name string) error {
 		return errors.New("empty sob name")
 	}
 
+	if utf8.RuneCountInString(name) > 50 {
+		return errors.New("sob name too long")
+	}
+
 	s.name = name
+	return nil
+}
+
+func (s *Sob) UpdateDescription(description string) error {
+	if utf8.RuneCountInString(description) > 500 {
+		return errors.New("sob description too long")
+	}
+
+	s.description = description
 	return nil
 }
 
