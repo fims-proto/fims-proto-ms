@@ -72,7 +72,20 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 
 	// create all
 	pos := converter.BOsToPOs(accounts, accountBOToPO)
-	return db.Omit("AuxiliaryCategories").CreateInBatches(&pos, 100).Error
+	if err := db.Omit("AuxiliaryCategories").CreateInBatches(&pos, 100).Error; err != nil {
+		return err
+	}
+
+	// save associations
+	for _, po := range pos {
+		if len(po.AuxiliaryCategories) > 0 {
+			if err := db.Model(&po).Omit("AuxiliaryCategories.*").Association("AuxiliaryCategories").Replace(po.AuxiliaryCategories); err != nil {
+				return fmt.Errorf("failed to save auxiliary category associations for account %s: %w", po.AccountNumber, err)
+			}
+		}
+	}
+
+	return nil
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAccount(ctx context.Context, a *account.Account) error {
@@ -80,7 +93,18 @@ func (r GeneralLedgerPostgresRepository) CreateAccount(ctx context.Context, a *a
 
 	po := accountBOToPO(a)
 
-	return db.Omit("AuxiliaryCategories").Create(&po).Error
+	if err := db.Omit("AuxiliaryCategories").Create(&po).Error; err != nil {
+		return err
+	}
+
+	// save associations
+	if len(po.AuxiliaryCategories) > 0 {
+		if err := db.Model(&po).Omit("AuxiliaryCategories.*").Association("AuxiliaryCategories").Replace(po.AuxiliaryCategories); err != nil {
+			return fmt.Errorf("failed to save auxiliary category associations: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateAccount(

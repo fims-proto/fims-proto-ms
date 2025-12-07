@@ -285,10 +285,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse"
                         }
                     },
                     "500": {
@@ -337,6 +334,53 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/auxiliary/{categoryKey}": {
+            "get": {
+                "description": "Get an auxiliary category by key",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auxiliary accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category Key",
+                        "name": "categoryKey",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1920,6 +1964,29 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.AuxiliaryAccountResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
                     }
                 },
                 "numberOfElements": {

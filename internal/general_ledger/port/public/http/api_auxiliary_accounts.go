@@ -23,7 +23,7 @@ import (
 //	@Param			$size	query		int		false	"page size"				default(40)
 //	@Param			$sort	query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
 //	@Param			$filter	query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
-//	@Success		200		{array}		AuxiliaryCategoryResponse
+//	@Success		200		{object}	data.PageResponse[AuxiliaryCategoryResponse]
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/auxiliaries [get]
 func (h Handler) ReadPagingAuxiliaryCategories(c *gin.Context) {
@@ -34,6 +34,32 @@ func (h Handler) ReadPagingAuxiliaryCategories(c *gin.Context) {
 		},
 		auxiliaryCategoryDTOToVO,
 	)
+}
+
+// ReadAuxiliaryCategoryByKey godoc
+//
+//	@Text			Get an auxiliary category by key
+//	@Description	Get an auxiliary category by key
+//	@Tags			auxiliary accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			categoryKey	path		string	true	"Category Key"
+//	@Success		200			{object}	AuxiliaryCategoryResponse
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/auxiliary/{categoryKey} [get]
+func (h Handler) ReadAuxiliaryCategoryByKey(c *gin.Context) {
+	v, err := h.app.Queries.AuxiliaryCategoryByKey.Handle(c, uuid.MustParse(c.Param("sobId")), c.Param("categoryKey"))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if v.Id == uuid.Nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, auxiliaryCategoryDTOToVO(v))
 }
 
 // ReadPagingAuxiliaryAccounts godoc

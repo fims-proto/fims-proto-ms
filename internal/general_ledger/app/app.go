@@ -12,6 +12,7 @@ type Queries struct {
 	PagingAccounts            query.PagingAccountsHandler
 	AccountById               query.AccountByIdHandler
 	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
+	AuxiliaryCategoryByKey    query.AuxiliaryCategoryByKeyHandler
 	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
 	CurrentPeriod             query.CurrentPeriodHandler
 	PagingPeriods             query.PagingPeriodsHandler
@@ -66,6 +67,7 @@ func (a *Application) Inject(
 		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
 		AccountById:               query.NewAccountByIdHandler(readModel),
 		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
+		AuxiliaryCategoryByKey:    query.NewAuxiliaryCategoryByKeyHandler(readModel),
 		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
 		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
 		PagingPeriods:             query.NewPagingPeriodsHandler(readModel),

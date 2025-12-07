@@ -26,6 +26,7 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)
 
 	r.GET("/sob/:sobId/auxiliaries", h.ReadPagingAuxiliaryCategories)
+	r.GET("/sob/:sobId/auxiliary/:categoryKey", h.ReadAuxiliaryCategoryByKey)
 	r.POST("/sob/:sobId/auxiliaries", h.CreateAuxiliaryCategory)
 	r.GET("/sob/:sobId/auxiliary/:categoryKey/accounts", h.ReadPagingAuxiliaryAccounts)
 	r.POST("/sob/:sobId/auxiliary/:categoryKey/accounts", h.CreateAuxiliaryAccount)

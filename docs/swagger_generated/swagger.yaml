@@ -15,6 +15,21 @@ definitions:
       totalPage:
         type: integer
     type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
     properties:
       content:
@@ -895,9 +910,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -929,6 +942,37 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - auxiliary accounts
+  /sob/{sobId}/auxiliary/{categoryKey}:
+    get:
+      consumes:
+      - application/json
+      description: Get an auxiliary category by key
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category Key
+        in: path
+        name: categoryKey
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
           schema:
