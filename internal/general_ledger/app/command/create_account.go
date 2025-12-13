@@ -6,11 +6,14 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
+	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type CreateAccountCmd struct {
@@ -108,15 +111,21 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 	}
 
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		return h.createAccount(txCtx, superiorAccountId, err, newAccount)
+		// create account
+		if err := h.createAccount(txCtx, superiorAccountId, newAccount); err != nil {
+			return err
+		}
+
+		// create ledger for current period
+		return h.createLedger(txCtx, newAccount)
 	})
 }
 
-func (h CreateAccountHandler) createAccount(ctx context.Context, superiorAccountId uuid.UUID, err error, newAccount *account.Account) error {
+func (h CreateAccountHandler) createAccount(ctx context.Context, superiorAccountId uuid.UUID, newAccount *account.Account) error {
 	if superiorAccountId != uuid.Nil {
 		// update superior account to not be a leaf
-		if err = h.repo.UpdateAccount(ctx, superiorAccountId, func(a *account.Account) (*account.Account, error) {
-			if err = a.UpdateLeaf(false); err != nil {
+		if err := h.repo.UpdateAccount(ctx, superiorAccountId, func(a *account.Account) (*account.Account, error) {
+			if err := a.UpdateLeaf(false); err != nil {
 				return nil, fmt.Errorf("failed to update superior account leaf indicator: %w", err)
 			}
 			return a, nil
@@ -126,8 +135,34 @@ func (h CreateAccountHandler) createAccount(ctx context.Context, superiorAccount
 	}
 
 	// save new account
-	if err = h.repo.CreateAccount(ctx, newAccount); err != nil {
+	if err := h.repo.CreateAccount(ctx, newAccount); err != nil {
 		return fmt.Errorf("failed to create new account: %w", err)
 	}
 	return nil
+}
+
+func (h CreateAccountHandler) createLedger(ctx context.Context, acct *account.Account) error {
+	p, err := h.repo.ReadCurrentPeriod(ctx, acct.SobId())
+	if err != nil {
+		return fmt.Errorf("failed to read current period: %w", err)
+	}
+
+	ledgerEntity, err := ledger.New(
+		uuid.New(),
+		acct.SobId(),
+		p.Id(),
+		acct.Id(),
+		acct,
+		decimal.Zero,
+		decimal.Zero,
+		decimal.Zero,
+		decimal.Zero,
+		decimal.Zero,
+		decimal.Zero,
+	)
+	if err != nil {
+		return fmt.Errorf("failed to create ledger: %w", err)
+	}
+
+	return h.repo.CreateLedgers(ctx, utils.AsSlice(ledgerEntity))
 }
