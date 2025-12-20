@@ -521,6 +521,13 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(
 		return err
 	}
 
+	// remove existing link between line item and auxiliary account
+	for _, item := range po.LineItems {
+		if err := db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
+			return fmt.Errorf("failed to remove line item auxiliary account associations: %w", err)
+		}
+	}
+
 	bo, err := voucherPOToBO(po)
 	if err != nil {
 		return fmt.Errorf("failed to update voucher: %w", err)
@@ -532,13 +539,6 @@ func (r GeneralLedgerPostgresRepository) UpdateVoucher(
 	}
 
 	po = voucherBOToPO(*updatedBO)
-
-	// remove existing link between line item and auxiliary account
-	for _, item := range po.LineItems {
-		if err = db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
-			return fmt.Errorf("failed to remove line item auxiliary account associations: %w", err)
-		}
-	}
 
 	// remove existing line items
 	if err = db.Where("voucher_id = ?", po.Id).Delete(&lineItemPO{}).Error; err != nil {
