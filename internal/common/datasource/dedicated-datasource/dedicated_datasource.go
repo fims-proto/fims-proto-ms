@@ -36,8 +36,25 @@ func (d *DedicatedDataSource) GetConnection(ctx context.Context) *gorm.DB {
 }
 
 func (d *DedicatedDataSource) EnableTransaction(ctx context.Context, transactionalFn func(txCtx context.Context) error) error {
+	// Check if already in a transaction by inspecting context
+	if datasource.HasTransactionInContext(ctx) {
+		// Already in transaction, just execute the function without creating a nested transaction
+		log.DebugWithoutCxt("reusing existing transaction")
+		return transactionalFn(ctx)
+	}
+
+	// Start new transaction
+	log.DebugWithoutCxt("starting new database transaction")
 	db := d.GetConnection(ctx)
-	return db.Transaction(func(tx *gorm.DB) error {
+	err := db.Transaction(func(tx *gorm.DB) error {
 		return transactionalFn(datasource.WrapInNewContext(ctx, tx))
 	})
+
+	if err != nil {
+		log.DebugWithoutCxt("transaction rolled back due to error: %v", err)
+	} else {
+		log.DebugWithoutCxt("transaction committed successfully")
+	}
+
+	return err
 }

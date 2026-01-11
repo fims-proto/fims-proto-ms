@@ -37,6 +37,12 @@ func NewRegenerateHandler(repo domain.Repository, generalLedgerService service.G
 }
 
 func (h RegenerateHandler) Handle(ctx context.Context, cmd RegenerateReportCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.regenerate(txCtx, cmd)
+	})
+}
+
+func (h RegenerateHandler) regenerate(ctx context.Context, cmd RegenerateReportCmd) error {
 	return h.repo.UpdateReport(
 		ctx,
 		cmd.ReportId,

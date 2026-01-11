@@ -27,6 +27,12 @@ func NewCancelReviewVoucherHandler(repo domain.Repository) CancelReviewVoucherHa
 }
 
 func (h CancelReviewVoucherHandler) Handle(ctx context.Context, cmd CancelReviewVoucherCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.cancelReview(txCtx, cmd)
+	})
+}
+
+func (h CancelReviewVoucherHandler) cancelReview(ctx context.Context, cmd CancelReviewVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherId,

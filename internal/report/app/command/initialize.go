@@ -80,11 +80,9 @@ func (h *InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error
 		return fmt.Errorf("could not convert income statement report: %w", err)
 	}
 
-	if err = h.repo.CreateReports(ctx, []*report.Report{balanceSheetReport, incomeStatementReport}); err != nil {
-		return fmt.Errorf("could not create reports: %w", err)
-	}
-
-	return nil
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.repo.CreateReports(txCtx, []*report.Report{balanceSheetReport, incomeStatementReport})
+	})
 }
 
 func (h *InitializeHandler) convertReport(sobId uuid.UUID, cmd InitializeCmdReport) (*report.Report, error) {

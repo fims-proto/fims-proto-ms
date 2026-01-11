@@ -43,6 +43,12 @@ func NewUpdateAccountHandler(repo domain.Repository, sobService service.SobServi
 }
 
 func (h UpdateAccountHandler) Handle(ctx context.Context, cmd UpdateAccountCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.update(txCtx, cmd)
+	})
+}
+
+func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd) error {
 	return h.repo.UpdateAccount(ctx, cmd.AccountId, func(a *account.Account) (*account.Account, error) {
 		if cmd.Title != "" {
 			if err := a.UpdateTitle(cmd.Title); err != nil {

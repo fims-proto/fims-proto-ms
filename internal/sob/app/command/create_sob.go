@@ -67,7 +67,9 @@ func (h CreateSobHandler) Handle(ctx context.Context, cmd CreateSobCmd) error {
 		return fmt.Errorf("failed to create sob: %w", err)
 	}
 
-	if err = h.repo.CreateSob(ctx, sobBO); err != nil {
+	if err = h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.repo.CreateSob(txCtx, sobBO)
+	}); err != nil {
 		return err
 	}
 

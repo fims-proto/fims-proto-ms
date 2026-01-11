@@ -40,11 +40,17 @@ func NewGenerateNextIdentifierHandler(repo domain.Repository, readModel query.Nu
 }
 
 func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateNextIdentifierCmd) error {
-	configuration, err := h.readModel.ResolveIdentifierConfiguration(ctx, cmd.TargetBusinessObject, cmd.ObjectsToMatch)
-	if err != nil {
-		return fmt.Errorf("failed to handle generate identifier: %w", err)
-	}
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		configuration, err := h.readModel.ResolveIdentifierConfiguration(txCtx, cmd.TargetBusinessObject, cmd.ObjectsToMatch)
+		if err != nil {
+			return fmt.Errorf("failed to handle generate identifier: %w", err)
+		}
 
+		return h.update(txCtx, configuration, cmd)
+	})
+}
+
+func (h GenerateNextIdentifierHandler) update(ctx context.Context, configuration query.IdentifierConfiguration, cmd GenerateNextIdentifierCmd) error {
 	return h.repo.UpdateIdentifierConfiguration(
 		ctx,
 		configuration.Id,
@@ -56,8 +62,7 @@ func (h GenerateNextIdentifierHandler) Handle(ctx context.Context, cmd GenerateN
 				return nil, fmt.Errorf("failed to create identifier domain entity: %w", err)
 			}
 
-			err = h.repo.CreateIdentifier(ctx, identifierBO)
-			if err != nil {
+			if err = h.repo.CreateIdentifier(ctx, identifierBO); err != nil {
 				return nil, fmt.Errorf("failed to create identifier: %w", err)
 			}
 

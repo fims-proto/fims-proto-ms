@@ -48,6 +48,12 @@ func NewUpdateItemHandler(repo domain.Repository, generalLedgerService service.G
 }
 
 func (h UpdateItemHandler) Handle(ctx context.Context, cmd UpdateItemCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.updateItem(txCtx, cmd)
+	})
+}
+
+func (h UpdateItemHandler) updateItem(ctx context.Context, cmd UpdateItemCmd) error {
 	return h.repo.UpdateItem(ctx, cmd.Id, func(i *report.Item) (*report.Item, error) {
 		// update text
 		if err := i.UpdateText(cmd.Text); err != nil {

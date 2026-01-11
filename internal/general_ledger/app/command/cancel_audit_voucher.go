@@ -27,6 +27,12 @@ func NewCancelAuditVoucherHandler(repo domain.Repository) CancelAuditVoucherHand
 }
 
 func (h CancelAuditVoucherHandler) Handle(ctx context.Context, cmd CancelAuditVoucherCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.cancelAudit(txCtx, cmd)
+	})
+}
+
+func (h CancelAuditVoucherHandler) cancelAudit(ctx context.Context, cmd CancelAuditVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherId,

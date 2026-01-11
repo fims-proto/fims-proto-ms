@@ -10,7 +10,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -33,6 +32,10 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
+func (r SobPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error {
+	return r.dataSource.EnableTransaction(ctx, txFn)
+}
+
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -43,25 +46,23 @@ func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) erro
 func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Transaction(func(tx *gorm.DB) error {
-		po := sobPO{Id: sobId}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
-			return fmt.Errorf("failed to find sob: %w", err)
-		}
+	po := sobPO{Id: sobId}
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
+		return fmt.Errorf("failed to find sob: %w", err)
+	}
 
-		bo, err := sobPOToBO(po)
-		if err != nil {
-			return err
-		}
+	bo, err := sobPOToBO(po)
+	if err != nil {
+		return err
+	}
 
-		updatedBO, err := updateFn(bo)
-		if err != nil {
-			return fmt.Errorf("failed to update sob: %w", err)
-		}
+	updatedBO, err := updateFn(bo)
+	if err != nil {
+		return fmt.Errorf("failed to update sob: %w", err)
+	}
 
-		po = sobBOToPO(*updatedBO)
-		return tx.Save(&po).Error
-	})
+	po = sobBOToPO(*updatedBO)
+	return db.Save(&po).Error
 }
 
 // Queries

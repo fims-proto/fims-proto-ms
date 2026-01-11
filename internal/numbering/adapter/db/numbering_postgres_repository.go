@@ -11,7 +11,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
 
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
@@ -34,6 +33,10 @@ func (r NumberingPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
+func (r NumberingPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error {
+	return r.dataSource.EnableTransaction(ctx, txFn)
+}
+
 func (r NumberingPostgresRepository) CreateIdentifierConfiguration(
 	ctx context.Context,
 	domainConfig *identifier_configuration.IdentifierConfiguration,
@@ -45,9 +48,7 @@ func (r NumberingPostgresRepository) CreateIdentifierConfiguration(
 		return err
 	}
 
-	return db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(&dbConfig).Error
-	})
+	return db.Create(&dbConfig).Error
 }
 
 func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(
@@ -57,28 +58,27 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Transaction(func(tx *gorm.DB) error {
-		po := identifierConfigurationPO{Id: id}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
-			return err
-		}
+	po := identifierConfigurationPO{Id: id}
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
+		return err
+	}
 
-		bo, err := identifierConfigurationPOToBO(po)
-		if err != nil {
-			return err
-		}
+	bo, err := identifierConfigurationPOToBO(po)
+	if err != nil {
+		return err
+	}
 
-		updatedBO, err := updateFn(bo)
-		if err != nil {
-			return fmt.Errorf("failed to update identifier configuration: %w", err)
-		}
+	updatedBO, err := updateFn(bo)
+	if err != nil {
+		return fmt.Errorf("failed to update identifier configuration: %w", err)
+	}
 
-		po, err = identifierConfigurationBOToPO(*updatedBO)
-		if err != nil {
-			return err
-		}
-		return tx.Save(&po).Error
-	})
+	po, err = identifierConfigurationBOToPO(*updatedBO)
+	if err != nil {
+		return err
+	}
+
+	return db.Save(&po).Error
 }
 
 func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *identifier.Identifier) error {
@@ -86,9 +86,7 @@ func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *i
 
 	po := identifierBOToPO(*bo)
 
-	return db.Transaction(func(tx *gorm.DB) error {
-		return tx.Create(&po).Error
-	})
+	return db.Create(&po).Error
 }
 
 func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(

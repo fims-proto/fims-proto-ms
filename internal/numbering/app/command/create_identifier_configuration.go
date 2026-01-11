@@ -46,5 +46,7 @@ func (h CreateIdentifierConfigurationHandler) Handle(ctx context.Context, cmd Cr
 		return fmt.Errorf("failed to handle configuration identifier creation: %w", err)
 	}
 
-	return h.repo.CreateIdentifierConfiguration(ctx, configuration)
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.repo.CreateIdentifierConfiguration(txCtx, configuration)
+	})
 }

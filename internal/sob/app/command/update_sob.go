@@ -30,6 +30,12 @@ func NewUpdateSobHandler(repo domain.Repository) UpdateSobHandler {
 }
 
 func (h UpdateSobHandler) Handle(ctx context.Context, cmd UpdateSobCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.update(txCtx, cmd)
+	})
+}
+
+func (h UpdateSobHandler) update(ctx context.Context, cmd UpdateSobCmd) error {
 	return h.repo.UpdateSob(
 		ctx,
 		cmd.SobId,
