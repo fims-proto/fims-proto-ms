@@ -8,14 +8,16 @@ type InitializeCmdReport struct {
 }
 
 type InitializeCmdSection struct {
-	Title    string                 `json:"title"`
-	Sections []InitializeCmdSection `json:"sections"`
-	Items    []InitializeCmdItem    `json:"items"`
+	Title       string                 `json:"title"`
+	SectionType string                 `json:"sectionType"`
+	Sections    []InitializeCmdSection `json:"sections"`
+	Items       []InitializeCmdItem    `json:"items"`
 }
 
 type InitializeCmdItem struct {
 	Text             string                 `json:"text"`
 	Level            int                    `json:"level"`
+	ItemType         string                 `json:"itemType"`
 	SumFactor        int                    `json:"sumFactor"`
 	DisplaySumFactor bool                   `json:"displaySumFactor"`
 	DataSource       string                 `json:"dataSource"`

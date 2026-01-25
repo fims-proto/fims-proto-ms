@@ -33,14 +33,15 @@ type reportPO struct {
 }
 
 type sectionPO struct {
-	Id        uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	ReportId  uuid.UUID  `gorm:"type:uuid"`
-	SectionId *uuid.UUID `gorm:"type:uuid"`
-	Title     string
-	Sequence  int
-	Amounts   pgtype.TextArray `gorm:"type:text[]"`
-	Sections  []*sectionPO     `gorm:"foreignKey:SectionId"`
-	Items     []*itemPO        `gorm:"foreignKey:SectionId"`
+	Id          uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	ReportId    uuid.UUID  `gorm:"type:uuid"`
+	SectionId   *uuid.UUID `gorm:"type:uuid"`
+	Title       string
+	Sequence    int
+	SectionType string
+	Amounts     pgtype.TextArray `gorm:"type:text[]"`
+	Sections    []*sectionPO     `gorm:"foreignKey:SectionId"`
+	Items       []*itemPO        `gorm:"foreignKey:SectionId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -52,6 +53,7 @@ type itemPO struct {
 	Text             string
 	Level            int
 	Sequence         int
+	ItemType         string
 	SumFactor        int
 	DisplaySumFactor bool
 	DataSource       string
@@ -195,14 +197,15 @@ func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) 
 	}
 
 	return &sectionPO{
-		Id:        bo.Id(),
-		ReportId:  reportId,
-		SectionId: converter.UUIDToPtr(sectionId),
-		Title:     bo.Title(),
-		Sequence:  bo.Sequence(),
-		Amounts:   amounts,
-		Sections:  subSections,
-		Items:     items,
+		Id:          bo.Id(),
+		ReportId:    reportId,
+		SectionId:   converter.UUIDToPtr(sectionId),
+		Title:       bo.Title(),
+		Sequence:    bo.Sequence(),
+		SectionType: bo.SectionType().String(),
+		Amounts:     amounts,
+		Sections:    subSections,
+		Items:       items,
 	}
 }
 
@@ -223,6 +226,7 @@ func itemBOToPO(bo *report.Item, sectionId uuid.UUID) *itemPO {
 		Text:             bo.Text(),
 		Level:            bo.Level(),
 		Sequence:         bo.Sequence(),
+		ItemType:         bo.ItemType().String(),
 		SumFactor:        bo.SumFactor(),
 		DisplaySumFactor: bo.DisplaySumFactor(),
 		DataSource:       bo.DataSource().String(),
@@ -298,6 +302,7 @@ func sectionPOToBO(po *sectionPO) (*report.Section, error) {
 		po.Id,
 		po.Title,
 		po.Sequence,
+		po.SectionType,
 		amounts,
 		subSections,
 		items,
@@ -315,21 +320,7 @@ func itemPOToBO(po *itemPO) (*report.Item, error) {
 		return nil, err
 	}
 
-	return report.NewItem(
-		po.Id,
-		po.Text,
-		po.Level,
-		po.Sequence,
-		po.SumFactor,
-		po.DisplaySumFactor,
-		po.DataSource,
-		formulas,
-		amounts,
-		po.IsEditable,
-		po.IsBreakdownItem,
-		po.IsAbleToAddChild,
-		po.IsAbleToAddLeaf,
-	)
+	return report.NewItem(po.Id, po.Text, po.Level, po.Sequence, po.ItemType, po.SumFactor, po.DisplaySumFactor, po.DataSource, formulas, amounts, po.IsEditable, po.IsBreakdownItem, po.IsAbleToAddChild, po.IsAbleToAddLeaf)
 }
 
 func formulaPOToBO(po *formulaPO) (*report.Formula, error) {
@@ -378,12 +369,13 @@ func sectionPOToDTO(po *sectionPO) query.Section {
 	}
 
 	return query.Section{
-		Id:       po.Id,
-		Title:    po.Title,
-		Sequence: po.Sequence,
-		Amounts:  amounts,
-		Sections: converter.POsToDTOs(po.Sections, sectionPOToDTO),
-		Items:    converter.POsToDTOs(po.Items, itemPOToDTO),
+		Id:          po.Id,
+		Title:       po.Title,
+		Sequence:    po.Sequence,
+		SectionType: po.SectionType,
+		Amounts:     amounts,
+		Sections:    converter.POsToDTOs(po.Sections, sectionPOToDTO),
+		Items:       converter.POsToDTOs(po.Items, itemPOToDTO),
 	}
 }
 
@@ -398,6 +390,7 @@ func itemPOToDTO(po *itemPO) query.Item {
 		Text:             po.Text,
 		Level:            po.Level,
 		Sequence:         po.Sequence,
+		ItemType:         po.ItemType,
 		SumFactor:        po.SumFactor,
 		DisplaySumFactor: po.DisplaySumFactor,
 		DataSource:       po.DataSource,

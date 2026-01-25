@@ -239,6 +239,7 @@
         {
           "text": "二、营业利润（亏损以\"-\"号填列）",
           "level": 1,
+          "itemType": "operating_profit",
           "sumFactor": 0,
           "dataSource": "sum"
         },
@@ -329,6 +330,7 @@
         {
           "text": "三、利润总额（亏损以\"-\"号填列）",
           "level": 1,
+          "itemType": "total_profit",
           "sumFactor": 0,
           "dataSource": "sum"
         },
@@ -350,6 +352,7 @@
         {
           "text": "四、净利润（亏损以\"-\"号填列）",
           "level": 1,
+          "itemType": "net_profit",
           "sumFactor": 0,
           "dataSource": "sum"
         }

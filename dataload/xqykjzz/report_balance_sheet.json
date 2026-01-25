@@ -8,6 +8,7 @@
   "sections": [
     {
       "title": "资产",
+      "sectionType": "assets",
       "sections": [
         {
           "title": "流动资产",
@@ -539,6 +540,7 @@
       "sections": [
         {
           "title": "负债",
+          "sectionType": "liabilities",
           "sections": [
             {
               "title": "流动负债",
@@ -765,6 +767,7 @@
         },
         {
           "title": "所有者权益",
+          "sectionType": "equity",
           "items": [
             {
               "text": "所有者权益：",

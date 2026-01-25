@@ -8,6 +8,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/report/domain/generator"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/validator"
 
 	"github.com/google/uuid"
 )
@@ -64,7 +65,8 @@ func (h GenerateHandler) handle(ctx context.Context, cmd GenerateReportCmd) erro
 		return fmt.Errorf("failed to read period: %w", err)
 	}
 
-	reportGenerator := generator.NewGenerator(reportTemplate, h.generalLedgerService)
+	v := validator.NewValidatorFactory(reportTemplate.Class())
+	reportGenerator := generator.NewGenerator(reportTemplate, h.generalLedgerService, v)
 	newReport, err := reportGenerator.Generate(ctx, cmd.ReportId, periodId, cmd.Title, cmd.AmountTypes)
 	if err != nil {
 		return fmt.Errorf("failed to generate report: %w", err)

@@ -22,12 +22,13 @@ type Report struct {
 }
 
 type Section struct {
-	Id       uuid.UUID
-	Title    string
-	Sequence int
-	Amounts  []decimal.Decimal
-	Sections []Section
-	Items    []Item
+	Id          uuid.UUID
+	Title       string
+	Sequence    int
+	SectionType string
+	Amounts     []decimal.Decimal
+	Sections    []Section
+	Items       []Item
 }
 
 type Item struct {
@@ -35,6 +36,7 @@ type Item struct {
 	Text             string
 	Level            int
 	Sequence         int
+	ItemType         string
 	SumFactor        int
 	DisplaySumFactor bool
 	DataSource       string

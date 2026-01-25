@@ -8,6 +8,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/report/domain/generator"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/validator"
 
 	"github.com/google/uuid"
 )
@@ -47,7 +48,8 @@ func (h RegenerateHandler) regenerate(ctx context.Context, cmd RegenerateReportC
 		ctx,
 		cmd.ReportId,
 		func(r *report.Report) (*report.Report, error) {
-			g := generator.NewGenerator(r, h.generalLedgerService)
+			v := validator.NewValidatorFactory(r.Class())
+			g := generator.NewGenerator(r, h.generalLedgerService, v)
 			if err := g.Regenerate(ctx); err != nil {
 				return nil, fmt.Errorf("failed to regenerate report: %w", err)
 			}

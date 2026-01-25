@@ -5,6 +5,7 @@ import (
 
 	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report/item_type"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -17,6 +18,7 @@ type Item struct {
 	sequence         int // sequence within the parent, starts from 1
 	sumFactor        int // 0,1,-1
 	displaySumFactor bool
+	itemType         item_type.ItemType
 	dataSource       data_source.DataSource
 	formulas         []*Formula
 	amounts          []decimal.Decimal
@@ -31,6 +33,7 @@ func NewItem(
 	text string,
 	level int,
 	sequence int,
+	itemType string,
 	sumFactor int,
 	displaySumFactor bool,
 	dataSource string,
@@ -61,6 +64,11 @@ func NewItem(
 		return nil, commonerrors.NewSlugError("report-item-invalidSumFactor")
 	}
 
+	newItemType, err := item_type.FromString(itemType)
+	if err != nil {
+		return nil, err
+	}
+
 	newDataSource, err := data_source.FromString(dataSource)
 	if err != nil {
 		return nil, err
@@ -81,6 +89,7 @@ func NewItem(
 		sequence:         sequence,
 		sumFactor:        sumFactor,
 		displaySumFactor: displaySumFactor,
+		itemType:         newItemType,
 		dataSource:       newDataSource,
 		formulas:         formulas,
 		amounts:          amounts,
@@ -97,21 +106,7 @@ func (i *Item) copy() *Item {
 		newFormulas = append(newFormulas, formula.copy())
 	}
 
-	newItem, _ := NewItem(
-		uuid.New(),
-		i.text,
-		i.level,
-		i.sequence,
-		i.sumFactor,
-		i.displaySumFactor,
-		i.dataSource.String(),
-		newFormulas,
-		nil,
-		i.isEditable,
-		i.isBreakdownItem,
-		i.isAbleToAddChild,
-		i.isAbleToAddLeaf,
-	)
+	newItem, _ := NewItem(uuid.New(), i.text, i.level, i.sequence, i.itemType.String(), i.sumFactor, i.displaySumFactor, i.dataSource.String(), newFormulas, nil, i.isEditable, i.isBreakdownItem, i.isAbleToAddChild, i.isAbleToAddLeaf)
 	return newItem
 }
 
@@ -153,6 +148,10 @@ func (i *Item) Formulas() []*Formula {
 
 func (i *Item) Amounts() []decimal.Decimal {
 	return i.amounts
+}
+
+func (i *Item) ItemType() item_type.ItemType {
+	return i.itemType
 }
 
 func (i *Item) IsEditable() bool {

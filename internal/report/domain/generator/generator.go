@@ -11,20 +11,26 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/validator"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type Generator struct {
-	r  *report.Report
-	gl service.GeneralLedgerService
+	r         *report.Report
+	gl        service.GeneralLedgerService
+	validator validator.ReportValidator
 
 	periods      []*general_ledger.Period
 	ledgersCache map[uuid.UUID][]*aggregatedLedger // in memory cache
 }
 
-func NewGenerator(report *report.Report, generalLedger service.GeneralLedgerService) *Generator {
+func NewGenerator(
+	report *report.Report,
+	generalLedger service.GeneralLedgerService,
+	reportValidator validator.ReportValidator,
+) *Generator {
 	if report == nil {
 		panic("nil report")
 	}
@@ -33,9 +39,14 @@ func NewGenerator(report *report.Report, generalLedger service.GeneralLedgerServ
 		panic("nil general ledger repository")
 	}
 
+	if reportValidator == nil {
+		panic("nil validator")
+	}
+
 	return &Generator{
-		r:  report,
-		gl: generalLedger,
+		r:         report,
+		gl:        generalLedger,
+		validator: reportValidator,
 
 		periods:      nil,
 		ledgersCache: make(map[uuid.UUID][]*aggregatedLedger),
@@ -84,10 +95,15 @@ func (g *Generator) Regenerate(ctx context.Context) error {
 		}
 	}
 
+	// Validate report after calculations
+	if err := g.validator.Validate(ctx, g.r); err != nil {
+		return fmt.Errorf("report validation failed: %w", err)
+	}
+
 	return nil
 }
 
-// summarise sections and items amounts to a section
+// summarize sections and items amounts to a section
 func (g *Generator) processSectionAmounts(ctx context.Context, section *report.Section) error {
 	amounts := make([]decimal.Decimal, len(g.r.AmountTypes()))
 
