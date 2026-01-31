@@ -78,8 +78,45 @@ func (r ReportPostgresRepository) UpdateReport(
 	}
 
 	// save
+	// First, delete all existing associations to ensure orphaned records are removed
+	// This is necessary because GORM's FullSaveAssociations only upserts, it doesn't delete removed associations
+
+	// Step 1: Find all section IDs for this report
+	var sectionIds []uuid.UUID
+	if err := db.Model(&sectionPO{}).Where("report_id = ?", reportId).Pluck("id", &sectionIds).Error; err != nil {
+		return fmt.Errorf("failed to find section ids: %w", err)
+	}
+
+	// Step 2: Find all item IDs for these sections
+	var itemIds []uuid.UUID
+	if len(sectionIds) > 0 {
+		if err := db.Model(&itemPO{}).Where("section_id IN ?", sectionIds).Pluck("id", &itemIds).Error; err != nil {
+			return fmt.Errorf("failed to find item ids: %w", err)
+		}
+	}
+
+	// Step 3: Delete formulas associated with these items
+	if len(itemIds) > 0 {
+		if err := db.Where("item_id IN ?", itemIds).Delete(&formulaPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete formulas: %w", err)
+		}
+	}
+
+	// Step 4: Delete items associated with these sections
+	if len(sectionIds) > 0 {
+		if err := db.Where("section_id IN ?", sectionIds).Delete(&itemPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete items: %w", err)
+		}
+	}
+
+	// Step 5: Delete all sections for this report
+	if err := db.Where("report_id = ?", reportId).Delete(&sectionPO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete sections: %w", err)
+	}
+
+	// Step 6: Save the updated report with all new associations
 	updatedPO := reportBOToPO(updatedBO)
-	return db.Session(&gorm.Session{FullSaveAssociations: true}).Updates(&updatedPO).Error
+	return db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updatedPO).Error
 }
 
 func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error) {

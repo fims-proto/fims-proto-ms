@@ -40,7 +40,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "短期投资",
@@ -54,7 +55,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "应收票据",
@@ -68,7 +70,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "应收账款",
@@ -82,7 +85,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "预付账款",
@@ -96,7 +100,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "应收股利",
@@ -110,7 +115,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "应收利息",
@@ -124,7 +130,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "其他应收款",
@@ -138,7 +145,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "存货",
@@ -212,7 +220,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "原材料",
@@ -305,7 +314,8 @@
               "sumFactor": 1,
               "dataSource": "formulas",
               "formulas": [],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "流动资产合计",
@@ -334,7 +344,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "长期股权投资",
@@ -348,7 +359,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "固定资产原价",
@@ -362,7 +374,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "累计折旧",
@@ -377,7 +390,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "固定资产账面价值",
@@ -409,7 +423,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "工程物资",
@@ -423,7 +438,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "固定资产清理",
@@ -437,7 +453,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "生产性生物资产",
@@ -456,7 +473,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "无形资产",
@@ -475,7 +493,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "开发支出",
@@ -489,7 +508,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "长期待摊费用",
@@ -503,7 +523,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "其他非流动资产",
@@ -517,7 +538,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "非流动资产合计",
@@ -562,7 +584,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "应付票据",
@@ -576,7 +599,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "应付账款",
@@ -590,7 +614,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "预收账款",
@@ -604,7 +629,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "应付职工薪酬",
@@ -618,7 +644,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "应交税费",
@@ -632,7 +659,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "应付利息",
@@ -646,7 +674,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "应付利润",
@@ -660,7 +689,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "其他应付款",
@@ -674,7 +704,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "其他流动负债",
@@ -711,7 +742,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "长期应付款",
@@ -725,7 +757,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "递延收益",
@@ -739,7 +772,8 @@
                       "rule": "net"
                     }
                   ],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "其他非流动负债",
@@ -747,7 +781,8 @@
                   "sumFactor": 1,
                   "dataSource": "formulas",
                   "formulas": [],
-                  "isEditable": true
+                  "isEditable": true,
+                  "isAbleToAddChild": true
                 },
                 {
                   "text": "非流动负债合计",
@@ -786,7 +821,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "资本公积",
@@ -800,7 +836,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "盈余公积",
@@ -814,7 +851,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "未分配利润",
@@ -833,7 +871,8 @@
                   "rule": "net"
                 }
               ],
-              "isEditable": true
+              "isEditable": true,
+              "isAbleToAddChild": true
             },
             {
               "text": "所有者权益合计",

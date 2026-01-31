@@ -153,3 +153,67 @@ func (h Handler) UpdateItem(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// AddItem godoc
+//
+//	@Summary		Add a new item to a report section
+//	@Description	Add a new item to a report section at the specified position
+//	@Tags			reports
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId			path		string			true	"Sob ID"
+//	@Param			reportId		path		string			true	"Report ID"
+//	@Param			sectionId		path		string			true	"Section ID"
+//	@Param			AddItemRequest	body		AddItemRequest	true	"Add report item request (insertAfterSequence: 0=beginning, omit=beginning, N=after sequence N, >=max=end)"
+//	@Success		201				{object}	AddItemResponse
+//	@Failure		400				{object}	Error
+//	@Failure		500				{object}	Error
+//	@Router			/sob/{sobId}/report/{reportId}/section/{sectionId}/item [post]
+func (h Handler) AddItem(c *gin.Context) {
+	var req AddItemRequest
+	if err := c.ShouldBind(&req); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	cmd := req.mapToCommand(
+		uuid.MustParse(c.Param("sobId")),
+		uuid.MustParse(c.Param("reportId")),
+		uuid.MustParse(c.Param("sectionId")),
+	)
+	itemId, err := h.app.Commands.AddItem.Handle(c, cmd)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, AddItemResponse{ItemId: itemId})
+}
+
+// DeleteItem godoc
+//
+//	@Summary		Delete a report item from a section
+//	@Description	Delete a report item from a specific section
+//	@Tags			reports
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path	string	true	"Sob ID"
+//	@Param			reportId	path	string	true	"Report ID"
+//	@Param			sectionId	path	string	true	"Section ID"
+//	@Param			itemId		path	string	true	"Item ID"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		404	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/report/{reportId}/section/{sectionId}/item/{itemId} [delete]
+func (h Handler) DeleteItem(c *gin.Context) {
+	cmd := command.DeleteItemCmd{
+		ReportId:  uuid.MustParse(c.Param("reportId")),
+		SectionId: uuid.MustParse(c.Param("sectionId")),
+		ItemId:    uuid.MustParse(c.Param("itemId")),
+	}
+	if err := h.app.Commands.DeleteItem.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

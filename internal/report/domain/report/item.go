@@ -25,7 +25,6 @@ type Item struct {
 	isEditable       bool
 	isBreakdownItem  bool
 	isAbleToAddChild bool
-	isAbleToAddLeaf  bool
 }
 
 func NewItem(
@@ -42,7 +41,6 @@ func NewItem(
 	isEditable bool,
 	isBreakdownItem bool,
 	isAbleToAddChild bool,
-	isAbleToAddLeaf bool,
 ) (*Item, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("item id cannot be nil")
@@ -82,6 +80,10 @@ func NewItem(
 		return nil, commonerrors.NewSlugError("report-item-rootLevelIsBreakdownItem")
 	}
 
+	if isBreakdownItem && isAbleToAddChild {
+		return nil, commonerrors.NewSlugError("report-item-breakdownItemCannotAddChild")
+	}
+
 	return &Item{
 		id:               id,
 		text:             text,
@@ -96,7 +98,6 @@ func NewItem(
 		isEditable:       isEditable,
 		isBreakdownItem:  isBreakdownItem,
 		isAbleToAddChild: isAbleToAddChild,
-		isAbleToAddLeaf:  isAbleToAddLeaf,
 	}, nil
 }
 
@@ -106,12 +107,16 @@ func (i *Item) copy() *Item {
 		newFormulas = append(newFormulas, formula.copy())
 	}
 
-	newItem, _ := NewItem(uuid.New(), i.text, i.level, i.sequence, i.itemType.String(), i.sumFactor, i.displaySumFactor, i.dataSource.String(), newFormulas, nil, i.isEditable, i.isBreakdownItem, i.isAbleToAddChild, i.isAbleToAddLeaf)
+	newItem, _ := NewItem(uuid.New(), i.text, i.level, i.sequence, i.itemType.String(), i.sumFactor, i.displaySumFactor, i.dataSource.String(), newFormulas, nil, i.isEditable, i.isBreakdownItem, i.isAbleToAddChild)
 	return newItem
 }
 
 func (i *Item) SetAmounts(amounts []decimal.Decimal) {
 	i.amounts = amounts
+}
+
+func (i *Item) SetSequence(sequence int) {
+	i.sequence = sequence
 }
 
 func (i *Item) Id() uuid.UUID {
@@ -164,8 +169,4 @@ func (i *Item) IsBreakdownItem() bool {
 
 func (i *Item) IsAbleToAddChild() bool {
 	return i.isAbleToAddChild
-}
-
-func (i *Item) IsAbleToAddLeaf() bool {
-	return i.isAbleToAddLeaf
 }

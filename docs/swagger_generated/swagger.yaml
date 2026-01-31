@@ -129,6 +129,32 @@ definitions:
       id:
         type: string
     type: object
+  http.AddItemRequest:
+    properties:
+      dataSource:
+        type: string
+      formulas:
+        items:
+          $ref: '#/definitions/http.UpdateItemFormulaRequest'
+        type: array
+      insertAfterSequence:
+        type: integer
+      isAbleToAddChild:
+        type: boolean
+      isBreakdownItem:
+        type: boolean
+      level:
+        type: integer
+      sumFactor:
+        type: integer
+      text:
+        type: string
+    type: object
+  http.AddItemResponse:
+    properties:
+      itemId:
+        type: string
+    type: object
   http.AuditVoucherRequest:
     properties:
       auditor:
@@ -307,8 +333,6 @@ definitions:
       id:
         type: string
       isAbleToAddChild:
-        type: boolean
-      isAbleToAddLeaf:
         type: boolean
       isBreakdownItem:
         type: boolean
@@ -1444,6 +1468,98 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}/section/{sectionId}/item:
+    post:
+      consumes:
+      - application/json
+      description: Add a new item to a report section at the specified position
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report ID
+        in: path
+        name: reportId
+        required: true
+        type: string
+      - description: Section ID
+        in: path
+        name: sectionId
+        required: true
+        type: string
+      - description: 'Add report item request (insertAfterSequence: 0=beginning, omit=beginning,
+          N=after sequence N, >=max=end)'
+        in: body
+        name: AddItemRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.AddItemRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.AddItemResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Add a new item to a report section
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}/section/{sectionId}/item/{itemId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a report item from a specific section
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report ID
+        in: path
+        name: reportId
+        required: true
+        type: string
+      - description: Section ID
+        in: path
+        name: sectionId
+        required: true
+        type: string
+      - description: Item ID
+        in: path
+        name: itemId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Delete a report item from a section
       tags:
       - reports
   /sob/{sobId}/reports:

@@ -1092,6 +1092,141 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/report/{reportId}/section/{sectionId}/item": {
+            "post": {
+                "description": "Add a new item to a report section at the specified position",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Add a new item to a report section",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Section ID",
+                        "name": "sectionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Add report item request (insertAfterSequence: 0=beginning, omit=beginning, N=after sequence N, \u003e=max=end)",
+                        "name": "AddItemRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.AddItemRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.AddItemResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}/section/{sectionId}/item/{itemId}": {
+            "delete": {
+                "description": "Delete a report item from a specific section",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Delete a report item from a section",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Section ID",
+                        "name": "sectionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Item ID",
+                        "name": "itemId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/reports": {
             "get": {
                 "description": "List all reports by sob with pagination",
@@ -2155,6 +2290,46 @@ const docTemplate = `{
                 }
             }
         },
+        "http.AddItemRequest": {
+            "type": "object",
+            "properties": {
+                "dataSource": {
+                    "type": "string"
+                },
+                "formulas": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateItemFormulaRequest"
+                    }
+                },
+                "insertAfterSequence": {
+                    "type": "integer"
+                },
+                "isAbleToAddChild": {
+                    "type": "boolean"
+                },
+                "isBreakdownItem": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AddItemResponse": {
+            "type": "object",
+            "properties": {
+                "itemId": {
+                    "type": "string"
+                }
+            }
+        },
         "http.AuditVoucherRequest": {
             "type": "object",
             "properties": {
@@ -2428,9 +2603,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "isAbleToAddChild": {
-                    "type": "boolean"
-                },
-                "isAbleToAddLeaf": {
                     "type": "boolean"
                 },
                 "isBreakdownItem": {

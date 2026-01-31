@@ -26,7 +26,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "营业成本",
@@ -46,7 +47,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "营业税金及附加",
@@ -60,7 +62,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "消费税",
@@ -137,7 +140,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "商品维修费",
@@ -169,7 +173,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "开办费",
@@ -210,7 +215,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "利息费用（收入以\"-\"号填列）",
@@ -234,14 +240,16 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "二、营业利润（亏损以\"-\"号填列）",
           "level": 1,
           "itemType": "operating_profit",
           "sumFactor": 0,
-          "dataSource": "sum"
+          "dataSource": "sum",
+          "isAbleToAddChild": true
         },
         {
           "text": "营业外收入",
@@ -256,7 +264,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "政府补助",
@@ -280,7 +289,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "坏账损失",
@@ -332,7 +342,8 @@
           "level": 1,
           "itemType": "total_profit",
           "sumFactor": 0,
-          "dataSource": "sum"
+          "dataSource": "sum",
+          "isAbleToAddChild": true
         },
         {
           "text": "所得税费用",
@@ -347,7 +358,8 @@
               "rule": "transaction"
             }
           ],
-          "isEditable": true
+          "isEditable": true,
+          "isAbleToAddChild": true
         },
         {
           "text": "四、净利润（亏损以\"-\"号填列）",

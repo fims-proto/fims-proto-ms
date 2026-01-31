@@ -56,7 +56,6 @@ type ItemResponse struct {
 	IsEditable       bool              `json:"isEditable,omitempty"`
 	IsBreakdownItem  bool              `json:"isBreakdownItem,omitempty"`
 	IsAbleToAddChild bool              `json:"isAbleToAddChild,omitempty"`
-	IsAbleToAddLeaf  bool              `json:"isAbleToAddLeaf,omitempty"`
 }
 
 type FormulaResponse struct {
@@ -79,6 +78,10 @@ type AccountResponse struct {
 	Class             int        `json:"class"`
 	Group             int        `json:"group"`
 	BalanceDirection  string     `json:"balanceDirection"`
+}
+
+type AddItemResponse struct {
+	ItemId uuid.UUID `json:"itemId"`
 }
 
 // mappers
@@ -123,7 +126,6 @@ func itemDTOToVO(dto query.Item) ItemResponse {
 		IsEditable:       dto.IsEditable,
 		IsBreakdownItem:  dto.IsBreakdownItem,
 		IsAbleToAddChild: dto.IsAbleToAddChild,
-		IsAbleToAddLeaf:  dto.IsAbleToAddLeaf,
 	}
 }
 

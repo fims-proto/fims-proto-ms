@@ -130,19 +130,19 @@ func prepareReport(t *testing.T) *report.Report {
 	formula100 := prepareFormula(t, 1, accountId100, 1, "debit")
 	formula110 := prepareFormula(t, 1, accountId110, 1, "credit")
 
-	item000, err := report.NewItem(uuid.New(), "item_000", 1, 1, "", 1, false, "formulas", []*report.Formula{formula0000, formula0001}, nil, false, false, false, false)
+	item000, err := report.NewItem(uuid.New(), "item_000", 1, 1, "", 1, false, "formulas", []*report.Formula{formula0000, formula0001}, nil, false, false, false)
 	assert.NoError(t, err)
 
-	item001, err := report.NewItem(uuid.New(), "item_001", 1, 2, "", 0, false, "sum", nil, nil, false, false, false, false)
+	item001, err := report.NewItem(uuid.New(), "item_001", 1, 2, "", 0, false, "sum", nil, nil, false, false, false)
 	assert.NoError(t, err)
 
-	item002, err := report.NewItem(uuid.New(), "item_002", 1, 3, "", 1, false, "formulas", []*report.Formula{formula0020, formula0021}, nil, false, false, false, false)
+	item002, err := report.NewItem(uuid.New(), "item_002", 1, 3, "", 1, false, "formulas", []*report.Formula{formula0020, formula0021}, nil, false, false, false)
 	assert.NoError(t, err)
 
-	item10, err := report.NewItem(uuid.New(), "item_10", 1, 1, "", 1, false, "formulas", []*report.Formula{formula100}, nil, false, false, false, false)
+	item10, err := report.NewItem(uuid.New(), "item_10", 1, 1, "", 1, false, "formulas", []*report.Formula{formula100}, nil, false, false, false)
 	assert.NoError(t, err)
 
-	item11, err := report.NewItem(uuid.New(), "item_11", 1, 2, "", -1, false, "formulas", []*report.Formula{formula110}, nil, false, false, false, false)
+	item11, err := report.NewItem(uuid.New(), "item_11", 1, 2, "", -1, false, "formulas", []*report.Formula{formula110}, nil, false, false, false)
 	assert.NoError(t, err)
 
 	section00, err := report.NewSection(

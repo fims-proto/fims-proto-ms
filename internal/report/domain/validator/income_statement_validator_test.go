@@ -41,7 +41,7 @@ func TestIncomeStatementValidator_MissingNetProfitItem(t *testing.T) {
 func prepareIncomeStatementWithNetProfit(t *testing.T) *report.Report {
 	t.Helper()
 
-	netProfitItem, err := report.NewItem(uuid.New(), "净利润", 1, 1, "net_profit", 1, false, "sum", nil, []decimal.Decimal{decimal.NewFromInt(5000)}, false, false, false, false)
+	netProfitItem, err := report.NewItem(uuid.New(), "净利润", 1, 1, "net_profit", 1, false, "sum", nil, []decimal.Decimal{decimal.NewFromInt(5000)}, false, false, false)
 	assert.NoError(t, err)
 
 	section, err := report.NewSection(
@@ -74,7 +74,7 @@ func prepareIncomeStatementWithNetProfit(t *testing.T) *report.Report {
 func prepareIncomeStatementWithoutNetProfit(t *testing.T) *report.Report {
 	t.Helper()
 
-	item, _ := report.NewItem(uuid.New(), "营业收入", 1, 1, "", 1, false, "sum", nil, []decimal.Decimal{decimal.NewFromInt(10000)}, false, false, false, false)
+	item, _ := report.NewItem(uuid.New(), "营业收入", 1, 1, "", 1, false, "sum", nil, []decimal.Decimal{decimal.NewFromInt(10000)}, false, false, false)
 
 	section, _ := report.NewSection(
 		uuid.New(),

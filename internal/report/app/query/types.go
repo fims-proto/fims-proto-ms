@@ -45,7 +45,6 @@ type Item struct {
 	IsEditable       bool
 	IsBreakdownItem  bool
 	IsAbleToAddChild bool
-	IsAbleToAddLeaf  bool
 }
 
 type Formula struct {

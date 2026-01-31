@@ -147,7 +147,7 @@ func (h *InitializeHandler) convertItem(cmd InitializeCmdItem, sequence int) (*r
 		formulas = append(formulas, formula)
 	}
 
-	return report.NewItem(uuid.New(), cmd.Text, cmd.Level, sequence, cmd.ItemType, cmd.SumFactor, cmd.DisplaySumFactor, cmd.DataSource, formulas, nil, cmd.IsEditable, cmd.IsBreakdownItem, cmd.IsAbleToAddChild, cmd.IsAbleToAddLeaf)
+	return report.NewItem(uuid.New(), cmd.Text, cmd.Level, sequence, cmd.ItemType, cmd.SumFactor, cmd.DisplaySumFactor, cmd.DataSource, formulas, nil, cmd.IsEditable, cmd.IsBreakdownItem, cmd.IsAbleToAddChild)
 }
 
 func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence int) (*report.Formula, error) {

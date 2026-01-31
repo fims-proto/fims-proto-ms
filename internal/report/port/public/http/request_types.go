@@ -26,6 +26,17 @@ type UpdateItemFormulaRequest struct {
 	Rule          string `json:"rule"`
 }
 
+type AddItemRequest struct {
+	InsertAfterSequence *int                       `json:"insertAfterSequence,omitempty"`
+	Text                string                     `json:"text"`
+	Level               int                        `json:"level"`
+	SumFactor           int                        `json:"sumFactor"`
+	DataSource          string                     `json:"dataSource"`
+	Formulas            []UpdateItemFormulaRequest `json:"formulas,omitempty"`
+	IsBreakdownItem     bool                       `json:"isBreakdownItem,omitempty"`
+	IsAbleToAddChild    bool                       `json:"isAbleToAddChild,omitempty"`
+}
+
 // mappers
 
 func (r UpdateItemRequest) mapToCommand(sobId, itemId uuid.UUID) command.UpdateItemCmd {
@@ -45,5 +56,35 @@ func (r UpdateItemRequest) mapToCommand(sobId, itemId uuid.UUID) command.UpdateI
 		SumFactor:  r.SumFactor,
 		DataSource: r.DataSource,
 		Formulas:   formulaCmds,
+	}
+}
+
+func (r AddItemRequest) mapToCommand(sobId, reportId, sectionId uuid.UUID) command.AddItemCmd {
+	var formulaCmds []command.FormulaCmd
+	for _, formulaReq := range r.Formulas {
+		formulaCmds = append(formulaCmds, command.FormulaCmd{
+			SumFactor:     formulaReq.SumFactor,
+			AccountNumber: formulaReq.AccountNumber,
+			Rule:          formulaReq.Rule,
+		})
+	}
+
+	insertAfterSequence := 0
+	if r.InsertAfterSequence != nil {
+		insertAfterSequence = *r.InsertAfterSequence
+	}
+
+	return command.AddItemCmd{
+		SobId:               sobId,
+		ReportId:            reportId,
+		SectionId:           sectionId,
+		InsertAfterSequence: insertAfterSequence,
+		Text:                r.Text,
+		Level:               r.Level,
+		SumFactor:           r.SumFactor,
+		DataSource:          r.DataSource,
+		Formulas:            formulaCmds,
+		IsBreakdownItem:     r.IsBreakdownItem,
+		IsAbleToAddChild:    r.IsAbleToAddChild,
 	}
 }

@@ -62,7 +62,6 @@ type itemPO struct {
 	IsEditable       bool
 	IsBreakdownItem  bool
 	IsAbleToAddChild bool
-	IsAbleToAddLeaf  bool
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -235,7 +234,6 @@ func itemBOToPO(bo *report.Item, sectionId uuid.UUID) *itemPO {
 		IsEditable:       bo.IsEditable(),
 		IsBreakdownItem:  bo.IsBreakdownItem(),
 		IsAbleToAddChild: bo.IsAbleToAddChild(),
-		IsAbleToAddLeaf:  bo.IsAbleToAddLeaf(),
 	}
 }
 
@@ -320,7 +318,7 @@ func itemPOToBO(po *itemPO) (*report.Item, error) {
 		return nil, err
 	}
 
-	return report.NewItem(po.Id, po.Text, po.Level, po.Sequence, po.ItemType, po.SumFactor, po.DisplaySumFactor, po.DataSource, formulas, amounts, po.IsEditable, po.IsBreakdownItem, po.IsAbleToAddChild, po.IsAbleToAddLeaf)
+	return report.NewItem(po.Id, po.Text, po.Level, po.Sequence, po.ItemType, po.SumFactor, po.DisplaySumFactor, po.DataSource, formulas, amounts, po.IsEditable, po.IsBreakdownItem, po.IsAbleToAddChild)
 }
 
 func formulaPOToBO(po *formulaPO) (*report.Formula, error) {
@@ -399,7 +397,6 @@ func itemPOToDTO(po *itemPO) query.Item {
 		IsEditable:       po.IsEditable,
 		IsBreakdownItem:  po.IsBreakdownItem,
 		IsAbleToAddChild: po.IsAbleToAddChild,
-		IsAbleToAddLeaf:  po.IsAbleToAddLeaf,
 	}
 }
 

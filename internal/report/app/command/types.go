@@ -25,7 +25,6 @@ type InitializeCmdItem struct {
 	IsEditable       bool                   `json:"isEditable"`
 	IsBreakdownItem  bool                   `json:"isBreakdownItem"`
 	IsAbleToAddChild bool                   `json:"isAbleToAddChild"`
-	IsAbleToAddLeaf  bool                   `json:"isAbleToAddLeaf"`
 }
 
 type InitializeCmdFormula struct {
