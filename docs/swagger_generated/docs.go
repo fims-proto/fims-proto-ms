@@ -935,6 +935,64 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "description": "Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Update entire report structure",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Complete report structure",
+                        "name": "UpdateReportRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateReportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateReportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
             }
         },
         "/sob/{sobId}/report/{reportId}/generate": {
@@ -989,69 +1047,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{reportId}/item/{itemId}": {
-            "patch": {
-                "description": "Update a report item",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Report ID",
-                        "name": "reportId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Item ID",
-                        "name": "itemId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update report item request",
-                        "name": "UpdateItemRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.UpdateItemRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sob/{sobId}/report/{reportId}/regenerate": {
             "post": {
                 "description": "Regenerate report",
@@ -1079,141 +1074,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/report/{reportId}/section/{sectionId}/item": {
-            "post": {
-                "description": "Add a new item to a report section at the specified position",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "summary": "Add a new item to a report section",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Report ID",
-                        "name": "reportId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Section ID",
-                        "name": "sectionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Add report item request (insertAfterSequence: 0=beginning, omit=beginning, N=after sequence N, \u003e=max=end)",
-                        "name": "AddItemRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.AddItemRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/http.AddItemResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/report/{reportId}/section/{sectionId}/item/{itemId}": {
-            "delete": {
-                "description": "Delete a report item from a specific section",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "summary": "Delete a report item from a section",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Report ID",
-                        "name": "reportId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Section ID",
-                        "name": "sectionId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Item ID",
-                        "name": "itemId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
@@ -2290,46 +2150,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AddItemRequest": {
-            "type": "object",
-            "properties": {
-                "dataSource": {
-                    "type": "string"
-                },
-                "formulas": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateItemFormulaRequest"
-                    }
-                },
-                "insertAfterSequence": {
-                    "type": "integer"
-                },
-                "isAbleToAddChild": {
-                    "type": "boolean"
-                },
-                "isBreakdownItem": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "sumFactor": {
-                    "type": "integer"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.AddItemResponse": {
-            "type": "object",
-            "properties": {
-                "itemId": {
-                    "type": "string"
-                }
-            }
-        },
         "http.AuditVoucherRequest": {
             "type": "object",
             "properties": {
@@ -2888,8 +2708,13 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateItemFormulaRequest": {
+        "http.UpdateReportFormulaRequest": {
             "type": "object",
+            "required": [
+                "accountNumber",
+                "rule",
+                "sumFactor"
+            ],
             "properties": {
                 "accountNumber": {
                     "type": "string"
@@ -2902,22 +2727,101 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateItemRequest": {
+        "http.UpdateReportItemRequest": {
             "type": "object",
             "properties": {
                 "dataSource": {
                     "type": "string"
                 },
+                "displaySumFactor": {
+                    "type": "boolean"
+                },
                 "formulas": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.UpdateItemFormulaRequest"
+                        "$ref": "#/definitions/http.UpdateReportFormulaRequest"
                     }
+                },
+                "id": {
+                    "description": "Identity",
+                    "type": "string"
+                },
+                "isAbleToAddChild": {
+                    "type": "boolean"
+                },
+                "isBreakdownItem": {
+                    "type": "boolean"
+                },
+                "itemType": {
+                    "type": "string"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "sequence": {
+                    "description": "Position",
+                    "type": "integer"
                 },
                 "sumFactor": {
                     "type": "integer"
                 },
                 "text": {
+                    "description": "Content (required for new items, optional for updates to existing items)",
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateReportRequest": {
+            "type": "object",
+            "properties": {
+                "amountTypes": {
+                    "description": "Optional: update amount types",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "sections": {
+                    "description": "Required: complete section structure",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateSectionRequest"
+                    }
+                },
+                "title": {
+                    "description": "Optional: update report title",
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateReportResponse": {
+            "type": "object",
+            "properties": {
+                "createdItemIds": {
+                    "description": "Maps client temp ID -\u003e actual UUID",
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "http.UpdateSectionRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "Section ID",
+                    "type": "string"
+                },
+                "items": {
+                    "description": "Complete item list for this section",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateReportItemRequest"
+                    }
+                },
+                "title": {
+                    "description": "Optional: update section title",
                     "type": "string"
                 }
             }

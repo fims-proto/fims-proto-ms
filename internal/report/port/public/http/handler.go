@@ -22,7 +22,5 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/report/:reportId", h.ReadReportById)
 	r.POST("/sob/:sobId/report/:reportId/generate", h.GenerateReport)
 	r.POST("/sob/:sobId/report/:reportId/regenerate", h.RegenerateReport)
-	r.PATCH("/sob/:sobId/report/:reportId/item/:itemId", h.UpdateItem)
-	r.POST("/sob/:sobId/report/:reportId/section/:sectionId/item", h.AddItem)
-	r.DELETE("/sob/:sobId/report/:reportId/section/:sectionId/item/:itemId", h.DeleteItem)
+	r.PATCH("/sob/:sobId/report/:reportId", h.UpdateReport)
 }
