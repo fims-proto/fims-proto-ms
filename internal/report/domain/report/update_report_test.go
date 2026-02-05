@@ -24,7 +24,6 @@ func TestReport_UpdateReportStructure_UpdateTitle(t *testing.T) {
 	}
 
 	_, err := report.UpdateReportStructure(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("UpdateReportStructure() error = %v, want nil", err)
@@ -47,7 +46,6 @@ func TestReport_UpdateReportStructure_UpdateAmountTypes(t *testing.T) {
 	}
 
 	_, err := report.UpdateReportStructure(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("UpdateReportStructure() error = %v, want nil", err)
@@ -87,7 +85,6 @@ func TestSection_SynchronizeItems_AddNewItem(t *testing.T) {
 	}
 
 	createdIds, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -120,7 +117,6 @@ func TestSection_SynchronizeItems_DeleteItem(t *testing.T) {
 	}
 
 	_, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -150,7 +146,6 @@ func TestSection_SynchronizeItems_UpdateItemText(t *testing.T) {
 	}
 
 	_, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -178,7 +173,6 @@ func TestSection_SynchronizeItems_ReorderItems(t *testing.T) {
 	}
 
 	_, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -232,7 +226,6 @@ func TestSection_SynchronizeItems_ComplexBatchOperation(t *testing.T) {
 	}
 
 	createdIds, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -284,7 +277,6 @@ func TestSection_SynchronizeItems_UpdateSumFactor(t *testing.T) {
 	}
 
 	_, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -321,7 +313,6 @@ func TestSection_SynchronizeItems_UpdateDataSourceAndFormulas(t *testing.T) {
 	}
 
 	_, err := section.SynchronizeItems(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("SynchronizeItems() error = %v, want nil", err)
@@ -423,7 +414,6 @@ func TestReport_UpdateReportStructure_UpdateSectionTitle(t *testing.T) {
 	}
 
 	_, err := report.UpdateReportStructure(params)
-
 	// Verify
 	if err != nil {
 		t.Errorf("UpdateReportStructure() error = %v, want nil", err)

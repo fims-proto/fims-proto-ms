@@ -126,18 +126,18 @@ func (h Handler) RegenerateReport(c *gin.Context) {
 
 // UpdateReport godoc
 //
-//	@Tags        reports
-//	@Summary     Update entire report structure
-//	@Description Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction.
-//	@Accept      application/json
-//	@Produce     application/json
-//	@Param       sobId               path     string                  true  "Sob ID"
-//	@Param       reportId            path     string                  true  "Report ID"
-//	@Param       UpdateReportRequest body     UpdateReportRequest     true  "Complete report structure"
-//	@Success     200                 {object} UpdateReportResponse
-//	@Failure     400                 {object} Error
-//	@Failure     500                 {object} Error
-//	@Router      /sob/{sobId}/report/{reportId} [patch]
+//	@Tags			reports
+//	@Summary		Update entire report structure
+//	@Description	Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction.
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path		string				true	"Sob ID"
+//	@Param			reportId			path		string				true	"Report ID"
+//	@Param			UpdateReportRequest	body		UpdateReportRequest	true	"Complete report structure"
+//	@Success		200					{object}	UpdateReportResponse
+//	@Failure		400					{object}	Error
+//	@Failure		500					{object}	Error
+//	@Router			/sob/{sobId}/report/{reportId} [patch]
 func (h Handler) UpdateReport(c *gin.Context) {
 	var req UpdateReportRequest
 	if err := c.ShouldBind(&req); err != nil {

@@ -2,6 +2,7 @@ package report
 
 import (
 	"fmt"
+	"maps"
 	"sort"
 
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
@@ -82,9 +83,7 @@ func (r *Report) UpdateReportStructure(params UpdateReportParams) (map[string]st
 		}
 
 		// Merge created item IDs
-		for tempId, realId := range ids {
-			createdItemIds[tempId] = realId
-		}
+		maps.Copy(createdItemIds, ids)
 	}
 
 	return createdItemIds, nil
@@ -161,10 +160,6 @@ func (s *Section) SynchronizeItems(desiredItems []UpdateItemParams) (map[string]
 
 // applyUpdates updates item fields if provided in the update data
 func (i *Item) applyUpdates(data UpdateItemParams) error {
-	if !i.isEditable {
-		return errors.NewSlugError("report-item-notEditable")
-	}
-
 	if data.Text != nil {
 		if err := i.UpdateText(*data.Text); err != nil {
 			return err

@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"fmt"
+	"maps"
 
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
@@ -96,9 +97,7 @@ func (h UpdateReportHandler) Handle(ctx context.Context, cmd UpdateReportCmd) (m
 			}
 
 			// Capture created item IDs for response
-			for tempId, realId := range ids {
-				createdItemIds[tempId] = realId
-			}
+			maps.Copy(createdItemIds, ids)
 
 			return r, nil
 		})

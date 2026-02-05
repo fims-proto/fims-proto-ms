@@ -21,15 +21,15 @@ type GenerateReportRequest struct {
 
 // UpdateReportRequest represents the comprehensive update request for a report
 type UpdateReportRequest struct {
-	Title       *string                  `json:"title,omitempty"`       // Optional: update report title
-	AmountTypes []string                 `json:"amountTypes,omitempty"` // Optional: update amount types
-	Sections    []UpdateSectionRequest   `json:"sections"`              // Required: complete section structure
+	Title       *string                `json:"title,omitempty"`       // Optional: update report title
+	AmountTypes []string               `json:"amountTypes,omitempty"` // Optional: update amount types
+	Sections    []UpdateSectionRequest `json:"sections"`              // Required: complete section structure
 }
 
 type UpdateSectionRequest struct {
-	Id    string                       `json:"id"`                // Section ID
-	Title *string                      `json:"title,omitempty"`   // Optional: update section title
-	Items []UpdateReportItemRequest    `json:"items"`             // Complete item list for this section
+	Id    string                    `json:"id"`              // Section ID
+	Title *string                   `json:"title,omitempty"` // Optional: update section title
+	Items []UpdateReportItemRequest `json:"items"`           // Complete item list for this section
 }
 
 type UpdateReportItemRequest struct {
