@@ -7,7 +7,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/item_type"
 
 	"github.com/google/uuid"
 )
@@ -27,24 +26,21 @@ type UpdateReportRequest struct {
 }
 
 type UpdateSectionRequest struct {
-	Id    string                    `json:"id"`              // Section ID
-	Title *string                   `json:"title,omitempty"` // Optional: update section title
-	Items []UpdateReportItemRequest `json:"items"`           // Complete item list for this section
+	Id       string                    `json:"id"`                 // Section ID
+	Title    *string                   `json:"title,omitempty"`    // Optional: update section title
+	Items    []UpdateReportItemRequest `json:"items"`              // Complete item list for this section
+	Sections []UpdateSectionRequest    `json:"sections,omitempty"` // Optional: nested sections
 }
 
 type UpdateReportItemRequest struct {
 	// Identity
 	Id *string `json:"id,omitempty"` // Existing item ID, or null/omit for new item
 
-	// Position
-	Sequence int `json:"sequence"` // Required: position within section (1-based)
-
 	// Content (required for new items, optional for updates to existing items)
 	Text             *string                      `json:"text,omitempty"`
 	Level            *int                         `json:"level,omitempty"`
 	SumFactor        *int                         `json:"sumFactor,omitempty"`
 	DisplaySumFactor *bool                        `json:"displaySumFactor,omitempty"`
-	ItemType         *string                      `json:"itemType,omitempty"`
 	DataSource       *string                      `json:"dataSource,omitempty"`
 	Formulas         []UpdateReportFormulaRequest `json:"formulas,omitempty"`
 	IsBreakdownItem  *bool                        `json:"isBreakdownItem,omitempty"`
@@ -52,13 +48,10 @@ type UpdateReportItemRequest struct {
 }
 
 type UpdateReportFormulaRequest struct {
-	SumFactor     int    `json:"sumFactor" binding:"required"`
-	AccountNumber string `json:"accountNumber" binding:"required"`
-	Rule          string `json:"rule" binding:"required"`
-}
-
-type UpdateReportResponse struct {
-	CreatedItemIds map[string]string `json:"createdItemIds,omitempty"` // Maps client temp ID -> actual UUID
+	Id            *string `json:"id,omitempty"`
+	SumFactor     int     `json:"sumFactor" binding:"required"`
+	AccountNumber string  `json:"accountNumber" binding:"required"`
+	Rule          string  `json:"rule" binding:"required"`
 }
 
 // mapToCommand converts UpdateReportRequest to UpdateReportCmd
@@ -73,29 +66,10 @@ func (r UpdateReportRequest) mapToCommand(reportId uuid.UUID, sobId uuid.UUID) (
 		amountTypes = append(amountTypes, amountType)
 	}
 
-	// Convert sections
-	var sections []command.UpdateSectionData
-	for _, sectionReq := range r.Sections {
-		sectionId, err := uuid.Parse(sectionReq.Id)
-		if err != nil {
-			return command.UpdateReportCmd{}, fmt.Errorf("invalid sectionId: %s", sectionReq.Id)
-		}
-
-		// Convert items
-		var items []command.UpdateItemData
-		for _, itemReq := range sectionReq.Items {
-			itemData, err := itemReq.toUpdateItemData(sobId)
-			if err != nil {
-				return command.UpdateReportCmd{}, err
-			}
-			items = append(items, itemData)
-		}
-
-		sections = append(sections, command.UpdateSectionData{
-			SectionId: sectionId,
-			Title:     sectionReq.Title,
-			Items:     items,
-		})
+	// Convert sections recursively
+	sections, err := convertSections(r.Sections, sobId)
+	if err != nil {
+		return command.UpdateReportCmd{}, err
 	}
 
 	return command.UpdateReportCmd{
@@ -107,56 +81,93 @@ func (r UpdateReportRequest) mapToCommand(reportId uuid.UUID, sobId uuid.UUID) (
 	}, nil
 }
 
-func (r UpdateReportItemRequest) toUpdateItemData(sobId uuid.UUID) (command.UpdateItemData, error) {
+// convertSections recursively converts sections and their nested sections
+func convertSections(sectionsReq []UpdateSectionRequest, sobId uuid.UUID) ([]command.UpdateReportCmdSection, error) {
+	var sections []command.UpdateReportCmdSection
+	for _, sectionReq := range sectionsReq {
+		sectionId, err := uuid.Parse(sectionReq.Id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid sectionId: %s", sectionReq.Id)
+		}
+
+		// Convert items
+		var items []command.UpdateReportCmdItem
+		for _, itemReq := range sectionReq.Items {
+			itemData, err := itemReq.toUpdateItemData()
+			if err != nil {
+				return nil, err
+			}
+			items = append(items, itemData)
+		}
+
+		// Recursively convert nested sections
+		var nestedSections []command.UpdateReportCmdSection
+		if len(sectionReq.Sections) > 0 {
+			nestedSections, err = convertSections(sectionReq.Sections, sobId)
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		sections = append(sections, command.UpdateReportCmdSection{
+			SectionId: sectionId,
+			Title:     sectionReq.Title,
+			Items:     items,
+			Sections:  nestedSections,
+		})
+	}
+
+	return sections, nil
+}
+
+func (r UpdateReportItemRequest) toUpdateItemData() (command.UpdateReportCmdItem, error) {
 	var itemId *uuid.UUID
 	if r.Id != nil {
 		parsed, err := uuid.Parse(*r.Id)
 		if err != nil {
-			return command.UpdateItemData{}, fmt.Errorf("invalid itemId: %s", *r.Id)
+			return command.UpdateReportCmdItem{}, fmt.Errorf("invalid itemId: %s", *r.Id)
 		}
 		itemId = &parsed
 	}
 
 	// Convert formulas
-	var formulas []command.FormulaData
+	var formulas []command.UpdateReportCmdFormula
 	for _, f := range r.Formulas {
+		var formulaId *uuid.UUID
+		if f.Id != nil {
+			parsed, err := uuid.Parse(*f.Id)
+			if err != nil {
+				return command.UpdateReportCmdItem{}, fmt.Errorf("invalid formulaId: %s", *f.Id)
+			}
+			formulaId = &parsed
+		}
 		rule, err := formula_rule.FromString(f.Rule)
 		if err != nil {
-			return command.UpdateItemData{}, err
+			return command.UpdateReportCmdItem{}, err
 		}
-		formulas = append(formulas, command.FormulaData{
+		formulas = append(formulas, command.UpdateReportCmdFormula{
+			FormulaId:     formulaId,
 			SumFactor:     f.SumFactor,
 			AccountNumber: f.AccountNumber,
 			Rule:          rule,
 		})
 	}
 
-	var itemType *item_type.ItemType
-	if r.ItemType != nil {
-		t, err := item_type.FromString(*r.ItemType)
-		if err != nil {
-			return command.UpdateItemData{}, err
-		}
-		itemType = &t
-	}
-
 	var dataSource *data_source.DataSource
 	if r.DataSource != nil {
 		ds, err := data_source.FromString(*r.DataSource)
 		if err != nil {
-			return command.UpdateItemData{}, err
+			return command.UpdateReportCmdItem{}, err
 		}
 		dataSource = &ds
 	}
 
-	return command.UpdateItemData{
+	return command.UpdateReportCmdItem{
 		ItemId:           itemId,
-		Sequence:         r.Sequence,
 		Text:             r.Text,
 		Level:            r.Level,
 		SumFactor:        r.SumFactor,
 		DisplaySumFactor: r.DisplaySumFactor,
-		ItemType:         itemType,
 		DataSource:       dataSource,
 		Formulas:         formulas,
 		IsBreakdownItem:  r.IsBreakdownItem,

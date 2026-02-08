@@ -37,7 +37,6 @@ type PeriodResponse struct {
 type SectionResponse struct {
 	Id       uuid.UUID         `json:"id,omitempty"`
 	Title    string            `json:"title,omitempty"`
-	Sequence int               `json:"sequence"`
 	Amounts  []decimal.Decimal `json:"amounts,omitempty"`
 	Sections []SectionResponse `json:"sections,omitempty"`
 	Items    []ItemResponse    `json:"items,omitempty"`
@@ -47,7 +46,6 @@ type ItemResponse struct {
 	Id               uuid.UUID         `json:"id,omitempty"`
 	Text             string            `json:"text"`
 	Level            int               `json:"level"`
-	Sequence         int               `json:"sequence"`
 	SumFactor        int               `json:"sumFactor"`
 	DisplaySumFactor bool              `json:"displaySumFactor,omitempty"`
 	DataSource       string            `json:"dataSource"`
@@ -105,7 +103,6 @@ func sectionDTOToVO(dto query.Section) SectionResponse {
 	return SectionResponse{
 		Id:       dto.Id,
 		Title:    dto.Title,
-		Sequence: dto.Sequence,
 		Amounts:  dto.Amounts,
 		Sections: converter.DTOsToVOs(dto.Sections, sectionDTOToVO),
 		Items:    converter.DTOsToVOs(dto.Items, itemDTOToVO),
@@ -117,7 +114,6 @@ func itemDTOToVO(dto query.Item) ItemResponse {
 		Id:               dto.Id,
 		Text:             dto.Text,
 		Level:            dto.Level,
-		Sequence:         dto.Sequence,
 		SumFactor:        dto.SumFactor,
 		DisplaySumFactor: dto.DisplaySumFactor,
 		DataSource:       dto.DataSource,

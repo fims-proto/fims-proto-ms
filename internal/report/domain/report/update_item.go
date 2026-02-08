@@ -57,7 +57,7 @@ func formulasEqual(a, b []*Formula) bool {
 		return false
 	}
 	for i := range a {
-		if a[i] != b[i] {
+		if !a[i].Equal(b[i]) {
 			return false
 		}
 	}

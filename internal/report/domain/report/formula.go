@@ -97,3 +97,30 @@ func (f *Formula) Rule() formula_rule.FormulaRule {
 func (f *Formula) Amounts() []decimal.Decimal {
 	return f.amounts
 }
+
+// Equal checks if two Formula instances are equal by comparing all fields
+func (f *Formula) Equal(other *Formula) bool {
+	if f == nil || other == nil {
+		return f == other
+	}
+
+	// Compare all fields except amounts (which is a slice and not directly comparable)
+	if f.sequence != other.sequence ||
+		f.accountId != other.accountId ||
+		f.sumFactor != other.sumFactor ||
+		f.rule != other.rule {
+		return false
+	}
+
+	// Compare amounts slice
+	if len(f.amounts) != len(other.amounts) {
+		return false
+	}
+	for i := range f.amounts {
+		if !f.amounts[i].Equal(other.amounts[i]) {
+			return false
+		}
+	}
+
+	return true
+}

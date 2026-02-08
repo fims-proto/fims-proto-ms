@@ -1,15 +1,12 @@
 package report
 
 import (
-	"fmt"
-	"maps"
 	"sort"
 
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/item_type"
 
 	"github.com/google/uuid"
 )
@@ -18,43 +15,40 @@ import (
 type UpdateReportParams struct {
 	Title       *string
 	AmountTypes []amount_type.AmountType
-	Sections    []UpdateSectionParams
+	Sections    []UpdateReportParamsSection
 }
 
-// UpdateSectionParams contains parameters for updating a section
-type UpdateSectionParams struct {
+// UpdateReportParamsSection contains parameters for updating a section
+type UpdateReportParamsSection struct {
 	SectionId uuid.UUID
 	Title     *string
-	Items     []UpdateItemParams
+	Items     []UpdateReportParamsItem
+	Sections  []UpdateReportParamsSection
 }
 
-// UpdateItemParams contains parameters for updating or creating an item
-type UpdateItemParams struct {
+// UpdateReportParamsItem contains parameters for updating or creating an item
+type UpdateReportParamsItem struct {
 	ItemId           *uuid.UUID
-	Sequence         int
 	Text             *string
 	Level            *int
 	SumFactor        *int
 	DisplaySumFactor *bool
-	ItemType         *item_type.ItemType
 	DataSource       *data_source.DataSource
-	Formulas         []UpdateFormulaParams
+	Formulas         []UpdateReportParamsFormula
 	IsBreakdownItem  *bool
 	IsAbleToAddChild *bool
 }
 
-// UpdateFormulaParams contains parameters for a formula
-type UpdateFormulaParams struct {
+// UpdateReportParamsFormula contains parameters for a formula
+type UpdateReportParamsFormula struct {
+	FormulaId *uuid.UUID
 	SumFactor int
 	AccountId uuid.UUID
 	Rule      formula_rule.FormulaRule
 }
 
 // UpdateReportStructure applies comprehensive updates: report metadata, section updates, and item CRUD operations
-// Returns map of temporary client IDs -> actual UUIDs for newly created items
-func (r *Report) UpdateReportStructure(params UpdateReportParams) (map[string]string, error) {
-	createdItemIds := make(map[string]string)
-
+func (r *Report) UpdateReportStructure(params UpdateReportParams) error {
 	// 1. Update report-level fields
 	if params.Title != nil {
 		r.title = *params.Title
@@ -68,7 +62,7 @@ func (r *Report) UpdateReportStructure(params UpdateReportParams) (map[string]st
 	for _, sectionData := range params.Sections {
 		section, err := r.findSectionById(sectionData.SectionId)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		// Update section title if provided
@@ -77,16 +71,20 @@ func (r *Report) UpdateReportStructure(params UpdateReportParams) (map[string]st
 		}
 
 		// Apply item updates (add, update, delete, reorder)
-		ids, err := section.SynchronizeItems(sectionData.Items)
+		err = section.SynchronizeItems(sectionData.Items)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		// Merge created item IDs
-		maps.Copy(createdItemIds, ids)
+		// Apply subsection updates (recursive)
+		if len(sectionData.Sections) > 0 {
+			if err = section.SynchronizeSubsections(sectionData.Sections); err != nil {
+				return err
+			}
+		}
 	}
 
-	return createdItemIds, nil
+	return nil
 }
 
 // SynchronizeItems performs a diff between current items and desired items, then:
@@ -94,14 +92,10 @@ func (r *Report) UpdateReportStructure(params UpdateReportParams) (map[string]st
 // - Updates existing items (items with ID and update fields)
 // - Deletes missing items (current items not in desired list)
 // - Reorders all items by sequence
-//
-// Returns map of client temp IDs -> actual UUIDs for newly created items
-func (s *Section) SynchronizeItems(desiredItems []UpdateItemParams) (map[string]string, error) {
-	createdItemIds := make(map[string]string)
-
+func (s *Section) SynchronizeItems(desiredItems []UpdateReportParamsItem) error {
 	// Build map of desired items by ID
-	desiredById := make(map[uuid.UUID]*UpdateItemParams)
-	var newItems []*UpdateItemParams
+	desiredById := make(map[uuid.UUID]*UpdateReportParamsItem)
+	var newItems []*UpdateReportParamsItem
 
 	for i := range desiredItems {
 		item := &desiredItems[i]
@@ -120,46 +114,42 @@ func (s *Section) SynchronizeItems(desiredItems []UpdateItemParams) (map[string]
 		if desiredItem, exists := desiredById[currentItem.id]; exists {
 			// Item still exists - apply updates
 			if err := currentItem.applyUpdates(*desiredItem); err != nil {
-				return nil, err
+				return err
 			}
 			keptItems = append(keptItems, currentItem)
 		} else {
 			// Item not in desired list - delete it
 			if !currentItem.isEditable {
-				return nil, errors.NewSlugError("report-item-notEditable")
+				return errors.NewSlugError("report-item-notEditable")
 			}
 			// Simply don't add to keptItems (implicit deletion)
 		}
 	}
 
 	// 2. Create new items
-	for _, newItemData := range newItems {
-		newItem, err := s.createItemFromData(*newItemData)
+	for i, newItemData := range newItems {
+		// Sequence is determined by position: len(keptItems) + i + 1
+		newItem, err := s.createItemFromData(*newItemData, len(keptItems)+i+1)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		keptItems = append(keptItems, newItem)
-
-		// Track created item ID
-		// Use sequence as temporary ID (frontend can send this to correlate)
-		tempId := fmt.Sprintf("new-%d", newItemData.Sequence)
-		createdItemIds[tempId] = newItem.id.String()
 	}
 
 	// 3. Replace section's items
 	s.items = keptItems
 
-	// 4. Reorder items by sequence
+	// 4. Reorder items by sequence (using array position)
 	if err := s.reorderItemsBySequence(desiredItems); err != nil {
-		return nil, err
+		return err
 	}
 
-	return createdItemIds, nil
+	return nil
 }
 
 // applyUpdates updates item fields if provided in the update data
-func (i *Item) applyUpdates(data UpdateItemParams) error {
+func (i *Item) applyUpdates(data UpdateReportParamsItem) error {
 	if data.Text != nil {
 		if err := i.UpdateText(*data.Text); err != nil {
 			return err
@@ -176,7 +166,11 @@ func (i *Item) applyUpdates(data UpdateItemParams) error {
 		// Build formulas
 		var formulas []*Formula
 		for _, fData := range data.Formulas {
-			formula, err := NewFormula(uuid.New(), len(formulas)+1, fData.AccountId, fData.SumFactor, fData.Rule.String(), nil)
+			formulaId := uuid.New()
+			if fData.FormulaId != nil {
+				formulaId = *fData.FormulaId
+			}
+			formula, err := NewFormula(formulaId, len(formulas)+1, fData.AccountId, fData.SumFactor, fData.Rule.String(), nil)
 			if err != nil {
 				return err
 			}
@@ -195,7 +189,7 @@ func (i *Item) applyUpdates(data UpdateItemParams) error {
 }
 
 // createItemFromData creates a new item from update data
-func (s *Section) createItemFromData(data UpdateItemParams) (*Item, error) {
+func (s *Section) createItemFromData(data UpdateReportParamsItem, sequence int) (*Item, error) {
 	// Validate required fields for new items
 	if data.Text == nil {
 		return nil, errors.NewSlugError("report-item-textRequired")
@@ -226,10 +220,8 @@ func (s *Section) createItemFromData(data UpdateItemParams) (*Item, error) {
 		displaySumFactor = *data.DisplaySumFactor
 	}
 
+	// ItemType is not provided in update request - use empty string for new items
 	itemTypeStr := ""
-	if data.ItemType != nil {
-		itemTypeStr = data.ItemType.String()
-	}
 
 	isBreakdownItem := false
 	if data.IsBreakdownItem != nil {
@@ -246,7 +238,7 @@ func (s *Section) createItemFromData(data UpdateItemParams) (*Item, error) {
 		uuid.New(),
 		*data.Text,
 		*data.Level,
-		data.Sequence, // Will be renumbered later
+		sequence, // Use provided sequence
 		itemTypeStr,
 		*data.SumFactor,
 		displaySumFactor,
@@ -264,44 +256,131 @@ func (s *Section) createItemFromData(data UpdateItemParams) (*Item, error) {
 	return item, nil
 }
 
-// reorderItemsBySequence sorts items according to sequence in desired data
-func (s *Section) reorderItemsBySequence(desiredItems []UpdateItemParams) error {
-	// Build map of item ID -> desired sequence (for existing items)
-	// And track all sequences to ensure new items are also ordered correctly
-	sequenceMap := make(map[uuid.UUID]int)
+// reorderItemsBySequence reorders items to match the order in desiredItems array
+func (s *Section) reorderItemsBySequence(desiredItems []UpdateReportParamsItem) error {
+	// Step 1: Build a set of IDs that appear in desiredItems with non-nil ItemId
+	// This allows us to classify items in s.items as existing vs new
+	desiredIDs := make(map[uuid.UUID]bool)
 	for _, desired := range desiredItems {
 		if desired.ItemId != nil {
-			sequenceMap[*desired.ItemId] = desired.Sequence
+			desiredIDs[*desired.ItemId] = true
 		}
 	}
 
-	// Sort items by their current sequence first (which was set during creation)
-	// This ensures new items that have their sequence already set are ordered correctly
-	sort.SliceStable(s.items, func(i, j int) bool {
-		seqI, hasI := sequenceMap[s.items[i].id]
-		seqJ, hasJ := sequenceMap[s.items[j].id]
+	// Step 2: Classify items in s.items as existing (by ID) vs new
+	itemsByID := make(map[uuid.UUID]*Item) // Existing items
+	var newItems []*Item                   // New items (in order they appear in s.items)
 
-		// Both have explicit sequences from the map
-		if hasI && hasJ {
-			return seqI < seqJ
+	for _, item := range s.items {
+		if desiredIDs[item.id] {
+			// Existing item - appears in desiredItems with an ID
+			itemsByID[item.id] = item
+		} else {
+			// New item - does not appear in desiredItems with an ID
+			newItems = append(newItems, item)
 		}
-		// Only i has explicit sequence
-		if hasI {
-			// Compare with j's current sequence
-			return seqI < s.items[j].sequence
-		}
-		// Only j has explicit sequence
-		if hasJ {
-			// Compare i's current sequence with j's explicit sequence
-			return s.items[i].sequence < seqJ
-		}
+	}
 
-		// Neither has explicit sequence - use their current sequences
-		return s.items[i].sequence < s.items[j].sequence
-	})
+	// Step 3: Build ordered list by following desiredItems array
+	reorderedItems := make([]*Item, 0, len(s.items))
+	newItemIdx := 0
 
-	// Renumber all items sequentially (1, 2, 3, ...)
+	for _, desired := range desiredItems {
+		if desired.ItemId != nil {
+			// Existing item - look up by ID
+			if item, ok := itemsByID[*desired.ItemId]; ok {
+				reorderedItems = append(reorderedItems, item)
+			}
+		} else {
+			// New item - take next from newItems list
+			if newItemIdx < len(newItems) {
+				reorderedItems = append(reorderedItems, newItems[newItemIdx])
+				newItemIdx++
+			}
+		}
+	}
+
+	// Step 4: Replace section's items with reordered list
+	s.items = reorderedItems
+
+	// Step 5: Renumber all items sequentially (1, 2, 3, ...)
 	s.renumberItems()
 
 	return nil
+}
+
+// SynchronizeSubsections updates nested subsections recursively
+// Only updates existing sections - does not create new sections
+func (s *Section) SynchronizeSubsections(desiredSections []UpdateReportParamsSection) error {
+	// Build map of desired sections by ID
+	desiredById := make(map[uuid.UUID]*UpdateReportParamsSection)
+	for i := range desiredSections {
+		section := &desiredSections[i]
+		desiredById[section.SectionId] = section
+	}
+
+	// Update existing subsections
+	for _, currentSection := range s.sections {
+		if desiredSection, exists := desiredById[currentSection.id]; exists {
+			// Update section title if provided
+			if desiredSection.Title != nil {
+				currentSection.title = *desiredSection.Title
+			}
+
+			// Recursively update items
+			if err := currentSection.SynchronizeItems(desiredSection.Items); err != nil {
+				return err
+			}
+
+			// Recursively update nested subsections
+			if len(desiredSection.Sections) > 0 {
+				if err := currentSection.SynchronizeSubsections(desiredSection.Sections); err != nil {
+					return err
+				}
+			}
+		}
+		// Note: We don't delete sections that aren't in the desired list
+		// Only update existing ones
+	}
+
+	// Renumber subsections based on their position in desired array
+	s.renumberSections(desiredSections)
+
+	return nil
+}
+
+// renumberSections assigns sequential sequence numbers to subsections based on desired order
+func (s *Section) renumberSections(desiredSections []UpdateReportParamsSection) {
+	// Build map of section ID -> desired position
+	positionMap := make(map[uuid.UUID]int)
+	for i, desired := range desiredSections {
+		positionMap[desired.SectionId] = i + 1
+	}
+
+	// Sort subsections by their desired position
+	sort.SliceStable(s.sections, func(i, j int) bool {
+		posI, hasI := positionMap[s.sections[i].id]
+		posJ, hasJ := positionMap[s.sections[j].id]
+
+		if hasI && hasJ {
+			return posI < posJ
+		}
+		if hasI {
+			return posI < s.sections[j].sequence
+		}
+		if hasJ {
+			return s.sections[i].sequence < posJ
+		}
+		return s.sections[i].sequence < s.sections[j].sequence
+	})
+
+	// Assign sequential numbers
+	for i, section := range s.sections {
+		section.setSequence(i + 1)
+	}
+}
+
+// setSequence sets the sequence of a section
+func (s *Section) setSequence(sequence int) {
+	s.sequence = sequence
 }

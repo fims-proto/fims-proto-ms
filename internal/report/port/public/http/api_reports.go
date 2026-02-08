@@ -128,13 +128,13 @@ func (h Handler) RegenerateReport(c *gin.Context) {
 //
 //	@Tags			reports
 //	@Summary		Update entire report structure
-//	@Description	Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction.
+//	@Description	Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction. Sections can contain nested sections. Items are sequenced by their position in the array.
 //	@Accept			application/json
 //	@Produce		application/json
-//	@Param			sobId				path		string				true	"Sob ID"
-//	@Param			reportId			path		string				true	"Report ID"
-//	@Param			UpdateReportRequest	body		UpdateReportRequest	true	"Complete report structure"
-//	@Success		200					{object}	UpdateReportResponse
+//	@Param			sobId				path	string				true	"Sob ID"
+//	@Param			reportId			path	string				true	"Report ID"
+//	@Param			UpdateReportRequest	body	UpdateReportRequest	true	"Complete report structure"
+//	@Success		204					"No Content"
 //	@Failure		400					{object}	Error
 //	@Failure		500					{object}	Error
 //	@Router			/sob/{sobId}/report/{reportId} [patch]
@@ -154,11 +154,11 @@ func (h Handler) UpdateReport(c *gin.Context) {
 		return
 	}
 
-	createdItemIds, err := h.app.Commands.UpdateReport.Handle(c, cmd)
+	err = h.app.Commands.UpdateReport.Handle(c, cmd)
 	if err != nil {
 		_ = c.Error(err)
 		return
 	}
 
-	c.JSON(http.StatusOK, UpdateReportResponse{CreatedItemIds: createdItemIds})
+	c.Status(http.StatusNoContent)
 }

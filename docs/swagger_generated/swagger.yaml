@@ -314,8 +314,6 @@ definitions:
         type: boolean
       level:
         type: integer
-      sequence:
-        type: integer
       sumFactor:
         type: integer
       text:
@@ -450,8 +448,6 @@ definitions:
         items:
           $ref: '#/definitions/http.SectionResponse'
         type: array
-      sequence:
-        type: integer
       title:
         type: string
     type: object
@@ -497,6 +493,8 @@ definitions:
     properties:
       accountNumber:
         type: string
+      id:
+        type: string
       rule:
         type: string
       sumFactor:
@@ -523,12 +521,7 @@ definitions:
         type: boolean
       isBreakdownItem:
         type: boolean
-      itemType:
-        type: string
       level:
-        type: integer
-      sequence:
-        description: Position
         type: integer
       sumFactor:
         type: integer
@@ -553,14 +546,6 @@ definitions:
         description: 'Optional: update report title'
         type: string
     type: object
-  http.UpdateReportResponse:
-    properties:
-      createdItemIds:
-        additionalProperties:
-          type: string
-        description: Maps client temp ID -> actual UUID
-        type: object
-    type: object
   http.UpdateSectionRequest:
     properties:
       id:
@@ -570,6 +555,11 @@ definitions:
         description: Complete item list for this section
         items:
           $ref: '#/definitions/http.UpdateReportItemRequest'
+        type: array
+      sections:
+        description: 'Optional: nested sections'
+        items:
+          $ref: '#/definitions/http.UpdateSectionRequest'
         type: array
       title:
         description: 'Optional: update section title'
@@ -1406,7 +1396,8 @@ paths:
       consumes:
       - application/json
       description: Updates report metadata, sections, and items. Supports add, update,
-        delete, and reorder operations in a single atomic transaction.
+        delete, and reorder operations in a single atomic transaction. Sections can
+        contain nested sections. Items are sequenced by their position in the array.
       parameters:
       - description: Sob ID
         in: path
@@ -1427,10 +1418,8 @@ paths:
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.UpdateReportResponse'
+        "204":
+          description: No Content
         "400":
           description: Bad Request
           schema:

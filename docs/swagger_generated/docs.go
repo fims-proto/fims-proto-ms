@@ -937,7 +937,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction.",
+                "description": "Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction. Sections can contain nested sections. Items are sequenced by their position in the array.",
                 "consumes": [
                     "application/json"
                 ],
@@ -974,11 +974,8 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.UpdateReportResponse"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Bad Request",
@@ -2434,9 +2431,6 @@ const docTemplate = `{
                 "level": {
                     "type": "integer"
                 },
-                "sequence": {
-                    "type": "integer"
-                },
                 "sumFactor": {
                     "type": "integer"
                 },
@@ -2642,9 +2636,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/http.SectionResponse"
                     }
                 },
-                "sequence": {
-                    "type": "integer"
-                },
                 "title": {
                     "type": "string"
                 }
@@ -2719,6 +2710,9 @@ const docTemplate = `{
                 "accountNumber": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "rule": {
                     "type": "string"
                 },
@@ -2752,14 +2746,7 @@ const docTemplate = `{
                 "isBreakdownItem": {
                     "type": "boolean"
                 },
-                "itemType": {
-                    "type": "string"
-                },
                 "level": {
-                    "type": "integer"
-                },
-                "sequence": {
-                    "description": "Position",
                     "type": "integer"
                 },
                 "sumFactor": {
@@ -2794,18 +2781,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateReportResponse": {
-            "type": "object",
-            "properties": {
-                "createdItemIds": {
-                    "description": "Maps client temp ID -\u003e actual UUID",
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
-                }
-            }
-        },
         "http.UpdateSectionRequest": {
             "type": "object",
             "properties": {
@@ -2818,6 +2793,13 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.UpdateReportItemRequest"
+                    }
+                },
+                "sections": {
+                    "description": "Optional: nested sections",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateSectionRequest"
                     }
                 },
                 "title": {
