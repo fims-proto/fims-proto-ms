@@ -343,7 +343,7 @@ func (m mockRepo) CreateAuxiliaryLedgers(context.Context, []*auxiliary_ledger.Au
 	panic("implement me")
 }
 
-func (m mockRepo) UpdateAuxiliaryLedgersByPeriodAndAccounts(context.Context, uuid.UUID, uuid.UUID, []uuid.UUID, []uuid.UUID, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
+func (m mockRepo) UpsertAuxiliaryLedgersByPeriodAndAccounts(context.Context, uuid.UUID, uuid.UUID, []domain.AuxiliaryLedgerKey, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
 	panic("implement me")
 }
 

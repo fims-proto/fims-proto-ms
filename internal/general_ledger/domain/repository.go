@@ -17,6 +17,13 @@ import (
 	"github.com/google/uuid"
 )
 
+// AuxiliaryLedgerKey represents the composite natural key for auxiliary ledgers
+type AuxiliaryLedgerKey struct {
+	AccountId           uuid.UUID
+	AuxiliaryCategoryId uuid.UUID
+	AuxiliaryAccountId  uuid.UUID
+}
+
 type Repository interface {
 	Migrate(ctx context.Context) error
 	EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error
@@ -73,13 +80,12 @@ type Repository interface {
 	ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error)
 
 	CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error
-	UpdateAuxiliaryLedgersByPeriodAndAccounts(
+	UpsertAuxiliaryLedgersByPeriodAndAccounts(
 		ctx context.Context,
+		sobId uuid.UUID,
 		periodId uuid.UUID,
-		accountId uuid.UUID,
-		auxiliaryCategoryIds []uuid.UUID,
-		auxiliaryAccountIds []uuid.UUID,
-		updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
+		requiredKeys []AuxiliaryLedgerKey,
+		applyFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
 	) error
 	ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)
 	ReadAuxiliaryLedgersByAccountAndPeriod(ctx context.Context, accountId uuid.UUID, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)

@@ -47,13 +47,6 @@ type postAuxiliaryLedgersRecordCmd struct {
 	credit              decimal.Decimal
 }
 
-// auxiliaryLedgerKey represents the composite natural key for auxiliary ledgers
-type auxiliaryLedgerKey struct {
-	accountId           uuid.UUID
-	auxiliaryCategoryId uuid.UUID
-	auxiliaryAccountId  uuid.UUID
-}
-
 type PostVoucherHandler struct {
 	repo domain.Repository
 }
@@ -178,21 +171,18 @@ func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAu
 		return nil
 	}
 
-	// Group records by (accountId, auxiliaryCategoryId, auxiliaryAccountId) composite key
+	// Merge records by composite key to sum debits/credits for duplicate combinations
 	auxiliaryLedgerMap := utils.SliceToMapMerge(cmd.records,
-		// Key function: composite key
-		func(c postAuxiliaryLedgersRecordCmd) auxiliaryLedgerKey {
-			return auxiliaryLedgerKey{
-				accountId:           c.accountId,
-				auxiliaryCategoryId: c.auxiliaryCategoryId,
-				auxiliaryAccountId:  c.auxiliaryAccount.Id(),
+		func(c postAuxiliaryLedgersRecordCmd) domain.AuxiliaryLedgerKey {
+			return domain.AuxiliaryLedgerKey{
+				AccountId:           c.accountId,
+				AuxiliaryCategoryId: c.auxiliaryCategoryId,
+				AuxiliaryAccountId:  c.auxiliaryAccount.Id(),
 			}
 		},
-		// Value function: pass through
 		func(c postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
 			return c
 		},
-		// Merge function: sum debits and credits for same composite key
 		func(existing, replacement postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
 			existing.debit = existing.debit.Add(replacement.debit)
 			existing.credit = existing.credit.Add(replacement.credit)
@@ -200,68 +190,43 @@ func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAu
 		},
 	)
 
-	// Group by account
-	recordsByAccount := make(map[uuid.UUID][]postAuxiliaryLedgersRecordCmd)
-	for _, record := range auxiliaryLedgerMap {
-		recordsByAccount[record.accountId] = append(recordsByAccount[record.accountId], record)
+	requiredKeys := make([]domain.AuxiliaryLedgerKey, 0, len(auxiliaryLedgerMap))
+	for key := range auxiliaryLedgerMap {
+		requiredKeys = append(requiredKeys, key)
 	}
 
-	// Update each account's auxiliary ledgers
-	for accountId, records := range recordsByAccount {
-		// Extract category and auxiliary account IDs for this account
-		var categoryIds []uuid.UUID
-		var auxiliaryAccountIds []uuid.UUID
-		for _, r := range records {
-			categoryIds = append(categoryIds, r.auxiliaryCategoryId)
-			auxiliaryAccountIds = append(auxiliaryAccountIds, r.auxiliaryAccount.Id())
-		}
+	return h.repo.UpsertAuxiliaryLedgersByPeriodAndAccounts(
+		ctx,
+		cmd.sobId,
+		cmd.periodId,
+		requiredKeys,
+		func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+			ledgerMap := make(map[domain.AuxiliaryLedgerKey]*auxiliary_ledger.AuxiliaryLedger)
+			for _, l := range auxiliaryLedgers {
+				key := domain.AuxiliaryLedgerKey{
+					AccountId:           l.AccountId(),
+					AuxiliaryCategoryId: l.AuxiliaryCategoryId(),
+					AuxiliaryAccountId:  l.AuxiliaryAccountId(),
+				}
+				ledgerMap[key] = l
+			}
 
-		if err := h.repo.UpdateAuxiliaryLedgersByPeriodAndAccounts(
-			ctx,
-			cmd.periodId,
-			accountId,
-			categoryIds,
-			auxiliaryAccountIds,
-			func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
-				// Build lookup map using composite key
-				ledgerMap := make(map[auxiliaryLedgerKey]*auxiliary_ledger.AuxiliaryLedger)
-				for _, l := range auxiliaryLedgers {
-					key := auxiliaryLedgerKey{
-						accountId:           l.AccountId(),
-						auxiliaryCategoryId: l.AuxiliaryCategoryId(),
-						auxiliaryAccountId:  l.AuxiliaryAccountId(),
-					}
-					ledgerMap[key] = l
+			for key, record := range auxiliaryLedgerMap {
+				auxiliaryLedger, ok := ledgerMap[key]
+				if !ok {
+					// Repository guarantees all required keys exist
+					return nil, fmt.Errorf(
+						"auxiliary ledger not found for account=%s, category=%s, auxiliary=%s",
+						record.accountId,
+						record.auxiliaryCategoryId,
+						record.auxiliaryAccount.Key(),
+					)
 				}
 
-				// Apply updates
-				for _, record := range records {
-					key := auxiliaryLedgerKey{
-						accountId:           record.accountId,
-						auxiliaryCategoryId: record.auxiliaryCategoryId,
-						auxiliaryAccountId:  record.auxiliaryAccount.Id(),
-					}
+				auxiliaryLedger.UpdateBalance(record.debit, record.credit)
+			}
 
-					auxiliaryLedger, ok := ledgerMap[key]
-					if !ok {
-						return nil, fmt.Errorf(
-							"auxiliary ledger not found for account=%s, category=%s, auxiliary=%s",
-							record.accountId,
-							record.auxiliaryCategoryId,
-							record.auxiliaryAccount.Key(),
-						)
-					}
-
-					// Update balance using domain method
-					auxiliaryLedger.UpdateBalance(record.debit, record.credit)
-				}
-
-				return auxiliaryLedgers, nil
-			},
-		); err != nil {
-			return fmt.Errorf("failed to update auxiliary ledgers for account %s: %w", accountId, err)
-		}
-	}
-
-	return nil
+			return auxiliaryLedgers, nil
+		},
+	)
 }
