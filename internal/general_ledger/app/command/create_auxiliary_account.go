@@ -7,10 +7,8 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 )
 
 type CreateAuxiliaryAccountCmd struct {
@@ -37,20 +35,14 @@ func NewCreateAuxiliaryAccountHandler(repo domain.Repository) CreateAuxiliaryAcc
 func (h CreateAuxiliaryAccountHandler) Handle(ctx context.Context, cmd CreateAuxiliaryAccountCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		// create auxiliary account
-		auxiliaryAccount, err := h.createAccount(txCtx, cmd)
-		if err != nil {
-			return err
-		}
-
-		// create auxiliary ledger
-		return h.createLedger(txCtx, auxiliaryAccount)
+		return h.createAccount(txCtx, cmd)
 	})
 }
 
-func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd CreateAuxiliaryAccountCmd) (*auxiliary_account.AuxiliaryAccount, error) {
+func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd CreateAuxiliaryAccountCmd) error {
 	category, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, cmd.SobId, cmd.CategoryKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get auxiliary category: %w", err)
+		return fmt.Errorf("failed to get auxiliary category: %w", err)
 	}
 
 	auxiliaryAccount, err := auxiliary_account.New(
@@ -61,36 +53,8 @@ func (h CreateAuxiliaryAccountHandler) createAccount(ctx context.Context, cmd Cr
 		cmd.Description,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create auxiliary account: %w", err)
+		return fmt.Errorf("failed to create auxiliary account: %w", err)
 	}
 
-	if err = h.repo.CreateAuxiliaryAccounts(ctx, utils.AsSlice(auxiliaryAccount)); err != nil {
-		return nil, err
-	}
-
-	return auxiliaryAccount, nil
-}
-
-func (h CreateAuxiliaryAccountHandler) createLedger(ctx context.Context, auxiliaryAccount *auxiliary_account.AuxiliaryAccount) error {
-	p, err := h.repo.ReadCurrentPeriod(ctx, auxiliaryAccount.Category().SobId())
-	if err != nil {
-		return fmt.Errorf("failed to read current period: %w", err)
-	}
-
-	auxiliaryLedger, err := auxiliary_ledger.New(
-		uuid.New(),
-		p.Id(),
-		auxiliaryAccount,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-	)
-	if err != nil {
-		return fmt.Errorf("failed to create auxiliary ledger: %w", err)
-	}
-
-	return h.repo.CreateAuxiliaryLedgers(ctx, utils.AsSlice(auxiliaryLedger))
+	return h.repo.CreateAuxiliaryAccounts(ctx, utils.AsSlice(auxiliaryAccount))
 }

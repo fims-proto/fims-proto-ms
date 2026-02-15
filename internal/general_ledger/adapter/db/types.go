@@ -97,8 +97,11 @@ type ledgerPO struct {
 
 type auxiliaryLedgerPO struct {
 	Id                   uuid.UUID `gorm:"type:uuid;primaryKey"`
-	PeriodId             uuid.UUID `gorm:"type:uuid"`
-	AuxiliaryAccountId   uuid.UUID `gorm:"type:uuid"`
+	SobId                uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	PeriodId             uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AccountId            uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryCategoryId  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryAccountId   uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
 	OpeningDebitBalance  decimal.Decimal
 	OpeningCreditBalance decimal.Decimal
 	PeriodDebit          decimal.Decimal
@@ -106,7 +109,9 @@ type auxiliaryLedgerPO struct {
 	EndingDebitBalance   decimal.Decimal
 	EndingCreditBalance  decimal.Decimal
 
-	AuxiliaryAccount auxiliaryAccountPO `gorm:"foreignKey:AuxiliaryAccountId"`
+	Account           accountPO           `gorm:"foreignKey:AccountId"`
+	AuxiliaryCategory auxiliaryCategoryPO `gorm:"foreignKey:AuxiliaryCategoryId"`
+	AuxiliaryAccount  auxiliaryAccountPO  `gorm:"foreignKey:AuxiliaryAccountId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -539,7 +544,10 @@ func ledgerPOToDTO(po ledgerPO) query.Ledger {
 func auxiliaryLedgerBOToPO(bo *auxiliary_ledger.AuxiliaryLedger) auxiliaryLedgerPO {
 	return auxiliaryLedgerPO{
 		Id:                   bo.Id(),
+		SobId:                bo.SobId(),
 		PeriodId:             bo.PeriodId(),
+		AccountId:            bo.AccountId(),
+		AuxiliaryCategoryId:  bo.AuxiliaryCategoryId(),
 		AuxiliaryAccountId:   bo.AuxiliaryAccount().Id(),
 		OpeningDebitBalance:  bo.OpeningDebitBalance(),
 		OpeningCreditBalance: bo.OpeningCreditBalance(),
@@ -559,7 +567,10 @@ func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLed
 
 	return auxiliary_ledger.New(
 		po.Id,
+		po.SobId,
 		po.PeriodId,
+		po.AccountId,
+		po.AuxiliaryCategoryId,
 		auxiliaryAccount,
 		po.OpeningDebitBalance,
 		po.OpeningCreditBalance,
@@ -573,7 +584,12 @@ func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLed
 func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
 	return query.AuxiliaryLedger{
 		Id:                   po.Id,
+		SobId:                po.SobId,
 		PeriodId:             po.PeriodId,
+		AccountId:            po.AccountId,
+		Account:              accountPOToDTO(po.Account),
+		AuxiliaryCategoryId:  po.AuxiliaryCategoryId,
+		AuxiliaryCategory:    auxiliaryCategoryPOToDTO(po.AuxiliaryCategory),
 		AuxiliaryAccount:     auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
 		OpeningDebitBalance:  po.OpeningDebitBalance,
 		OpeningCreditBalance: po.OpeningCreditBalance,

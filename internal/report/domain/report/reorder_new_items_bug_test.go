@@ -320,8 +320,9 @@ func TestSection_reorderItemsBySequence_DebugNewItemSequences(t *testing.T) {
 	ds, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
-		{ItemId: &item1Id},   // Position 0
-		{ItemId: nil,         // Position 1 (new item)
+		{ItemId: &item1Id}, // Position 0
+		{
+			ItemId:     nil, // Position 1 (new item)
 			Text:       &newItemText,
 			Level:      &level,
 			SumFactor:  &sumFactor,

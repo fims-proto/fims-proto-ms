@@ -65,7 +65,11 @@ func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryLedgers(
 	ctx context.Context,
 	pageRequest data.PageRequest,
 ) (data.Page[query.AuxiliaryLedger], error) {
-	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO, r.dataSource.GetConnection(ctx).Joins("AuxiliaryAccount.Category"))
+	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO,
+		r.dataSource.GetConnection(ctx).
+			Joins("AuxiliaryAccount.Category").
+			Joins("AuxiliaryCategory").
+			Joins("Account"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchPeriods(

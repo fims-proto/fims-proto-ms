@@ -668,31 +668,37 @@ func (r GeneralLedgerPostgresRepository) CreateAuxiliaryLedgers(ctx context.Cont
 
 	pos := converter.BOsToPOs(ledgers, auxiliaryLedgerBOToPO)
 
-	return db.Omit("AuxiliaryAccount").CreateInBatches(&pos, 100).Error
+	return db.Omit("AuxiliaryAccount", "AuxiliaryCategory", "Account").CreateInBatches(&pos, 100).Error
 }
 
-func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccountIds(
+func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccounts(
 	ctx context.Context,
 	periodId uuid.UUID,
+	accountId uuid.UUID,
+	auxiliaryCategoryIds []uuid.UUID,
 	auxiliaryAccountIds []uuid.UUID,
 	updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	// unique account ids
+	// unique IDs
+	auxiliaryCategoryIds = utils.Unique(auxiliaryCategoryIds)
 	auxiliaryAccountIds = utils.Unique(auxiliaryAccountIds)
 
 	var auxiliaryLedgerPOs []auxiliaryLedgerPO
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("period_id = ? AND auxiliary_account_id IN ?", periodId, auxiliaryAccountIds).
+		Where("period_id = ? AND account_id = ? AND auxiliary_category_id IN ? AND auxiliary_account_id IN ?",
+			periodId, accountId, auxiliaryCategoryIds, auxiliaryAccountIds).
 		Preload("AuxiliaryAccount.Category").
+		Preload("AuxiliaryCategory").
+		Preload("Account").
 		Find(&auxiliaryLedgerPOs).Error; err != nil {
 		return err
 	}
 
 	auxiliaryLedgerBOs, err := converter.POsToBOs(auxiliaryLedgerPOs, auxiliaryLedgerPOToBO)
 	if err != nil {
-		return fmt.Errorf("failed to update auxiliary ledgers: %w", err)
+		return fmt.Errorf("failed to convert auxiliary ledgers: %w", err)
 	}
 
 	updated, err := updateFn(auxiliaryLedgerBOs)
@@ -702,7 +708,7 @@ func (r GeneralLedgerPostgresRepository) UpdateAuxiliaryLedgersByPeriodAndAccoun
 
 	updatedPOs := converter.BOsToPOs(updated, auxiliaryLedgerBOToPO)
 
-	return db.Omit("AuxiliaryAccount").Save(&updatedPOs).Error
+	return db.Omit("AuxiliaryAccount", "AuxiliaryCategory", "Account").Save(&updatedPOs).Error
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) (
@@ -716,6 +722,30 @@ func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByPeriod(ctx contex
 		Where(auxiliaryLedgerPO{PeriodId: periodId}).
 		InnerJoins("AuxiliaryAccount").
 		InnerJoins("AuxiliaryAccount.Category").
+		InnerJoins("AuxiliaryCategory").
+		InnerJoins("Account").
+		Find(&auxiliaryLedgerPOs).
+		Error; err != nil {
+		return nil, err
+	}
+
+	return converter.POsToBOs(auxiliaryLedgerPOs, auxiliaryLedgerPOToBO)
+}
+
+func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByAccountAndPeriod(
+	ctx context.Context,
+	accountId uuid.UUID,
+	periodId uuid.UUID,
+) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var auxiliaryLedgerPOs []auxiliaryLedgerPO
+	if err := db.
+		Where("account_id = ? AND period_id = ?", accountId, periodId).
+		InnerJoins("AuxiliaryAccount").
+		InnerJoins("AuxiliaryAccount.Category").
+		InnerJoins("AuxiliaryCategory").
+		InnerJoins("Account").
 		Find(&auxiliaryLedgerPOs).
 		Error; err != nil {
 		return nil, err

@@ -77,7 +77,12 @@ type Ledger struct {
 
 type AuxiliaryLedger struct {
 	Id                   uuid.UUID
+	SobId                uuid.UUID
 	PeriodId             uuid.UUID
+	AccountId            uuid.UUID
+	Account              Account
+	AuxiliaryCategoryId  uuid.UUID
+	AuxiliaryCategory    AuxiliaryCategory
 	AuxiliaryAccount     AuxiliaryAccount
 	OpeningDebitBalance  decimal.Decimal
 	OpeningCreditBalance decimal.Decimal

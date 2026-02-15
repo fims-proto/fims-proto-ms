@@ -11,7 +11,10 @@ import (
 
 type AuxiliaryLedger struct {
 	id                   uuid.UUID
+	sobId                uuid.UUID
 	periodId             uuid.UUID
+	accountId            uuid.UUID
+	auxiliaryCategoryId  uuid.UUID
 	auxiliaryAccount     *auxiliary_account.AuxiliaryAccount
 	openingDebitBalance  decimal.Decimal
 	openingCreditBalance decimal.Decimal
@@ -23,7 +26,10 @@ type AuxiliaryLedger struct {
 
 func New(
 	id uuid.UUID,
+	sobId uuid.UUID,
 	periodId uuid.UUID,
+	accountId uuid.UUID,
+	auxiliaryCategoryId uuid.UUID,
 	auxiliaryAccount *auxiliary_account.AuxiliaryAccount,
 	openingDebitBalance decimal.Decimal,
 	openingCreditBalance decimal.Decimal,
@@ -36,8 +42,20 @@ func New(
 		return nil, errors.New("nil auxiliary ledger id")
 	}
 
+	if sobId == uuid.Nil {
+		return nil, errors.New("nil sob id")
+	}
+
 	if periodId == uuid.Nil {
 		return nil, errors.New("nil period id")
+	}
+
+	if accountId == uuid.Nil {
+		return nil, errors.New("nil account id")
+	}
+
+	if auxiliaryCategoryId == uuid.Nil {
+		return nil, errors.New("nil auxiliary category id")
 	}
 
 	if auxiliaryAccount == nil {
@@ -46,7 +64,10 @@ func New(
 
 	return &AuxiliaryLedger{
 		id:                   id,
+		sobId:                sobId,
 		periodId:             periodId,
+		accountId:            accountId,
+		auxiliaryCategoryId:  auxiliaryCategoryId,
 		auxiliaryAccount:     auxiliaryAccount,
 		openingDebitBalance:  openingDebitBalance,
 		openingCreditBalance: openingCreditBalance,
@@ -61,8 +82,20 @@ func (l *AuxiliaryLedger) Id() uuid.UUID {
 	return l.id
 }
 
+func (l *AuxiliaryLedger) SobId() uuid.UUID {
+	return l.sobId
+}
+
 func (l *AuxiliaryLedger) PeriodId() uuid.UUID {
 	return l.periodId
+}
+
+func (l *AuxiliaryLedger) AccountId() uuid.UUID {
+	return l.accountId
+}
+
+func (l *AuxiliaryLedger) AuxiliaryCategoryId() uuid.UUID {
+	return l.auxiliaryCategoryId
 }
 
 func (l *AuxiliaryLedger) AuxiliaryAccount() *auxiliary_account.AuxiliaryAccount {
