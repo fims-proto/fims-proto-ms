@@ -95,9 +95,7 @@ type AuxiliaryLedgerResponse struct {
 	Id                   uuid.UUID                 `json:"id,omitempty"`
 	SobId                uuid.UUID                 `json:"sobId,omitempty"`
 	PeriodId             uuid.UUID                 `json:"periodId,omitempty"`
-	AccountId            uuid.UUID                 `json:"accountId,omitempty"`
 	Account              AccountResponse           `json:"account"`
-	AuxiliaryCategoryId  uuid.UUID                 `json:"auxiliaryCategoryId,omitempty"`
 	AuxiliaryCategory    AuxiliaryCategoryResponse `json:"auxiliaryCategory"`
 	AuxiliaryAccount     AuxiliaryAccountResponse  `json:"auxiliaryAccount"`
 	OpeningDebitBalance  decimal.Decimal           `json:"openingBalance"`
@@ -217,9 +215,7 @@ func auxiliaryLedgerDTOToVO(dto query.AuxiliaryLedger) AuxiliaryLedgerResponse {
 		Id:                   dto.Id,
 		SobId:                dto.SobId,
 		PeriodId:             dto.PeriodId,
-		AccountId:            dto.AccountId,
 		Account:              accountDTOToVO(dto.Account),
-		AuxiliaryCategoryId:  dto.AuxiliaryCategoryId,
 		AuxiliaryCategory:    auxiliaryCategoryDTOToVO(dto.AuxiliaryCategory),
 		AuxiliaryAccount:     auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
 		OpeningDebitBalance:  dto.OpeningDebitBalance,

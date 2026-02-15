@@ -229,7 +229,7 @@ func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAu
 					key := auxiliaryLedgerKey{
 						accountId:           l.AccountId(),
 						auxiliaryCategoryId: l.AuxiliaryCategoryId(),
-						auxiliaryAccountId:  l.AuxiliaryAccount().Id(),
+						auxiliaryAccountId:  l.AuxiliaryAccountId(),
 					}
 					ledgerMap[key] = l
 				}

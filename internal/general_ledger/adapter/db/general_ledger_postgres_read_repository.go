@@ -63,8 +63,10 @@ func (r GeneralLedgerPostgresReadRepository) SearchLedgers(
 
 func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryLedgers(
 	ctx context.Context,
+	sobId uuid.UUID,
 	pageRequest data.PageRequest,
 ) (data.Page[query.AuxiliaryLedger], error) {
+	addSobFilter(sobId, pageRequest)
 	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO,
 		r.dataSource.GetConnection(ctx).
 			Joins("AuxiliaryAccount.Category").

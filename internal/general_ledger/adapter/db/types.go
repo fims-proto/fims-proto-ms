@@ -548,30 +548,24 @@ func auxiliaryLedgerBOToPO(bo *auxiliary_ledger.AuxiliaryLedger) auxiliaryLedger
 		PeriodId:             bo.PeriodId(),
 		AccountId:            bo.AccountId(),
 		AuxiliaryCategoryId:  bo.AuxiliaryCategoryId(),
-		AuxiliaryAccountId:   bo.AuxiliaryAccount().Id(),
+		AuxiliaryAccountId:   bo.AuxiliaryAccountId(),
 		OpeningDebitBalance:  bo.OpeningDebitBalance(),
 		OpeningCreditBalance: bo.OpeningCreditBalance(),
 		PeriodDebit:          bo.PeriodDebit(),
 		PeriodCredit:         bo.PeriodCredit(),
 		EndingDebitBalance:   bo.EndingDebitBalance(),
 		EndingCreditBalance:  bo.EndingCreditBalance(),
-		AuxiliaryAccount:     auxiliaryAccountBOToPO(bo.AuxiliaryAccount()),
 	}
 }
 
 func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLedger, error) {
-	auxiliaryAccount, err := auxiliaryAccountPOToBO(po.AuxiliaryAccount)
-	if err != nil {
-		return nil, err
-	}
-
 	return auxiliary_ledger.New(
 		po.Id,
 		po.SobId,
 		po.PeriodId,
 		po.AccountId,
 		po.AuxiliaryCategoryId,
-		auxiliaryAccount,
+		po.AuxiliaryAccountId,
 		po.OpeningDebitBalance,
 		po.OpeningCreditBalance,
 		po.PeriodDebit,
@@ -586,9 +580,7 @@ func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
 		Id:                   po.Id,
 		SobId:                po.SobId,
 		PeriodId:             po.PeriodId,
-		AccountId:            po.AccountId,
 		Account:              accountPOToDTO(po.Account),
-		AuxiliaryCategoryId:  po.AuxiliaryCategoryId,
 		AuxiliaryCategory:    auxiliaryCategoryPOToDTO(po.AuxiliaryCategory),
 		AuxiliaryAccount:     auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
 		OpeningDebitBalance:  po.OpeningDebitBalance,

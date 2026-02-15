@@ -13,7 +13,7 @@ type GeneralLedgerReadModel interface {
 	SearchAuxiliaryCategories(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[AuxiliaryCategory], error)
 	SearchAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[AuxiliaryAccount], error)
 	SearchLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Ledger], error)
-	SearchAuxiliaryLedgers(ctx context.Context, pageRequest data.PageRequest) (data.Page[AuxiliaryLedger], error)
+	SearchAuxiliaryLedgers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[AuxiliaryLedger], error)
 	SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Period], error)
 	SearchVouchers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Voucher], error)
 

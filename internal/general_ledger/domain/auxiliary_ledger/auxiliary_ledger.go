@@ -3,8 +3,6 @@ package auxiliary_ledger
 import (
 	"errors"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
@@ -15,7 +13,7 @@ type AuxiliaryLedger struct {
 	periodId             uuid.UUID
 	accountId            uuid.UUID
 	auxiliaryCategoryId  uuid.UUID
-	auxiliaryAccount     *auxiliary_account.AuxiliaryAccount
+	auxiliaryAccountId   uuid.UUID
 	openingDebitBalance  decimal.Decimal
 	openingCreditBalance decimal.Decimal
 	periodDebit          decimal.Decimal
@@ -30,7 +28,7 @@ func New(
 	periodId uuid.UUID,
 	accountId uuid.UUID,
 	auxiliaryCategoryId uuid.UUID,
-	auxiliaryAccount *auxiliary_account.AuxiliaryAccount,
+	auxiliaryAccountId uuid.UUID,
 	openingDebitBalance decimal.Decimal,
 	openingCreditBalance decimal.Decimal,
 	periodDebit decimal.Decimal,
@@ -58,8 +56,8 @@ func New(
 		return nil, errors.New("nil auxiliary category id")
 	}
 
-	if auxiliaryAccount == nil {
-		return nil, errors.New("nil auxiliary account")
+	if auxiliaryAccountId == uuid.Nil {
+		return nil, errors.New("nil auxiliary account id")
 	}
 
 	return &AuxiliaryLedger{
@@ -68,7 +66,7 @@ func New(
 		periodId:             periodId,
 		accountId:            accountId,
 		auxiliaryCategoryId:  auxiliaryCategoryId,
-		auxiliaryAccount:     auxiliaryAccount,
+		auxiliaryAccountId:   auxiliaryAccountId,
 		openingDebitBalance:  openingDebitBalance,
 		openingCreditBalance: openingCreditBalance,
 		periodDebit:          periodDebit,
@@ -98,8 +96,8 @@ func (l *AuxiliaryLedger) AuxiliaryCategoryId() uuid.UUID {
 	return l.auxiliaryCategoryId
 }
 
-func (l *AuxiliaryLedger) AuxiliaryAccount() *auxiliary_account.AuxiliaryAccount {
-	return l.auxiliaryAccount
+func (l *AuxiliaryLedger) AuxiliaryAccountId() uuid.UUID {
+	return l.auxiliaryAccountId
 }
 
 func (l *AuxiliaryLedger) OpeningDebitBalance() decimal.Decimal {

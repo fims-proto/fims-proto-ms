@@ -126,7 +126,7 @@ func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sob
 			currentPeriod.Id(),
 			previousLedger.AccountId(),
 			previousLedger.AuxiliaryCategoryId(),
-			previousLedger.AuxiliaryAccount(),
+			previousLedger.AuxiliaryAccountId(),
 			previousLedger.EndingDebitBalance(),  // opening = previous ending
 			previousLedger.EndingCreditBalance(), // opening = previous ending
 			decimal.Zero,                         // period debit = 0
