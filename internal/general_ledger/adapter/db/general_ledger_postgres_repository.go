@@ -670,11 +670,16 @@ func (r GeneralLedgerPostgresRepository) UpsertAuxiliaryLedgersByPeriodAndAccoun
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
+	tuples := make([][]uuid.UUID, 0, len(requiredKeys))
+	for _, key := range requiredKeys {
+		tuples = append(tuples, []uuid.UUID{key.AccountId, key.AuxiliaryCategoryId, key.AuxiliaryAccountId})
+	}
+
 	// Lock and fetch existing auxiliary ledgers using composite key matching
 	var auxiliaryLedgerPOs []auxiliaryLedgerPO
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Where("sob_id = ? AND period_id = ? AND (account_id, auxiliary_category_id, auxiliary_account_id) IN ?",
-			sobId, periodId, requiredKeys).
+			sobId, periodId, tuples).
 		Find(&auxiliaryLedgerPOs).Error; err != nil {
 		return err
 	}
