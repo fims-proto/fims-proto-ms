@@ -120,6 +120,15 @@ definitions:
       totalPage:
         type: integer
     type: object
+  github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate:
+    properties:
+      day:
+        type: integer
+      month:
+        type: integer
+      year:
+        type: integer
+    type: object
   http.AccountClass:
     properties:
       groups:
@@ -166,13 +175,6 @@ definitions:
       title:
         type: string
       updatedAt:
-        type: string
-    type: object
-  http.AuxiliaryItemRequest:
-    properties:
-      accountKey:
-        type: string
-      categoryKey:
         type: string
     type: object
   http.CreateAccountRequest:
@@ -228,21 +230,6 @@ definitions:
         type: integer
     type: object
   http.CreateVoucherRequest:
-    properties:
-      attachmentQuantity:
-        type: integer
-      creator:
-        type: string
-      headerText:
-        type: string
-      lineItems:
-        items:
-          $ref: '#/definitions/http.LineItemRequest'
-        type: array
-      transactionTime:
-        type: string
-      voucherType:
-        type: string
     type: object
   http.FormulaResponse:
     properties:
@@ -346,23 +333,6 @@ definitions:
       sobId:
         type: string
       updatedAt:
-        type: string
-    type: object
-  http.LineItemRequest:
-    properties:
-      accountNumber:
-        type: string
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryItemRequest'
-        type: array
-      credit:
-        type: number
-      debit:
-        type: number
-      id:
-        type: string
-      text:
         type: string
     type: object
   http.LineItemResponse:
@@ -582,17 +552,6 @@ definitions:
         type: string
     type: object
   http.UpdateVoucherRequest:
-    properties:
-      headerText:
-        type: string
-      lineItems:
-        items:
-          $ref: '#/definitions/http.LineItemRequest'
-        type: array
-      transactionTime:
-        type: string
-      updater:
-        type: string
     type: object
   http.VoucherResponse:
     properties:
@@ -632,8 +591,8 @@ definitions:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       sobId:
         type: string
-      transactionTime:
-        type: string
+      transactionDate:
+        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate'
       updatedAt:
         type: string
       voucherType:
@@ -685,8 +644,6 @@ definitions:
     properties:
       createdAt:
         type: string
-      endingTime:
-        type: string
       fiscalYear:
         type: integer
       id:
@@ -695,8 +652,6 @@ definitions:
         type: boolean
       isCurrent:
         type: boolean
-      openingTime:
-        type: string
       periodNumber:
         type: integer
       sobId:

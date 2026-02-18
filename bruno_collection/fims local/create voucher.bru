@@ -18,7 +18,7 @@ script:pre-request {
   const testSamples = [
       {
           summary: "1 - 收到投资款",
-          date: "2023-01-08T00:00:00Z",
+          date: "2023-01-08",
           items: [
               {
                   account: "100201",
@@ -36,7 +36,7 @@ script:pre-request {
       },
       {
           summary: "2 - 提取备用金",
-          date: "2023-01-09T00:00:00Z",
+          date: "2023-01-09",
           items: [
               {
                   account: "1001",
@@ -50,7 +50,7 @@ script:pre-request {
       },
       {
           summary: "3 - 报销费用",
-          date: "2023-01-10T00:00:00Z",
+          date: "2023-01-10",
           items: [
               {
                   account: "560201",
@@ -64,7 +64,7 @@ script:pre-request {
       },
       {
           summary: "4 - 支付店庆花篮费",
-          date: "2023-01-11T00:00:00Z",
+          date: "2023-01-11",
           items: [
               {
                   account: "560202",
@@ -78,7 +78,7 @@ script:pre-request {
       },
       {
           summary: "5 - 报销办公用品",
-          date: "2023-01-12T00:00:00Z",
+          date: "2023-01-12",
           items: [
               {
                   account: "560201",
@@ -92,7 +92,7 @@ script:pre-request {
       },
       {
           summary: "6 - 购买电脑",
-          date: "2023-01-13T00:00:00Z",
+          date: "2023-01-13",
           items: [
               {
                   account: "160101",
@@ -106,7 +106,7 @@ script:pre-request {
       },
       {
           summary: "7 - 购买品牌使用费三年",
-          date: "2023-01-14T00:00:00Z",
+          date: "2023-01-14",
           items: [
               {
                   account: "170101",
@@ -120,7 +120,7 @@ script:pre-request {
       },
       {
           summary: "8 - 支付房租两年",
-          date: "2023-01-15T00:00:00Z",
+          date: "2023-01-15",
           items: [
               {
                   account: "180101",
@@ -134,7 +134,7 @@ script:pre-request {
       },
       {
           summary: "9 - 计提一月工资",
-          date: "2023-01-31T00:00:00Z",
+          date: "2023-01-31",
           items: [
               {
                   account: "560203",
@@ -148,7 +148,7 @@ script:pre-request {
       },
       {
           summary: "10 - 摊销品牌使用费",
-          date: "2023-01-31T00:00:00Z",
+          date: "2023-01-31",
           items: [
               {
                   account: "560204",
@@ -162,7 +162,7 @@ script:pre-request {
       },
       {
           summary: "11 - 摊销房租",
-          date: "2023-01-31T00:00:00Z",
+          date: "2023-01-31",
           items: [
               {
                   account: "560205",
@@ -176,7 +176,7 @@ script:pre-request {
       },
       {
           summary: "12 - 结转损益",
-          date: "2023-01-31T00:00:00Z",
+          date: "2023-01-31",
           items: [
               {
                   account: "3103",
@@ -227,7 +227,7 @@ script:pre-request {
       "attachmentQuantity": 0,
       "lineItems": [],
       "creator": bru.getCollectionVar("user_1"),
-      "transactionTime": currentSampleVoucher.date
+      "transactionDate": currentSampleVoucher.date
   }
   
   currentSampleVoucher.items.forEach(sampleItem => payload.lineItems.push({

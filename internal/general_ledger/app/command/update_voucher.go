@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 
@@ -18,7 +17,7 @@ type UpdateVoucherCmd struct {
 	VoucherId       uuid.UUID
 	HeaderText      string
 	LineItems       []LineItemCmd
-	TransactionTime time.Time
+	TransactionDate voucher.TransactionDate
 	Updater         uuid.UUID
 }
 
@@ -65,9 +64,9 @@ func (h UpdateVoucherHandler) updateVoucher(ctx context.Context, cmd UpdateVouch
 				}
 			}
 
-			// update transaction time (and period and document number, if needed)
-			if !cmd.TransactionTime.IsZero() {
-				p, err := readPeriodIdAndCheck(ctx, h.repo, h.numberingService, v.SobId(), cmd.TransactionTime)
+			// update transaction date (and period and document number, if needed)
+			if !cmd.TransactionDate.IsZero() {
+				p, err := readPeriodIdAndCheck(ctx, h.repo, h.numberingService, v.SobId(), cmd.TransactionDate)
 				if err != nil {
 					return nil, fmt.Errorf("failed to read or create period: %w", err)
 				}
@@ -83,7 +82,7 @@ func (h UpdateVoucherHandler) updateVoucher(ctx context.Context, cmd UpdateVouch
 					}
 				}
 
-				if err = v.UpdateTransactionTime(cmd.TransactionTime, cmd.Updater); err != nil {
+				if err = v.UpdateTransactionDate(cmd.TransactionDate, cmd.Updater); err != nil {
 					return nil, err
 				}
 			}

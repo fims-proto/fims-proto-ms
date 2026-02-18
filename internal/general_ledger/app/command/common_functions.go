@@ -3,7 +3,6 @@ package command
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
@@ -98,17 +97,17 @@ func prepareLineItems(
 	return lineItems, nil
 }
 
-// readPeriodIdAndCheck tries to get period id by given transaction time of a voucher, and will also check if the period is closed.
-// if no period exists for given transaction time, it creates one
+// readPeriodIdAndCheck tries to get period id by given transaction date of a voucher, and will also check if the period is closed.
+// if no period exists for given transaction date, it creates one
 func readPeriodIdAndCheck(
 	ctx context.Context,
 	repo domain.Repository,
 	numberingService service.NumberingService,
 	sobId uuid.UUID,
-	transactionTime time.Time,
+	transactionDate voucher.TransactionDate,
 ) (*period.Period, error) {
-	fiscalYear := transactionTime.Year()
-	periodNumber := int(transactionTime.Month())
+	fiscalYear := transactionDate.Year
+	periodNumber := transactionDate.Month
 
 	p, err := createPeriodIfNotExists(ctx, createPeriodCmd{
 		SobId:      sobId,

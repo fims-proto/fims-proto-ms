@@ -123,7 +123,7 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 		VoucherId:       uuid.MustParse(c.Param("voucherId")),
 		HeaderText:      req.HeaderText,
 		LineItems:       items,
-		TransactionTime: req.TransactionTime,
+		TransactionDate: req.TransactionDate,
 		Updater:         req.Updater,
 	}
 	if err := h.app.Commands.UpdateVoucher.Handle(c, cmd); err != nil {

@@ -22,9 +22,6 @@ func TestSection_SynchronizeItems_AddNewItemInMiddle(t *testing.T) {
 
 	// Execute: Insert new item BETWEEN item1 and item2
 	// Desired order: item1, newItem, item2
-	newItemText := "New Item (should be in middle)"
-	newItemLevel := 1
-	newItemSumFactor := 1
 	newItemDataSource, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
@@ -33,9 +30,9 @@ func TestSection_SynchronizeItems_AddNewItemInMiddle(t *testing.T) {
 		},
 		{
 			ItemId:     nil, // Position 1 → NOT in positionMap (new item)
-			Text:       &newItemText,
-			Level:      &newItemLevel,
-			SumFactor:  &newItemSumFactor,
+			Text:       new("New Item (should be in middle)"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &newItemDataSource,
 		},
 		{
@@ -90,15 +87,8 @@ func TestSection_SynchronizeItems_AddMultipleNewItems(t *testing.T) {
 	item3 := createTestItem("Item 3", 3, true)
 	section := createTestSection("Test Section", 1, nil, []*Item{item1, item2, item3})
 
-	item1Id := item1.id
-	item2Id := item2.id
-	item3Id := item3.id
-
 	// Execute: Insert new items at various positions
 	// Desired order: newItemA, item1, newItemB, item2, item3, newItemC
-	newItemAText := "New Item A (beginning)"
-	newItemBText := "New Item B (middle)"
-	newItemCText := "New Item C (end)"
 	level := 1
 	sumFactor := 1
 	ds, _ := data_source.FromString("sum")
@@ -107,35 +97,35 @@ func TestSection_SynchronizeItems_AddMultipleNewItems(t *testing.T) {
 		// Position 0: newItemA (new)
 		{
 			ItemId:     nil,
-			Text:       &newItemAText,
+			Text:       new("New Item A (beginning)"),
 			Level:      &level,
 			SumFactor:  &sumFactor,
 			DataSource: &ds,
 		},
 		// Position 1: item1 (existing) → positionMap[item1Id] = 2
 		{
-			ItemId: &item1Id,
+			ItemId: new(item1.id),
 		},
 		// Position 2: newItemB (new)
 		{
 			ItemId:     nil,
-			Text:       &newItemBText,
+			Text:       new("New Item B (middle)"),
 			Level:      &level,
 			SumFactor:  &sumFactor,
 			DataSource: &ds,
 		},
 		// Position 3: item2 (existing) → positionMap[item2Id] = 4
 		{
-			ItemId: &item2Id,
+			ItemId: new(item2.id),
 		},
 		// Position 4: item3 (existing) → positionMap[item3Id] = 5
 		{
-			ItemId: &item3Id,
+			ItemId: new(item3.id),
 		},
 		// Position 5: newItemC (new)
 		{
 			ItemId:     nil,
-			Text:       &newItemCText,
+			Text:       new("New Item C (end)"),
 			Level:      &level,
 			SumFactor:  &sumFactor,
 			DataSource: &ds,
@@ -188,18 +178,15 @@ func TestSection_SynchronizeItems_NewItemAtBeginning(t *testing.T) {
 	item2Id := item2.id
 
 	// Execute: Add new item at the BEGINNING
-	newItemText := "New Item (at beginning)"
-	level := 1
-	sumFactor := 1
 	ds, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
 		// Position 0: newItem (new)
 		{
 			ItemId:     nil,
-			Text:       &newItemText,
-			Level:      &level,
-			SumFactor:  &sumFactor,
+			Text:       new("New Item (at beginning)"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &ds,
 		},
 		// Position 1: item1 → positionMap[item1Id] = 2
@@ -250,9 +237,6 @@ func TestSection_SynchronizeItems_NewItemAtEnd(t *testing.T) {
 	item2Id := item2.id
 
 	// Execute: Add new item at the END
-	newItemText := "New Item (at end)"
-	level := 1
-	sumFactor := 1
 	ds, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
@@ -267,9 +251,9 @@ func TestSection_SynchronizeItems_NewItemAtEnd(t *testing.T) {
 		// Position 2: newItem (new)
 		{
 			ItemId:     nil,
-			Text:       &newItemText,
-			Level:      &level,
-			SumFactor:  &sumFactor,
+			Text:       new("New Item (at end)"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &ds,
 		},
 	}
@@ -314,18 +298,15 @@ func TestSection_reorderItemsBySequence_DebugNewItemSequences(t *testing.T) {
 
 	// We'll manually simulate what SynchronizeItems does
 	// Step 1: Build desiredById map and newItems list
-	newItemText := "New Item"
-	level := 1
-	sumFactor := 1
 	ds, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
 		{ItemId: &item1Id}, // Position 0
 		{
 			ItemId:     nil, // Position 1 (new item)
-			Text:       &newItemText,
-			Level:      &level,
-			SumFactor:  &sumFactor,
+			Text:       new("New Item"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &ds,
 		},
 		{ItemId: &item2Id}, // Position 2

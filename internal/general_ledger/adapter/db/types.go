@@ -68,8 +68,6 @@ type periodPO struct {
 	SobId        uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Periods_SobId_FiscalYear_PeriodNumber"`
 	FiscalYear   int       `gorm:"uniqueIndex:UQ_Periods_SobId_FiscalYear_PeriodNumber"`
 	PeriodNumber int       `gorm:"uniqueIndex:UQ_Periods_SobId_FiscalYear_PeriodNumber"`
-	OpeningTime  time.Time
-	EndingTime   time.Time
 	IsClosed     bool
 	IsCurrent    bool
 
@@ -134,7 +132,7 @@ type voucherPO struct {
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
-	TransactionTime    time.Time
+	TransactionDate    time.Time `gorm:"type:date"`
 
 	LineItems []lineItemPO `gorm:"foreignKey:VoucherId"`
 	Period    periodPO     `gorm:"foreignKey:PeriodId"`
@@ -461,8 +459,6 @@ func periodBOToPO(bo period.Period) periodPO {
 		Id:           bo.Id(),
 		FiscalYear:   bo.FiscalYear(),
 		PeriodNumber: bo.PeriodNumber(),
-		OpeningTime:  bo.OpeningTime(),
-		EndingTime:   bo.EndingTime(),
 		IsClosed:     bo.IsClosed(),
 		IsCurrent:    bo.IsCurrent(),
 	}
@@ -474,8 +470,6 @@ func periodPOToBO(po periodPO) (*period.Period, error) {
 		po.SobId,
 		po.FiscalYear,
 		po.PeriodNumber,
-		po.OpeningTime,
-		po.EndingTime,
 		po.IsClosed,
 		po.IsCurrent,
 	)
@@ -600,6 +594,14 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		itemPOs = append(itemPOs, lineItemBOToPO(*item, bo.Id()))
 	}
 
+	// Convert TransactionDate to time.Time for PostgreSQL DATE type
+	transactionDate := time.Date(
+		bo.TransactionDate().Year,
+		time.Month(bo.TransactionDate().Month),
+		bo.TransactionDate().Day,
+		0, 0, 0, 0, time.UTC,
+	)
+
 	return voucherPO{
 		SobId:              bo.SobId(),
 		Id:                 bo.Id(),
@@ -617,7 +619,7 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		IsReviewed:         bo.IsReviewed(),
 		IsAudited:          bo.IsAudited(),
 		IsPosted:           bo.IsPosted(),
-		TransactionTime:    bo.TransactionTime(),
+		TransactionDate:    transactionDate,
 		LineItems:          itemPOs,
 	}
 }
@@ -631,6 +633,13 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 	periodBO, err := periodPOToBO(po.Period)
 	if err != nil {
 		return nil, err
+	}
+
+	// Convert time.Time DATE to TransactionDate
+	transactionDate := voucher.TransactionDate{
+		Year:  po.TransactionDate.Year(),
+		Month: int(po.TransactionDate.Month()),
+		Day:   po.TransactionDate.Day(),
 	}
 
 	return voucher.New(
@@ -648,7 +657,7 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 		po.IsReviewed,
 		po.IsAudited,
 		po.IsPosted,
-		po.TransactionTime,
+		transactionDate,
 		itemBOs,
 	)
 }
@@ -663,6 +672,13 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 			return &query.User{Id: id}
 		}
 		return nil
+	}
+
+	// Convert time.Time DATE to TransactionDate
+	transactionDate := voucher.TransactionDate{
+		Year:  po.TransactionDate.Year(),
+		Month: int(po.TransactionDate.Month()),
+		Day:   po.TransactionDate.Day(),
 	}
 
 	return query.Voucher{
@@ -682,7 +698,7 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 		IsReviewed:         po.IsReviewed,
 		IsAudited:          po.IsAudited,
 		IsPosted:           po.IsPosted,
-		TransactionTime:    po.TransactionTime,
+		TransactionDate:    transactionDate,
 		LineItems:          itemDTOs,
 		CreatedAt:          po.CreatedAt,
 		UpdatedAt:          po.UpdatedAt,

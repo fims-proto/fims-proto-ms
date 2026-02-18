@@ -1,8 +1,6 @@
 package voucher
 
 import (
-	"time"
-
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher/voucher_type"
@@ -29,7 +27,7 @@ type Voucher struct {
 	isReviewed         bool
 	isAudited          bool
 	isPosted           bool
-	transactionTime    time.Time
+	transactionDate    TransactionDate
 	lineItems          []*LineItem
 }
 
@@ -48,7 +46,7 @@ func New(
 	isReviewed bool,
 	isAudited bool,
 	isPosted bool,
-	transactionTime time.Time,
+	transactionDate TransactionDate,
 	lineItems []*LineItem,
 ) (*Voucher, error) {
 	if id == uuid.Nil {
@@ -104,8 +102,8 @@ func New(
 		return nil, errors.NewSlugError("voucher-invalidPostStatus")
 	}
 
-	if transactionTime.IsZero() {
-		return nil, errors.NewSlugError("voucher-zeroTransactionTime")
+	if transactionDate.IsZero() {
+		return nil, errors.NewSlugError("voucher-zeroTransactionDate")
 	}
 
 	totalVal, err := sumLineItems(lineItems)
@@ -131,7 +129,7 @@ func New(
 		isReviewed:         isReviewed,
 		isAudited:          isAudited,
 		isPosted:           isPosted,
-		transactionTime:    transactionTime,
+		transactionDate:    transactionDate,
 		lineItems:          lineItems,
 	}, nil
 }
@@ -204,8 +202,8 @@ func (v *Voucher) IsPosted() bool {
 	return v.isPosted
 }
 
-func (v *Voucher) TransactionTime() time.Time {
-	return v.transactionTime
+func (v *Voucher) TransactionDate() TransactionDate {
+	return v.transactionDate
 }
 
 func (v *Voucher) LineItems() []*LineItem {

@@ -11,7 +11,7 @@
   "voucher-emptyAuditor": "凭证审核人不能为空",
   "voucher-emptyPoster": "凭证登账人不能为空",
   "voucher-invalidPostStatus": "凭证登账状态异常",
-  "voucher-zeroTransactionTime": "凭证交易日期不能为空",
+  "voucher-zeroTransactionDate": "凭证交易日期不能为空",
   "voucher-emptyLineItems": "凭证行项目不能为空",
   "voucher-notBalanced": "凭证借贷不平衡",
   "voucher-unknownVoucherType": "凭证类型 {{.A}} 不存在",

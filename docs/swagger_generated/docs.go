@@ -2133,6 +2133,20 @@ const docTemplate = `{
                 }
             }
         },
+        "github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate": {
+            "type": "object",
+            "properties": {
+                "day": {
+                    "type": "integer"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
         "http.AccountClass": {
             "type": "object",
             "properties": {
@@ -2203,17 +2217,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.AuxiliaryItemRequest": {
-            "type": "object",
-            "properties": {
-                "accountKey": {
-                    "type": "string"
-                },
-                "categoryKey": {
                     "type": "string"
                 }
             }
@@ -2299,30 +2302,7 @@ const docTemplate = `{
             }
         },
         "http.CreateVoucherRequest": {
-            "type": "object",
-            "properties": {
-                "attachmentQuantity": {
-                    "type": "integer"
-                },
-                "creator": {
-                    "type": "string"
-                },
-                "headerText": {
-                    "type": "string"
-                },
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemRequest"
-                    }
-                },
-                "transactionTime": {
-                    "type": "string"
-                },
-                "voucherType": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "http.FormulaResponse": {
             "type": "object",
@@ -2479,32 +2459,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.LineItemRequest": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
-                    }
-                },
-                "credit": {
-                    "type": "number"
-                },
-                "debit": {
-                    "type": "number"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
                     "type": "string"
                 }
             }
@@ -2834,24 +2788,7 @@ const docTemplate = `{
             }
         },
         "http.UpdateVoucherRequest": {
-            "type": "object",
-            "properties": {
-                "headerText": {
-                    "type": "string"
-                },
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemRequest"
-                    }
-                },
-                "transactionTime": {
-                    "type": "string"
-                },
-                "updater": {
-                    "type": "string"
-                }
-            }
+            "type": "object"
         },
         "http.VoucherResponse": {
             "type": "object",
@@ -2910,8 +2847,8 @@ const docTemplate = `{
                 "sobId": {
                     "type": "string"
                 },
-                "transactionTime": {
-                    "type": "string"
+                "transactionDate": {
+                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -2991,9 +2928,6 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "endingTime": {
-                    "type": "string"
-                },
                 "fiscalYear": {
                     "type": "integer"
                 },
@@ -3005,9 +2939,6 @@ const docTemplate = `{
                 },
                 "isCurrent": {
                     "type": "boolean"
-                },
-                "openingTime": {
-                    "type": "string"
                 },
                 "periodNumber": {
                     "type": "integer"

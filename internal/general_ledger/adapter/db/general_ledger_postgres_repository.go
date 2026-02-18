@@ -406,7 +406,7 @@ func (r GeneralLedgerPostgresRepository) ReadFirstPeriod(ctx context.Context, so
 	db := r.dataSource.GetConnection(ctx)
 
 	var po periodPO
-	err := db.Order("opening_time asc").Where(periodPO{SobId: sobId}).First(&po).Error
+	err := db.Order("fiscal_year asc, period_number asc").Where(periodPO{SobId: sobId}).First(&po).Error
 	if err == nil {
 		return periodPOToBO(po)
 	}

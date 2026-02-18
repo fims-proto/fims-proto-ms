@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type Error struct {
@@ -62,8 +63,6 @@ type PeriodResponse struct {
 	SobId        uuid.UUID `json:"sobId,omitempty"`
 	FiscalYear   int       `json:"fiscalYear"`
 	PeriodNumber int       `json:"periodNumber"`
-	OpeningTime  time.Time `json:"openingTime"`
-	EndingTime   time.Time `json:"endingTime"`
 	IsClosed     bool      `json:"isClosed"`
 	IsCurrent    bool      `json:"isCurrent"`
 	CreatedAt    time.Time `json:"createdAt"`
@@ -120,26 +119,26 @@ type LineItemResponse struct {
 }
 
 type VoucherResponse struct {
-	Id                 uuid.UUID          `json:"id,omitempty"`
-	SobId              uuid.UUID          `json:"sobId,omitempty"`
-	Period             PeriodResponse     `json:"period"`
-	HeaderText         string             `json:"headerText,omitempty"`
-	DocumentNumber     string             `json:"documentNumber,omitempty"`
-	VoucherType        string             `json:"voucherType,omitempty"`
-	AttachmentQuantity int                `json:"attachmentQuantity"`
-	Creator            *UserResponse      `json:"creator"`
-	Auditor            *UserResponse      `json:"auditor"`
-	Reviewer           *UserResponse      `json:"reviewer"`
-	Poster             *UserResponse      `json:"poster"`
-	Credit             decimal.Decimal    `json:"credit"`
-	Debit              decimal.Decimal    `json:"debit"`
-	IsAudited          bool               `json:"isAudited"`
-	IsPosted           bool               `json:"isPosted"`
-	IsReviewed         bool               `json:"isReviewed"`
-	TransactionTime    time.Time          `json:"transactionTime"`
-	LineItems          []LineItemResponse `json:"lineItems,omitempty"`
-	CreatedAt          time.Time          `json:"createdAt"`
-	UpdatedAt          time.Time          `json:"updatedAt"`
+	Id                 uuid.UUID               `json:"id,omitempty"`
+	SobId              uuid.UUID               `json:"sobId,omitempty"`
+	Period             PeriodResponse          `json:"period"`
+	HeaderText         string                  `json:"headerText,omitempty"`
+	DocumentNumber     string                  `json:"documentNumber,omitempty"`
+	VoucherType        string                  `json:"voucherType,omitempty"`
+	AttachmentQuantity int                     `json:"attachmentQuantity"`
+	Creator            *UserResponse           `json:"creator"`
+	Auditor            *UserResponse           `json:"auditor"`
+	Reviewer           *UserResponse           `json:"reviewer"`
+	Poster             *UserResponse           `json:"poster"`
+	Credit             decimal.Decimal         `json:"credit"`
+	Debit              decimal.Decimal         `json:"debit"`
+	IsAudited          bool                    `json:"isAudited"`
+	IsPosted           bool                    `json:"isPosted"`
+	IsReviewed         bool                    `json:"isReviewed"`
+	TransactionDate    voucher.TransactionDate `json:"transactionDate"`
+	LineItems          []LineItemResponse      `json:"lineItems,omitempty"`
+	CreatedAt          time.Time               `json:"createdAt"`
+	UpdatedAt          time.Time               `json:"updatedAt"`
 }
 
 type UserResponse struct {
@@ -279,7 +278,7 @@ func voucherDTOToVO(dto query.Voucher) VoucherResponse {
 		IsReviewed:         dto.IsReviewed,
 		IsAudited:          dto.IsAudited,
 		IsPosted:           dto.IsPosted,
-		TransactionTime:    dto.TransactionTime,
+		TransactionDate:    dto.TransactionDate,
 		LineItems:          itemRes,
 		CreatedAt:          dto.CreatedAt,
 		UpdatedAt:          dto.UpdatedAt,
