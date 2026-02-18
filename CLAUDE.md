@@ -98,12 +98,13 @@ Always use `datasource.DataSource` interface, never raw GORM:
 
 ```go
 type DataSource interface {
-    GetConnection(ctx context.Context) *gorm.DB
-    EnableTransaction(ctx context.Context, transactionalFn func(txCtx context.Context) error) error
+GetConnection(ctx context.Context) *gorm.DB
+EnableTransaction(ctx context.Context, transactionalFn func(txCtx context.Context) error) error
 }
 ```
 
 Two implementations:
+
 - `dedicated-datasource/` - Single database (production ready)
 - `multitenant-datasource/` - Multi-tenant routing via subdomain (stub)
 
@@ -148,6 +149,7 @@ return errors.NewSlugError("voucher-post-notAudited")
 ```
 
 When adding new slugs:
+
 1. Use in code: `errors.NewSlugError("module-operation-reason", args...)`
 2. Add to `i18n/zh-CN.json`: `"module-operation-reason": "本地化消息 {{.A}}"`
 3. Middleware auto-maps slugs to localized responses
@@ -169,6 +171,7 @@ See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middlew
 Workflow: Create → Review → Audit → Post (登账) → affects Ledgers
 
 Business rules enforced in `internal/general_ledger/domain/voucher/`:
+
 - Voucher must be reviewed AND audited before posting
 - Creator ≠ Reviewer ≠ Auditor (segregation of duties)
 - Cannot modify after audit/review
@@ -180,6 +183,7 @@ Business rules enforced in `internal/general_ledger/domain/voucher/`:
 File: `internal/general_ledger/app/command/post_voucher.go`
 
 Process:
+
 1. Call `v.Post(poster)` to validate and mark voucher
 2. Build posting records for all line items + their superior accounts
 3. Merge identical account records (sum debits/credits)
@@ -192,6 +196,7 @@ Process:
 File: `internal/report/domain/generator/generator.go`
 
 Reports use two data source types:
+
 - **Sum** - Aggregates ledger balances by account filters
 - **Formulas** - Four formula rules: `Net`, `Debit`, `Credit`, `Transaction`
 
@@ -208,6 +213,7 @@ Configurations define patterns with auto-increment counters per period/type.
 ### Set of Books (SoB)
 
 A SoB (账套) represents a complete accounting entity with its own:
+
 - Chart of accounts
 - Accounting periods
 - Vouchers and ledgers
@@ -234,6 +240,7 @@ Grammar defined in `filterable.peg`. Generate parser with `make peg`.
 ### Unit Tests
 
 Focus on:
+
 - Domain logic: voucher state transitions, business rule enforcement
 - Report generator: formula calculations
 - Repository updates with transactions
@@ -255,16 +262,19 @@ Use these flows as integration test templates.
 **Entry Point**: `cmd/main.go` - DI setup, router configuration, middleware registration
 
 **Core Interfaces**:
+
 - `internal/common/datasource/datasource.go` - Database abstraction
 - `internal/*/domain/repository.go` - Domain repository contracts
 - `internal/*/app/app.go` - Application service composition
 
 **Domain Examples**:
+
 - `internal/general_ledger/domain/voucher/` - Voucher aggregate with business rules
 - `internal/general_ledger/domain/ledger/` - Ledger balance tracking
 - `internal/sob/domain/sob/` - Set of Books configuration
 
 **Critical Implementations**:
+
 - `internal/general_ledger/app/command/post_voucher.go` - Posting logic
 - `internal/report/domain/generator/generator.go` - Report generation
 - `internal/common/errors/gin_middleware.go` - Error translation
@@ -290,3 +300,11 @@ HTTP handlers require swagger annotations:
 ```
 
 Main swagger config in `api/api.go`
+
+## Code Style & Approach section
+
+When asked to plan or implement changes, start with the simplest approach that follows existing patterns in the codebase. Do NOT over-engineer, create wrapper components, or introduce new abstractions unless explicitly requested. Look for existing patterns first and reuse them.
+
+When asked for backend-only or frontend-only analysis, stay strictly within that boundary. Do not include suggestions or changes for the other side unless explicitly asked.
+
+Before implementing a fix for a bug, create a brief plan and confirm the approach. Do not jump straight into coding a fix without understanding the root cause first. When debugging, avoid rapid-fire guessing — instead, methodically trace the data flow.
