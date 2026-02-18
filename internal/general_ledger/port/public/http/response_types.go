@@ -8,6 +8,7 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type Error struct {
@@ -32,7 +33,7 @@ type AccountResponse struct {
 	Class               string                      `json:"class"`
 	Group               string                      `json:"group"`
 	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
-	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories"`
+	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories,omitempty"`
 	CreatedAt           time.Time                   `json:"createdAt"`
 	UpdatedAt           time.Time                   `json:"updatedAt"`
 }
@@ -62,8 +63,6 @@ type PeriodResponse struct {
 	SobId        uuid.UUID `json:"sobId,omitempty"`
 	FiscalYear   int       `json:"fiscalYear"`
 	PeriodNumber int       `json:"periodNumber"`
-	OpeningTime  time.Time `json:"openingTime"`
-	EndingTime   time.Time `json:"endingTime"`
 	IsClosed     bool      `json:"isClosed"`
 	IsCurrent    bool      `json:"isCurrent"`
 	CreatedAt    time.Time `json:"createdAt"`
@@ -92,17 +91,20 @@ type PeriodAndLedgersResponse struct {
 }
 
 type AuxiliaryLedgerResponse struct {
-	Id                   uuid.UUID                `json:"id,omitempty"`
-	PeriodId             uuid.UUID                `json:"periodId,omitempty"`
-	AuxiliaryAccount     AuxiliaryAccountResponse `json:"auxiliaryAccount"`
-	OpeningDebitBalance  decimal.Decimal          `json:"openingBalance"`
-	OpeningCreditBalance decimal.Decimal          `json:"openingCreditBalance"`
-	PeriodDebit          decimal.Decimal          `json:"periodDebit"`
-	PeriodCredit         decimal.Decimal          `json:"periodCredit"`
-	EndingDebitBalance   decimal.Decimal          `json:"endingBalance"`
-	EndingCreditBalance  decimal.Decimal          `json:"endingCreditBalance"`
-	CreatedAt            time.Time                `json:"createdAt"`
-	UpdatedAt            time.Time                `json:"updatedAt"`
+	Id                   uuid.UUID                 `json:"id,omitempty"`
+	SobId                uuid.UUID                 `json:"sobId,omitempty"`
+	PeriodId             uuid.UUID                 `json:"periodId,omitempty"`
+	Account              AccountResponse           `json:"account"`
+	AuxiliaryCategory    AuxiliaryCategoryResponse `json:"auxiliaryCategory"`
+	AuxiliaryAccount     AuxiliaryAccountResponse  `json:"auxiliaryAccount"`
+	OpeningDebitBalance  decimal.Decimal           `json:"openingBalance"`
+	OpeningCreditBalance decimal.Decimal           `json:"openingCreditBalance"`
+	PeriodDebit          decimal.Decimal           `json:"periodDebit"`
+	PeriodCredit         decimal.Decimal           `json:"periodCredit"`
+	EndingDebitBalance   decimal.Decimal           `json:"endingBalance"`
+	EndingCreditBalance  decimal.Decimal           `json:"endingCreditBalance"`
+	CreatedAt            time.Time                 `json:"createdAt"`
+	UpdatedAt            time.Time                 `json:"updatedAt"`
 }
 
 type LineItemResponse struct {
@@ -117,26 +119,26 @@ type LineItemResponse struct {
 }
 
 type VoucherResponse struct {
-	Id                 uuid.UUID          `json:"id,omitempty"`
-	SobId              uuid.UUID          `json:"sobId,omitempty"`
-	Period             PeriodResponse     `json:"period"`
-	HeaderText         string             `json:"headerText,omitempty"`
-	DocumentNumber     string             `json:"documentNumber,omitempty"`
-	VoucherType        string             `json:"voucherType,omitempty"`
-	AttachmentQuantity int                `json:"attachmentQuantity"`
-	Creator            *UserResponse      `json:"creator"`
-	Auditor            *UserResponse      `json:"auditor"`
-	Reviewer           *UserResponse      `json:"reviewer"`
-	Poster             *UserResponse      `json:"poster"`
-	Credit             decimal.Decimal    `json:"credit"`
-	Debit              decimal.Decimal    `json:"debit"`
-	IsAudited          bool               `json:"isAudited"`
-	IsPosted           bool               `json:"isPosted"`
-	IsReviewed         bool               `json:"isReviewed"`
-	TransactionTime    time.Time          `json:"transactionTime"`
-	LineItems          []LineItemResponse `json:"lineItems,omitempty"`
-	CreatedAt          time.Time          `json:"createdAt"`
-	UpdatedAt          time.Time          `json:"updatedAt"`
+	Id                 uuid.UUID               `json:"id,omitempty"`
+	SobId              uuid.UUID               `json:"sobId,omitempty"`
+	Period             PeriodResponse          `json:"period"`
+	HeaderText         string                  `json:"headerText,omitempty"`
+	DocumentNumber     string                  `json:"documentNumber,omitempty"`
+	VoucherType        string                  `json:"voucherType,omitempty"`
+	AttachmentQuantity int                     `json:"attachmentQuantity"`
+	Creator            *UserResponse           `json:"creator"`
+	Auditor            *UserResponse           `json:"auditor"`
+	Reviewer           *UserResponse           `json:"reviewer"`
+	Poster             *UserResponse           `json:"poster"`
+	Credit             decimal.Decimal         `json:"credit"`
+	Debit              decimal.Decimal         `json:"debit"`
+	IsAudited          bool                    `json:"isAudited"`
+	IsPosted           bool                    `json:"isPosted"`
+	IsReviewed         bool                    `json:"isReviewed"`
+	TransactionDate    voucher.TransactionDate `json:"transactionDate"`
+	LineItems          []LineItemResponse      `json:"lineItems,omitempty"`
+	CreatedAt          time.Time               `json:"createdAt"`
+	UpdatedAt          time.Time               `json:"updatedAt"`
 }
 
 type UserResponse struct {
@@ -210,7 +212,10 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 func auxiliaryLedgerDTOToVO(dto query.AuxiliaryLedger) AuxiliaryLedgerResponse {
 	return AuxiliaryLedgerResponse{
 		Id:                   dto.Id,
+		SobId:                dto.SobId,
 		PeriodId:             dto.PeriodId,
+		Account:              accountDTOToVO(dto.Account),
+		AuxiliaryCategory:    auxiliaryCategoryDTOToVO(dto.AuxiliaryCategory),
 		AuxiliaryAccount:     auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
 		OpeningDebitBalance:  dto.OpeningDebitBalance,
 		OpeningCreditBalance: dto.OpeningCreditBalance,
@@ -273,7 +278,7 @@ func voucherDTOToVO(dto query.Voucher) VoucherResponse {
 		IsReviewed:         dto.IsReviewed,
 		IsAudited:          dto.IsAudited,
 		IsPosted:           dto.IsPosted,
-		TransactionTime:    dto.TransactionTime,
+		TransactionDate:    dto.TransactionDate,
 		LineItems:          itemRes,
 		CreatedAt:          dto.CreatedAt,
 		UpdatedAt:          dto.UpdatedAt,

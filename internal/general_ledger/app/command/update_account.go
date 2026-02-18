@@ -4,11 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
+
+	"github.com/google/uuid"
 )
 
 type UpdateAccountCmd struct {
@@ -42,6 +43,12 @@ func NewUpdateAccountHandler(repo domain.Repository, sobService service.SobServi
 }
 
 func (h UpdateAccountHandler) Handle(ctx context.Context, cmd UpdateAccountCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.update(txCtx, cmd)
+	})
+}
+
+func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd) error {
 	return h.repo.UpdateAccount(ctx, cmd.AccountId, func(a *account.Account) (*account.Account, error) {
 		if cmd.Title != "" {
 			if err := a.UpdateTitle(cmd.Title); err != nil {
@@ -75,7 +82,7 @@ func (h UpdateAccountHandler) Handle(ctx context.Context, cmd UpdateAccountCmd) 
 		if cmd.CategoryKeys != nil {
 			var categories []*auxiliary_category.AuxiliaryCategory
 			for _, key := range cmd.CategoryKeys {
-				auxiliaryCategory, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, key)
+				auxiliaryCategory, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, cmd.SobId, key)
 				if err != nil {
 					return nil, fmt.Errorf("failed to read auxiliary category: %w", err)
 				}

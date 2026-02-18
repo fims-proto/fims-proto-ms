@@ -3,8 +3,9 @@ package datasource
 import (
 	"strings"
 
-	"github.com/gin-gonic/gin"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
+
+	"github.com/gin-gonic/gin"
 )
 
 // ResolveSubdomain parse subdomain from URL and set into context

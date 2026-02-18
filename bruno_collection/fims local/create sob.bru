@@ -1,0 +1,45 @@
+meta {
+  name: create sob
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{base_path}}/sobs
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "name": "Test {{now}}",
+      "description": "test company at {{now}}",
+      "baseCurrency": "CNY",
+      "startingPeriodYear": 2023,
+      "startingPeriodMonth": 1,
+      "accountsCodeLength": [
+          4,
+          2,
+          2
+      ]
+  }
+}
+
+script:pre-request {
+  const formatDate = (d) => d.getFullYear().toString().slice(-2) +
+    String(d.getMonth() + 1).padStart(2, '0') +
+    String(d.getDate()).padStart(2, '0') +
+    String(d.getHours()).padStart(2, '0') +
+    String(d.getMinutes()).padStart(2, '0') +
+    String(d.getSeconds()).padStart(2, '0')
+  
+  bru.setVar("now", formatDate(new Date()))
+}
+
+tests {
+  test("Create SoB 201", function () {
+      expect(res.getStatus()).to.equal(201);
+  })
+  
+  bru.setVar("sob", res.body.id)
+}

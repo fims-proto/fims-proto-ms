@@ -11,22 +11,32 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
+
+	"github.com/google/uuid"
 )
+
+// AuxiliaryLedgerKey represents the composite natural key for auxiliary ledgers
+type AuxiliaryLedgerKey struct {
+	AccountId           uuid.UUID
+	AuxiliaryCategoryId uuid.UUID
+	AuxiliaryAccountId  uuid.UUID
+}
 
 type Repository interface {
 	Migrate(ctx context.Context) error
 	EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error
 
 	InitialAccounts(ctx context.Context, accounts []*account.Account) error
+	CreateAccount(ctx context.Context, account *account.Account) error
 	UpdateAccount(
 		ctx context.Context,
 		accountId uuid.UUID,
 		updateFn func(a *account.Account) (*account.Account, error),
 	) error
 	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)
+	ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error)
 	ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error)
 	ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error)
 	ReadAccountsWithSuperiorsByIds(ctx context.Context, sobId uuid.UUID, accountIds []uuid.UUID) ([]*account.Account, error)
@@ -62,18 +72,21 @@ type Repository interface {
 	ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
 	CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error
-	ReadAuxiliaryCategoryByKey(ctx context.Context, key string) (*auxiliary_category.AuxiliaryCategory, error)
+	ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error)
+	ReadAuxiliaryCategoriesByKeys(ctx context.Context, sobId uuid.UUID, keys []string) ([]*auxiliary_category.AuxiliaryCategory, error)
 
 	CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error
 	ReadAuxiliaryAccountsByPairs(ctx context.Context, sobId uuid.UUID, pairs []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error)
 	ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error)
 
 	CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error
-	UpdateAuxiliaryLedgersByPeriodAndAccountIds(
+	UpsertAuxiliaryLedgersByPeriodAndAccounts(
 		ctx context.Context,
+		sobId uuid.UUID,
 		periodId uuid.UUID,
-		auxiliaryAccountIds []uuid.UUID,
-		updateFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
+		requiredKeys []AuxiliaryLedgerKey,
+		applyFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
 	) error
 	ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)
+	ReadAuxiliaryLedgersByAccountAndPeriod(ctx context.Context, accountId uuid.UUID, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)
 }

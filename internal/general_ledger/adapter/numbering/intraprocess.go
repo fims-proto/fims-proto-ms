@@ -5,8 +5,9 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/command"
 
-	"github.com/google/uuid"
 	numberingPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/intraprocess"
+
+	"github.com/google/uuid"
 )
 
 type IntraProcessAdapter struct {

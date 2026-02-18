@@ -3,13 +3,13 @@ package command
 import (
 	"context"
 	"fmt"
-	"time"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+
+	"github.com/google/uuid"
 )
 
 type CreateVoucherCmd struct {
@@ -20,7 +20,7 @@ type CreateVoucherCmd struct {
 	AttachmentQuantity int
 	LineItems          []LineItemCmd
 	Creator            uuid.UUID
-	TransactionTime    time.Time
+	TransactionDate    voucher.TransactionDate
 }
 
 type CreateVoucherHandler struct {
@@ -45,7 +45,7 @@ func NewCreateVoucherHandler(repo domain.Repository, numberingService service.Nu
 
 func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		p, err := readPeriodIdAndCheck(txCtx, h.repo, h.numberingService, cmd.SobId, cmd.TransactionTime)
+		p, err := readPeriodIdAndCheck(txCtx, h.repo, h.numberingService, cmd.SobId, cmd.TransactionDate)
 		if err != nil {
 			return fmt.Errorf("failed to read or create period: %w", err)
 		}
@@ -82,7 +82,7 @@ func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVouch
 		false,
 		false,
 		false,
-		cmd.TransactionTime,
+		cmd.TransactionDate,
 		lineItems,
 	)
 	if err != nil {

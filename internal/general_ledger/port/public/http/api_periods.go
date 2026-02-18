@@ -5,26 +5,28 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ReadPagingPeriods godoc
-// @Text List periods
-// @Description List periods
-// @Tags periods
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param $page query int false "page number" default(1)
-// @Param $size query int false "page size" default(40)
-// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
-// @Success 200 {array} PeriodResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/periods [get]
+//
+//	@Text			List periods
+//	@Description	List periods
+//	@Tags			periods
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			$page	query		int		false	"page number"			default(1)
+//	@Param			$size	query		int		false	"page size"				default(40)
+//	@Param			$sort	query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter	query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
+//	@Success		200		{object}	data.PageResponse[PeriodResponse]
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/periods [get]
 func (h Handler) ReadPagingPeriods(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -36,15 +38,16 @@ func (h Handler) ReadPagingPeriods(c *gin.Context) {
 }
 
 // ReadSobCurrentPeriod godoc
-// @Text Current period
-// @Description Current period
-// @Tags periods
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Success 200 {object} PeriodResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/periods/current [get]
+//
+//	@Text			Current period
+//	@Description	Current period
+//	@Tags			periods
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Success		200		{object}	PeriodResponse
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/periods/current [get]
 func (h Handler) ReadSobCurrentPeriod(c *gin.Context) {
 	periodDTO, err := h.app.Queries.CurrentPeriod.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
@@ -59,16 +62,17 @@ func (h Handler) ReadSobCurrentPeriod(c *gin.Context) {
 }
 
 // ClosePeriod godoc
-// @Text Close period
-// @Description Close period
-// @Tags periods
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param periodId path string true "Period ID"
-// @Success 204
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/period/{periodId}/close [post]
+//
+//	@Text			Close period
+//	@Description	Close period
+//	@Tags			periods
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path	string	true	"Sob ID"
+//	@Param			periodId	path	string	true	"Period ID"
+//	@Success		204
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/period/{periodId}/close [post]
 func (h Handler) ClosePeriod(c *gin.Context) {
 	if err := h.app.Commands.ClosePeriod.Handle(c, command.ClosePeriodCmd{
 		SobId:    uuid.MustParse(c.Param("sobId")),

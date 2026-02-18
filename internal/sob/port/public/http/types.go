@@ -1,9 +1,12 @@
 package http
 
 import (
-	"github.com/google/uuid"
+	"time"
+
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
+
+	"github.com/google/uuid"
 )
 
 type Error struct {
@@ -21,8 +24,9 @@ type CreateSobRequest struct {
 }
 
 type UpdateSobRequest struct {
-	Name               string `json:"name,omitempty"`
-	AccountsCodeLength []int  `json:"accountsCodeLength,omitempty"`
+	Name               string  `json:"name,omitempty"`
+	Description        *string `json:"description,omitempty"`
+	AccountsCodeLength []int   `json:"accountsCodeLength,omitempty"`
 }
 
 type SobResponse struct {
@@ -33,6 +37,8 @@ type SobResponse struct {
 	StartingPeriodYear  int       `json:"startingPeriodYear,omitempty"`
 	StartingPeriodMonth int       `json:"startingPeriodMonth,omitempty"`
 	AccountsCodeLength  []int     `json:"accountsCodeLength,omitempty"`
+	CreatedAt           time.Time `json:"createdAt,omitempty"`
+	UpdatedAt           time.Time `json:"updatedAt,omitempty"`
 }
 
 func sobDTOToVO(q query.Sob) SobResponse {

@@ -1,0 +1,17 @@
+meta {
+  name: read periods
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{base_path}}/sob/{{sob}}/periods
+  body: none
+  auth: none
+}
+
+tests {
+  test("Read periods 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

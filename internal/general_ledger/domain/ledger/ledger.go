@@ -3,9 +3,11 @@ package ledger
 import (
 	"errors"
 
+	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 )
 
 type Ledger struct {
@@ -53,6 +55,10 @@ func New(
 
 	if account == nil {
 		return nil, errors.New("nil account")
+	}
+
+	if openingDebitBalance.Compare(decimal.Zero) != 0 && openingCreditBalance.Compare(decimal.Zero) != 0 {
+		return nil, commonerrors.NewSlugError("ledger-conflictOpeningBalance")
 	}
 
 	return &Ledger{

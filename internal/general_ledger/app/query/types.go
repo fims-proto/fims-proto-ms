@@ -7,6 +7,8 @@ import (
 	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
+
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type Account struct {
@@ -51,8 +53,6 @@ type Period struct {
 	SobId        uuid.UUID
 	FiscalYear   int
 	PeriodNumber int
-	OpeningTime  time.Time
-	EndingTime   time.Time
 	IsClosed     bool
 	IsCurrent    bool
 	CreatedAt    time.Time
@@ -77,7 +77,10 @@ type Ledger struct {
 
 type AuxiliaryLedger struct {
 	Id                   uuid.UUID
+	SobId                uuid.UUID
 	PeriodId             uuid.UUID
+	Account              Account
+	AuxiliaryCategory    AuxiliaryCategory
 	AuxiliaryAccount     AuxiliaryAccount
 	OpeningDebitBalance  decimal.Decimal
 	OpeningCreditBalance decimal.Decimal
@@ -117,7 +120,7 @@ type Voucher struct {
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
-	TransactionTime    time.Time
+	TransactionDate    voucher.TransactionDate
 	LineItems          []LineItem
 	CreatedAt          time.Time
 	UpdatedAt          time.Time

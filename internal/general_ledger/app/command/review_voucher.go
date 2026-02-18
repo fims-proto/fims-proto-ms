@@ -28,6 +28,12 @@ func NewReviewVoucherHandler(repo domain.Repository) ReviewVoucherHandler {
 }
 
 func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.review(txCtx, cmd)
+	})
+}
+
+func (h ReviewVoucherHandler) review(ctx context.Context, cmd ReviewVoucherCmd) error {
 	return h.repo.UpdateVoucher(
 		ctx,
 		cmd.VoucherId,

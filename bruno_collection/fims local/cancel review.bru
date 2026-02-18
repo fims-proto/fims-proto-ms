@@ -1,0 +1,23 @@
+meta {
+  name: cancel review
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-review
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "reviewer": "{{user_2}}"
+  }
+}
+
+tests {
+  test("Cancel review voucher", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

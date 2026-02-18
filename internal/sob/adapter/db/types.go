@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
-	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 )
 
 type sobPO struct {
@@ -19,8 +19,9 @@ type sobPO struct {
 	StartingPeriodYear  int
 	StartingPeriodMonth int
 	AccountsCodeLength  pgtype.Int4Array `gorm:"type:integer[]"`
-	CreatedAt           time.Time        `gorm:"<-:create"`
-	UpdatedAt           time.Time
+
+	CreatedAt time.Time `gorm:"<-:create"`
+	UpdatedAt time.Time
 }
 
 // table names
@@ -40,10 +41,10 @@ func (s sobPO) ResolveAssociation(entity string) (string, error) {
 
 // mappers
 
-func sobBOToPO(bo sob.Sob) (sobPO, error) {
+func sobBOToPO(bo sob.Sob) sobPO {
 	var intArray pgtype.Int4Array
 	if err := intArray.Set(bo.AccountsCodeLength()); err != nil {
-		return sobPO{}, fmt.Errorf("failed to convert []int to Int4Array: %w", err)
+		panic(fmt.Errorf("failed to convert []int to Int4Array: %w", err))
 	}
 
 	return sobPO{
@@ -54,7 +55,7 @@ func sobBOToPO(bo sob.Sob) (sobPO, error) {
 		StartingPeriodYear:  bo.StartingPeriodYear(),
 		StartingPeriodMonth: bo.StartingPeriodMonth(),
 		AccountsCodeLength:  intArray,
-	}, nil
+	}
 }
 
 func sobPOToBO(po sobPO) (*sob.Sob, error) {
@@ -70,7 +71,7 @@ func sobPOToBO(po sobPO) (*sob.Sob, error) {
 		po.BaseCurrency,
 		po.StartingPeriodYear,
 		po.StartingPeriodMonth,
-		codesLength, // from 4-2-2 to [4,2,2]
+		codesLength,
 	)
 }
 
@@ -87,6 +88,8 @@ func sobPOToDTO(po sobPO) query.Sob {
 		BaseCurrency:        po.BaseCurrency,
 		StartingPeriodYear:  po.StartingPeriodYear,
 		StartingPeriodMonth: po.StartingPeriodMonth,
-		AccountsCodeLength:  codesLength, // from 4-2-2 to [4,2,2]
+		AccountsCodeLength:  codesLength,
+		CreatedAt:           po.CreatedAt,
+		UpdatedAt:           po.UpdatedAt,
 	}
 }

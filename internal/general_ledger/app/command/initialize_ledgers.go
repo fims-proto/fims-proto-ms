@@ -12,9 +12,10 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
+
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 )
 
 // initializeAllLedgers creates ledgers for current period.
@@ -101,59 +102,48 @@ func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.U
 }
 
 func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sobId uuid.UUID, currentPeriod *period.Period, previousPeriod *period.Period) error {
-	// read ledgers in previous period
-	auxiliaryLedgersInPreviousPeriod := make(map[uuid.UUID]auxiliary_ledger.AuxiliaryLedger) // key: aux account id, value: aux ledger
+	// Auxiliary ledgers are account-scoped (sobId + periodId + accountId + categoryId + auxiliaryAccountId)
+	// We only copy auxiliary ledgers that existed in the previous period (account+category+auxiliary combinations that were used)
 
-	if previousPeriod != nil {
-		// auxiliary ledgers
-		auxiliaryLedgers, err := repo.ReadAuxiliaryLedgersByPeriod(ctx, previousPeriod.Id())
-		if err != nil {
-			return fmt.Errorf("failed to read auxiliary ledgers in previous period: %w", err)
-		}
-		for _, previousLedger := range auxiliaryLedgers {
-			auxiliaryLedgersInPreviousPeriod[previousLedger.AuxiliaryAccount().Id()] = *previousLedger
-		}
+	if previousPeriod == nil {
+		// No previous period, no auxiliary ledgers to copy
+		return nil
 	}
 
-	// create auxiliary ledgers based on auxiliary accounts
-	auxiliaryAccounts, err := repo.ReadAllAuxiliaryAccounts(ctx, sobId)
+	// Read auxiliary ledgers from previous period
+	previousAuxiliaryLedgers, err := repo.ReadAuxiliaryLedgersByPeriod(ctx, previousPeriod.Id())
 	if err != nil {
-		return fmt.Errorf("failed to read auxiliary accounts: %w", err)
+		return fmt.Errorf("failed to read auxiliary ledgers in previous period: %w", err)
 	}
 
+	// Create new auxiliary ledgers for current period, copying balances from previous period
 	var auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger
-	for _, auxiliaryAccount := range auxiliaryAccounts {
-		// move previous ending balance to current balance
-		openingDebitBalance := decimal.Zero
-		openingCreditBalance := decimal.Zero
-		endingDebitBalance := decimal.Zero
-		endingCreditBalance := decimal.Zero
-
-		previousAuxiliaryLedger, ok := auxiliaryLedgersInPreviousPeriod[auxiliaryAccount.Id()]
-		if ok {
-			openingDebitBalance = previousAuxiliaryLedger.EndingDebitBalance()
-			openingCreditBalance = previousAuxiliaryLedger.EndingCreditBalance()
-			endingDebitBalance = previousAuxiliaryLedger.EndingDebitBalance()
-			endingCreditBalance = previousAuxiliaryLedger.EndingCreditBalance()
-		}
-
+	for _, previousLedger := range previousAuxiliaryLedgers {
+		// Copy ending balance to opening balance
 		auxiliaryLedger, err := auxiliary_ledger.New(
 			uuid.New(),
+			sobId,
 			currentPeriod.Id(),
-			auxiliaryAccount,
-			openingDebitBalance,
-			openingCreditBalance,
-			decimal.Zero,
-			decimal.Zero,
-			endingDebitBalance,
-			endingCreditBalance,
+			previousLedger.AccountId(),
+			previousLedger.AuxiliaryCategoryId(),
+			previousLedger.AuxiliaryAccountId(),
+			previousLedger.EndingDebitBalance(),  // opening = previous ending
+			previousLedger.EndingCreditBalance(), // opening = previous ending
+			decimal.Zero,                         // period debit = 0
+			decimal.Zero,                         // period credit = 0
+			previousLedger.EndingDebitBalance(),  // ending = opening (no transactions yet)
+			previousLedger.EndingCreditBalance(), // ending = opening (no transactions yet)
 		)
 		if err != nil {
-			return fmt.Errorf("should not happen, failed to create ledger: %w", err)
+			return fmt.Errorf("failed to create auxiliary ledger: %w", err)
 		}
 
 		auxiliaryLedgers = append(auxiliaryLedgers, auxiliaryLedger)
 	}
 
-	return repo.CreateAuxiliaryLedgers(ctx, auxiliaryLedgers)
+	if len(auxiliaryLedgers) > 0 {
+		return repo.CreateAuxiliaryLedgers(ctx, auxiliaryLedgers)
+	}
+
+	return nil
 }

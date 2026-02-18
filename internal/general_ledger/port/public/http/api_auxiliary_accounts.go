@@ -3,27 +3,29 @@ package http
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ReadPagingAuxiliaryCategories godoc
-// @Text List all auxiliary categories
-// @Description List all auxiliary categories
-// @Tags auxiliary accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param $page query int false "page number" default(1)
-// @Param $size query int false "page size" default(40)
-// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
-// @Success 200 {array} AuxiliaryCategoryResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/auxiliaries [get]
+//
+//	@Text			List all auxiliary categories
+//	@Description	List all auxiliary categories
+//	@Tags			auxiliary accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			$page	query		int		false	"page number"			default(1)
+//	@Param			$size	query		int		false	"page size"				default(40)
+//	@Param			$sort	query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter	query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
+//	@Success		200		{object}	data.PageResponse[AuxiliaryCategoryResponse]
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/auxiliaries [get]
 func (h Handler) ReadPagingAuxiliaryCategories(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -34,43 +36,71 @@ func (h Handler) ReadPagingAuxiliaryCategories(c *gin.Context) {
 	)
 }
 
+// ReadAuxiliaryCategoryByKey godoc
+//
+//	@Text			Get an auxiliary category by key
+//	@Description	Get an auxiliary category by key
+//	@Tags			auxiliary accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			categoryKey	path		string	true	"Category Key"
+//	@Success		200			{object}	AuxiliaryCategoryResponse
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/auxiliary/{categoryKey} [get]
+func (h Handler) ReadAuxiliaryCategoryByKey(c *gin.Context) {
+	v, err := h.app.Queries.AuxiliaryCategoryByKey.Handle(c, uuid.MustParse(c.Param("sobId")), c.Param("categoryKey"))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if v.Id == uuid.Nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, auxiliaryCategoryDTOToVO(v))
+}
+
 // ReadPagingAuxiliaryAccounts godoc
-// @Text List all auxiliary accounts
-// @Description List all auxiliary accounts
-// @Tags auxiliary accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param categoryKey path string true "Category Key"
-// @Param $page query int false "page number" default(1)
-// @Param $size query int false "page size" default(40)
-// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $filter query string false "filter on field(s)" example(title eq 'something' and amount lt 10)
-// @Success 200 {array} AuxiliaryAccountResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/auxiliary/{categoryKey}/accounts [get]
+//
+//	@Text			List all auxiliary accounts
+//	@Description	List all auxiliary accounts
+//	@Tags			auxiliary accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			categoryKey	path		string	true	"Category Key"
+//	@Param			$page		query		int		false	"page number"			default(1)
+//	@Param			$size		query		int		false	"page size"				default(40)
+//	@Param			$sort		query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter		query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
+//	@Success		200			{object}	data.PageResponse[AuxiliaryAccountResponse]
+//	@Failure		500			{object}	Error
+//	@Router			/sob/{sobId}/auxiliary/{categoryKey}/accounts [get]
 func (h Handler) ReadPagingAuxiliaryAccounts(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.AuxiliaryAccount], error) {
-			return h.app.Queries.PagingAuxiliaryAccounts.Handle(c, c.Param("categoryKey"), pageRequest)
+			return h.app.Queries.PagingAuxiliaryAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), c.Param("categoryKey"), pageRequest)
 		},
 		auxiliaryAccountDTOToVO,
 	)
 }
 
 // CreateAuxiliaryCategory godoc
-// @Text Create auxiliary category
-// @Description Create auxiliary category
-// @Tags auxiliary accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param CreateAuxiliaryCategoryRequest body CreateAuxiliaryCategoryRequest true "Create auxiliary category request"
-// @Success 201
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/auxiliaries [post]
+//
+//	@Text			Create auxiliary category
+//	@Description	Create auxiliary category
+//	@Tags			auxiliary accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId							path	string							true	"Sob ID"
+//	@Param			CreateAuxiliaryCategoryRequest	body	CreateAuxiliaryCategoryRequest	true	"Create auxiliary category request"
+//	@Success		201
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/auxiliaries [post]
 func (h Handler) CreateAuxiliaryCategory(c *gin.Context) {
 	var req CreateAuxiliaryCategoryRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -92,18 +122,19 @@ func (h Handler) CreateAuxiliaryCategory(c *gin.Context) {
 }
 
 // CreateAuxiliaryAccount godoc
-// @Text Create auxiliary account
-// @Description Create auxiliary account
-// @Tags auxiliary accounts
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param categoryKey path string true "Category Key"
-// @Param CreateAuxiliaryAccountRequest body CreateAuxiliaryAccountRequest true "Create auxiliary account request"
-// @Success 201
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/auxiliary/{categoryKey}/accounts [post]
+//
+//	@Text			Create auxiliary account
+//	@Description	Create auxiliary account
+//	@Tags			auxiliary accounts
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId							path	string							true	"Sob ID"
+//	@Param			categoryKey						path	string							true	"Category Key"
+//	@Param			CreateAuxiliaryAccountRequest	body	CreateAuxiliaryAccountRequest	true	"Create auxiliary account request"
+//	@Success		201
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/auxiliary/{categoryKey}/accounts [post]
 func (h Handler) CreateAuxiliaryAccount(c *gin.Context) {
 	var req CreateAuxiliaryAccountRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -112,6 +143,7 @@ func (h Handler) CreateAuxiliaryAccount(c *gin.Context) {
 	}
 	cmd := command.CreateAuxiliaryAccountCmd{
 		AccountId:   uuid.New(),
+		SobId:       uuid.MustParse(c.Param("sobId")),
 		CategoryKey: c.Param("categoryKey"),
 		Key:         req.Key,
 		Title:       req.Title,

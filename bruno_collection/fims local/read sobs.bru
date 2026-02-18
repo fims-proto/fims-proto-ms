@@ -1,0 +1,17 @@
+meta {
+  name: read sobs
+  type: http
+  seq: 6
+}
+
+get {
+  url: {{base_path}}/sobs
+  body: none
+  auth: none
+}
+
+tests {
+  test("Read test_sob_1 200", function () {
+      expect(res.getStatus()).to.equal(200);
+  });
+}

@@ -25,14 +25,15 @@ func NewHandler(app *app.Application) Handler {
 }
 
 // ReadAllSobs godoc
-// @Text List all sobs
-// @Description List all sobs
-// @Tags sobs
-// @Accept application/json
-// @Produce application/json
-// @Success 200 {array} SobResponse
-// @Failure 500 {object} Error
-// @Router /sobs [get]
+//
+//	@Text			List all sobs
+//	@Description	List all sobs
+//	@Tags			sobs
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Success		200	{object}	data.PageResponse[SobResponse]
+//	@Failure		500	{object}	Error
+//	@Router			/sobs [get]
 func (h Handler) ReadAllSobs(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -44,16 +45,17 @@ func (h Handler) ReadAllSobs(c *gin.Context) {
 }
 
 // ReadSobById godoc
-// @Text Show sob by id
-// @Description Show sob by id
-// @Tags sobs
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "ID of a SobId"
-// @Success 200 {object} SobResponse
-// @Failure 404
-// @Failure 500 {object} Error
-// @Router /sobs/{sobId} [get]
+//
+//	@Text			Show sob by id
+//	@Description	Show sob by id
+//	@Tags			sobs
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"ID of a SobId"
+//	@Success		200		{object}	SobResponse
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sobs/{sobId} [get]
 func (h Handler) ReadSobById(c *gin.Context) {
 	sob, err := h.app.Queries.SobById.Handle(c, uuid.MustParse(c.Param("sobId")))
 	if err != nil {
@@ -68,16 +70,17 @@ func (h Handler) ReadSobById(c *gin.Context) {
 }
 
 // CreateSob godoc
-// @Text Create sob
-// @Description Create sob
-// @Tags sobs
-// @Accept application/json
-// @Produce application/json
-// @Param CreateSobRequest body CreateSobRequest true "CreateSob SobId"
-// @Success 201 {object} SobResponse
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sobs [post]
+//
+//	@Text			Create sob
+//	@Description	Create sob
+//	@Tags			sobs
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			CreateSobRequest	body		CreateSobRequest	true	"CreateSob SobId"
+//	@Success		201					{object}	SobResponse
+//	@Failure		400					{object}	Error
+//	@Failure		500					{object}	Error
+//	@Router			/sobs [post]
 func (h Handler) CreateSob(c *gin.Context) {
 	var req CreateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -99,17 +102,18 @@ func (h Handler) CreateSob(c *gin.Context) {
 }
 
 // UpdateSob godoc
-// @Text Update sob
-// @Description Update sob
-// @Tags sobs
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "SobId ID"
-// @Param UpdateSobRequest body UpdateSobRequest true "UpdateLineItems sob request"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sobs/{sobId} [patch]
+//
+//	@Text			Update sob
+//	@Description	Update sob
+//	@Tags			sobs
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path	string				true	"SobId ID"
+//	@Param			UpdateSobRequest	body	UpdateSobRequest	true	"UpdateLineItems sob request"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sobs/{sobId} [patch]
 func (h Handler) UpdateSob(c *gin.Context) {
 	var req UpdateSobRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -119,6 +123,7 @@ func (h Handler) UpdateSob(c *gin.Context) {
 	cmd := command.UpdateSobCmd{
 		SobId:              uuid.MustParse(c.Param("sobId")),
 		Name:               req.Name,
+		Description:        req.Description,
 		AccountsCodeLength: req.AccountsCodeLength,
 	}
 	if err := h.app.Commands.UpdateSob.Handle(c, cmd); err != nil {

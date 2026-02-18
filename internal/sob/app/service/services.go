@@ -7,5 +7,9 @@ import (
 )
 
 type GeneralLedgerService interface {
-	InitializeForSob(ctx context.Context, sobId uuid.UUID) error
+	InitializeGeneralLedger(ctx context.Context, sobId uuid.UUID) error
+}
+
+type ReportService interface {
+	InitializeReport(ctx context.Context, sobId uuid.UUID) error
 }

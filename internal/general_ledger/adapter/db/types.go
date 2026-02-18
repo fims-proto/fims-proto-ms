@@ -5,9 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
-	"github.com/shopspring/decimal"
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
@@ -16,12 +14,16 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+
+	"github.com/google/uuid"
+	"github.com/jackc/pgtype"
+	"github.com/shopspring/decimal"
 )
 
 type accountPO struct {
-	Id                uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId             uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
-	SuperiorAccountId uuid.UUID `gorm:"type:uuid"`
+	Id                uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	SobId             uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
+	SuperiorAccountId *uuid.UUID `gorm:"type:uuid"`
 	Title             string
 	AccountNumber     string           `gorm:"uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
 	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[]"`
@@ -66,8 +68,6 @@ type periodPO struct {
 	SobId        uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Periods_SobId_FiscalYear_PeriodNumber"`
 	FiscalYear   int       `gorm:"uniqueIndex:UQ_Periods_SobId_FiscalYear_PeriodNumber"`
 	PeriodNumber int       `gorm:"uniqueIndex:UQ_Periods_SobId_FiscalYear_PeriodNumber"`
-	OpeningTime  time.Time
-	EndingTime   time.Time
 	IsClosed     bool
 	IsCurrent    bool
 
@@ -95,8 +95,11 @@ type ledgerPO struct {
 
 type auxiliaryLedgerPO struct {
 	Id                   uuid.UUID `gorm:"type:uuid;primaryKey"`
-	PeriodId             uuid.UUID `gorm:"type:uuid"`
-	AuxiliaryAccountId   uuid.UUID `gorm:"type:uuid"`
+	SobId                uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	PeriodId             uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AccountId            uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryCategoryId  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryAccountId   uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
 	OpeningDebitBalance  decimal.Decimal
 	OpeningCreditBalance decimal.Decimal
 	PeriodDebit          decimal.Decimal
@@ -104,7 +107,9 @@ type auxiliaryLedgerPO struct {
 	EndingDebitBalance   decimal.Decimal
 	EndingCreditBalance  decimal.Decimal
 
-	AuxiliaryAccount auxiliaryAccountPO `gorm:"foreignKey:AuxiliaryAccountId"`
+	Account           accountPO           `gorm:"foreignKey:AccountId"`
+	AuxiliaryCategory auxiliaryCategoryPO `gorm:"foreignKey:AuxiliaryCategoryId"`
+	AuxiliaryAccount  auxiliaryAccountPO  `gorm:"foreignKey:AuxiliaryAccountId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -127,7 +132,7 @@ type voucherPO struct {
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
-	TransactionTime    time.Time
+	TransactionDate    time.Time `gorm:"type:date"`
 
 	LineItems []lineItemPO `gorm:"foreignKey:VoucherId"`
 	Period    periodPO     `gorm:"foreignKey:PeriodId"`
@@ -269,7 +274,7 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 
 // mappers
 
-func accountBOToPO(bo account.Account) accountPO {
+func accountBOToPO(bo *account.Account) accountPO {
 	var int4array pgtype.Int4Array
 	if err := int4array.Set(bo.NumberHierarchy()); err != nil {
 		panic(fmt.Errorf("failde to convert []int to Int4Array: %w", err))
@@ -277,13 +282,13 @@ func accountBOToPO(bo account.Account) accountPO {
 
 	var categoryPOs []auxiliaryCategoryPO
 	for _, category := range bo.AuxiliaryCategories() {
-		categoryPOs = append(categoryPOs, auxiliaryCategoryBOToPO(*category))
+		categoryPOs = append(categoryPOs, auxiliaryCategoryBOToPO(category))
 	}
 
 	return accountPO{
 		Id:                  bo.Id(),
 		SobId:               bo.SobId(),
-		SuperiorAccountId:   bo.SuperiorAccountId(),
+		SuperiorAccountId:   converter.UUIDToPtr(bo.SuperiorAccountId()),
 		Title:               bo.Title(),
 		AccountNumber:       bo.AccountNumber(),
 		NumberHierarchy:     int4array,
@@ -302,7 +307,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
 	}
 
-	categoryBOs, err := pos2bos(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
+	categoryBOs, err := converter.POsToBOs(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
 	if err != nil {
 		return nil, err
 	}
@@ -310,7 +315,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 	return account.NewByAllFields(
 		po.Id,
 		po.SobId,
-		po.SuperiorAccountId,
+		converter.UUIDFromPtr(po.SuperiorAccountId),
 		nil,
 		po.Title,
 		po.AccountNumber,
@@ -330,7 +335,7 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
 	}
 
-	categoryBOs, err := pos2bos(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
+	categoryBOs, err := converter.POsToBOs(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
 	if err != nil {
 		return nil, err
 	}
@@ -338,7 +343,7 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 	return account.NewByAllFields(
 		po.Id,
 		po.SobId,
-		po.SuperiorAccountId,
+		converter.UUIDFromPtr(po.SuperiorAccountId),
 		superior,
 		po.Title,
 		po.AccountNumber,
@@ -358,20 +363,12 @@ func accountPOToDTO(po accountPO) query.Account {
 		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
 	}
 
-	var categoryDTOs []query.AuxiliaryCategory
-	for _, category := range po.AuxiliaryCategories {
-		categoryDTOs = append(categoryDTOs, auxiliaryCategoryPOToDTO(category))
-	}
-
-	var superiorAccountId *uuid.UUID
-	if po.SuperiorAccountId != uuid.Nil {
-		superiorAccountId = &po.SuperiorAccountId
-	}
+	categoryDTOs := converter.POsToDTOs(po.AuxiliaryCategories, auxiliaryCategoryPOToDTO)
 
 	return query.Account{
 		SobId:               po.SobId,
 		Id:                  po.Id,
-		SuperiorAccountId:   superiorAccountId,
+		SuperiorAccountId:   po.SuperiorAccountId,
 		Title:               po.Title,
 		AccountNumber:       po.AccountNumber,
 		NumberHierarchy:     numberHierarchy,
@@ -396,7 +393,7 @@ func auxiliaryCategoryPOToBO(po auxiliaryCategoryPO) (*auxiliary_category.Auxili
 	)
 }
 
-func auxiliaryCategoryBOToPO(bo auxiliary_category.AuxiliaryCategory) auxiliaryCategoryPO {
+func auxiliaryCategoryBOToPO(bo *auxiliary_category.AuxiliaryCategory) auxiliaryCategoryPO {
 	return auxiliaryCategoryPO{
 		Id:         bo.Id(),
 		SobId:      bo.SobId(),
@@ -433,14 +430,14 @@ func auxiliaryAccountPOToBO(po auxiliaryAccountPO) (*auxiliary_account.Auxiliary
 	)
 }
 
-func auxiliaryAccountBOToPO(bo auxiliary_account.AuxiliaryAccount) auxiliaryAccountPO {
+func auxiliaryAccountBOToPO(bo *auxiliary_account.AuxiliaryAccount) auxiliaryAccountPO {
 	return auxiliaryAccountPO{
 		Id:          bo.Id(),
 		CategoryId:  bo.Category().Id(),
 		Key:         bo.Key(),
 		Title:       bo.Title(),
 		Description: bo.Description(),
-		Category:    auxiliaryCategoryBOToPO(*bo.Category()),
+		Category:    auxiliaryCategoryBOToPO(bo.Category()),
 	}
 }
 
@@ -462,8 +459,6 @@ func periodBOToPO(bo period.Period) periodPO {
 		Id:           bo.Id(),
 		FiscalYear:   bo.FiscalYear(),
 		PeriodNumber: bo.PeriodNumber(),
-		OpeningTime:  bo.OpeningTime(),
-		EndingTime:   bo.EndingTime(),
 		IsClosed:     bo.IsClosed(),
 		IsCurrent:    bo.IsCurrent(),
 	}
@@ -475,8 +470,6 @@ func periodPOToBO(po periodPO) (*period.Period, error) {
 		po.SobId,
 		po.FiscalYear,
 		po.PeriodNumber,
-		po.OpeningTime,
-		po.EndingTime,
 		po.IsClosed,
 		po.IsCurrent,
 	)
@@ -486,7 +479,7 @@ func periodPOToDTO(po periodPO) query.Period {
 	return query.Period(po)
 }
 
-func ledgerBOToPO(bo ledger.Ledger) ledgerPO {
+func ledgerBOToPO(bo *ledger.Ledger) ledgerPO {
 	return ledgerPO{
 		Id:                   bo.Id(),
 		SobId:                bo.SobId(),
@@ -542,31 +535,31 @@ func ledgerPOToDTO(po ledgerPO) query.Ledger {
 	}
 }
 
-func auxiliaryLedgerBOToPO(bo auxiliary_ledger.AuxiliaryLedger) auxiliaryLedgerPO {
+func auxiliaryLedgerBOToPO(bo *auxiliary_ledger.AuxiliaryLedger) auxiliaryLedgerPO {
 	return auxiliaryLedgerPO{
 		Id:                   bo.Id(),
+		SobId:                bo.SobId(),
 		PeriodId:             bo.PeriodId(),
-		AuxiliaryAccountId:   bo.AuxiliaryAccount().Id(),
+		AccountId:            bo.AccountId(),
+		AuxiliaryCategoryId:  bo.AuxiliaryCategoryId(),
+		AuxiliaryAccountId:   bo.AuxiliaryAccountId(),
 		OpeningDebitBalance:  bo.OpeningDebitBalance(),
 		OpeningCreditBalance: bo.OpeningCreditBalance(),
 		PeriodDebit:          bo.PeriodDebit(),
 		PeriodCredit:         bo.PeriodCredit(),
 		EndingDebitBalance:   bo.EndingDebitBalance(),
 		EndingCreditBalance:  bo.EndingCreditBalance(),
-		AuxiliaryAccount:     auxiliaryAccountBOToPO(*bo.AuxiliaryAccount()),
 	}
 }
 
 func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLedger, error) {
-	auxiliaryAccount, err := auxiliaryAccountPOToBO(po.AuxiliaryAccount)
-	if err != nil {
-		return nil, err
-	}
-
 	return auxiliary_ledger.New(
 		po.Id,
+		po.SobId,
 		po.PeriodId,
-		auxiliaryAccount,
+		po.AccountId,
+		po.AuxiliaryCategoryId,
+		po.AuxiliaryAccountId,
 		po.OpeningDebitBalance,
 		po.OpeningCreditBalance,
 		po.PeriodDebit,
@@ -579,7 +572,10 @@ func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLed
 func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
 	return query.AuxiliaryLedger{
 		Id:                   po.Id,
+		SobId:                po.SobId,
 		PeriodId:             po.PeriodId,
+		Account:              accountPOToDTO(po.Account),
+		AuxiliaryCategory:    auxiliaryCategoryPOToDTO(po.AuxiliaryCategory),
 		AuxiliaryAccount:     auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
 		OpeningDebitBalance:  po.OpeningDebitBalance,
 		OpeningCreditBalance: po.OpeningCreditBalance,
@@ -598,6 +594,14 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		itemPOs = append(itemPOs, lineItemBOToPO(*item, bo.Id()))
 	}
 
+	// Convert TransactionDate to time.Time for PostgreSQL DATE type
+	transactionDate := time.Date(
+		bo.TransactionDate().Year,
+		time.Month(bo.TransactionDate().Month),
+		bo.TransactionDate().Day,
+		0, 0, 0, 0, time.UTC,
+	)
+
 	return voucherPO{
 		SobId:              bo.SobId(),
 		Id:                 bo.Id(),
@@ -615,13 +619,13 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		IsReviewed:         bo.IsReviewed(),
 		IsAudited:          bo.IsAudited(),
 		IsPosted:           bo.IsPosted(),
-		TransactionTime:    bo.TransactionTime(),
+		TransactionDate:    transactionDate,
 		LineItems:          itemPOs,
 	}
 }
 
 func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
-	itemBOs, err := pos2bos(po.LineItems, lineItemPOToBO)
+	itemBOs, err := converter.POsToBOs(po.LineItems, lineItemPOToBO)
 	if err != nil {
 		return nil, err
 	}
@@ -629,6 +633,13 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 	periodBO, err := periodPOToBO(po.Period)
 	if err != nil {
 		return nil, err
+	}
+
+	// Convert time.Time DATE to TransactionDate
+	transactionDate := voucher.TransactionDate{
+		Year:  po.TransactionDate.Year(),
+		Month: int(po.TransactionDate.Month()),
+		Day:   po.TransactionDate.Day(),
 	}
 
 	return voucher.New(
@@ -646,7 +657,7 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 		po.IsReviewed,
 		po.IsAudited,
 		po.IsPosted,
-		po.TransactionTime,
+		transactionDate,
 		itemBOs,
 	)
 }
@@ -654,13 +665,20 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 func voucherPOToDTO(po voucherPO) query.Voucher {
 	periodDTO := periodPOToDTO(po.Period)
 
-	itemDTOs := pos2dtos(po.LineItems, lineItemPOToDTO)
+	itemDTOs := converter.POsToDTOs(po.LineItems, lineItemPOToDTO)
 
 	userOrNil := func(id uuid.UUID) *query.User {
 		if id != uuid.Nil {
 			return &query.User{Id: id}
 		}
 		return nil
+	}
+
+	// Convert time.Time DATE to TransactionDate
+	transactionDate := voucher.TransactionDate{
+		Year:  po.TransactionDate.Year(),
+		Month: int(po.TransactionDate.Month()),
+		Day:   po.TransactionDate.Day(),
 	}
 
 	return query.Voucher{
@@ -680,7 +698,7 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 		IsReviewed:         po.IsReviewed,
 		IsAudited:          po.IsAudited,
 		IsPosted:           po.IsPosted,
-		TransactionTime:    po.TransactionTime,
+		TransactionDate:    transactionDate,
 		LineItems:          itemDTOs,
 		CreatedAt:          po.CreatedAt,
 		UpdatedAt:          po.UpdatedAt,
@@ -690,7 +708,7 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 func lineItemBOToPO(bo voucher.LineItem, voucherId uuid.UUID) lineItemPO {
 	var auxiliaryAccounts []auxiliaryAccountPO
 	for _, auxiliaryAccount := range bo.AuxiliaryAccounts() {
-		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountBOToPO(*auxiliaryAccount))
+		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountBOToPO(auxiliaryAccount))
 	}
 
 	return lineItemPO{
@@ -710,7 +728,7 @@ func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 		return nil, err
 	}
 
-	auxiliaryAccountBOs, err := pos2bos(po.AuxiliaryAccounts, auxiliaryAccountPOToBO)
+	auxiliaryAccountBOs, err := converter.POsToBOs(po.AuxiliaryAccounts, auxiliaryAccountPOToBO)
 	if err != nil {
 		return nil, err
 	}
@@ -743,34 +761,4 @@ func lineItemPOToDTO(po lineItemPO) query.LineItem {
 		CreatedAt:         po.CreatedAt,
 		UpdatedAt:         po.UpdatedAt,
 	}
-}
-
-func bos2pos[B any, P any](bos []*B, convertFn func(bo B) P) []P {
-	var pos []P
-	for _, bo := range bos {
-		po := convertFn(*bo)
-		pos = append(pos, po)
-	}
-	return pos
-}
-
-func pos2bos[B any, P any](pos []P, convertFn func(po P) (*B, error)) ([]*B, error) {
-	var bos []*B
-	for _, po := range pos {
-		bo, err := convertFn(po)
-		if err != nil {
-			return nil, err
-		}
-		bos = append(bos, bo)
-	}
-	return bos, nil
-}
-
-func pos2dtos[P any, D any](pos []P, convert func(po P) D) []D {
-	var dtos []D
-	for _, po := range pos {
-		dto := convert(po)
-		dtos = append(dtos, dto)
-	}
-	return dtos
 }

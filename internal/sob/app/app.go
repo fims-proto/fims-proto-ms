@@ -31,13 +31,14 @@ func (a *Application) Inject(
 	repo domain.Repository,
 	readModel query.SobReadModel,
 	generalLedgerService service.GeneralLedgerService,
+	reportService service.ReportService,
 ) {
 	a.Queries = Queries{
 		PagingSobs: query.NewPagingSobsHandler(readModel),
 		SobById:    query.NewSobByIdHandler(readModel),
 	}
 	a.Commands = Commands{
-		CreateSob: command.NewCreateSobHandler(repo, generalLedgerService),
+		CreateSob: command.NewCreateSobHandler(repo, generalLedgerService, reportService),
 		UpdateSob: command.NewUpdateSobHandler(repo),
 		Migrate:   command.NewMigrationHandler(repo),
 	}

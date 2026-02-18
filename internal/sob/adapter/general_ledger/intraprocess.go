@@ -4,20 +4,19 @@ import (
 	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
-
-	generalLedgerPort "github/fims-proto/fims-proto-ms/internal/general_ledger/port/private/intraprocess"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/port/private/intraprocess"
 
 	"github.com/google/uuid"
 )
 
 type IntraProcessAdapter struct {
-	generalLedgerInterface generalLedgerPort.GeneralLedgerInterface
+	generalLedgerInterface intraprocess.GeneralLedgerInterface
 }
 
-func NewIntraProcessAdapter(accountInterface generalLedgerPort.GeneralLedgerInterface) IntraProcessAdapter {
-	return IntraProcessAdapter{generalLedgerInterface: accountInterface}
+func NewIntraProcessAdapter(generalLedgerInterface intraprocess.GeneralLedgerInterface) IntraProcessAdapter {
+	return IntraProcessAdapter{generalLedgerInterface: generalLedgerInterface}
 }
 
-func (i IntraProcessAdapter) InitializeForSob(ctx context.Context, sobId uuid.UUID) error {
+func (i IntraProcessAdapter) InitializeGeneralLedger(ctx context.Context, sobId uuid.UUID) error {
 	return i.generalLedgerInterface.Initialize(ctx, command.InitializeCmd{SobId: sobId})
 }

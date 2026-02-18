@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/common/config"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

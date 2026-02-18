@@ -1,0 +1,24 @@
+meta {
+  name: audit voucher
+  type: http
+  seq: 14
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/audit
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "auditor": "{{user_3}}"
+  }
+}
+
+tests {
+  test("Audit voucher", function () {
+      expect(res.getStatus()).to.equal(204)
+  })
+  
+}

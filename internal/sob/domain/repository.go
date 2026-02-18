@@ -9,6 +9,8 @@ import (
 )
 
 type Repository interface {
+	EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error
+
 	CreateSob(ctx context.Context, sob *sob.Sob) error
 	UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error
 

@@ -1,0 +1,23 @@
+meta {
+  name: review voucher
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/review
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "reviewer": "{{user_2}}"
+  }
+}
+
+tests {
+  test("Review voucher", function () {
+      expect(res.getStatus()).to.equal(204)
+  })
+}

@@ -4,12 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
-	"gorm.io/gorm"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm/clause"
 )
 
@@ -32,56 +32,53 @@ func (r SobPostgresRepository) Migrate(ctx context.Context) error {
 	return nil
 }
 
+func (r SobPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error {
+	return r.dataSource.EnableTransaction(ctx, txFn)
+}
+
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	po, err := sobBOToPO(*sob)
-	if err != nil {
-		return err
-	}
-
+	po := sobBOToPO(*sob)
 	return db.Create(&po).Error
 }
 
 func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Transaction(func(tx *gorm.DB) error {
-		po := sobPO{}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", sobId).Error; err != nil {
-			return fmt.Errorf("failed to find sob: %w", err)
-		}
+	po := sobPO{Id: sobId}
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
+		return fmt.Errorf("failed to find sob: %w", err)
+	}
 
-		bo, err := sobPOToBO(po)
-		if err != nil {
-			return err
-		}
+	bo, err := sobPOToBO(po)
+	if err != nil {
+		return err
+	}
 
-		updatedBO, err := updateFn(bo)
-		if err != nil {
-			return fmt.Errorf("failed to update sob: %w", err)
-		}
+	updatedBO, err := updateFn(bo)
+	if err != nil {
+		return fmt.Errorf("failed to update sob: %w", err)
+	}
 
-		po, err = sobBOToPO(*updatedBO)
-		if err != nil {
-			return err
-		}
-
-		return tx.Save(&po).Error
-	})
+	po = sobBOToPO(*updatedBO)
+	return db.Save(&po).Error
 }
 
 // Queries
 
-func (r SobPostgresRepository) SearchSobs(ctx context.Context, pageRequest data.PageRequest) (data.Page[query.Sob], error) {
+func (r SobPostgresRepository) SearchSobs(
+	ctx context.Context,
+	pageRequest data.PageRequest,
+) (data.Page[query.Sob], error) {
 	return data.SearchEntities(ctx, pageRequest, sobPO{}, sobPOToDTO, r.dataSource.GetConnection(ctx))
 }
 
 func (r SobPostgresRepository) SobById(ctx context.Context, sobId uuid.UUID) (query.Sob, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	dbSob := sobPO{}
-	if err := db.Where("id = ?", sobId).First(&dbSob).Error; err != nil {
+	dbSob := sobPO{Id: sobId}
+	if err := db.First(&dbSob).Error; err != nil {
 		return query.Sob{}, fmt.Errorf("failed to read sob %s: %w", sobId, err)
 	}
 

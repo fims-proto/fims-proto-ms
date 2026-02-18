@@ -1,0 +1,18 @@
+meta {
+  name: read all vouchers
+  type: http
+  seq: 11
+}
+
+get {
+  url: {{base_path}}/sob/{{sob}}/vouchers
+  body: none
+  auth: none
+}
+
+tests {
+  test("Read all vouchers", function () {
+      expect(res.getStatus()).to.equal(200)
+  });
+  
+}

@@ -3,8 +3,9 @@ package http
 import (
 	"time"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
+
+	"github.com/google/uuid"
 )
 
 type Error struct {

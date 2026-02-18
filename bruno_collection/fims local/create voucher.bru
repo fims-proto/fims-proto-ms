@@ -1,0 +1,264 @@
+meta {
+  name: create voucher
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/vouchers
+  body: json
+  auth: none
+}
+
+body:json {
+  {{current_voucher_payload}}
+}
+
+script:pre-request {
+  const testSamples = [
+      {
+          summary: "1 - 收到投资款",
+          date: "2023-01-08",
+          items: [
+              {
+                  account: "100201",
+                  debit: 500000
+              },
+              {
+                  account: "300101",
+                  credit: 300000
+              },
+              {
+                  account: "300102",
+                  credit: 200000
+              }
+          ]
+      },
+      {
+          summary: "2 - 提取备用金",
+          date: "2023-01-09",
+          items: [
+              {
+                  account: "1001",
+                  debit: 100000
+              },
+              {
+                  account: "100201",
+                  credit: 100000
+              }
+          ]
+      },
+      {
+          summary: "3 - 报销费用",
+          date: "2023-01-10",
+          items: [
+              {
+                  account: "560201",
+                  debit: 1000
+              },
+              {
+                  account: "1001",
+                  credit: 1000
+              }
+          ]
+      },
+      {
+          summary: "4 - 支付店庆花篮费",
+          date: "2023-01-11",
+          items: [
+              {
+                  account: "560202",
+                  debit: 500
+              },
+              {
+                  account: "100201",
+                  credit: 500
+              }
+          ]
+      },
+      {
+          summary: "5 - 报销办公用品",
+          date: "2023-01-12",
+          items: [
+              {
+                  account: "560201",
+                  debit: 600
+              },
+              {
+                  account: "1001",
+                  credit: 600
+              }
+          ]
+      },
+      {
+          summary: "6 - 购买电脑",
+          date: "2023-01-13",
+          items: [
+              {
+                  account: "160101",
+                  debit: 18500
+              },
+              {
+                  account: "100201",
+                  credit: 18500
+              }
+          ]
+      },
+      {
+          summary: "7 - 购买品牌使用费三年",
+          date: "2023-01-14",
+          items: [
+              {
+                  account: "170101",
+                  debit: 36000
+              },
+              {
+                  account: "100201",
+                  credit: 36000
+              }
+          ]
+      },
+      {
+          summary: "8 - 支付房租两年",
+          date: "2023-01-15",
+          items: [
+              {
+                  account: "180101",
+                  debit: 60000
+              },
+              {
+                  account: "100201",
+                  credit: 60000
+              }
+          ]
+      },
+      {
+          summary: "9 - 计提一月工资",
+          date: "2023-01-31",
+          items: [
+              {
+                  account: "560203",
+                  debit: 10000
+              },
+              {
+                  account: "221101",
+                  credit: 10000
+              }
+          ]
+      },
+      {
+          summary: "10 - 摊销品牌使用费",
+          date: "2023-01-31",
+          items: [
+              {
+                  account: "560204",
+                  debit: 1000
+              },
+              {
+                  account: "1702",
+                  credit: 1000
+              }
+          ]
+      },
+      {
+          summary: "11 - 摊销房租",
+          date: "2023-01-31",
+          items: [
+              {
+                  account: "560205",
+                  debit: 2500
+              },
+              {
+                  account: "180101",
+                  credit: 2500
+              }
+          ]
+      },
+      {
+          summary: "12 - 结转损益",
+          date: "2023-01-31",
+          items: [
+              {
+                  account: "3103",
+                  debit: 15600
+              },
+              {
+                  account: "560201",
+                  credit: 1000
+              },
+              {
+                  account: "560202",
+                  credit: 500
+              },
+              {
+                  account: "560201",
+                  credit: 600
+              },
+              {
+                  account: "560203",
+                  credit: 10000
+              },
+              {
+                  account: "560204",
+                  credit: 1000
+              },
+              {
+                  account: "560205",
+                  credit: 2500
+              }
+          ]
+      }
+  ]
+  
+  let sampleVouchers = bru.getVar("sample_vouchers")
+  
+  if(!sampleVouchers || sampleVouchers.length == 0) {
+      sampleVouchers = testSamples
+  }
+  
+  let currentSampleVoucher = sampleVouchers.shift()
+  bru.setVar("sample_vouchers", sampleVouchers)
+  
+  
+  // build current payload
+  const payload = {
+      "voucherType": "general_voucher",
+      "headerText": currentSampleVoucher.summary,
+      "attachmentQuantity": 0,
+      "lineItems": [],
+      "creator": bru.getCollectionVar("user_1"),
+      "transactionDate": currentSampleVoucher.date
+  }
+  
+  currentSampleVoucher.items.forEach(sampleItem => payload.lineItems.push({
+      "text": currentSampleVoucher.summary,
+      "accountNumber": sampleItem.account,
+      "debit": sampleItem.debit,
+      "credit": sampleItem.credit,
+  }))
+  
+  bru.setVar("current_voucher_payload", JSON.stringify(payload))
+}
+
+tests {
+  let voucherIds = bru.getVar("voucher_ids")
+  if (!voucherIds || voucherIds.length == 0 || !Array.isArray(voucherIds)) {
+      voucherIds = []
+  }
+  voucherIds.push(res.getBody().id)
+  bru.setVar("voucher_ids", voucherIds)
+  
+  // let jsonData = pm.response.json()
+  // pm.collectionVariables.set("voucher_1_item_1", jsonData.lineItems[0].id)
+  // pm.collectionVariables.set("voucher_1_item_2", jsonData.lineItems[1].id)
+  
+  const sampleVouchers = bru.getVar("sample_vouchers")
+  if (sampleVouchers && sampleVouchers.length > 0){
+      bru.setNextRequest("create voucher")
+  }
+  
+  test("Create voucher", function () {
+      expect(res.getStatus()).to.equal(201)
+  })
+  
+}

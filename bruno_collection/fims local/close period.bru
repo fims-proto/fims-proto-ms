@@ -1,0 +1,17 @@
+meta {
+  name: close period
+  type: http
+  seq: 22
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/period/{{current_period}}/close
+  body: none
+  auth: none
+}
+
+tests {
+  test("Close period", function () {
+      expect(res.getStatus()).to.equal(204)
+  })
+}

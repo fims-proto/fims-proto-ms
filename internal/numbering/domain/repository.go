@@ -10,6 +10,8 @@ import (
 )
 
 type Repository interface {
+	EnableTx(ctx context.Context, txFn func(txCtx context.Context) error) error
+
 	CreateIdentifierConfiguration(ctx context.Context, configuration *identifier_configuration.IdentifierConfiguration) error
 	UpdateIdentifierConfiguration(ctx context.Context, id uuid.UUID, updateFn func(config *identifier_configuration.IdentifierConfiguration) (*identifier_configuration.IdentifierConfiguration, error)) error
 

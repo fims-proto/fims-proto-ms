@@ -7,8 +7,9 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/user/domain"
+
+	"github.com/google/uuid"
 )
 
 type UpdateUserCmd struct {

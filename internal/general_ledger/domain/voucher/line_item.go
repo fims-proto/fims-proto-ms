@@ -1,13 +1,14 @@
 package voucher
 
 import (
-	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
+
+	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type LineItem struct {

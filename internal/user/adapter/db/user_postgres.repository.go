@@ -4,10 +4,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
+	"github/fims-proto/fims-proto-ms/internal/common/utils"
+
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
 	"github/fims-proto/fims-proto-ms/internal/user/domain/user"
+
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -35,9 +39,9 @@ func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID
 	db := r.dataSource.GetConnection(ctx)
 
 	return db.Transaction(func(tx *gorm.DB) error {
-		po := userPO{}
+		po := userPO{Id: userId}
 		var bo *user.User
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po, "id = ?", userId).Error; err != nil {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&po).Error; err != nil {
 			bo, err = user.New(userId, nil)
 			if err != nil {
 				return fmt.Errorf("failed to create user: %w", err)
@@ -54,10 +58,7 @@ func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID
 			return fmt.Errorf("failed to update user: %w", err)
 		}
 
-		po, err = userBOToPO(*updatedBO)
-		if err != nil {
-			return err
-		}
+		po = userBOToPO(*updatedBO)
 		return tx.Save(&po).Error
 	})
 }
@@ -67,21 +68,19 @@ func (r UserPostgresRepository) UpsertUser(ctx context.Context, userId uuid.UUID
 func (r UserPostgresRepository) UserById(ctx context.Context, id uuid.UUID) (query.User, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := userPO{}
-	if err := db.Where("id = ?", id).First(&po).Error; err != nil {
+	po := userPO{Id: id}
+	if err := db.First(&po).Error; err != nil {
 		return query.User{}, fmt.Errorf("failed to read id %s: %w", id, err)
 	}
 
-	queryUser, err := userPOToDTO(po)
-	if err != nil {
-		return query.User{}, err
-	}
-
-	return queryUser, nil
+	return userPOToDTO(po), nil
 }
 
 func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID) ([]query.User, error) {
 	db := r.dataSource.GetConnection(ctx)
+
+	// unique ids
+	ids = utils.Unique(ids)
 
 	if len(ids) == 0 {
 		return nil, nil
@@ -92,14 +91,5 @@ func (r UserPostgresRepository) UsersByIds(ctx context.Context, ids []uuid.UUID)
 		return nil, fmt.Errorf("failed to read users: %w", err)
 	}
 
-	var userDTOs []query.User
-	for _, po := range userPOs {
-		dto, err := userPOToDTO(po)
-		if err != nil {
-			return nil, err
-		}
-		userDTOs = append(userDTOs, dto)
-	}
-
-	return userDTOs, nil
+	return converter.POsToDTOs(userPOs, userPOToDTO), nil
 }

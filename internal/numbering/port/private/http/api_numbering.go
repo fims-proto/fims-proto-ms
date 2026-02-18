@@ -3,8 +3,9 @@ package http
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app"
+
+	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {

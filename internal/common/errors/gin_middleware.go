@@ -4,8 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
+
+	"github.com/gin-gonic/gin"
 )
 
 func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {

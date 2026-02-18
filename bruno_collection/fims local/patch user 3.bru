@@ -1,0 +1,23 @@
+meta {
+  name: patch user 3
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{base_path}}/user/{{user_3}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "traits": "{\"email\":\"f@fims.com\",\"name\":{\"last\":\"风\",\"first\":\"雷火\"}}"
+  }
+}
+
+tests {
+  test("Read patch user 1 204", function () {
+      expect(res.getStatus()).to.equal(204);
+  });
+}

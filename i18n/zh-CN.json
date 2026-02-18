@@ -1,8 +1,6 @@
 {
   "emptySobId": "账套 ID 不能为空",
-
   "account-invalidAccountNumber": "科目编号 {{.A}} 不存在",
-
   "voucher-notFound": "凭证不存在",
   "voucher-emptyId": "凭证 ID 不能为空",
   "voucher-emptyPeriodId": "凭证账期 ID 不能为空",
@@ -13,16 +11,14 @@
   "voucher-emptyAuditor": "凭证审核人不能为空",
   "voucher-emptyPoster": "凭证登账人不能为空",
   "voucher-invalidPostStatus": "凭证登账状态异常",
-  "voucher-zeroTransactionTime": "凭证交易日期不能为空",
+  "voucher-zeroTransactionDate": "凭证交易日期不能为空",
   "voucher-emptyLineItems": "凭证行项目不能为空",
   "voucher-notBalanced": "凭证借贷不平衡",
   "voucher-unknownVoucherType": "凭证类型 {{.A}} 不存在",
   "voucher-periodClosed": "账期已关闭",
-
   "voucher-update-notCreator": "只能由创建者更新凭证",
   "voucher-update-audited": "凭证已被审核，不能更新",
   "voucher-update-reviewed": "凭证已被复核，不能更新",
-
   "voucher-audit-emptyAuditor": "审核人不能为空",
   "voucher-audit-repeatAudit": "凭证已被审核，不能重复审核",
   "voucher-audit-auditorSameAsCreator": "审核人和制单人不能相同",
@@ -30,7 +26,6 @@
   "voucher-cancelAudit-notAudited": "凭证还未被审核",
   "voucher-cancelAudit-differentAuditor": "取消审核须由审核人本人操作",
   "voucher-cancelAudit-posted": "凭证已登账，不能取消审核",
-
   "voucher-review-emptyReviewer": "复核人不能为空",
   "voucher-review-repeatReview": "凭证已被复核，不能重复复核",
   "voucher-review-reviewerSameAsCreator": "复核人和制单人不能相同",
@@ -38,20 +33,17 @@
   "voucher-cancelReview-notReviewed": "凭证还未被复核",
   "voucher-cancelReview-differentReviewer": "取消复核须由复核人本人操作",
   "voucher-cancelReview-posted": "凭证已登账，不能取消复核",
-
   "voucher-post-periodClosed": "账期已关闭",
   "voucher-post-periodNotCurrent": "账期尚未开放",
   "voucher-post-repeatPost": "凭证已登账，不能重复登账",
   "voucher-post-notAudited": "凭证尚未审核",
   "voucher-post-notReviewed": "凭证尚未复核",
   "voucher-post-emptyPoster": "未提供登账人",
-
   "lineItem-emptyId": "凭证行项目 ID 不能为空",
   "lineItem-emptyAccountId": "凭证行项目科目 ID 不能为空",
   "lineItem-emptyText": "凭证行项目摘要不能为空",
   "lineItem-emptyDebitCredit": "凭证行项目金额不能为空",
   "lineItem-debitCreditDuplicated": "凭证行项目借贷金额不能同时记录",
-
   "period-emptyId": "账期 ID 不能为空",
   "period-timeInPast": "不能创建过去的账期",
   "period-invalidFiscalYear": "财务年度 {{.A}} 不合法",
@@ -60,7 +52,6 @@
   "period-invalidEndingTime": "账期关闭时间 ({{.A}}) 与预期不符 ({{.B}})",
   "period-notFound": "账期不存在",
   "period-duplicatedCurrent": "已经存在一个账期标记为当前账期",
-
   "period-close-closed": "账期已经被关闭",
   "period-close-isNotCurrent": "只能关闭当前账期",
   "period-close-notAllVouchersPosted": "关闭账期前需登账所有账期内凭证",
@@ -68,5 +59,19 @@
   "period-close-unknownAccountBalanceDirection": "科目 {{.A}} 余额方向未知",
   "period-close-openingBalanceUnequal": "借方期初余额总计和贷方期初余额总计不等",
   "period-close-periodBalanceUnequal": "借方发生额总计和贷方发生额总计不等",
-  "period-close-endingBalanceUnequal": "借方期末余额总计和贷方期末余额总计不等"
+  "period-close-endingBalanceUnequal": "借方期末余额总计和贷方期末余额总计不等",
+  "report-item-nil": "报表项不能为空",
+  "report-item-notFound": "未找到报表项: {{.itemId}}",
+  "report-item-notInSection": "报表项 {{.itemId}} 不在指定的分区 {{.sectionId}} 中",
+  "report-section-notFound": "未找到报表节: {{.sectionId}}",
+  "report-item-notEditable": "该报表项不可编辑，无法删除",
+  "report-item-textRequired": "报表项目文本不能为空",
+  "report-item-levelRequired": "报表项目层级不能为空",
+  "report-item-sumFactorRequired": "报表项目求和因子不能为空",
+  "report-item-dataSourceRequired": "报表项目数据源不能为空",
+  "report-reorder-invalidPosition": "无效的插入位置",
+  "report-validation-missingSectionType": "报表缺少必需的段落类型: {{.A}}",
+  "report-validation-missingItemType": "报表缺少必需的项目类型: {{.A}}",
+  "report-balanceSheet-imbalance": "{{.A}} 不平衡: 资产={{.B}}，负债+权益={{.C}}，差额={{.D}}",
+  "report-incomeStatement-profitMismatch": "利润表计算不一致: {{.A}}"
 }

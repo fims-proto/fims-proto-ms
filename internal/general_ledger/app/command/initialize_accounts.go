@@ -11,13 +11,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
-
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 	sobQuery "github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
 	"github.com/google/uuid"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 )
 
 type accountEntry struct {
@@ -52,7 +51,7 @@ func readFromCSV() ([]accountEntry, error) {
 		return nil, fmt.Errorf("could not get working directory: %w", err)
 	}
 
-	csvFile, err := os.Open(filepath.Join(workDir, "dataload", "account", "accounts_xqykjzz.csv"))
+	csvFile, err := os.Open(filepath.Join(workDir, "dataload", "xqykjzz", "accounts.csv"))
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %w", err)
 	}

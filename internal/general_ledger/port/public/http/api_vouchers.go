@@ -3,27 +3,29 @@ package http
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // ReadAllVouchers godoc
-// @Text List all voucher by sob
-// @Description List all vouchers by sob with pagination
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param $page query int false "page number" default(1)
-// @Param $size query int false "page size" default(40)
-// @Param $sort query string false "sort on field(s)" example(updatedAt desc,createdAt)
-// @Param $filter query string false "filter on field(s)"
-// @Success 200 {array} VoucherResponse
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/vouchers [get]
+//
+//	@Text			List all vouchers by sob
+//	@Description	List all vouchers by sob with pagination
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			$page	query		int		false	"page number"		default(1)
+//	@Param			$size	query		int		false	"page size"			default(40)
+//	@Param			$sort	query		string	false	"sort on field(s)"	example(updatedAt desc,createdAt)
+//	@Param			$filter	query		string	false	"filter on field(s)"
+//	@Success		200		{object}	data.PageResponse[VoucherResponse]
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/vouchers [get]
 func (h Handler) ReadAllVouchers(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
@@ -35,17 +37,18 @@ func (h Handler) ReadAllVouchers(c *gin.Context) {
 }
 
 // ReadVoucherById godoc
-// @Text Show voucher by sob and id
-// @Description Show voucher by sob and id
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Success 200 {object} VoucherResponse
-// @Failure 404
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId} [get]
+//
+//	@Text			Show voucher by sob and id
+//	@Description	Show voucher by sob and id
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			voucherId	path		string	true	"Voucher ID"
+//	@Success		200			{object}	VoucherResponse
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId} [get]
 func (h Handler) ReadVoucherById(c *gin.Context) {
 	v, err := h.app.Queries.VoucherById.Handle(c, uuid.MustParse(c.Param("voucherId")))
 	if err != nil {
@@ -60,17 +63,18 @@ func (h Handler) ReadVoucherById(c *gin.Context) {
 }
 
 // CreateVoucher godoc
-// @Text Create voucher
-// @Description Create voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param CreateVoucherRequest body CreateVoucherRequest true "Create voucher request"
-// @Success 201 {object} VoucherResponse
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/vouchers [post]
+//
+//	@Text			Create voucher
+//	@Description	Create voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId					path		string					true	"Sob ID"
+//	@Param			CreateVoucherRequest	body		CreateVoucherRequest	true	"Create voucher request"
+//	@Success		201						{object}	VoucherResponse
+//	@Failure		400						{object}	Error
+//	@Failure		500						{object}	Error
+//	@Router			/sob/{sobId}/vouchers [post]
 func (h Handler) CreateVoucher(c *gin.Context) {
 	var req CreateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -78,8 +82,7 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 		return
 	}
 	cmd := req.mapToCommand(uuid.MustParse(c.Param("sobId")))
-	err := h.app.Commands.CreateVoucher.Handle(c, cmd)
-	if err != nil {
+	if err := h.app.Commands.CreateVoucher.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}
@@ -92,18 +95,19 @@ func (h Handler) CreateVoucher(c *gin.Context) {
 }
 
 // UpdateVoucher godoc
-// @Text Update voucher
-// @Description Update voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Param UpdateVoucherRequest body UpdateVoucherRequest true "Update voucher request"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId} [patch]
+//
+//	@Text			Update voucher
+//	@Description	Update voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId					path	string					true	"Sob ID"
+//	@Param			voucherId				path	string					true	"Voucher ID"
+//	@Param			UpdateVoucherRequest	body	UpdateVoucherRequest	true	"Update voucher request"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId} [patch]
 func (h Handler) UpdateVoucher(c *gin.Context) {
 	var req UpdateVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -119,7 +123,7 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 		VoucherId:       uuid.MustParse(c.Param("voucherId")),
 		HeaderText:      req.HeaderText,
 		LineItems:       items,
-		TransactionTime: req.TransactionTime,
+		TransactionDate: req.TransactionDate,
 		Updater:         req.Updater,
 	}
 	if err := h.app.Commands.UpdateVoucher.Handle(c, cmd); err != nil {
@@ -130,18 +134,19 @@ func (h Handler) UpdateVoucher(c *gin.Context) {
 }
 
 // AuditVoucher godoc
-// @Text AuditVoucher voucher
-// @Description AuditVoucher voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Param AuditVoucherRequest body AuditVoucherRequest true "AuditVoucher voucher request, auditor user ID"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId}/audit [post]
+//
+//	@Text			AuditVoucher voucher
+//	@Description	AuditVoucher voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path	string				true	"Sob ID"
+//	@Param			voucherId			path	string				true	"Voucher ID"
+//	@Param			AuditVoucherRequest	body	AuditVoucherRequest	true	"AuditVoucher voucher request, auditor user ID"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId}/audit [post]
 func (h Handler) AuditVoucher(c *gin.Context) {
 	var req AuditVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -160,18 +165,19 @@ func (h Handler) AuditVoucher(c *gin.Context) {
 }
 
 // CancelAuditVoucher godoc
-// @Text Cancel audit voucher
-// @Description Cancel audit voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Param AuditVoucherRequest body AuditVoucherRequest true "Cancel audit voucher request, auditor user ID"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId}/cancel-audit [post]
+//
+//	@Text			Cancel audit voucher
+//	@Description	Cancel audit voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path	string				true	"Sob ID"
+//	@Param			voucherId			path	string				true	"Voucher ID"
+//	@Param			AuditVoucherRequest	body	AuditVoucherRequest	true	"Cancel audit voucher request, auditor user ID"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId}/cancel-audit [post]
 func (h Handler) CancelAuditVoucher(c *gin.Context) {
 	var req AuditVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -190,18 +196,19 @@ func (h Handler) CancelAuditVoucher(c *gin.Context) {
 }
 
 // ReviewVoucher godoc
-// @Text ReviewVoucher voucher
-// @Description ReviewVoucher voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Param ReviewVoucherRequest body ReviewVoucherRequest true "ReviewVoucher voucher request, reviewer user ID"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId}/review [post]
+//
+//	@Text			ReviewVoucher voucher
+//	@Description	ReviewVoucher voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId					path	string					true	"Sob ID"
+//	@Param			voucherId				path	string					true	"Voucher ID"
+//	@Param			ReviewVoucherRequest	body	ReviewVoucherRequest	true	"ReviewVoucher voucher request, reviewer user ID"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId}/review [post]
 func (h Handler) ReviewVoucher(c *gin.Context) {
 	var req ReviewVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -220,18 +227,19 @@ func (h Handler) ReviewVoucher(c *gin.Context) {
 }
 
 // CancelReviewVoucher godoc
-// @Text Cancel review voucher
-// @Description Cancel review voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Param ReviewVoucherRequest body ReviewVoucherRequest true "Cancel review voucher request, reviewer user ID"
-// @Success 204
-// @Failure 400 {object} Error
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId}/cancel-review [post]
+//
+//	@Text			Cancel review voucher
+//	@Description	Cancel review voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId					path	string					true	"Sob ID"
+//	@Param			voucherId				path	string					true	"Voucher ID"
+//	@Param			ReviewVoucherRequest	body	ReviewVoucherRequest	true	"Cancel review voucher request, reviewer user ID"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId}/cancel-review [post]
 func (h Handler) CancelReviewVoucher(c *gin.Context) {
 	var req ReviewVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {
@@ -250,17 +258,18 @@ func (h Handler) CancelReviewVoucher(c *gin.Context) {
 }
 
 // PostVoucher godoc
-// @Text PostVoucher voucher
-// @Description PostVoucher voucher
-// @Tags vouchers
-// @Accept application/json
-// @Produce application/json
-// @Param sobId path string true "Sob ID"
-// @Param voucherId path string true "Voucher ID"
-// @Param PostVoucherRequest body PostVoucherRequest true "PostVoucher voucher request, poster user ID"
-// @Success 204
-// @Failure 500 {object} Error
-// @Router /sob/{sobId}/voucher/{voucherId}/post [post]
+//
+//	@Text			PostVoucher voucher
+//	@Description	PostVoucher voucher
+//	@Tags			vouchers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path	string				true	"Sob ID"
+//	@Param			voucherId			path	string				true	"Voucher ID"
+//	@Param			PostVoucherRequest	body	PostVoucherRequest	true	"PostVoucher voucher request, poster user ID"
+//	@Success		204
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/voucher/{voucherId}/post [post]
 func (h Handler) PostVoucher(c *gin.Context) {
 	var req PostVoucherRequest
 	if err := c.ShouldBind(&req); err != nil {

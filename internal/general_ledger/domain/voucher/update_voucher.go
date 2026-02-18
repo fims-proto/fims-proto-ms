@@ -2,10 +2,10 @@ package voucher
 
 import (
 	"fmt"
-	"time"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/google/uuid"
-	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 func (v *Voucher) checkUpdatePossible(user uuid.UUID) error {
@@ -40,16 +40,16 @@ func (v *Voucher) UpdateLineItems(lineItems []*LineItem, user uuid.UUID) error {
 	return nil
 }
 
-func (v *Voucher) UpdateTransactionTime(transactionTime time.Time, user uuid.UUID) error {
+func (v *Voucher) UpdateTransactionDate(transactionDate TransactionDate, user uuid.UUID) error {
 	if err := v.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
 
-	if transactionTime.IsZero() {
-		return commonErrors.NewSlugError("voucher-zeroTransactionTime")
+	if transactionDate.IsZero() {
+		return commonErrors.NewSlugError("voucher-zeroTransactionDate")
 	}
 
-	v.transactionTime = transactionTime
+	v.transactionDate = transactionDate
 	return nil
 }
 

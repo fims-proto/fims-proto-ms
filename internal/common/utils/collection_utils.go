@@ -51,3 +51,15 @@ func MapToKeySlice[K comparable, V any](m map[K]V) []K {
 func AsSlice[E any](elements ...E) []E {
 	return elements
 }
+
+func Unique[T comparable](input []T) []T {
+	seen := make(map[T]struct{}, len(input))
+	out := make([]T, 0, len(input))
+	for _, v := range input {
+		if _, ok := seen[v]; !ok {
+			seen[v] = struct{}{}
+			out = append(out, v)
+		}
+	}
+	return out
+}

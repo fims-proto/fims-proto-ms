@@ -4,16 +4,11 @@ import (
 	"net/http"
 	"strings"
 
+	_ "github/fims-proto/fims-proto-ms/docs/swagger_generated"
 	"github/fims-proto/fims-proto-ms/internal/common/config"
-
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
-	"github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
-	"github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
-
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
-	_ "github/fims-proto/fims-proto-ms/docs"
+	dedicated_datasource "github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
+	multitenant_datasource "github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -30,8 +25,14 @@ import (
 	numberingApp "github/fims-proto/fims-proto-ms/internal/numbering/app"
 	numberingPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/http"
 	numberingIntraPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/intraprocess"
+	reportAdapter "github/fims-proto/fims-proto-ms/internal/report/adapter/db"
+	reportApp "github/fims-proto/fims-proto-ms/internal/report/app"
+	reportPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/report/port/private/http"
+	reportIntraPort "github/fims-proto/fims-proto-ms/internal/report/port/private/intraprocess"
+	reportPublicHttpPort "github/fims-proto/fims-proto-ms/internal/report/port/public/http"
 	sobAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/db"
 	sobGeneralLedgerAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/general_ledger"
+	sobReportAdapter "github/fims-proto/fims-proto-ms/internal/sob/adapter/report"
 	sobApp "github/fims-proto/fims-proto-ms/internal/sob/app"
 	sobPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/http"
 	sobIntraPort "github/fims-proto/fims-proto-ms/internal/sob/port/private/intraprocess"
@@ -41,6 +42,10 @@ import (
 	userPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/private/http"
 	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
 	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
+
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
@@ -64,6 +69,9 @@ func main() {
 	sobRepository := sobAdapter.NewSobPostgresRepository(dataSource)
 	generalLedgerRepository := generalLedgerAdapter.NewGeneralLedgerPostgresRepository(dataSource)
 	generalLedgerReadRepository := generalLedgerAdapter.NewGeneralLedgerPostgresReadRepository(dataSource)
+	generalLedgerServiceRepository := reportAdapter.NewGeneralLedgerPostgresService(dataSource)
+	reportRepository := reportAdapter.NewReportPostgresRepository(dataSource)
+	reportReadRepository := reportAdapter.NewReportPostgresReadRepository(dataSource)
 	numberingRepository := numberingAdapter.NewNumberingPostgresRepository(dataSource)
 	userRepository := userAdapter.NewUserPostgresRepository(dataSource)
 
@@ -71,20 +79,24 @@ func main() {
 	sobApplication := sobApp.NewApplication()
 	generalLedgerApplication := generalLedgerApp.NewApplication()
 	numberingApplication := numberingApp.NewApplication()
+	reportApplication := reportApp.NewApplication()
 	userApplication := userApp.NewApplication()
 
 	// intra process interfaces
 	sobInterface := sobIntraPort.NewSobInterface(&sobApplication)
 	generalLedgerInterface := generalLedgerIntraPort.NewGeneralLedgerInterface(&generalLedgerApplication)
 	numberingInterface := numberingIntraPort.NewNumberingInterface(&numberingApplication)
+	reportInterface := reportIntraPort.NewReportInterface(&reportApplication)
 	userInterface := userIntraPort.NewUserInterface(&userApplication)
 
 	// application dependencies injection
 	generalLedgerServiceForSob := sobGeneralLedgerAdapter.NewIntraProcessAdapter(generalLedgerInterface)
+	reportServiceForSob := sobReportAdapter.NewIntraProcessAdapter(reportInterface)
 	sobApplication.Inject(
 		sobRepository,
 		sobRepository,
 		generalLedgerServiceForSob,
+		reportServiceForSob,
 	)
 
 	sobServiceForGeneralLedger := generalLedgerSobAdapter.NewIntraProcessAdapter(sobInterface)
@@ -96,6 +108,12 @@ func main() {
 		sobServiceForGeneralLedger,
 		numberingServiceForGeneralLedger,
 		userServiceForGeneralLedger,
+	)
+
+	reportApplication.Inject(
+		reportRepository,
+		reportReadRepository,
+		generalLedgerServiceRepository,
 	)
 
 	numberingApplication.Inject(
@@ -119,14 +137,22 @@ func main() {
 	// public http API
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
-	generalLedgerPublicHttpPort.InitRouter(generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication), publicApiRouter)
+	generalLedgerPublicHttpPort.InitRouter(
+		generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication),
+		publicApiRouter,
+	)
+	reportPublicHttpPort.InitRouter(reportPublicHttpPort.NewHandler(&reportApplication), publicApiRouter)
 	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
 
 	// private http API, should have different authentication method then public API
 	privateApiRouter := router.Group("/internal")
 	sobPrivateHttpPort.InitRouter(sobPrivateHttpPort.NewHandler(&sobApplication), privateApiRouter)
 	numberingPrivateHttpPort.InitRouter(numberingPrivateHttpPort.NewHandler(&numberingApplication), privateApiRouter)
-	generalLedgerPrivateHttpPort.InitRouter(generalLedgerPrivateHttpPort.NewHandler(&generalLedgerApplication), privateApiRouter)
+	generalLedgerPrivateHttpPort.InitRouter(
+		generalLedgerPrivateHttpPort.NewHandler(&generalLedgerApplication),
+		privateApiRouter,
+	)
+	reportPrivateHttpPort.InitRouter(reportPrivateHttpPort.NewHandler(&reportApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
 
 	if strings.HasPrefix(config.GetString("profile"), "dev") {

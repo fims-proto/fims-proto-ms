@@ -5,13 +5,15 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 )
 
 type AuxiliaryLedger struct {
 	id                   uuid.UUID
+	sobId                uuid.UUID
 	periodId             uuid.UUID
-	auxiliaryAccount     *auxiliary_account.AuxiliaryAccount
+	accountId            uuid.UUID
+	auxiliaryCategoryId  uuid.UUID
+	auxiliaryAccountId   uuid.UUID
 	openingDebitBalance  decimal.Decimal
 	openingCreditBalance decimal.Decimal
 	periodDebit          decimal.Decimal
@@ -22,8 +24,11 @@ type AuxiliaryLedger struct {
 
 func New(
 	id uuid.UUID,
+	sobId uuid.UUID,
 	periodId uuid.UUID,
-	auxiliaryAccount *auxiliary_account.AuxiliaryAccount,
+	accountId uuid.UUID,
+	auxiliaryCategoryId uuid.UUID,
+	auxiliaryAccountId uuid.UUID,
 	openingDebitBalance decimal.Decimal,
 	openingCreditBalance decimal.Decimal,
 	periodDebit decimal.Decimal,
@@ -35,18 +40,33 @@ func New(
 		return nil, errors.New("nil auxiliary ledger id")
 	}
 
+	if sobId == uuid.Nil {
+		return nil, errors.New("nil sob id")
+	}
+
 	if periodId == uuid.Nil {
 		return nil, errors.New("nil period id")
 	}
 
-	if auxiliaryAccount == nil {
-		return nil, errors.New("nil auxiliary account")
+	if accountId == uuid.Nil {
+		return nil, errors.New("nil account id")
+	}
+
+	if auxiliaryCategoryId == uuid.Nil {
+		return nil, errors.New("nil auxiliary category id")
+	}
+
+	if auxiliaryAccountId == uuid.Nil {
+		return nil, errors.New("nil auxiliary account id")
 	}
 
 	return &AuxiliaryLedger{
 		id:                   id,
+		sobId:                sobId,
 		periodId:             periodId,
-		auxiliaryAccount:     auxiliaryAccount,
+		accountId:            accountId,
+		auxiliaryCategoryId:  auxiliaryCategoryId,
+		auxiliaryAccountId:   auxiliaryAccountId,
 		openingDebitBalance:  openingDebitBalance,
 		openingCreditBalance: openingCreditBalance,
 		periodDebit:          periodDebit,
@@ -60,12 +80,24 @@ func (l *AuxiliaryLedger) Id() uuid.UUID {
 	return l.id
 }
 
+func (l *AuxiliaryLedger) SobId() uuid.UUID {
+	return l.sobId
+}
+
 func (l *AuxiliaryLedger) PeriodId() uuid.UUID {
 	return l.periodId
 }
 
-func (l *AuxiliaryLedger) AuxiliaryAccount() *auxiliary_account.AuxiliaryAccount {
-	return l.auxiliaryAccount
+func (l *AuxiliaryLedger) AccountId() uuid.UUID {
+	return l.accountId
+}
+
+func (l *AuxiliaryLedger) AuxiliaryCategoryId() uuid.UUID {
+	return l.auxiliaryCategoryId
+}
+
+func (l *AuxiliaryLedger) AuxiliaryAccountId() uuid.UUID {
+	return l.auxiliaryAccountId
 }
 
 func (l *AuxiliaryLedger) OpeningDebitBalance() decimal.Decimal {

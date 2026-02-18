@@ -12,6 +12,7 @@ type Queries struct {
 	PagingAccounts            query.PagingAccountsHandler
 	AccountById               query.AccountByIdHandler
 	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
+	AuxiliaryCategoryByKey    query.AuxiliaryCategoryByKeyHandler
 	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
 	CurrentPeriod             query.CurrentPeriodHandler
 	PagingPeriods             query.PagingPeriodsHandler
@@ -26,6 +27,7 @@ type Commands struct {
 	Initialize               command.InitializeHandler
 	InitializeLedgersBalance command.InitializeLedgersBalanceHandler
 
+	CreateAccount command.CreateAccountHandler
 	UpdateAccount command.UpdateAccountHandler
 
 	ClosePeriod command.ClosePeriodHandler
@@ -65,6 +67,7 @@ func (a *Application) Inject(
 		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
 		AccountById:               query.NewAccountByIdHandler(readModel),
 		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
+		AuxiliaryCategoryByKey:    query.NewAuxiliaryCategoryByKeyHandler(readModel),
 		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
 		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
 		PagingPeriods:             query.NewPagingPeriodsHandler(readModel),
@@ -78,6 +81,7 @@ func (a *Application) Inject(
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
 		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
 
+		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),

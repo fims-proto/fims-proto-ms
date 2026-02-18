@@ -3,9 +3,10 @@ package user
 import (
 	"context"
 
-	"github.com/google/uuid"
 	"github/fims-proto/fims-proto-ms/internal/user/app/query"
 	userPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
+
+	"github.com/google/uuid"
 )
 
 type IntraProcessAdapter struct {

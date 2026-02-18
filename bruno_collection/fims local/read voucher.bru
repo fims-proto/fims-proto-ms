@@ -1,0 +1,30 @@
+meta {
+  name: read voucher
+  type: http
+  seq: 12
+}
+
+get {
+  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}
+  body: none
+  auth: none
+}
+
+script:pre-request {
+  const voucherIds = bru.getVar("voucher_ids")
+  const index = Number(bru.getVar("voucher_index")) || 0
+  
+  bru.setVar("current_voucher_id", voucherIds[index])
+  bru.setVar("voucher_index", index + 1)
+}
+
+tests {
+  test("Read voucher by id 200", function () {
+      expect(res.getStatus()).to.equal(200)
+  })
+  
+  test("Number check", function () {
+      var jsonData = res.getBody()
+      expect(jsonData.documentNumber).to.eql(`记 ${bru.getVar("voucher_index")} 号`)
+  })
+}

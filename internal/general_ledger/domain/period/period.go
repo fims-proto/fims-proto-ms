@@ -8,14 +8,13 @@ import (
 	"github.com/google/uuid"
 )
 
-// Period consider a time point belongs to current period if ['openingTime', 'endingTime')
+// Period represents an accounting period identified by fiscal year and period number.
+// A period represents a calendar month when periodNumber 1-12 corresponds to January-December.
 type Period struct {
 	id           uuid.UUID
 	sobId        uuid.UUID
 	fiscalYear   int
 	periodNumber int
-	openingTime  time.Time
-	endingTime   time.Time
 	isClosed     bool
 	isCurrent    bool
 }
@@ -28,8 +27,6 @@ func New(id, sobId uuid.UUID, fiscalYear, periodNumber int, isCurrent bool) (*Pe
 		sobId,
 		fiscalYear,
 		periodNumber,
-		getOpeningTime(fiscalYear, periodNumber),
-		getEndingTime(fiscalYear, periodNumber),
 		false, // never create a closed period
 		isCurrent,
 	)
@@ -42,8 +39,6 @@ func NewByAllFields(
 	sobId uuid.UUID,
 	fiscalYear int,
 	periodNumber int,
-	openingTime time.Time,
-	endingTime time.Time,
 	isClosed bool,
 	isCurrent bool,
 ) (*Period, error) {
@@ -63,32 +58,11 @@ func NewByAllFields(
 		return nil, errors.NewSlugError("period-invalidPeriodNumber", periodNumber)
 	}
 
-	if openingTime.IsZero() {
-		return nil, errors.NewSlugError("period-zeroOpeningTime")
-	}
-
-	if endingTime.IsZero() {
-		return nil, errors.NewSlugError("period-zeroEndingTime")
-	}
-
-	expectedOpeningTime := getOpeningTime(fiscalYear, periodNumber)
-	expectedEndingTime := getEndingTime(fiscalYear, periodNumber)
-
-	if !openingTime.Equal(expectedOpeningTime) {
-		return nil, errors.NewSlugError("period-invalidOpeningTime", openingTime, expectedOpeningTime)
-	}
-
-	if !endingTime.Equal(expectedEndingTime) {
-		return nil, errors.NewSlugError("period-invalidEndingTime", endingTime, expectedEndingTime)
-	}
-
 	return &Period{
 		id:           id,
 		sobId:        sobId,
 		fiscalYear:   fiscalYear,
 		periodNumber: periodNumber,
-		openingTime:  openingTime,
-		endingTime:   endingTime,
 		isClosed:     isClosed,
 		isCurrent:    isCurrent,
 	}, nil
@@ -110,18 +84,28 @@ func (p *Period) PeriodNumber() int {
 	return p.periodNumber
 }
 
-func (p *Period) OpeningTime() time.Time {
-	return p.openingTime
-}
-
-func (p *Period) EndingTime() time.Time {
-	return p.endingTime
-}
-
 func (p *Period) IsClosed() bool {
 	return p.isClosed
 }
 
 func (p *Period) IsCurrent() bool {
 	return p.isCurrent
+}
+
+// NextNumber returns the fiscal year and period number of the next period.
+// Handles year boundaries correctly (e.g., Period 12 of 2023 → Period 1 of 2024).
+func (p *Period) NextNumber() (int, int) {
+	firstDay := time.Date(p.fiscalYear, time.Month(p.periodNumber), 1, 0, 0, 0, 0, time.UTC)
+	nextFirstDay := firstDay.AddDate(0, 1, 0)
+
+	return nextFirstDay.Year(), int(nextFirstDay.Month())
+}
+
+// PreviousNumber returns the fiscal year and period number of the previous period.
+// Handles year boundaries correctly (e.g., Period 1 of 2024 → Period 12 of 2023).
+func (p *Period) PreviousNumber() (int, int) {
+	firstDay := time.Date(p.fiscalYear, time.Month(p.periodNumber), 1, 0, 0, 0, 0, time.UTC)
+	previousFirstDay := firstDay.AddDate(0, -1, 0)
+
+	return previousFirstDay.Year(), int(previousFirstDay.Month())
 }

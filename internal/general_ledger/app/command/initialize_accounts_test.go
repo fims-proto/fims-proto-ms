@@ -331,10 +331,6 @@ func (m mockRepo) CreateAuxiliaryCategories(context.Context, []*auxiliary_catego
 	panic("implement me")
 }
 
-func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, string) (*auxiliary_category.AuxiliaryCategory, error) {
-	panic("implement me")
-}
-
 func (m mockRepo) CreateAuxiliaryAccounts(context.Context, []*auxiliary_account.AuxiliaryAccount) error {
 	panic("implement me")
 }
@@ -347,11 +343,15 @@ func (m mockRepo) CreateAuxiliaryLedgers(context.Context, []*auxiliary_ledger.Au
 	panic("implement me")
 }
 
-func (m mockRepo) UpdateAuxiliaryLedgersByPeriodAndAccountIds(context.Context, uuid.UUID, []uuid.UUID, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
+func (m mockRepo) UpsertAuxiliaryLedgersByPeriodAndAccounts(context.Context, uuid.UUID, uuid.UUID, []domain.AuxiliaryLedgerKey, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
 	panic("implement me")
 }
 
 func (m mockRepo) ReadAuxiliaryLedgersByPeriod(context.Context, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryLedgersByAccountAndPeriod(context.Context, uuid.UUID, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
 	panic("implement me")
 }
 
@@ -364,6 +364,22 @@ func (m mockRepo) ReadAllSubAccountsWithSuperiors(context.Context, uuid.UUID) ([
 }
 
 func (m mockRepo) ReadFirstPeriod(context.Context, uuid.UUID) (*period.Period, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) CreateAccount(context.Context, *account.Account) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAccountByNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, uuid.UUID, string) (*auxiliary_category.AuxiliaryCategory, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAuxiliaryCategoriesByKeys(context.Context, uuid.UUID, []string) ([]*auxiliary_category.AuxiliaryCategory, error) {
 	panic("implement me")
 }
 
