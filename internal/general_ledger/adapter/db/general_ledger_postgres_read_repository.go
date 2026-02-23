@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
@@ -89,7 +91,7 @@ func (r GeneralLedgerPostgresReadRepository) SearchVouchers(
 	pageRequest data.PageRequest,
 ) (data.Page[query.Voucher], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, r.dataSource.GetConnection(ctx).Preload("LineItems.Account").Joins("Period"))
+	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, r.dataSource.GetConnection(ctx).Preload("LineItems.Account").InnerJoins("Period"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
@@ -138,4 +140,72 @@ func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
 		sobIdFilter, _ := filterable.NewFilter("sobId", filterable.OptEq, sobId.String())
 		pageRequest.AddAndFilterable(filterable.NewFilterableAtom(sobIdFilter))
 	}
+}
+
+// LedgersByPeriodRange queries ledgers for a specific account within a fiscal year/period number range
+// Filters are applied at SQL level for performance
+func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
+	ctx context.Context,
+	sobId, accountId uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+) ([]query.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []ledgerPO
+	q := db.Model(&ledgerPO{SobId: sobId, AccountId: accountId}).
+		InnerJoins("Account").
+		InnerJoins("Period").
+		Where("a_ledgers.sob_id = ?", sobId).
+		Where("a_ledgers.account_id = ?", accountId).
+		Where(
+			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
+				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
+			fromFiscalYear, fromFiscalYear, fromPeriodNumber, toFiscalYear, toFiscalYear, toPeriodNumber,
+		).
+		Order("fiscal_year asc, period_number asc")
+
+	if err := q.Find(&pos).Error; err != nil {
+		return nil, err
+	}
+
+	if len(pos) == 0 {
+		return nil, commonErrors.ErrRecordNotFound()
+	}
+
+	result := converter.POsToDTOs(pos, ledgerPOToDTO)
+
+	return result, nil
+}
+
+// CheckPeriodContinuity verifies that all periods in the range [fromFiscalYear, fromPeriodNumber] to [toFiscalYear, toPeriodNumber] exist
+// Returns error if any period in the range is missing
+func (r GeneralLedgerPostgresReadRepository) CheckPeriodContinuity(
+	ctx context.Context,
+	sobId uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	// Calculate expected number of periods in range
+	expectedCount := (toFiscalYear-fromFiscalYear)*12 + (toPeriodNumber - fromPeriodNumber) + 1
+
+	// Count actual periods in range using SQL
+	var count int64
+	db.Model(&periodPO{}).
+		Where("sob_id = ?", sobId).
+		Where(
+			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
+				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
+			fromFiscalYear, fromFiscalYear, fromPeriodNumber, toFiscalYear, toFiscalYear, toPeriodNumber,
+		).
+		Count(&count)
+	if err := db.Error; err != nil {
+		return err
+	}
+
+	if count != int64(expectedCount) {
+		return errors.New("periods in range are not continuous")
+	}
+
+	return nil
 }

@@ -10,6 +10,38 @@ import (
 	"github.com/google/uuid"
 )
 
+// ReadLedgerSummary godoc
+//
+//	@Text			Get ledger summary by account across period range
+//	@Description	Get aggregated ledger summary for a single account across a period range
+//	@Tags			ledgers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Param			fromPeriod	query		string	true	"From period (YYYY-MM)"
+//	@Param			toPeriod	query		string	true	"To period (YYYY-MM)"
+//	@Success		200			{object}	LedgerSummaryResponse
+//	@Failure		400			{object}	Error
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/ledger/{accountId} [get]
+func (h Handler) ReadLedgerSummary(c *gin.Context) {
+	summary, err := h.app.Queries.LedgerSummary.Handle(
+		c,
+		uuid.MustParse(c.Param("sobId")),
+		uuid.MustParse(c.Param("accountId")),
+		c.Query("fromPeriod"),
+		c.Query("toPeriod"),
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, ledgerSummaryToVO(summary))
+}
+
 // ReadPagingLedgersByPeriod godoc
 //
 //	@Text			List ledgers in period

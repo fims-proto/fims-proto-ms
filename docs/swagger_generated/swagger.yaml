@@ -335,6 +335,25 @@ definitions:
       updatedAt:
         type: string
     type: object
+  http.LedgerSummaryResponse:
+    properties:
+      accountId:
+        type: string
+      endingCreditBalance:
+        type: number
+      endingDebitBalance:
+        type: number
+      openingCreditBalance:
+        type: number
+      openingDebitBalance:
+        type: number
+      periodCredit:
+        type: number
+      periodDebit:
+        type: number
+      periodId:
+        type: string
+    type: object
   http.LineItemResponse:
     properties:
       account:
@@ -1085,6 +1104,52 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http.PeriodAndLedgersResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
+  /sob/{sobId}/ledger/{accountId}:
+    get:
+      consumes:
+      - application/json
+      description: Get aggregated ledger summary for a single account across a period
+        range
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.LedgerSummaryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
           schema:

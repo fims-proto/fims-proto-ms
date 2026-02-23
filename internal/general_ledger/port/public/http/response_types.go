@@ -85,6 +85,17 @@ type LedgerResponse struct {
 	UpdatedAt            time.Time       `json:"updatedAt"`
 }
 
+type LedgerSummaryResponse struct {
+	AccountId            uuid.UUID       `json:"accountId"`
+	PeriodId             uuid.UUID       `json:"periodId"`
+	OpeningDebitBalance  decimal.Decimal `json:"openingDebitBalance"`
+	OpeningCreditBalance decimal.Decimal `json:"openingCreditBalance"`
+	PeriodDebit          decimal.Decimal `json:"periodDebit"`
+	PeriodCredit         decimal.Decimal `json:"periodCredit"`
+	EndingDebitBalance   decimal.Decimal `json:"endingDebitBalance"`
+	EndingCreditBalance  decimal.Decimal `json:"endingCreditBalance"`
+}
+
 type PeriodAndLedgersResponse struct {
 	Period  PeriodResponse   `json:"period"`
 	Ledgers []LedgerResponse `json:"ledgers"`
@@ -207,6 +218,10 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 		CreatedAt:            dto.CreatedAt,
 		UpdatedAt:            dto.UpdatedAt,
 	}
+}
+
+func ledgerSummaryToVO(dto query.LedgerSummary) LedgerSummaryResponse {
+	return LedgerSummaryResponse(dto)
 }
 
 func auxiliaryLedgerDTOToVO(dto query.AuxiliaryLedger) AuxiliaryLedgerResponse {

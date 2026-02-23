@@ -88,6 +88,7 @@ type ledgerPO struct {
 	EndingCreditBalance  decimal.Decimal
 
 	Account accountPO `gorm:"foreignKey:AccountId"`
+	Period  periodPO  `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time

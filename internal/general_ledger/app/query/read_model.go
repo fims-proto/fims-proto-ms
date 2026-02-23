@@ -17,8 +17,11 @@ type GeneralLedgerReadModel interface {
 	SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Period], error)
 	SearchVouchers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Voucher], error)
 
+	LedgersByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
+
 	CurrentPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	FirstPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
+	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error
 
 	VoucherById(ctx context.Context, voucherId uuid.UUID) (Voucher, error)
 }
