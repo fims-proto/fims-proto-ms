@@ -209,3 +209,33 @@ func (r GeneralLedgerPostgresReadRepository) CheckPeriodContinuity(
 
 	return nil
 }
+
+// AuxiliariesByPeriodRange queries auxiliary ledgers for a specific account and auxiliary category within a fiscal year/period number range
+// Filters are applied at SQL level for performance and supports pagination
+func (r GeneralLedgerPostgresReadRepository) AuxiliariesByPeriodRange(
+	ctx context.Context,
+	sobId, accountId, auxiliaryCategoryId uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+	pageRequest data.PageRequest,
+) (data.Page[query.AuxiliaryLedger], error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	// Build base query with period range filtering
+	q := db.Model(&auxiliaryLedgerPO{}).
+		Joins("AuxiliaryAccount.Category").
+		Joins("AuxiliaryCategory").
+		Joins("Account").
+		Joins("Period").
+		Where("a_auxiliary_ledgers.sob_id = ?", sobId).
+		Where("a_auxiliary_ledgers.account_id = ?", accountId).
+		Where("a_auxiliary_ledgers.auxiliary_category_id = ?", auxiliaryCategoryId).
+		Where(
+			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
+				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
+			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
+			toFiscalYear, toFiscalYear, toPeriodNumber,
+		)
+
+	// Apply pageable filters and return
+	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO, q)
+}

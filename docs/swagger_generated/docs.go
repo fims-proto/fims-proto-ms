@@ -621,6 +621,108 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/ledger/{accountId}/auxiliary": {
+            "get": {
+                "description": "Get aggregated auxiliary ledger summary grouped by auxiliary account for a specific category",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category key (e.g., customer, project)",
+                        "name": "categoryKey",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From period (YYYY-MM)",
+                        "name": "fromPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To period (YYYY-MM)",
+                        "name": "toPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "title eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/ledgers/initialize": {
             "post": {
                 "description": "Initialize ledgers in first period of current SoB",
@@ -2062,6 +2164,29 @@ const docTemplate = `{
                 }
             }
         },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryLedgerSummaryResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse": {
             "type": "object",
             "properties": {
@@ -2285,6 +2410,35 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "http.AuxiliaryLedgerSummaryResponse": {
+            "type": "object",
+            "properties": {
+                "auxiliaryAccountId": {
+                    "type": "string"
+                },
+                "auxiliaryAccountTitle": {
+                    "type": "string"
+                },
+                "endingCreditBalance": {
+                    "type": "number"
+                },
+                "endingDebitBalance": {
+                    "type": "number"
+                },
+                "openingCreditBalance": {
+                    "type": "number"
+                },
+                "openingDebitBalance": {
+                    "type": "number"
+                },
+                "periodCredit": {
+                    "type": "number"
+                },
+                "periodDebit": {
+                    "type": "number"
                 }
             }
         },

@@ -30,6 +30,21 @@ definitions:
       totalPage:
         type: integer
     type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.AuxiliaryLedgerSummaryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
     properties:
       content:
@@ -176,6 +191,25 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  http.AuxiliaryLedgerSummaryResponse:
+    properties:
+      auxiliaryAccountId:
+        type: string
+      auxiliaryAccountTitle:
+        type: string
+      endingCreditBalance:
+        type: number
+      endingDebitBalance:
+        type: number
+      openingCreditBalance:
+        type: number
+      openingDebitBalance:
+        type: number
+      periodCredit:
+        type: number
+      periodDebit:
+        type: number
     type: object
   http.CreateAccountRequest:
     properties:
@@ -1144,6 +1178,77 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http.LedgerSummaryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
+  /sob/{sobId}/ledger/{accountId}/auxiliary:
+    get:
+      consumes:
+      - application/json
+      description: Get aggregated auxiliary ledger summary grouped by auxiliary account
+        for a specific category
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: Category key (e.g., customer, project)
+        in: query
+        name: categoryKey
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: title eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse'
         "400":
           description: Bad Request
           schema:

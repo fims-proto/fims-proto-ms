@@ -122,3 +122,42 @@ func (h Handler) InitializeLedgers(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// ReadAuxiliaryLedgerSummary godoc
+//
+//	@Text			Get auxiliary ledger summary by account across period range
+//	@Description	Get aggregated auxiliary ledger summary grouped by auxiliary account for a specific category
+//	@Tags			ledgers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Param			categoryKey	query		string	true	"Category key (e.g., customer, project)"
+//	@Param			fromPeriod	query		string	true	"From period (YYYY-MM)"
+//	@Param			toPeriod	query		string	true	"To period (YYYY-MM)"
+//	@Param			$page		query		int		false	"page number"			default(1)
+//	@Param			$size		query		int		false	"page size"				default(40)
+//	@Param			$sort		query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter		query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
+//	@Success		200			{object}	data.PageResponse[AuxiliaryLedgerSummaryResponse]
+//	@Failure		400			{object}	Error
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/ledger/{accountId}/auxiliary [get]
+func (h Handler) ReadAuxiliaryLedgerSummary(c *gin.Context) {
+	data.PagingResponseProcessor(
+		c,
+		func(pageRequest data.PageRequest) (data.Page[query.AuxiliaryLedgerSummary], error) {
+			return h.app.Queries.AuxiliaryLedgerSummary.Handle(
+				c,
+				uuid.MustParse(c.Param("sobId")),
+				uuid.MustParse(c.Param("accountId")),
+				c.Query("categoryKey"),
+				c.Query("fromPeriod"),
+				c.Query("toPeriod"),
+				pageRequest,
+			)
+		},
+		auxiliaryLedgerSummaryToVO,
+	)
+}

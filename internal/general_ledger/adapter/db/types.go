@@ -111,6 +111,7 @@ type auxiliaryLedgerPO struct {
 	Account           accountPO           `gorm:"foreignKey:AccountId"`
 	AuxiliaryCategory auxiliaryCategoryPO `gorm:"foreignKey:AuxiliaryCategoryId"`
 	AuxiliaryAccount  auxiliaryAccountPO  `gorm:"foreignKey:AuxiliaryAccountId"`
+	Period            periodPO            `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time

@@ -19,6 +19,8 @@ type GeneralLedgerReadModel interface {
 
 	LedgersByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
 
+	AuxiliariesByPeriodRange(ctx context.Context, sobId, accountId, auxiliaryCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[AuxiliaryLedger], error)
+
 	CurrentPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	FirstPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error
