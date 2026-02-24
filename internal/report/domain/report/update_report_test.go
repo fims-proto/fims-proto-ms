@@ -16,9 +16,8 @@ func TestReport_UpdateReportStructure_UpdateTitle(t *testing.T) {
 	report := createTestReport([]*Section{section1})
 
 	// Execute: Update title
-	newTitle := "Updated Title"
 	params := UpdateReportParams{
-		Title:    &newTitle,
+		Title:    new("Updated Title"),
 		Sections: []UpdateReportParamsSection{},
 	}
 
@@ -57,26 +56,20 @@ func TestReport_UpdateReportStructure_UpdateAmountTypes(t *testing.T) {
 func TestSection_SynchronizeItems_AddNewItem(t *testing.T) {
 	// Setup: Section with one item
 	existingItem := createTestItem("Existing Item", 1, true)
-	section := createTestSection("Test Section", 1, nil, []*Item{existingItem})
-	existingItemId := existingItem.id
-
-	// Execute: Add new item (no ID, sequence 2)
-	newItemText := "New Item"
-	newItemLevel := 1
-	newItemSumFactor := 1
+	section := createTestSection("Test Section", 1, nil, []*Item{existingItem}) // Execute: Add new item (no ID, sequence 2)
 	newItemDataSource, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
 		// Keep existing item
 		{
-			ItemId: &existingItemId,
+			ItemId: new(existingItem.id),
 		},
 		// New item
 		{
 			ItemId:     nil, // No ID = create new
-			Text:       &newItemText,
-			Level:      &newItemLevel,
-			SumFactor:  &newItemSumFactor,
+			Text:       new("New Item"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &newItemDataSource,
 		},
 	}
@@ -125,15 +118,11 @@ func TestSection_SynchronizeItems_DeleteItem(t *testing.T) {
 func TestSection_SynchronizeItems_UpdateItemText(t *testing.T) {
 	// Setup
 	item1 := createTestItem("Original Text", 1, true)
-	section := createTestSection("Test Section", 1, nil, []*Item{item1})
-	itemId := item1.id
-
-	// Execute: Update item text
-	newText := "Updated Text"
+	section := createTestSection("Test Section", 1, nil, []*Item{item1}) // Execute: Update item text
 	params := []UpdateReportParamsItem{
 		{
-			ItemId: &itemId,
-			Text:   &newText,
+			ItemId: new(item1.id),
+			Text:   new("Updated Text"),
 		},
 	}
 
@@ -188,28 +177,21 @@ func TestSection_SynchronizeItems_ComplexBatchOperation(t *testing.T) {
 	// Setup: 2 items
 	item1 := createTestItem("Item 1", 1, true)
 	item2 := createTestItem("Item 2", 2, true)
-	section := createTestSection("Test Section", 1, nil, []*Item{item1, item2})
-	item1Id := item1.id
-
-	// Execute: Delete item2, add new item, update item1 text, reorder
-	updatedText := "Updated Item 1"
-	newItemText := "New Item"
-	newItemLevel := 1
-	newItemSumFactor := 1
+	section := createTestSection("Test Section", 1, nil, []*Item{item1, item2}) // Execute: Delete item2, add new item, update item1 text, reorder
 	newItemDataSource, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
 		// Updated item1 first
 		{
-			ItemId: &item1Id,
-			Text:   &updatedText,
+			ItemId: new(item1.id),
+			Text:   new("Updated Item 1"),
 		},
 		// New item second
 		{
 			ItemId:     nil,
-			Text:       &newItemText,
-			Level:      &newItemLevel,
-			SumFactor:  &newItemSumFactor,
+			Text:       new("New Item"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &newItemDataSource,
 		},
 		// item2 deleted (not included)
@@ -237,7 +219,7 @@ func TestSection_SynchronizeItems_ErrorNonEditableItem(t *testing.T) {
 	section := createTestSection("Test Section", 1, nil, []*Item{nonEditableItem})
 
 	// Execute: Try to delete non-editable item by not including it
-	params := []UpdateReportParamsItem{} // Empty = delete all items
+	var params []UpdateReportParamsItem // Empty = delete all items
 
 	err := section.SynchronizeItems(params)
 
@@ -250,15 +232,11 @@ func TestSection_SynchronizeItems_ErrorNonEditableItem(t *testing.T) {
 func TestSection_SynchronizeItems_UpdateSumFactor(t *testing.T) {
 	// Setup
 	item1 := createTestItem("Item 1", 1, true)
-	section := createTestSection("Test Section", 1, nil, []*Item{item1})
-	itemId := item1.id
-
-	// Execute: Update sum factor
-	newSumFactor := -1
+	section := createTestSection("Test Section", 1, nil, []*Item{item1}) // Execute: Update sum factor
 	params := []UpdateReportParamsItem{
 		{
-			ItemId:    &itemId,
-			SumFactor: &newSumFactor,
+			ItemId:    new(item1.id),
+			SumFactor: new(-1),
 		},
 	}
 
@@ -275,17 +253,14 @@ func TestSection_SynchronizeItems_UpdateSumFactor(t *testing.T) {
 func TestSection_SynchronizeItems_UpdateDataSourceAndFormulas(t *testing.T) {
 	// Setup
 	item1 := createTestItem("Item 1", 1, true)
-	section := createTestSection("Test Section", 1, nil, []*Item{item1})
-	itemId := item1.id
-
-	// Execute: Update data source to formulas
+	section := createTestSection("Test Section", 1, nil, []*Item{item1}) // Execute: Update data source to formulas
 	accountId := uuid.New()
 	formulasDataSource, _ := data_source.FromString("formulas")
 	formulaRule, _ := formula_rule.FromString("debit")
 
 	params := []UpdateReportParamsItem{
 		{
-			ItemId:     &itemId,
+			ItemId:     new(item1.id),
 			DataSource: &formulasDataSource,
 			Formulas: []UpdateReportParamsFormula{
 				{
@@ -367,9 +342,8 @@ func TestItem_applyUpdates_NonEditableItem(t *testing.T) {
 	item := createTestItem("Non-Editable Item", 1, false)
 
 	// Execute: Try to update
-	newText := "Updated Text"
 	params := UpdateReportParamsItem{
-		Text: &newText,
+		Text: new("Updated Text"),
 	}
 
 	err := item.applyUpdates(params)
@@ -387,12 +361,11 @@ func TestReport_UpdateReportStructure_UpdateSectionTitle(t *testing.T) {
 	sectionId := section1.id
 
 	// Execute: Update section title
-	newSectionTitle := "Updated Section Title"
 	params := UpdateReportParams{
 		Sections: []UpdateReportParamsSection{
 			{
 				SectionId: sectionId,
-				Title:     &newSectionTitle,
+				Title:     new("Updated Section Title"),
 				Items:     []UpdateReportParamsItem{},
 			},
 		},
@@ -424,9 +397,6 @@ func TestSynchronizeItems_NonEditableItemSequenceUpdates(t *testing.T) {
 	// Execute: Reorder existing items and add a new item
 	// Place existing items in order: item1, item3, item2 (non-editable moved to position 3)
 	// Then add new item (will be appended as position 4)
-	newItemText := "New Item - Inserted"
-	newItemLevel := 1
-	newItemSumFactor := 1
 	newItemDataSource, _ := data_source.FromString("sum")
 
 	params := []UpdateReportParamsItem{
@@ -436,9 +406,9 @@ func TestSynchronizeItems_NonEditableItemSequenceUpdates(t *testing.T) {
 		// New item will be added after existing items
 		{
 			ItemId:     nil,
-			Text:       &newItemText,
-			Level:      &newItemLevel,
-			SumFactor:  &newItemSumFactor,
+			Text:       new("New Item - Inserted"),
+			Level:      new(1),
+			SumFactor:  new(1),
 			DataSource: &newItemDataSource,
 		},
 	}
@@ -503,30 +473,18 @@ func TestUpdateReportStructure_WithNestedSections(t *testing.T) {
 	// Execute: Update report with:
 	// - Section 1: update title, update item A's text
 	// - Section 2: keep title, update item C, update subsection 2.1's title
-	updatedSection1Title := "Section 1 - Updated"
-	updatedItemAText := "Item A - Updated"
-	updatedItemCText := "Item C - Updated"
-	updatedSubsection21Title := "Subsection 2.1 - Updated"
-
-	itemAId := itemA.id
-	itemBId := itemB.id
-	itemCId := itemC.id
-	itemDId := itemD.id
-	itemEId := itemE.id
-	itemFId := itemF.id
-
 	params := UpdateReportParams{
 		Sections: []UpdateReportParamsSection{
 			{
 				SectionId: section1.id,
-				Title:     &updatedSection1Title,
+				Title:     new("Section 1 - Updated"),
 				Items: []UpdateReportParamsItem{
 					{
-						ItemId: &itemAId,
-						Text:   &updatedItemAText,
+						ItemId: new(itemA.id),
+						Text:   new("Item A - Updated"),
 					},
 					{
-						ItemId: &itemBId,
+						ItemId: new(itemB.id),
 					},
 				},
 			},
@@ -534,20 +492,20 @@ func TestUpdateReportStructure_WithNestedSections(t *testing.T) {
 				SectionId: section2.id,
 				Items: []UpdateReportParamsItem{
 					{
-						ItemId: &itemCId,
-						Text:   &updatedItemCText,
+						ItemId: new(itemC.id),
+						Text:   new("Item C - Updated"),
 					},
 					{
-						ItemId: &itemDId,
+						ItemId: new(itemD.id),
 					},
 				},
 				Sections: []UpdateReportParamsSection{
 					{
 						SectionId: subsection21.id,
-						Title:     &updatedSubsection21Title,
+						Title:     new("Subsection 2.1 - Updated"),
 						Items: []UpdateReportParamsItem{
-							{ItemId: &itemEId},
-							{ItemId: &itemFId},
+							{ItemId: new(itemE.id)},
+							{ItemId: new(itemF.id)},
 						},
 					},
 				},

@@ -239,25 +239,6 @@ func auxiliaryLedgerSummaryToVO(dto query.AuxiliaryLedgerSummary) AuxiliaryLedge
 	return AuxiliaryLedgerSummaryResponse(dto)
 }
 
-func auxiliaryLedgerDTOToVO(dto query.AuxiliaryLedger) AuxiliaryLedgerResponse {
-	return AuxiliaryLedgerResponse{
-		Id:                   dto.Id,
-		SobId:                dto.SobId,
-		PeriodId:             dto.PeriodId,
-		Account:              accountDTOToVO(dto.Account),
-		AuxiliaryCategory:    auxiliaryCategoryDTOToVO(dto.AuxiliaryCategory),
-		AuxiliaryAccount:     auxiliaryAccountDTOToVO(dto.AuxiliaryAccount),
-		OpeningDebitBalance:  dto.OpeningDebitBalance,
-		OpeningCreditBalance: dto.OpeningCreditBalance,
-		PeriodDebit:          dto.PeriodDebit,
-		PeriodCredit:         dto.PeriodCredit,
-		EndingDebitBalance:   dto.EndingDebitBalance,
-		EndingCreditBalance:  dto.EndingCreditBalance,
-		CreatedAt:            dto.CreatedAt,
-		UpdatedAt:            dto.UpdatedAt,
-	}
-}
-
 func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
 	var auxiliaryAccounts []AuxiliaryAccountResponse
 	for _, auxiliaryAccount := range dto.AuxiliaryAccounts {

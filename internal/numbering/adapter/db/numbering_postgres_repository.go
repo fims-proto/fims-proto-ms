@@ -84,9 +84,7 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(
 func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *identifier.Identifier) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := identifierBOToPO(*bo)
-
-	return db.Create(&po).Error
+	return db.Create(new(identifierBOToPO(*bo))).Error
 }
 
 func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(

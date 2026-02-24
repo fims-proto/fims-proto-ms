@@ -38,7 +38,6 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/periods", h.ReadPagingPeriods)
 	r.GET("/sob/:sobId/periods/current", h.ReadSobCurrentPeriod)
 	r.GET("/sob/:sobId/period/:periodId/ledgers", h.ReadPagingLedgersByPeriod)
-	r.GET("/sob/:sobId/period/:periodId/auxiliary-ledgers", h.ReadPagingAuxiliaryLedgers)
 	r.POST("/sob/:sobId/period/:periodId/close", h.ClosePeriod)
 
 	r.GET("/sob/:sobId/vouchers", h.ReadAllVouchers)
