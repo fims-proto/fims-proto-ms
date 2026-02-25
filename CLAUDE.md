@@ -166,6 +166,44 @@ See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middlew
 - **auxiliary_ledger** - Detailed balance tracking with auxiliary dimensions
 - **voucher** - Journal entries with line items
 
+### Signed Amount Model
+
+**Important**: The codebase uses a **signed amount model** instead of separate debit/credit fields.
+
+**Amount Convention**:
+- **Positive** amounts represent **debits**
+- **Negative** amounts represent **credits**
+
+**Domain Model Changes**:
+
+1. **LineItem**: Single `amount` field (signed) instead of separate `debitAmount`/`creditAmount`
+2. **Voucher**: Single `amount` field (transaction total = sum of positive/debit amounts)
+3. **LedgerEntry**: Single `amount` field (signed)
+4. **Ledger/AuxiliaryLedger**:
+   - `openingAmount` - Signed opening balance
+   - `periodAmount` - Signed net movement
+   - `periodDebit/periodCredit` - Positive values (retained for query performance)
+   - `endingAmount` - Signed ending balance
+
+**Balance Calculation**:
+```
+endingAmount = openingAmount + periodAmount
+```
+
+**Trial Balance Validation**:
+- Sum of all signed line item amounts must equal zero
+- Instead of checking `totalDebits == totalCredits`
+
+**Posting Logic** (`ledger.update_balance`):
+```go
+periodAmount += amount          // Signed addition
+if amount.IsPositive() {
+    periodDebit += amount      // Positive value
+} else {
+    periodCredit += amount.Abs() // Positive absolute value
+}
+```
+
 ### Voucher Lifecycle
 
 Workflow: Create → Review → Audit → Post (登账) → affects Ledgers
@@ -185,8 +223,8 @@ File: `internal/general_ledger/app/command/post_voucher.go`
 Process:
 
 1. Call `v.Post(poster)` to validate and mark voucher
-2. Build posting records for all line items + their superior accounts
-3. Merge identical account records (sum debits/credits)
+2. Build posting records for all line items + their superior accounts (each with signed amount)
+3. Merge identical account records (sum signed amounts)
 4. Batch update: `UpdateLedgersByPeriodAndAccountIds()` and `UpdateAuxiliaryLedgersByPeriodAndAccountIds()`
 
 **Critical**: Maintain merge logic and batch updates to prevent inconsistencies.

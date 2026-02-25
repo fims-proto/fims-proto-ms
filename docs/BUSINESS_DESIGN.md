@@ -103,23 +103,27 @@ FIMS consists of five primary business domains:
   - **Open**: Current period accepting new transactions
   - **Closed**: Historical period, no longer accepting transactions
   - **Current Flag**: Only one period can be current at a time
-- **Time Boundaries**: Each period has opening time (inclusive) and ending time (exclusive)
 
 #### 2.2.3 Ledger (General Ledger)
 
 - **One Ledger per Account per Period**: Tracks account balance movement
 - **Scope**: Covers both parent accounts (一级科目) and detail accounts (明细科目)
 - **Balance Components**:
-  - **Opening Balance**: Debit or Credit (only one can be non-zero)
-  - **Period Activity**: Debit and Credit movements during the period
-  - **Ending Balance**: Calculated from opening balance and period activity
+  - **Opening Amount**: Signed decimal value (positive for debit accounts, negative for credit accounts)
+  - **Period Amount**: Signed net movement during the period (positive = net debit, negative = net credit)
+  - **Period Debit/Credit**: Positive values representing total debit and credit movements (kept for query performance)
+  - **Ending Amount**: Calculated as openingAmount + periodAmount
 - **Hierarchical Posting**: When vouchers post, both detail accounts and all parent accounts update
 
 #### 2.2.4 Auxiliary Ledger (Subsidiary Ledger - 辅助核算账)
 
 - **Purpose**: Track balances by auxiliary dimensions (customers, vendors, projects, etc.) - a different dimension from the chart of accounts hierarchy
 - **One Auxiliary Ledger per Auxiliary Account per Period**
-- **Same Balance Structure**: Opening, period activity, and ending balances
+- **Same Balance Structure**:
+  - **Opening Amount**: Signed decimal value
+  - **Period Amount**: Signed net movement
+  - **Period Debit/Credit**: Positive values (kept for query performance)
+  - **Ending Amount**: Calculated as openingAmount + periodAmount
 - **Key Distinction**: This is NOT "明细科目" (detail accounts in CoA), but "辅助核算" (multi-dimensional tracking)
 - **Use Case Example**: Track "Accounts Receivable" (an account) broken down by individual customers (auxiliary dimension)
 
@@ -302,14 +306,14 @@ A single customer may create multiple SoBs for:
 Main Account: 1110 - Accounts Receivable (assigned Auxiliary Category: Customer)
 
 Voucher Line Items:
-  - Debit 1110 (Customer: ABC Inc.) - $5,000
-  - Debit 1110 (Customer: XYZ Corp.) - $3,000
-  - Credit 4010 - Sales Revenue - $8,000
+  - Account 1110 (Customer: ABC Inc.) Amount: +$5,000 (debit)
+  - Account 1110 (Customer: XYZ Corp.) Amount: +$3,000 (debit)
+  - Account 4010 - Sales Revenue     Amount: -$8,000 (credit)
 
 Result:
-  - General Ledger 1110: +$8,000 debit
-  - Auxiliary Ledger (1110 + ABC Inc.): +$5,000 debit
-  - Auxiliary Ledger (1110 + XYZ Corp.): +$3,000 debit
+  - General Ledger 1110: +$8,000 periodAmount
+  - Auxiliary Ledger (1110 + ABC Inc.): +$5,000 periodAmount
+  - Auxiliary Ledger (1110 + XYZ Corp.): +$3,000 periodAmount
 ```
 
 ### 4.3 Ledger Posting Mechanics
@@ -327,9 +331,13 @@ Result:
 3. **Balance Calculation**:
 
    ```
-   Ending Balance = Opening Balance + Period Debit - Period Credit (for debit accounts)
-   Ending Balance = Opening Balance + Period Credit - Period Debit (for credit accounts)
+   Ending Amount = Opening Amount + Period Amount
    ```
+
+   Where:
+   - Positive amounts represent debits
+   - Negative amounts represent credits
+   - `PeriodDebit` and `PeriodCredit` are maintained separately for query performance (always positive values)
 
 4. **Batch Updates**: Multiple voucher lines to same account are merged before posting (performance optimization)
 
@@ -347,21 +355,20 @@ Result:
 - **Transaction Time**: Business date of the transaction
 - **Header Text**: Description of the transaction
 - **Attachment Quantity**: Number of supporting documents
-- **Debit/Credit Totals**: Sum of all line items (must be equal)
+- **Amount**: Transaction amount (sum of all positive/debit line item amounts)
 
 **Line Items**:
 
 - **Account**: The general ledger account being debited or credited
 - **Auxiliary Accounts**: Optional multi-dimensional tags (customer, vendor, etc.)
-- **Debit Amount**: Debit value (zero if credit)
-- **Credit Amount**: Credit value (zero if debit)
+- **Amount**: Signed decimal value (positive = debit, negative = credit)
 - **Line Text**: Description of this specific line
 
 **Business Rules**:
 
-- **Balanced Entry**: Total debits must equal total credits
+- **Balanced Entry**: Sum of all signed line item amounts must equal zero (trial balance)
 - **Minimum Lines**: At least 2 line items (double-entry bookkeeping)
-- **Non-zero Amounts**: Each line must have either debit or credit (not both, not neither)
+- **Non-zero Amounts**: Each line must have a non-zero signed amount
 - **Detail Accounts Only**: Can only post to detail accounts/明细科目 (not parent accounts/上级科目)
 
 ### 5.2 Workflow States
@@ -477,8 +484,8 @@ Period Creation → Start (become current) → Close → Next Period Start
 **Pre-Closing Validations**:
 
 1. **All Vouchers Posted**: No unposted vouchers remain in the period
-2. **Trial Balance**: Total debits = Total credits across all ledgers
-3. **Profit & Loss Cleared**: All P&L accounts (revenue/expense) have zero ending balance
+2. **Trial Balance**: Sum of all signed ledger amounts across all accounts equals zero
+3. **Profit & Loss Cleared**: All P&L accounts (revenue/expense) have zero ending amount
    - Requires creating closing entries to transfer P&L to Retained Earnings
 
 **Closing Steps**:
@@ -730,9 +737,9 @@ Configuration:
 
 ### 10.1 Double-Entry Bookkeeping
 
-- ✓ Every voucher must have balanced debits and credits
-- ✓ Minimum two line items per voucher (one debit, one credit at minimum)
-- ✓ Each line item has either debit OR credit (not both, not neither)
+- ✓ Every voucher must have a balanced signed amount sum (sum of all line item amounts equals zero)
+- ✓ Minimum two line items per voucher (one debit/positive, one credit/negative at minimum)
+- ✓ Each line item has a non-zero signed amount (positive = debit, negative = credit)
 
 ### 10.2 Segregation of Duties
 
@@ -750,8 +757,8 @@ Configuration:
 ### 10.4 Period Closing Requirements
 
 - ✓ All vouchers must be posted (none in draft/reviewed/audited state)
-- ✓ All profit & loss accounts must have zero ending balance
-- ✓ Trial balance must be satisfied (total debits = total credits)
+- ✓ All profit & loss accounts must have zero ending amount
+- ✓ Trial balance must be satisfied (sum of all signed amounts equals zero)
 
 ### 10.5 Account Structure
 
@@ -762,8 +769,9 @@ Configuration:
 
 ### 10.6 Ledger Balance Integrity
 
-- ✓ Opening debit and opening credit cannot both be non-zero
-- ✓ Account balance direction guides expected balance type
+- ✓ Opening amount is a signed decimal value (positive or negative)
+- ✓ Period amount is signed net movement (endingAmount = openingAmount + periodAmount)
+- ✓ Account balance direction guides expected amount sign
 - ✓ Hierarchical posting updates all parent accounts
 - ✓ Subsidiary ledgers (辅助核算账) track multi-dimensional balances - different from detail account ledgers (明细科目账)
 
@@ -801,8 +809,8 @@ Configuration:
 Transaction: Sold goods for $10,000 cash
 
 Voucher:
-  Line 1: Debit  1101 - Cash             $10,000
-  Line 2: Credit 4010 - Sales Revenue    $10,000
+  Line 1: Account 1101 - Cash           Amount: +$10,000  (debit)
+  Line 2: Account 4010 - Sales Revenue  Amount: -$10,000 (credit)
 ```
 
 ### Scenario 2: Purchase with Vendor Tracking
@@ -811,12 +819,12 @@ Voucher:
 Transaction: Purchased inventory from Vendor ABC for $5,000 on credit
 
 Voucher:
-  Line 1: Debit  1500 - Inventory                    $5,000
-  Line 2: Credit 2100 - Accounts Payable (Vendor: ABC) $5,000
+  Line 1: Account 1500 - Inventory                    Amount: +$5,000  (debit)
+  Line 2: Account 2100 - Accounts Payable (Vendor: ABC) Amount: -$5,000 (credit)
 
 Result:
   - Inventory account increases by $5,000
-  - A/P account increases by $5,000
+  - A/P account increases by $5,000 (credit = negative amount)
   - Auxiliary ledger tracks $5,000 owed to Vendor ABC specifically
 ```
 
@@ -825,15 +833,15 @@ Result:
 ```
 Period: January 2024
 Accounts:
-  - 4010 - Sales Revenue (P&L): $100,000 credit
-  - 5010 - Expenses (P&L): $60,000 debit
+  - 4010 - Sales Revenue (P&L): -$100,000 (credit balance, normal for revenue)
+  - 5010 - Expenses (P&L): +$60,000 (debit balance, normal for expenses)
   - 3200 - Retained Earnings (Equity): existing balance
 
 Closing Entry:
-  Debit  4010 - Sales Revenue      $100,000
-  Debit  3200 - Retained Earnings  $60,000
-  Credit 5010 - Expenses           $60,000
-  Credit 3200 - Retained Earnings  $100,000
+  Line 1: Account 4010 - Sales Revenue      Amount: +$100,000 (to clear credit)
+  Line 2: Account 5010 - Expenses           Amount: -$60,000 (to clear debit)
+  Line 3: Account 3200 - Retained Earnings  Amount: +$60,000
+  Line 4: Account 3200 - Retained Earnings  Amount: -$100,000
 
 (Above shown as two vouchers; actual may vary)
 
@@ -870,7 +878,7 @@ After Closing:
 | Post                       | 登账/过账         | Final commit of voucher to ledgers (makes it affect balances)                          |
 | Balance Sheet              | 资产负债表        | Statement of financial position (assets = liabilities + equity)                        |
 | Income Statement           | 利润表            | Profit and loss statement (revenue - expenses)                                         |
-| Trial Balance              | 试算平衡          | Verification that total debits equal total credits                                     |
+| Trial Balance              | 试算平衡          | Verification that sum of all signed amounts equals zero                               |
 | Formula Rule               | 公式规则          | Rule for extracting value from ledger (Net/Debit/Credit/Transaction)                   |
 | Sum Factor                 | 汇总因子          | +1 (add), -1 (subtract), or 0 (exclude) - controls how item contributes to parent sum  |
 
