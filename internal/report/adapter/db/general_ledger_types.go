@@ -8,16 +8,15 @@ import (
 )
 
 type ledgerPO struct {
-	Id                   uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId                uuid.UUID `gorm:"type:uuid"`
-	AccountId            uuid.UUID `gorm:"type:uuid"`
-	PeriodId             uuid.UUID `gorm:"type:uuid"`
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
+	Id            uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId         uuid.UUID `gorm:"type:uuid"`
+	AccountId     uuid.UUID `gorm:"type:uuid"`
+	PeriodId      uuid.UUID `gorm:"type:uuid"`
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	PeriodDebit   decimal.Decimal
+	PeriodCredit  decimal.Decimal
+	EndingAmount  decimal.Decimal
 
 	Account accountPO `gorm:"foreignKey:AccountId"`
 	Period  periodPO  `gorm:"foreignKey:PeriodId"`
@@ -68,12 +67,11 @@ func ledgerPOToBO(po ledgerPO) (*general_ledger.Ledger, error) {
 	return general_ledger.NewLedger(
 		account,
 		periodPOToBO(po.Period),
-		po.OpeningDebitBalance,
-		po.OpeningCreditBalance,
+		po.OpeningAmount,
+		po.PeriodAmount,
 		po.PeriodDebit,
 		po.PeriodCredit,
-		po.EndingDebitBalance,
-		po.EndingCreditBalance,
+		po.EndingAmount,
 	), nil
 }
 

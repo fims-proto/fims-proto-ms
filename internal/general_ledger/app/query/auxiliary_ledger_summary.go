@@ -14,12 +14,11 @@ import (
 type AuxiliaryLedgerSummary struct {
 	AuxiliaryAccountId    uuid.UUID
 	AuxiliaryAccountTitle string
-	OpeningDebitBalance   decimal.Decimal
-	OpeningCreditBalance  decimal.Decimal
+	OpeningAmount         decimal.Decimal
+	PeriodAmount          decimal.Decimal
 	PeriodDebit           decimal.Decimal
 	PeriodCredit          decimal.Decimal
-	EndingDebitBalance    decimal.Decimal
-	EndingCreditBalance   decimal.Decimal
+	EndingAmount          decimal.Decimal
 }
 
 type AuxiliaryLedgerSummaryHandler struct {
@@ -106,12 +105,11 @@ func (h AuxiliaryLedgerSummaryHandler) Handle(
 			summary = &AuxiliaryLedgerSummary{
 				AuxiliaryAccountId:    auxAccountId,
 				AuxiliaryAccountTitle: ledger.AuxiliaryAccount.Title,
-				OpeningDebitBalance:   ledger.OpeningDebitBalance,
-				OpeningCreditBalance:  ledger.OpeningCreditBalance,
+				OpeningAmount:         ledger.OpeningAmount,
+				PeriodAmount:          ledger.PeriodAmount,
 				PeriodDebit:           decimal.Zero,
 				PeriodCredit:          decimal.Zero,
-				EndingDebitBalance:    ledger.EndingDebitBalance,
-				EndingCreditBalance:   ledger.EndingCreditBalance,
+				EndingAmount:          ledger.EndingAmount,
 			}
 			summaryMap[auxAccountId] = summary
 		}
@@ -119,6 +117,7 @@ func (h AuxiliaryLedgerSummaryHandler) Handle(
 		// Accumulate period debit/credit across all periods
 		summary.PeriodDebit = summary.PeriodDebit.Add(ledger.PeriodDebit)
 		summary.PeriodCredit = summary.PeriodCredit.Add(ledger.PeriodCredit)
+		summary.PeriodAmount = summary.PeriodAmount.Add(ledger.PeriodAmount)
 	}
 
 	// Convert map to slice

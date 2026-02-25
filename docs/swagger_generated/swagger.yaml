@@ -135,7 +135,7 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate:
+  github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate:
     properties:
       day:
         type: integer
@@ -198,13 +198,11 @@ definitions:
         type: string
       auxiliaryAccountTitle:
         type: string
-      endingCreditBalance:
+      endingAmount:
         type: number
-      endingDebitBalance:
+      openingAmount:
         type: number
-      openingCreditBalance:
-        type: number
-      openingDebitBalance:
+      periodAmount:
         type: number
       periodCredit:
         type: number
@@ -348,15 +346,13 @@ definitions:
         type: string
       createdAt:
         type: string
-      endingCreditBalance:
-        type: number
-      endingDebitBalance:
+      endingAmount:
         type: number
       id:
         type: string
-      openingCreditBalance:
+      openingAmount:
         type: number
-      openingDebitBalance:
+      periodAmount:
         type: number
       periodCredit:
         type: number
@@ -373,13 +369,11 @@ definitions:
     properties:
       accountId:
         type: string
-      endingCreditBalance:
+      endingAmount:
         type: number
-      endingDebitBalance:
+      openingAmount:
         type: number
-      openingCreditBalance:
-        type: number
-      openingDebitBalance:
+      periodAmount:
         type: number
       periodCredit:
         type: number
@@ -392,16 +386,14 @@ definitions:
     properties:
       account:
         $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+      amount:
+        type: number
       auxiliaryAccounts:
         items:
           $ref: '#/definitions/http.AuxiliaryAccountResponse'
         type: array
       createdAt:
         type: string
-      credit:
-        type: number
-      debit:
-        type: number
       id:
         type: string
       text:
@@ -608,6 +600,8 @@ definitions:
     type: object
   http.VoucherResponse:
     properties:
+      amount:
+        type: number
       attachmentQuantity:
         type: integer
       auditor:
@@ -616,10 +610,6 @@ definitions:
         type: string
       creator:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
-      credit:
-        type: number
-      debit:
-        type: number
       documentNumber:
         type: string
       headerText:
@@ -645,7 +635,7 @@ definitions:
       sobId:
         type: string
       transactionDate:
-        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate'
+        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
       updatedAt:
         type: string
       voucherType:
@@ -1293,55 +1283,6 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
-  /sob/{sobId}/period/{periodId}/auxiliary-ledgers:
-    get:
-      consumes:
-      - application/json
-      description: List all auxiliary ledgers
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Period ID
-        in: path
-        name: periodId
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - auxiliary ledgers
   /sob/{sobId}/period/{periodId}/close:
     post:
       consumes:

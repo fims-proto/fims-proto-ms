@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
@@ -20,7 +22,7 @@ type CreateVoucherCmd struct {
 	AttachmentQuantity int
 	LineItems          []LineItemCmd
 	Creator            uuid.UUID
-	TransactionDate    voucher.TransactionDate
+	TransactionDate    transaction_date.TransactionDate
 }
 
 type CreateVoucherHandler struct {

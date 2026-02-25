@@ -772,78 +772,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/period/{periodId}/auxiliary-ledgers": {
-            "get": {
-                "description": "List all auxiliary ledgers",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auxiliary ledgers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Period ID",
-                        "name": "periodId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sob/{sobId}/period/{periodId}/close": {
             "post": {
                 "description": "Close period",
@@ -2325,7 +2253,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate": {
+        "github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate": {
             "type": "object",
             "properties": {
                 "day": {
@@ -2422,16 +2350,13 @@ const docTemplate = `{
                 "auxiliaryAccountTitle": {
                     "type": "string"
                 },
-                "endingCreditBalance": {
+                "endingAmount": {
                     "type": "number"
                 },
-                "endingDebitBalance": {
+                "openingAmount": {
                     "type": "number"
                 },
-                "openingCreditBalance": {
-                    "type": "number"
-                },
-                "openingDebitBalance": {
+                "periodAmount": {
                     "type": "number"
                 },
                 "periodCredit": {
@@ -2652,19 +2577,16 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "endingCreditBalance": {
-                    "type": "number"
-                },
-                "endingDebitBalance": {
+                "endingAmount": {
                     "type": "number"
                 },
                 "id": {
                     "type": "string"
                 },
-                "openingCreditBalance": {
+                "openingAmount": {
                     "type": "number"
                 },
-                "openingDebitBalance": {
+                "periodAmount": {
                     "type": "number"
                 },
                 "periodCredit": {
@@ -2690,16 +2612,13 @@ const docTemplate = `{
                 "accountId": {
                     "type": "string"
                 },
-                "endingCreditBalance": {
+                "endingAmount": {
                     "type": "number"
                 },
-                "endingDebitBalance": {
+                "openingAmount": {
                     "type": "number"
                 },
-                "openingCreditBalance": {
-                    "type": "number"
-                },
-                "openingDebitBalance": {
+                "periodAmount": {
                     "type": "number"
                 },
                 "periodCredit": {
@@ -2719,6 +2638,9 @@ const docTemplate = `{
                 "account": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
                 },
+                "amount": {
+                    "type": "number"
+                },
                 "auxiliaryAccounts": {
                     "type": "array",
                     "items": {
@@ -2727,12 +2649,6 @@ const docTemplate = `{
                 },
                 "createdAt": {
                     "type": "string"
-                },
-                "credit": {
-                    "type": "number"
-                },
-                "debit": {
-                    "type": "number"
                 },
                 "id": {
                     "type": "string"
@@ -3043,6 +2959,9 @@ const docTemplate = `{
         "http.VoucherResponse": {
             "type": "object",
             "properties": {
+                "amount": {
+                    "type": "number"
+                },
                 "attachmentQuantity": {
                     "type": "integer"
                 },
@@ -3054,12 +2973,6 @@ const docTemplate = `{
                 },
                 "creator": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
-                },
-                "credit": {
-                    "type": "number"
-                },
-                "debit": {
-                    "type": "number"
                 },
                 "documentNumber": {
                     "type": "string"
@@ -3098,7 +3011,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transactionDate": {
-                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_voucher.TransactionDate"
+                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
                 },
                 "updatedAt": {
                     "type": "string"

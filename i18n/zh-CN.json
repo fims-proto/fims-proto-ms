@@ -48,6 +48,7 @@
     "lineItem-emptyAccountId": "凭证行项目科目 ID 不能为空",
     "lineItem-emptyText": "凭证行项目摘要不能为空",
     "lineItem-emptyDebitCredit": "凭证行项目金额不能为空",
+    "ledgerEntry-emptyAmount": "分录金额不能为空",
     "lineItem-debitCreditDuplicated": "凭证行项目借贷金额不能同时记录",
     "period-emptyId": "账期 ID 不能为空",
     "period-timeInPast": "不能创建过去的账期",

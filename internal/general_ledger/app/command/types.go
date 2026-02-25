@@ -10,8 +10,7 @@ type LineItemCmd struct {
 	Text              string
 	AccountNumber     string
 	AuxiliaryAccounts []AuxiliaryItemCmd
-	Debit             decimal.Decimal
-	Credit            decimal.Decimal
+	Amount            decimal.Decimal
 }
 
 type AuxiliaryItemCmd struct {

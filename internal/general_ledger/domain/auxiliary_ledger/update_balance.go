@@ -4,10 +4,14 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-func (l *AuxiliaryLedger) UpdateBalance(debit, credit decimal.Decimal) {
-	l.periodDebit = l.periodDebit.Add(debit)
-	l.periodCredit = l.periodCredit.Add(credit)
+func (l *AuxiliaryLedger) UpdateBalance(amount decimal.Decimal) {
+	l.periodAmount = l.periodAmount.Add(amount)
+	l.endingAmount = l.openingAmount.Add(l.periodAmount)
 
-	l.endingDebitBalance = l.openingDebitBalance.Add(l.periodDebit)
-	l.endingCreditBalance = l.openingCreditBalance.Add(l.periodCredit)
+	// Update performance fields (periodDebit, periodCredit)
+	if amount.IsPositive() {
+		l.periodDebit = l.periodDebit.Add(amount)
+	} else {
+		l.periodCredit = l.periodCredit.Add(amount.Abs())
+	}
 }

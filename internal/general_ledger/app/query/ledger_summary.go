@@ -9,14 +9,13 @@ import (
 )
 
 type LedgerSummary struct {
-	AccountId            uuid.UUID
-	PeriodId             uuid.UUID
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
+	AccountId     uuid.UUID
+	PeriodId      uuid.UUID
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	PeriodDebit   decimal.Decimal
+	PeriodCredit  decimal.Decimal
+	EndingAmount  decimal.Decimal
 }
 
 type LedgerSummaryHandler struct {
@@ -66,13 +65,12 @@ func (h LedgerSummaryHandler) Handle(ctx context.Context, sobId, accountId uuid.
 	}
 
 	return LedgerSummary{
-		AccountId:            accountId,
-		PeriodId:             lastLedger.PeriodId,
-		OpeningDebitBalance:  firstLedger.OpeningDebitBalance,
-		OpeningCreditBalance: firstLedger.OpeningCreditBalance,
-		PeriodDebit:          sumDebit,
-		PeriodCredit:         sumCredit,
-		EndingDebitBalance:   lastLedger.EndingDebitBalance,
-		EndingCreditBalance:  lastLedger.EndingCreditBalance,
+		AccountId:     accountId,
+		PeriodId:      lastLedger.PeriodId,
+		OpeningAmount: firstLedger.OpeningAmount,
+		PeriodAmount:  firstLedger.PeriodAmount,
+		PeriodDebit:   sumDebit,
+		PeriodCredit:  sumCredit,
+		EndingAmount:  firstLedger.EndingAmount,
 	}, nil
 }

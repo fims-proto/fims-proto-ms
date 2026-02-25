@@ -17,8 +17,7 @@ type LineItem struct {
 	account           *account.Account
 	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount
 	text              string
-	debit             decimal.Decimal
-	credit            decimal.Decimal
+	amount            decimal.Decimal
 }
 
 func NewLineItem(
@@ -26,8 +25,7 @@ func NewLineItem(
 	account *account.Account,
 	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount,
 	text string,
-	debit decimal.Decimal,
-	credit decimal.Decimal,
+	amount decimal.Decimal,
 ) (*LineItem, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("lineItem-emptyId")
@@ -55,12 +53,8 @@ func NewLineItem(
 		return nil, errors.NewSlugError("lineItem-emptyText")
 	}
 
-	if debit.IsZero() && credit.IsZero() {
-		return nil, errors.NewSlugError("lineItem-emptyDebitCredit")
-	}
-
-	if !debit.IsZero() && !credit.IsZero() {
-		return nil, errors.NewSlugError("lineItem-debitCreditDuplicated")
+	if amount.IsZero() {
+		return nil, errors.NewSlugError("lineItem-emptyAmount")
 	}
 
 	// validate each auxiliary account
@@ -80,8 +74,7 @@ func NewLineItem(
 		account:           account,
 		auxiliaryAccounts: auxiliaryAccounts,
 		text:              text,
-		debit:             debit,
-		credit:            credit,
+		amount:            amount,
 	}, nil
 }
 
@@ -105,10 +98,6 @@ func (i LineItem) Text() string {
 	return i.text
 }
 
-func (i LineItem) Debit() decimal.Decimal {
-	return i.debit
-}
-
-func (i LineItem) Credit() decimal.Decimal {
-	return i.credit
+func (i LineItem) Amount() decimal.Decimal {
+	return i.amount
 }

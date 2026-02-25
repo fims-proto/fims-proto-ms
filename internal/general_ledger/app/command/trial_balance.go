@@ -16,29 +16,25 @@ func trialBalance(ctx context.Context, repo domain.Repository, sobId, periodId u
 	if err != nil {
 		return fmt.Errorf("failed to read 1st level ledgers: %w", err)
 	}
-	var totalOpeningDebit, totalOpeningCredit,
-		totalPeriodDebit, totalPeriodCredit,
-		totalEndingDebit, totalEndingCredit decimal.Decimal
+	var totalOpeningAmount,
+		totalPeriodAmount,
+		totalEndingAmount decimal.Decimal
 
 	// sum
 	for _, l := range ledgers {
-		totalOpeningDebit = totalOpeningDebit.Add(l.OpeningDebitBalance())
-		totalEndingDebit = totalEndingDebit.Add(l.EndingDebitBalance())
-
-		totalPeriodDebit = totalPeriodDebit.Add(l.PeriodDebit())
-		totalPeriodCredit = totalPeriodCredit.Add(l.PeriodCredit())
-
-		totalOpeningCredit = totalOpeningCredit.Add(l.OpeningCreditBalance())
-		totalEndingCredit = totalEndingCredit.Add(l.EndingCreditBalance())
+		totalOpeningAmount = totalOpeningAmount.Add(l.OpeningAmount())
+		totalPeriodAmount = totalPeriodAmount.Add(l.PeriodAmount())
+		totalEndingAmount = totalEndingAmount.Add(l.EndingAmount())
 	}
 
-	if !totalOpeningDebit.Equal(totalOpeningCredit) {
+	// Trial balance: sum of all signed amounts should be zero (debits = credits)
+	if !totalOpeningAmount.IsZero() {
 		return commonErrors.NewSlugError("period-close-openingBalanceUnequal")
 	}
-	if !totalPeriodDebit.Equal(totalPeriodCredit) {
+	if !totalPeriodAmount.IsZero() {
 		return commonErrors.NewSlugError("period-close-periodBalanceUnequal")
 	}
-	if !totalEndingDebit.Equal(totalEndingCredit) {
+	if !totalEndingAmount.IsZero() {
 		return commonErrors.NewSlugError("period-close-endingBalanceUnequal")
 	}
 

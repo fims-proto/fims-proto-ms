@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
+
 	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type Account struct {
@@ -60,36 +60,34 @@ type Period struct {
 }
 
 type Ledger struct {
-	Id                   uuid.UUID
-	SobId                uuid.UUID
-	AccountId            uuid.UUID
-	PeriodId             uuid.UUID
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
-	Account              Account
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	Id            uuid.UUID
+	SobId         uuid.UUID
+	AccountId     uuid.UUID
+	PeriodId      uuid.UUID
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	PeriodDebit   decimal.Decimal
+	PeriodCredit  decimal.Decimal
+	EndingAmount  decimal.Decimal
+	Account       Account
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type AuxiliaryLedger struct {
-	Id                   uuid.UUID
-	SobId                uuid.UUID
-	PeriodId             uuid.UUID
-	Account              Account
-	AuxiliaryCategory    AuxiliaryCategory
-	AuxiliaryAccount     AuxiliaryAccount
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	Id                uuid.UUID
+	SobId             uuid.UUID
+	PeriodId          uuid.UUID
+	Account           Account
+	AuxiliaryCategory AuxiliaryCategory
+	AuxiliaryAccount  AuxiliaryAccount
+	OpeningAmount     decimal.Decimal
+	PeriodAmount      decimal.Decimal
+	PeriodDebit       decimal.Decimal
+	PeriodCredit      decimal.Decimal
+	EndingAmount      decimal.Decimal
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type LineItem struct {
@@ -97,8 +95,7 @@ type LineItem struct {
 	Account           Account
 	AuxiliaryAccounts []AuxiliaryAccount
 	Text              string
-	Debit             decimal.Decimal
-	Credit            decimal.Decimal
+	Amount            decimal.Decimal
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 }
@@ -111,8 +108,7 @@ type Voucher struct {
 	HeaderText         string
 	DocumentNumber     string
 	AttachmentQuantity int
-	Debit              decimal.Decimal
-	Credit             decimal.Decimal
+	Amount             decimal.Decimal
 	Creator            *User
 	Reviewer           *User
 	Auditor            *User
@@ -120,7 +116,7 @@ type Voucher struct {
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
-	TransactionDate    voucher.TransactionDate
+	TransactionDate    transaction_date.TransactionDate
 	LineItems          []LineItem
 	CreatedAt          time.Time
 	UpdatedAt          time.Time

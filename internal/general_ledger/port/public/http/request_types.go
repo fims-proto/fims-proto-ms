@@ -2,7 +2,7 @@ package http
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -38,12 +38,12 @@ type CreateAuxiliaryAccountRequest struct {
 }
 
 type CreateVoucherRequest struct {
-	HeaderText         string                  `json:"headerText"`
-	AttachmentQuantity int                     `json:"attachmentQuantity"`
-	Creator            string                  `json:"creator"`
-	VoucherType        string                  `json:"voucherType"`
-	TransactionDate    voucher.TransactionDate `json:"transactionDate"`
-	LineItems          []LineItemRequest       `json:"lineItems"`
+	HeaderText         string                           `json:"headerText"`
+	AttachmentQuantity int                              `json:"attachmentQuantity"`
+	Creator            string                           `json:"creator"`
+	VoucherType        string                           `json:"voucherType"`
+	TransactionDate    transaction_date.TransactionDate `json:"transactionDate"`
+	LineItems          []LineItemRequest                `json:"lineItems"`
 }
 
 type LineItemRequest struct {
@@ -51,8 +51,7 @@ type LineItemRequest struct {
 	AccountNumber     string                 `json:"accountNumber"`
 	AuxiliaryAccounts []AuxiliaryItemRequest `json:"auxiliaryAccounts"`
 	Text              string                 `json:"text"`
-	Credit            decimal.Decimal        `json:"credit"`
-	Debit             decimal.Decimal        `json:"debit"`
+	Amount            decimal.Decimal        `json:"amount"`
 }
 
 type AuxiliaryItemRequest struct {
@@ -73,10 +72,10 @@ type PostVoucherRequest struct {
 }
 
 type UpdateVoucherRequest struct {
-	HeaderText      string                  `json:"headerText"`
-	TransactionDate voucher.TransactionDate `json:"transactionDate"`
-	LineItems       []LineItemRequest       `json:"lineItems"`
-	Updater         uuid.UUID               `json:"updater"`
+	HeaderText      string                           `json:"headerText"`
+	TransactionDate transaction_date.TransactionDate `json:"transactionDate"`
+	LineItems       []LineItemRequest                `json:"lineItems"`
+	Updater         uuid.UUID                        `json:"updater"`
 }
 
 type InitializeLedgersBalanceRequest struct {
@@ -104,8 +103,7 @@ func (r LineItemRequest) mapToCommand() command.LineItemCmd {
 		Text:              r.Text,
 		AccountNumber:     r.AccountNumber,
 		AuxiliaryAccounts: auxiliaryItemCmds,
-		Debit:             r.Debit,
-		Credit:            r.Credit,
+		Amount:            r.Amount,
 	}
 }
 

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
@@ -85,8 +87,7 @@ func prepareLineItems(
 			a,
 			auxiliaryAccountsForItem,
 			item.Text,
-			item.Debit,
-			item.Credit,
+			item.Amount,
 		)
 		if err != nil {
 			return nil, err
@@ -104,7 +105,7 @@ func readPeriodIdAndCheck(
 	repo domain.Repository,
 	numberingService service.NumberingService,
 	sobId uuid.UUID,
-	transactionDate voucher.TransactionDate,
+	transactionDate transaction_date.TransactionDate,
 ) (*period.Period, error) {
 	fiscalYear := transactionDate.Year
 	periodNumber := transactionDate.Month

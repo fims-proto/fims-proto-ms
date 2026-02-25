@@ -5,6 +5,8 @@ import (
 	"strings"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
@@ -12,6 +14,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
@@ -76,16 +79,15 @@ type periodPO struct {
 }
 
 type ledgerPO struct {
-	Id                   uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId                uuid.UUID `gorm:"type:uuid"`
-	AccountId            uuid.UUID `gorm:"type:uuid"`
-	PeriodId             uuid.UUID `gorm:"type:uuid"`
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
+	Id            uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId         uuid.UUID `gorm:"type:uuid"`
+	AccountId     uuid.UUID `gorm:"type:uuid"`
+	PeriodId      uuid.UUID `gorm:"type:uuid"`
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	PeriodDebit   decimal.Decimal
+	PeriodCredit  decimal.Decimal
+	EndingAmount  decimal.Decimal
 
 	Account accountPO `gorm:"foreignKey:AccountId"`
 	Period  periodPO  `gorm:"foreignKey:PeriodId"`
@@ -95,23 +97,38 @@ type ledgerPO struct {
 }
 
 type auxiliaryLedgerPO struct {
-	Id                   uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId                uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	PeriodId             uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AccountId            uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AuxiliaryCategoryId  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AuxiliaryAccountId   uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
+	Id                  uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId               uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	PeriodId            uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AccountId           uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryCategoryId uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryAccountId  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	OpeningAmount       decimal.Decimal
+	PeriodAmount        decimal.Decimal
+	PeriodDebit         decimal.Decimal
+	PeriodCredit        decimal.Decimal
+	EndingAmount        decimal.Decimal
 
 	Account           accountPO           `gorm:"foreignKey:AccountId"`
 	AuxiliaryCategory auxiliaryCategoryPO `gorm:"foreignKey:AuxiliaryCategoryId"`
 	AuxiliaryAccount  auxiliaryAccountPO  `gorm:"foreignKey:AuxiliaryAccountId"`
 	Period            periodPO            `gorm:"foreignKey:PeriodId"`
+
+	CreatedAt time.Time `gorm:"<-:create"`
+	UpdatedAt time.Time
+}
+
+type ledgerEntryPO struct {
+	Id              uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId           uuid.UUID `gorm:"type:uuid"`
+	PeriodId        uuid.UUID `gorm:"type:uuid"`
+	VoucherId       uuid.UUID `gorm:"type:uuid"`
+	LineItemId      uuid.UUID `gorm:"type:uuid"`
+	AccountId       uuid.UUID `gorm:"type:uuid"`
+	TransactionDate time.Time `gorm:"type:date"`
+	Amount          decimal.Decimal
+
+	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:ledger_entry_auxiliary_account_links;joinForeignKey:Id;joinReferences:AuxiliaryAccountId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -125,8 +142,7 @@ type voucherPO struct {
 	HeaderText         string
 	DocumentNumber     string `gorm:"uniqueIndex:UQ_Vouchers_SobId_PeriodId_DocumentNumber"`
 	AttachmentQuantity int
-	Debit              decimal.Decimal
-	Credit             decimal.Decimal
+	Amount             decimal.Decimal
 	Creator            uuid.UUID `gorm:"type:uuid"`
 	Reviewer           uuid.UUID `gorm:"type:uuid"`
 	Auditor            uuid.UUID `gorm:"type:uuid"`
@@ -148,8 +164,7 @@ type lineItemPO struct {
 	VoucherId uuid.UUID `gorm:"type:uuid"`
 	AccountId uuid.UUID `gorm:"type:uuid"`
 	Text      string
-	Debit     decimal.Decimal
-	Credit    decimal.Decimal
+	Amount    decimal.Decimal
 
 	Account           accountPO            `gorm:"foreignKey:AccountId"`
 	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:line_item_auxiliary_account_links;joinForeignKey:LineItemId;joinReferences:AuxiliaryAccountId"`
@@ -190,6 +205,10 @@ func (v voucherPO) TableName() string {
 
 func (l lineItemPO) TableName() string {
 	return "a_line_items"
+}
+
+func (l ledgerEntryPO) TableName() string {
+	return "a_ledger_entries"
 }
 
 // schemas
@@ -483,16 +502,15 @@ func periodPOToDTO(po periodPO) query.Period {
 
 func ledgerBOToPO(bo *ledger.Ledger) ledgerPO {
 	return ledgerPO{
-		Id:                   bo.Id(),
-		SobId:                bo.SobId(),
-		AccountId:            bo.AccountId(),
-		PeriodId:             bo.PeriodId(),
-		OpeningDebitBalance:  bo.OpeningDebitBalance(),
-		OpeningCreditBalance: bo.OpeningCreditBalance(),
-		PeriodDebit:          bo.PeriodDebit(),
-		PeriodCredit:         bo.PeriodCredit(),
-		EndingDebitBalance:   bo.EndingDebitBalance(),
-		EndingCreditBalance:  bo.EndingCreditBalance(),
+		Id:            bo.Id(),
+		SobId:         bo.SobId(),
+		AccountId:     bo.AccountId(),
+		PeriodId:      bo.PeriodId(),
+		OpeningAmount: bo.OpeningAmount(),
+		PeriodAmount:  bo.PeriodAmount(),
+		PeriodDebit:   bo.PeriodDebit(),
+		PeriodCredit:  bo.PeriodCredit(),
+		EndingAmount:  bo.EndingAmount(),
 	}
 }
 
@@ -508,12 +526,11 @@ func ledgerPOToBO(po ledgerPO) (*ledger.Ledger, error) {
 		po.PeriodId,
 		po.AccountId,
 		accountBO,
-		po.OpeningDebitBalance,
-		po.OpeningCreditBalance,
+		po.OpeningAmount,
+		po.PeriodAmount,
 		po.PeriodDebit,
 		po.PeriodCredit,
-		po.EndingDebitBalance,
-		po.EndingCreditBalance,
+		po.EndingAmount,
 	)
 }
 
@@ -521,36 +538,34 @@ func ledgerPOToDTO(po ledgerPO) query.Ledger {
 	accountDTO := accountPOToDTO(po.Account)
 
 	return query.Ledger{
-		Id:                   po.Id,
-		SobId:                po.SobId,
-		AccountId:            po.AccountId,
-		PeriodId:             po.PeriodId,
-		OpeningDebitBalance:  po.OpeningDebitBalance,
-		OpeningCreditBalance: po.OpeningCreditBalance,
-		PeriodDebit:          po.PeriodDebit,
-		PeriodCredit:         po.PeriodCredit,
-		EndingDebitBalance:   po.EndingDebitBalance,
-		EndingCreditBalance:  po.EndingCreditBalance,
-		Account:              accountDTO,
-		CreatedAt:            po.CreatedAt,
-		UpdatedAt:            po.UpdatedAt,
+		Id:            po.Id,
+		SobId:         po.SobId,
+		AccountId:     po.AccountId,
+		PeriodId:      po.PeriodId,
+		OpeningAmount: po.OpeningAmount,
+		PeriodAmount:  po.PeriodAmount,
+		PeriodDebit:   po.PeriodDebit,
+		PeriodCredit:  po.PeriodCredit,
+		EndingAmount:  po.EndingAmount,
+		Account:       accountDTO,
+		CreatedAt:     po.CreatedAt,
+		UpdatedAt:     po.UpdatedAt,
 	}
 }
 
 func auxiliaryLedgerBOToPO(bo *auxiliary_ledger.AuxiliaryLedger) auxiliaryLedgerPO {
 	return auxiliaryLedgerPO{
-		Id:                   bo.Id(),
-		SobId:                bo.SobId(),
-		PeriodId:             bo.PeriodId(),
-		AccountId:            bo.AccountId(),
-		AuxiliaryCategoryId:  bo.AuxiliaryCategoryId(),
-		AuxiliaryAccountId:   bo.AuxiliaryAccountId(),
-		OpeningDebitBalance:  bo.OpeningDebitBalance(),
-		OpeningCreditBalance: bo.OpeningCreditBalance(),
-		PeriodDebit:          bo.PeriodDebit(),
-		PeriodCredit:         bo.PeriodCredit(),
-		EndingDebitBalance:   bo.EndingDebitBalance(),
-		EndingCreditBalance:  bo.EndingCreditBalance(),
+		Id:                  bo.Id(),
+		SobId:               bo.SobId(),
+		PeriodId:            bo.PeriodId(),
+		AccountId:           bo.AccountId(),
+		AuxiliaryCategoryId: bo.AuxiliaryCategoryId(),
+		AuxiliaryAccountId:  bo.AuxiliaryAccountId(),
+		OpeningAmount:       bo.OpeningAmount(),
+		PeriodAmount:        bo.PeriodAmount(),
+		PeriodDebit:         bo.PeriodDebit(),
+		PeriodCredit:        bo.PeriodCredit(),
+		EndingAmount:        bo.EndingAmount(),
 	}
 }
 
@@ -562,31 +577,29 @@ func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLed
 		po.AccountId,
 		po.AuxiliaryCategoryId,
 		po.AuxiliaryAccountId,
-		po.OpeningDebitBalance,
-		po.OpeningCreditBalance,
+		po.OpeningAmount,
+		po.PeriodAmount,
 		po.PeriodDebit,
 		po.PeriodCredit,
-		po.EndingDebitBalance,
-		po.EndingCreditBalance,
+		po.EndingAmount,
 	)
 }
 
 func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
 	return query.AuxiliaryLedger{
-		Id:                   po.Id,
-		SobId:                po.SobId,
-		PeriodId:             po.PeriodId,
-		Account:              accountPOToDTO(po.Account),
-		AuxiliaryCategory:    auxiliaryCategoryPOToDTO(po.AuxiliaryCategory),
-		AuxiliaryAccount:     auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
-		OpeningDebitBalance:  po.OpeningDebitBalance,
-		OpeningCreditBalance: po.OpeningCreditBalance,
-		PeriodDebit:          po.PeriodDebit,
-		PeriodCredit:         po.PeriodCredit,
-		EndingDebitBalance:   po.EndingDebitBalance,
-		EndingCreditBalance:  po.EndingCreditBalance,
-		CreatedAt:            po.CreatedAt,
-		UpdatedAt:            po.UpdatedAt,
+		Id:                po.Id,
+		SobId:             po.SobId,
+		PeriodId:          po.PeriodId,
+		Account:           accountPOToDTO(po.Account),
+		AuxiliaryCategory: auxiliaryCategoryPOToDTO(po.AuxiliaryCategory),
+		AuxiliaryAccount:  auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
+		OpeningAmount:     po.OpeningAmount,
+		PeriodAmount:      po.PeriodAmount,
+		PeriodDebit:       po.PeriodDebit,
+		PeriodCredit:      po.PeriodCredit,
+		EndingAmount:      po.EndingAmount,
+		CreatedAt:         po.CreatedAt,
+		UpdatedAt:         po.UpdatedAt,
 	}
 }
 
@@ -612,8 +625,7 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		HeaderText:         bo.HeaderText(),
 		DocumentNumber:     bo.DocumentNumber(),
 		AttachmentQuantity: bo.AttachmentQuantity(),
-		Debit:              bo.Debit(),
-		Credit:             bo.Credit(),
+		Amount:             bo.Amount(),
 		Creator:            bo.Creator(),
 		Reviewer:           bo.Reviewer(),
 		Auditor:            bo.Auditor(),
@@ -638,7 +650,7 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 	}
 
 	// Convert time.Time DATE to TransactionDate
-	transactionDate := voucher.TransactionDate{
+	transactionDate := transaction_date.TransactionDate{
 		Year:  po.TransactionDate.Year(),
 		Month: int(po.TransactionDate.Month()),
 		Day:   po.TransactionDate.Day(),
@@ -677,7 +689,7 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 	}
 
 	// Convert time.Time DATE to TransactionDate
-	transactionDate := voucher.TransactionDate{
+	transactionDate := transaction_date.TransactionDate{
 		Year:  po.TransactionDate.Year(),
 		Month: int(po.TransactionDate.Month()),
 		Day:   po.TransactionDate.Day(),
@@ -691,8 +703,7 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 		HeaderText:         po.HeaderText,
 		DocumentNumber:     po.DocumentNumber,
 		AttachmentQuantity: po.AttachmentQuantity,
-		Debit:              po.Debit,
-		Credit:             po.Credit,
+		Amount:             po.Amount,
 		Creator:            userOrNil(po.Creator),
 		Reviewer:           userOrNil(po.Reviewer),
 		Auditor:            userOrNil(po.Auditor),
@@ -719,8 +730,7 @@ func lineItemBOToPO(bo voucher.LineItem, voucherId uuid.UUID) lineItemPO {
 		AccountId:         bo.AccountId(),
 		AuxiliaryAccounts: auxiliaryAccounts,
 		Text:              bo.Text(),
-		Debit:             bo.Debit(),
-		Credit:            bo.Credit(),
+		Amount:            bo.Amount(),
 	}
 }
 
@@ -740,8 +750,7 @@ func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 		accountBO,
 		auxiliaryAccountBOs,
 		po.Text,
-		po.Debit,
-		po.Credit,
+		po.Amount,
 	)
 }
 
@@ -758,9 +767,39 @@ func lineItemPOToDTO(po lineItemPO) query.LineItem {
 		Account:           accountDTO,
 		AuxiliaryAccounts: auxiliaryAccounts,
 		Text:              po.Text,
-		Debit:             po.Debit,
-		Credit:            po.Credit,
+		Amount:            po.Amount,
 		CreatedAt:         po.CreatedAt,
 		UpdatedAt:         po.UpdatedAt,
 	}
+}
+
+func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
+	var auxiliaryAccounts []auxiliaryAccountPO
+	for _, auxiliaryAccount := range bo.AuxiliaryAccounts() {
+		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountBOToPO(auxiliaryAccount))
+	}
+
+	// Convert TransactionDate to time.Time for PostgreSQL DATE type
+	transactionDate := time.Date(
+		bo.TransactionDate().Year,
+		time.Month(bo.TransactionDate().Month),
+		bo.TransactionDate().Day,
+		0, 0, 0, 0, time.UTC,
+	)
+
+	return ledgerEntryPO{
+		Id:                bo.Id(),
+		SobId:             bo.SobId(),
+		PeriodId:          bo.PeriodId(),
+		VoucherId:         bo.VoucherId(),
+		LineItemId:        bo.LineItemId(),
+		AccountId:         bo.AccountId(),
+		AuxiliaryAccounts: auxiliaryAccounts,
+		TransactionDate:   transactionDate,
+		Amount:            bo.Amount(),
+	}
+}
+
+func ledgerEntryBOToPOForCreate(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
+	return ledgerEntryBOToPO(bo)
 }

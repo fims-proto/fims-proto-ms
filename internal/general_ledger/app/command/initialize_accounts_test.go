@@ -7,6 +7,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
@@ -316,6 +317,10 @@ func (m mockRepo) ExistsProfitAndLossLedgersHavingBalanceInPeriod(context.Contex
 }
 
 func (m mockRepo) CreateVoucher(context.Context, *voucher.Voucher) error {
+	panic("implement me")
+}
+
+func (m mockRepo) CreateLedgerEntries(context.Context, []*ledger_entry.LedgerEntry) error {
 	panic("implement me")
 }
 

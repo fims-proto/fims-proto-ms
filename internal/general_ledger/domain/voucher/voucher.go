@@ -3,6 +3,7 @@ package voucher
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher/voucher_type"
 
 	"github.com/google/uuid"
@@ -18,8 +19,7 @@ type Voucher struct {
 	headerText         string
 	documentNumber     string
 	attachmentQuantity int
-	debit              decimal.Decimal
-	credit             decimal.Decimal
+	amount             decimal.Decimal
 	creator            uuid.UUID
 	reviewer           uuid.UUID
 	auditor            uuid.UUID
@@ -27,7 +27,7 @@ type Voucher struct {
 	isReviewed         bool
 	isAudited          bool
 	isPosted           bool
-	transactionDate    TransactionDate
+	transactionDate    transaction_date.TransactionDate
 	lineItems          []*LineItem
 }
 
@@ -46,7 +46,7 @@ func New(
 	isReviewed bool,
 	isAudited bool,
 	isPosted bool,
-	transactionDate TransactionDate,
+	transactionDate transaction_date.TransactionDate,
 	lineItems []*LineItem,
 ) (*Voucher, error) {
 	if id == uuid.Nil {
@@ -120,8 +120,7 @@ func New(
 		voucherType:        dt,
 		documentNumber:     documentNumber,
 		attachmentQuantity: attachmentQuantity,
-		debit:              totalVal,
-		credit:             totalVal,
+		amount:             totalVal,
 		creator:            creator,
 		reviewer:           reviewer,
 		auditor:            auditor,
@@ -166,12 +165,8 @@ func (v *Voucher) AttachmentQuantity() int {
 	return v.attachmentQuantity
 }
 
-func (v *Voucher) Debit() decimal.Decimal {
-	return v.debit
-}
-
-func (v *Voucher) Credit() decimal.Decimal {
-	return v.credit
+func (v *Voucher) Amount() decimal.Decimal {
+	return v.amount
 }
 
 func (v *Voucher) Creator() uuid.UUID {
@@ -202,7 +197,7 @@ func (v *Voucher) IsPosted() bool {
 	return v.isPosted
 }
 
-func (v *Voucher) TransactionDate() TransactionDate {
+func (v *Voucher) TransactionDate() transaction_date.TransactionDate {
 	return v.transactionDate
 }
 

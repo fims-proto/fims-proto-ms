@@ -11,19 +11,27 @@ func sumLineItems(lineItems []*LineItem) (decimal.Decimal, error) {
 		return decimal.Decimal{}, errors.NewSlugError("voucher-emptyLineItems")
 	}
 
-	var debitInTotal decimal.Decimal
-	var creditInTotal decimal.Decimal
+	var sumAmount decimal.Decimal
 	for _, item := range lineItems {
 		if item == nil {
 			return decimal.Decimal{}, errors.NewSlugError("voucher-nilLineItem")
 		}
 
-		debitInTotal = debitInTotal.Add(item.Debit())
-		creditInTotal = creditInTotal.Add(item.Credit())
+		sumAmount = sumAmount.Add(item.Amount())
 	}
 
-	if !debitInTotal.Equal(creditInTotal) {
+	// Trial balance: sum of all signed amounts must be zero
+	if !sumAmount.IsZero() {
 		return decimal.Decimal{}, errors.NewSlugError("voucher-notBalanced")
 	}
-	return debitInTotal, nil
+
+	// Return the transaction amount (sum of all positive amounts/debits only)
+	var transactionAmount decimal.Decimal
+	for _, item := range lineItems {
+		if item.Amount().IsPositive() {
+			transactionAmount = transactionAmount.Add(item.Amount())
+		}
+	}
+
+	return transactionAmount, nil
 }

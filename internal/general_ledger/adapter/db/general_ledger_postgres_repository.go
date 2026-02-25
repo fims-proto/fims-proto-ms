@@ -18,6 +18,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
@@ -49,6 +50,7 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 		&auxiliaryCategoryPO{},
 		&auxiliaryAccountPO{},
 		&periodPO{},
+		&ledgerEntryPO{},
 		&ledgerPO{},
 		&auxiliaryLedgerPO{},
 		&voucherPO{},
@@ -416,6 +418,12 @@ func (r GeneralLedgerPostgresRepository) ReadFirstPeriod(ctx context.Context, so
 	return nil, err
 }
 
+func (r GeneralLedgerPostgresRepository) CreateLedgerEntries(ctx context.Context, entries []*ledger_entry.LedgerEntry) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	return db.CreateInBatches(new(converter.BOsToPOs(entries, ledgerEntryBOToPOForCreate)), 100).Error
+}
+
 func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -713,12 +721,11 @@ func (r GeneralLedgerPostgresRepository) UpsertAuxiliaryLedgersByPeriodAndAccoun
 				key.AccountId,
 				key.AuxiliaryCategoryId,
 				key.AuxiliaryAccountId,
-				decimal.Zero,
-				decimal.Zero,
-				decimal.Zero,
-				decimal.Zero,
-				decimal.Zero,
-				decimal.Zero,
+				decimal.Zero, // openingAmount
+				decimal.Zero, // periodAmount
+				decimal.Zero, // periodDebit
+				decimal.Zero, // periodCredit
+				decimal.Zero, // endingAmount
 			)
 			if err != nil {
 				return fmt.Errorf("failed to create auxiliary ledger: %w", err)

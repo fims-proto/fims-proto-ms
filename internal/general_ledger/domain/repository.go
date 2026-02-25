@@ -6,6 +6,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
@@ -52,6 +53,7 @@ type Repository interface {
 	ReadPreviousPeriod(ctx context.Context, currentPeriodId uuid.UUID) (*period.Period, error)
 	ReadFirstPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
 
+	CreateLedgerEntries(ctx context.Context, entries []*ledger_entry.LedgerEntry) error
 	CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error
 	UpdateLedgersByPeriodAndAccountIds(
 		ctx context.Context,
