@@ -15,11 +15,12 @@ type Queries struct {
 	AuxiliaryCategoryByKey    query.AuxiliaryCategoryByKeyHandler
 	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
 	CurrentPeriod             query.CurrentPeriodHandler
-	PagingPeriods             query.PagingPeriodsHandler
+	AllPeriods                query.AllPeriodsHandler
 	FirstPeriodLedgers        query.FirstPeriodLedgersHandler
 	PagingLedgersByPeriod     query.PagingLedgersByPeriodHandler
 	LedgerSummary             query.LedgerSummaryHandler
 	AuxiliaryLedgerSummary    query.AuxiliaryLedgerSummaryHandler
+	PagingLedgerEntries       query.PagingLedgerEntriesHandler
 	VoucherById               query.VoucherByIdHandler
 	PagingVouchers            query.PagingVouchersHandler
 }
@@ -71,11 +72,12 @@ func (a *Application) Inject(
 		AuxiliaryCategoryByKey:    query.NewAuxiliaryCategoryByKeyHandler(readModel),
 		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
 		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
-		PagingPeriods:             query.NewPagingPeriodsHandler(readModel),
+		AllPeriods:                query.NewAllPeriodsHandler(readModel),
 		FirstPeriodLedgers:        query.NewFirstPeriodLedgersHandler(readModel),
 		PagingLedgersByPeriod:     query.NewPagingLedgersByPeriodHandler(readModel),
 		LedgerSummary:             query.NewLedgerSummaryHandler(readModel),
 		AuxiliaryLedgerSummary:    query.NewAuxiliaryLedgerSummaryHandler(readModel),
+		PagingLedgerEntries:       query.NewPagingLedgerEntriesHandler(readModel),
 		VoucherById:               query.NewVoucherByIdHandler(readModel, userService),
 		PagingVouchers:            query.NewPagingVouchersHandler(readModel, userService),
 	}

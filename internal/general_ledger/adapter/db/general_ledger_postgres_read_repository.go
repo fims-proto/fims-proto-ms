@@ -239,3 +239,39 @@ func (r GeneralLedgerPostgresReadRepository) AuxiliariesByPeriodRange(
 	// Apply pageable filters and return
 	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO, q)
 }
+
+// LedgerEntriesByPeriodRange queries ledger entries for a specific account within a fiscal year/period number range
+// Filters are applied at SQL level for performance and supports pagination
+// Optionally filters by auxiliaryAccountId
+func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
+	ctx context.Context,
+	sobId, accountId uuid.UUID,
+	auxiliaryAccountId *uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+	pageRequest data.PageRequest,
+) (data.Page[query.LedgerEntry], error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	// Build base query joining ledger_entries with vouchers
+	q := db.Model(&ledgerEntryPO{}).
+		Joins("Voucher").
+		Joins("Period").
+		Where("a_ledger_entries.sob_id = ?", sobId).
+		Where("a_ledger_entries.account_id = ?", accountId).
+		Where(
+			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
+				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
+			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
+			toFiscalYear, toFiscalYear, toPeriodNumber,
+		).
+		Order("a_ledger_entries.created_at asc")
+
+	// Add optional auxiliary account filter
+	if auxiliaryAccountId != nil {
+		q = q.Joins("INNER JOIN ledger_entry_auxiliary_account_links leaal ON a_ledger_entries.id = leaal.id").
+			Where("leaal.auxiliary_account_id = ?", *auxiliaryAccountId)
+	}
+
+	// Apply pageable filters and return
+	return data.SearchEntities(ctx, pageRequest, ledgerEntryPO{}, ledgerEntryPOToDTO, q)
+}

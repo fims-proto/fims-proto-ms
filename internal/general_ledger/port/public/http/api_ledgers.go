@@ -3,6 +3,8 @@ package http
 import (
 	"net/http"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 
@@ -86,13 +88,9 @@ func (h Handler) ReadFirstPeriodLedgers(c *gin.Context) {
 		return
 	}
 
-	var ledgersResponses []LedgerResponse
-	for _, ledger := range ledgers {
-		ledgersResponses = append(ledgersResponses, ledgerDTOToVO(ledger))
-	}
 	c.JSON(http.StatusOK, PeriodAndLedgersResponse{
 		Period:  periodDTOToVO(period),
-		Ledgers: ledgersResponses,
+		Ledgers: converter.DTOsToVOs(ledgers, ledgerDTOToVO),
 	})
 }
 
@@ -159,5 +157,51 @@ func (h Handler) ReadAuxiliaryLedgerSummary(c *gin.Context) {
 			)
 		},
 		auxiliaryLedgerSummaryToVO,
+	)
+}
+
+// ReadLedgerEntries godoc
+//
+//	@Text			Get ledger entries by account across period range
+//	@Description	Get detailed ledger entries for a single account across a period range
+//	@Tags			ledgers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path		string	true	"Sob ID"
+//	@Param			accountId			path		string	true	"Account ID"
+//	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
+//	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
+//	@Param			auxiliaryAccountId	query		string	false	"Auxiliary Account ID (optional)"
+//	@Param			$page				query		int		false	"page number"			default(1)
+//	@Param			$size				query		int		false	"page size"				default(40)
+//	@Param			$sort				query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter				query		string	false	"filter on field(s)"	example(text eq 'something' and amount lt 10)
+//	@Success		200					{object}	data.PageResponse[LedgerEntryResponse]
+//	@Failure		400					{object}	Error
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/ledger/{accountId}/entries [get]
+func (h Handler) ReadLedgerEntries(c *gin.Context) {
+	// Parse optional auxiliaryAccountId
+	var auxiliaryAccountId *uuid.UUID
+	if auxiliaryAccountIdStr := c.Query("auxiliaryAccountId"); auxiliaryAccountIdStr != "" {
+		id := uuid.MustParse(auxiliaryAccountIdStr)
+		auxiliaryAccountId = &id
+	}
+
+	data.PagingResponseProcessor(
+		c,
+		func(pageRequest data.PageRequest) (data.Page[query.LedgerEntry], error) {
+			return h.app.Queries.PagingLedgerEntries.Handle(
+				c,
+				uuid.MustParse(c.Param("sobId")),
+				uuid.MustParse(c.Param("accountId")),
+				auxiliaryAccountId,
+				c.Query("fromPeriod"),
+				c.Query("toPeriod"),
+				pageRequest,
+			)
+		},
+		ledgerEntryDTOToVO,
 	)
 }

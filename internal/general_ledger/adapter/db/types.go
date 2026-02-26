@@ -129,6 +129,8 @@ type ledgerEntryPO struct {
 	Amount          decimal.Decimal
 
 	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:ledger_entry_auxiliary_account_links;joinForeignKey:Id;joinReferences:AuxiliaryAccountId"`
+	Voucher           voucherPO            `gorm:"foreignKey:VoucherId"`
+	LineItem          lineItemPO           `gorm:"foreignKey:LineItemId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -293,17 +295,22 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("lineItemPO doesn't have association named %s", entity)
 }
 
+func (l ledgerEntryPO) ResolveAssociation(entity string) (string, error) {
+	if entity == "" {
+		return l.TableName(), nil
+	}
+	if strings.EqualFold(entity, "voucher") {
+		return "Voucher", nil
+	}
+	return "", fmt.Errorf("ledgerEntryPO doesn't have association named %s", entity)
+}
+
 // mappers
 
 func accountBOToPO(bo *account.Account) accountPO {
 	var int4array pgtype.Int4Array
 	if err := int4array.Set(bo.NumberHierarchy()); err != nil {
 		panic(fmt.Errorf("failde to convert []int to Int4Array: %w", err))
-	}
-
-	var categoryPOs []auxiliaryCategoryPO
-	for _, category := range bo.AuxiliaryCategories() {
-		categoryPOs = append(categoryPOs, auxiliaryCategoryBOToPO(category))
 	}
 
 	return accountPO{
@@ -318,7 +325,7 @@ func accountBOToPO(bo *account.Account) accountPO {
 		Class:               int(bo.Class()),
 		Group:               int(bo.Group()),
 		BalanceDirection:    bo.BalanceDirection().String(),
-		AuxiliaryCategories: categoryPOs,
+		AuxiliaryCategories: converter.BOsToPOs(bo.AuxiliaryCategories(), auxiliaryCategoryBOToPO),
 	}
 }
 
@@ -719,16 +726,11 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 }
 
 func lineItemBOToPO(bo voucher.LineItem, voucherId uuid.UUID) lineItemPO {
-	var auxiliaryAccounts []auxiliaryAccountPO
-	for _, auxiliaryAccount := range bo.AuxiliaryAccounts() {
-		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountBOToPO(auxiliaryAccount))
-	}
-
 	return lineItemPO{
 		VoucherId:         voucherId,
 		Id:                bo.Id(),
 		AccountId:         bo.AccountId(),
-		AuxiliaryAccounts: auxiliaryAccounts,
+		AuxiliaryAccounts: converter.BOsToPOs(bo.AuxiliaryAccounts(), auxiliaryAccountBOToPO),
 		Text:              bo.Text(),
 		Amount:            bo.Amount(),
 	}
@@ -774,11 +776,6 @@ func lineItemPOToDTO(po lineItemPO) query.LineItem {
 }
 
 func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
-	var auxiliaryAccounts []auxiliaryAccountPO
-	for _, auxiliaryAccount := range bo.AuxiliaryAccounts() {
-		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountBOToPO(auxiliaryAccount))
-	}
-
 	// Convert TransactionDate to time.Time for PostgreSQL DATE type
 	transactionDate := time.Date(
 		bo.TransactionDate().Year,
@@ -794,7 +791,7 @@ func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
 		VoucherId:         bo.VoucherId(),
 		LineItemId:        bo.LineItemId(),
 		AccountId:         bo.AccountId(),
-		AuxiliaryAccounts: auxiliaryAccounts,
+		AuxiliaryAccounts: converter.BOsToPOs(bo.AuxiliaryAccounts(), auxiliaryAccountBOToPO),
 		TransactionDate:   transactionDate,
 		Amount:            bo.Amount(),
 	}
@@ -802,4 +799,23 @@ func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
 
 func ledgerEntryBOToPOForCreate(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
 	return ledgerEntryBOToPO(bo)
+}
+
+func ledgerEntryPOToDTO(po ledgerEntryPO) query.LedgerEntry {
+	// Convert time.Time DATE to TransactionDate
+	transactionDate := transaction_date.TransactionDate{
+		Year:  po.TransactionDate.Year(),
+		Month: int(po.TransactionDate.Month()),
+		Day:   po.TransactionDate.Day(),
+	}
+
+	return query.LedgerEntry{
+		VoucherId:       po.VoucherId,
+		VoucherNumber:   po.Voucher.DocumentNumber,
+		TransactionDate: transactionDate,
+		Text:            po.Voucher.HeaderText,
+		Amount:          po.Amount,
+		CreatedAt:       po.CreatedAt,
+		UpdatedAt:       po.UpdatedAt,
+	}
 }

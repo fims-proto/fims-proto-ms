@@ -723,6 +723,107 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/ledger/{accountId}/entries": {
+            "get": {
+                "description": "Get detailed ledger entries for a single account across a period range",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From period (YYYY-MM)",
+                        "name": "fromPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To period (YYYY-MM)",
+                        "name": "toPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Auxiliary Account ID (optional)",
+                        "name": "auxiliaryAccountId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "text eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/ledgers/initialize": {
             "post": {
                 "description": "Initialize ledgers in first period of current SoB",
@@ -887,7 +988,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/periods": {
             "get": {
-                "description": "List periods",
+                "description": "List all periods",
                 "consumes": [
                     "application/json"
                 ],
@@ -904,41 +1005,16 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                            }
                         }
                     },
                     "500": {
@@ -2115,6 +2191,29 @@ const docTemplate = `{
                 }
             }
         },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerEntryResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse": {
             "type": "object",
             "properties": {
@@ -2230,29 +2329,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate": {
             "type": "object",
             "properties": {
@@ -2337,6 +2413,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AuxiliaryItemRequest": {
+            "type": "object",
+            "properties": {
+                "accountKey": {
+                    "type": "string"
+                },
+                "categoryKey": {
                     "type": "string"
                 }
             }
@@ -2448,7 +2535,30 @@ const docTemplate = `{
             }
         },
         "http.CreateVoucherRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "attachmentQuantity": {
+                    "type": "integer"
+                },
+                "creator": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "lineItems": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LineItemRequest"
+                    }
+                },
+                "transactionDate": {
+                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
+                },
+                "voucherType": {
+                    "type": "string"
+                }
+            }
         },
         "http.FormulaResponse": {
             "type": "object",
@@ -2565,6 +2675,32 @@ const docTemplate = `{
                 }
             }
         },
+        "http.LedgerEntryResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "transactionDate": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "voucherId": {
+                    "type": "string"
+                },
+                "voucherNumber": {
+                    "type": "string"
+                }
+            }
+        },
         "http.LedgerResponse": {
             "type": "object",
             "properties": {
@@ -2628,6 +2764,29 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "periodId": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.LineItemRequest": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "auxiliaryAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -3011,7 +3170,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transactionDate": {
-                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
+                    "type": "string"
                 },
                 "updatedAt": {
                     "type": "string"

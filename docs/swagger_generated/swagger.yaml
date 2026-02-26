@@ -45,6 +45,21 @@ definitions:
       totalPage:
         type: integer
     type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.LedgerEntryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
     properties:
       content:
@@ -120,21 +135,6 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
   github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate:
     properties:
       day:
@@ -190,6 +190,13 @@ definitions:
       title:
         type: string
       updatedAt:
+        type: string
+    type: object
+  http.AuxiliaryItemRequest:
+    properties:
+      accountKey:
+        type: string
+      categoryKey:
         type: string
     type: object
   http.AuxiliaryLedgerSummaryResponse:
@@ -262,6 +269,21 @@ definitions:
         type: integer
     type: object
   http.CreateVoucherRequest:
+    properties:
+      attachmentQuantity:
+        type: integer
+      creator:
+        type: string
+      headerText:
+        type: string
+      lineItems:
+        items:
+          $ref: '#/definitions/http.LineItemRequest'
+        type: array
+      transactionDate:
+        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
+      voucherType:
+        type: string
     type: object
   http.FormulaResponse:
     properties:
@@ -338,6 +360,23 @@ definitions:
       text:
         type: string
     type: object
+  http.LedgerEntryResponse:
+    properties:
+      amount:
+        type: number
+      createdAt:
+        type: string
+      text:
+        type: string
+      transactionDate:
+        type: string
+      updatedAt:
+        type: string
+      voucherId:
+        type: string
+      voucherNumber:
+        type: string
+    type: object
   http.LedgerResponse:
     properties:
       account:
@@ -380,6 +419,21 @@ definitions:
       periodDebit:
         type: number
       periodId:
+        type: string
+    type: object
+  http.LineItemRequest:
+    properties:
+      accountNumber:
+        type: string
+      amount:
+        type: number
+      auxiliaryAccounts:
+        items:
+          $ref: '#/definitions/http.AuxiliaryItemRequest'
+        type: array
+      id:
+        type: string
+      text:
         type: string
     type: object
   http.LineItemResponse:
@@ -635,7 +689,7 @@ definitions:
       sobId:
         type: string
       transactionDate:
-        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
+        type: string
       updatedAt:
         type: string
       voucherType:
@@ -1251,6 +1305,76 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
+  /sob/{sobId}/ledger/{accountId}/entries:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed ledger entries for a single account across a period
+        range
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      - description: Auxiliary Account ID (optional)
+        in: query
+        name: auxiliaryAccountId
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: text eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
   /sob/{sobId}/ledgers/initialize:
     post:
       consumes:
@@ -1363,32 +1487,12 @@ paths:
     get:
       consumes:
       - application/json
-      description: List periods
+      description: List all periods
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
         type: string
       produces:
       - application/json
@@ -1396,7 +1500,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_PeriodResponse'
+            items:
+              $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
+            type: array
         "500":
           description: Internal Server Error
           schema:

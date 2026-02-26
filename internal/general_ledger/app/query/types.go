@@ -126,3 +126,13 @@ type User struct {
 	Id     uuid.UUID
 	Traits json.RawMessage
 }
+
+type LedgerEntry struct {
+	VoucherId       uuid.UUID
+	VoucherNumber   string
+	TransactionDate transaction_date.TransactionDate
+	Text            string
+	Amount          decimal.Decimal
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+}

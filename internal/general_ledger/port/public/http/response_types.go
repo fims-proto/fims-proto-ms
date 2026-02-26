@@ -4,6 +4,8 @@ import (
 	"strconv"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github.com/google/uuid"
@@ -153,7 +155,7 @@ type VoucherResponse struct {
 	IsAudited          bool                             `json:"isAudited"`
 	IsPosted           bool                             `json:"isPosted"`
 	IsReviewed         bool                             `json:"isReviewed"`
-	TransactionDate    transaction_date.TransactionDate `json:"transactionDate"`
+	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	LineItems          []LineItemResponse               `json:"lineItems,omitempty"`
 	CreatedAt          time.Time                        `json:"createdAt"`
 	UpdatedAt          time.Time                        `json:"updatedAt"`
@@ -164,13 +166,19 @@ type UserResponse struct {
 	Traits any       `json:"traits"`
 }
 
+type LedgerEntryResponse struct {
+	VoucherId       uuid.UUID                        `json:"voucherId"`
+	VoucherNumber   string                           `json:"voucherNumber"`
+	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
+	Text            string                           `json:"text"`
+	Amount          decimal.Decimal                  `json:"amount"`
+	CreatedAt       time.Time                        `json:"createdAt"`
+	UpdatedAt       time.Time                        `json:"updatedAt"`
+}
+
 // mapper
 
 func accountDTOToVO(dto query.Account) AccountResponse {
-	var categories []AuxiliaryCategoryResponse
-	for _, category := range dto.AuxiliaryCategories {
-		categories = append(categories, auxiliaryCategoryDTOToVO(category))
-	}
 	return AccountResponse{
 		Id:                  dto.Id,
 		SobId:               dto.SobId,
@@ -183,7 +191,7 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		Class:               strconv.Itoa(dto.Class),
 		Group:               strconv.Itoa(dto.Group),
 		BalanceDirection:    dto.BalanceDirection,
-		AuxiliaryCategories: categories,
+		AuxiliaryCategories: converter.DTOsToVOs(dto.AuxiliaryCategories, auxiliaryCategoryDTOToVO),
 		CreatedAt:           dto.CreatedAt,
 		UpdatedAt:           dto.UpdatedAt,
 	}
@@ -235,14 +243,10 @@ func auxiliaryLedgerSummaryToVO(dto query.AuxiliaryLedgerSummary) AuxiliaryLedge
 }
 
 func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
-	var auxiliaryAccounts []AuxiliaryAccountResponse
-	for _, auxiliaryAccount := range dto.AuxiliaryAccounts {
-		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountDTOToVO(auxiliaryAccount))
-	}
 	return LineItemResponse{
 		Id:                dto.Id,
 		Account:           accountDTOToVO(dto.Account),
-		AuxiliaryAccounts: auxiliaryAccounts,
+		AuxiliaryAccounts: converter.DTOsToVOs(dto.AuxiliaryAccounts, auxiliaryAccountDTOToVO),
 		Text:              dto.Text,
 		Amount:            dto.Amount,
 		CreatedAt:         dto.CreatedAt,
@@ -251,11 +255,6 @@ func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
 }
 
 func voucherDTOToVO(dto query.Voucher) VoucherResponse {
-	var itemRes []LineItemResponse
-	for _, item := range dto.LineItems {
-		itemRes = append(itemRes, lineItemDTOToVO(item))
-	}
-
 	userOrNil := func(u *query.User) *UserResponse {
 		if u != nil {
 			return &UserResponse{
@@ -283,8 +282,12 @@ func voucherDTOToVO(dto query.Voucher) VoucherResponse {
 		IsAudited:          dto.IsAudited,
 		IsPosted:           dto.IsPosted,
 		TransactionDate:    dto.TransactionDate,
-		LineItems:          itemRes,
+		LineItems:          converter.DTOsToVOs(dto.LineItems, lineItemDTOToVO),
 		CreatedAt:          dto.CreatedAt,
 		UpdatedAt:          dto.UpdatedAt,
 	}
+}
+
+func ledgerEntryDTOToVO(dto query.LedgerEntry) LedgerEntryResponse {
+	return LedgerEntryResponse(dto)
 }
