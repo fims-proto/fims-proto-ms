@@ -482,7 +482,7 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 	var count int64
 	err := db.Model(&ledgerPO{}).
 		Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
-		Where("ending_debit_balance <> ending_credit_balance").
+		Where("ending_amount <> 0").
 		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses)})).
 		Count(&count).
 		Error
@@ -509,7 +509,39 @@ func (r GeneralLedgerPostgresRepository) CreateVoucher(ctx context.Context, v *v
 	return db.Create(new(voucherBOToPO(*v))).Error
 }
 
-func (r GeneralLedgerPostgresRepository) UpdateVoucher(
+func (r GeneralLedgerPostgresRepository) UpdateVoucherHeader(
+	ctx context.Context,
+	voucherId uuid.UUID,
+	updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	po := voucherPO{Id: voucherId}
+	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Preload("LineItems.Account.AuxiliaryCategories").
+		Preload("LineItems.AuxiliaryAccounts.Category").
+		Preload("Period").
+		First(&po).Error; err != nil {
+		return err
+	}
+
+	bo, err := voucherPOToBO(po)
+	if err != nil {
+		return fmt.Errorf("failed to update voucher header: %w", err)
+	}
+
+	updatedBO, err := updateFn(bo)
+	if err != nil {
+		return fmt.Errorf("failed to update voucher header: %w", err)
+	}
+
+	updatedPO := voucherBOToPO(*updatedBO)
+
+	// Only persist the voucher table columns; omit associations to avoid touching line_items.
+	return db.Omit("LineItems", "Period").Save(&updatedPO).Error
+}
+
+func (r GeneralLedgerPostgresRepository) UpdateEntireVoucher(
 	ctx context.Context,
 	voucherId uuid.UUID,
 	updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),

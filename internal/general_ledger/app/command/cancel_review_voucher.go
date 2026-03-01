@@ -33,7 +33,7 @@ func (h CancelReviewVoucherHandler) Handle(ctx context.Context, cmd CancelReview
 }
 
 func (h CancelReviewVoucherHandler) cancelReview(ctx context.Context, cmd CancelReviewVoucherCmd) error {
-	return h.repo.UpdateVoucher(
+	return h.repo.UpdateVoucherHeader(
 		ctx,
 		cmd.VoucherId,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {

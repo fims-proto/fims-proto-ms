@@ -34,7 +34,7 @@ func (h ReviewVoucherHandler) Handle(ctx context.Context, cmd ReviewVoucherCmd) 
 }
 
 func (h ReviewVoucherHandler) review(ctx context.Context, cmd ReviewVoucherCmd) error {
-	return h.repo.UpdateVoucher(
+	return h.repo.UpdateVoucherHeader(
 		ctx,
 		cmd.VoucherId,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {

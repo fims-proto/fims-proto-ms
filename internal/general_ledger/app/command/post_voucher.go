@@ -66,7 +66,7 @@ func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) erro
 
 // postVoucher updates voucher, creates ledger entries, and triggers ledgers and auxiliary ledgers (if applicable) posting
 func (h PostVoucherHandler) postVoucher(ctx context.Context, cmd PostVoucherCmd) error {
-	return h.repo.UpdateVoucher(
+	return h.repo.UpdateVoucherHeader(
 		ctx,
 		cmd.VoucherId,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {

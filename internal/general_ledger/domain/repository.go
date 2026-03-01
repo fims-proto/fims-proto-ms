@@ -66,7 +66,16 @@ type Repository interface {
 	ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
 	CreateVoucher(ctx context.Context, v *voucher.Voucher) error
-	UpdateVoucher(
+	// UpdateVoucherHeader updates only the voucher header row (status flags, reviewer, auditor, poster, etc).
+	// Line items are loaded for the callback to read but are NOT deleted or re-saved.
+	UpdateVoucherHeader(
+		ctx context.Context,
+		voucherId uuid.UUID,
+		updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+	) error
+	// UpdateEntireVoucher replaces the voucher header and all its line items.
+	// Use this when line items may be modified; prefer UpdateVoucherHeader for header-only changes.
+	UpdateEntireVoucher(
 		ctx context.Context,
 		voucherId uuid.UUID,
 		updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),

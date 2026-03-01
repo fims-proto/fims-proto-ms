@@ -32,7 +32,7 @@ func (h AuditVoucherHandler) Handle(ctx context.Context, cmd AuditVoucherCmd) er
 }
 
 func (h AuditVoucherHandler) audit(ctx context.Context, cmd AuditVoucherCmd) error {
-	return h.repo.UpdateVoucher(
+	return h.repo.UpdateVoucherHeader(
 		ctx,
 		cmd.VoucherId,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {

@@ -79,15 +79,15 @@ type periodPO struct {
 }
 
 type ledgerPO struct {
-	Id            uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId         uuid.UUID `gorm:"type:uuid"`
-	AccountId     uuid.UUID `gorm:"type:uuid"`
-	PeriodId      uuid.UUID `gorm:"type:uuid"`
-	OpeningAmount decimal.Decimal
-	PeriodAmount  decimal.Decimal
-	PeriodDebit   decimal.Decimal
-	PeriodCredit  decimal.Decimal
-	EndingAmount  decimal.Decimal
+	Id            uuid.UUID       `gorm:"type:uuid;primaryKey"`
+	SobId         uuid.UUID       `gorm:"type:uuid"`
+	AccountId     uuid.UUID       `gorm:"type:uuid"`
+	PeriodId      uuid.UUID       `gorm:"type:uuid"`
+	OpeningAmount decimal.Decimal `gorm:"type:numeric"`
+	PeriodAmount  decimal.Decimal `gorm:"type:numeric"`
+	PeriodDebit   decimal.Decimal `gorm:"type:numeric"`
+	PeriodCredit  decimal.Decimal `gorm:"type:numeric"`
+	EndingAmount  decimal.Decimal `gorm:"type:numeric"`
 
 	Account accountPO `gorm:"foreignKey:AccountId"`
 	Period  periodPO  `gorm:"foreignKey:PeriodId"`
@@ -97,17 +97,17 @@ type ledgerPO struct {
 }
 
 type auxiliaryLedgerPO struct {
-	Id                  uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId               uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	PeriodId            uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AccountId           uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AuxiliaryCategoryId uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AuxiliaryAccountId  uuid.UUID `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	OpeningAmount       decimal.Decimal
-	PeriodAmount        decimal.Decimal
-	PeriodDebit         decimal.Decimal
-	PeriodCredit        decimal.Decimal
-	EndingAmount        decimal.Decimal
+	Id                  uuid.UUID       `gorm:"type:uuid;primaryKey"`
+	SobId               uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	PeriodId            uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AccountId           uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryCategoryId uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	AuxiliaryAccountId  uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
+	OpeningAmount       decimal.Decimal `gorm:"type:numeric"`
+	PeriodAmount        decimal.Decimal `gorm:"type:numeric"`
+	PeriodDebit         decimal.Decimal `gorm:"type:numeric"`
+	PeriodCredit        decimal.Decimal `gorm:"type:numeric"`
+	EndingAmount        decimal.Decimal `gorm:"type:numeric"`
 
 	Account           accountPO           `gorm:"foreignKey:AccountId"`
 	AuxiliaryCategory auxiliaryCategoryPO `gorm:"foreignKey:AuxiliaryCategoryId"`
@@ -119,14 +119,14 @@ type auxiliaryLedgerPO struct {
 }
 
 type ledgerEntryPO struct {
-	Id              uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId           uuid.UUID `gorm:"type:uuid"`
-	PeriodId        uuid.UUID `gorm:"type:uuid"`
-	VoucherId       uuid.UUID `gorm:"type:uuid"`
-	LineItemId      uuid.UUID `gorm:"type:uuid"`
-	AccountId       uuid.UUID `gorm:"type:uuid"`
-	TransactionDate time.Time `gorm:"type:date"`
-	Amount          decimal.Decimal
+	Id              uuid.UUID       `gorm:"type:uuid;primaryKey"`
+	SobId           uuid.UUID       `gorm:"type:uuid"`
+	PeriodId        uuid.UUID       `gorm:"type:uuid"`
+	VoucherId       uuid.UUID       `gorm:"type:uuid"`
+	LineItemId      uuid.UUID       `gorm:"type:uuid"`
+	AccountId       uuid.UUID       `gorm:"type:uuid"`
+	TransactionDate time.Time       `gorm:"type:date"`
+	Amount          decimal.Decimal `gorm:"type:numeric"`
 
 	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:ledger_entry_auxiliary_account_links;joinForeignKey:Id;joinReferences:AuxiliaryAccountId"`
 	Voucher           voucherPO            `gorm:"foreignKey:VoucherId"`
@@ -144,11 +144,11 @@ type voucherPO struct {
 	HeaderText         string
 	DocumentNumber     string `gorm:"uniqueIndex:UQ_Vouchers_SobId_PeriodId_DocumentNumber"`
 	AttachmentQuantity int
-	Amount             decimal.Decimal
-	Creator            uuid.UUID `gorm:"type:uuid"`
-	Reviewer           uuid.UUID `gorm:"type:uuid"`
-	Auditor            uuid.UUID `gorm:"type:uuid"`
-	Poster             uuid.UUID `gorm:"type:uuid"`
+	Amount             decimal.Decimal `gorm:"type:numeric"`
+	Creator            uuid.UUID       `gorm:"type:uuid"`
+	Reviewer           uuid.UUID       `gorm:"type:uuid"`
+	Auditor            uuid.UUID       `gorm:"type:uuid"`
+	Poster             uuid.UUID       `gorm:"type:uuid"`
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
@@ -166,7 +166,7 @@ type lineItemPO struct {
 	VoucherId uuid.UUID `gorm:"type:uuid"`
 	AccountId uuid.UUID `gorm:"type:uuid"`
 	Text      string
-	Amount    decimal.Decimal
+	Amount    decimal.Decimal `gorm:"type:numeric"`
 
 	Account           accountPO            `gorm:"foreignKey:AccountId"`
 	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:line_item_auxiliary_account_links;joinForeignKey:LineItemId;joinReferences:AuxiliaryAccountId"`

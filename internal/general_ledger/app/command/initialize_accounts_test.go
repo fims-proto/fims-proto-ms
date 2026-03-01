@@ -324,7 +324,11 @@ func (m mockRepo) CreateLedgerEntries(context.Context, []*ledger_entry.LedgerEnt
 	panic("implement me")
 }
 
-func (m mockRepo) UpdateVoucher(context.Context, uuid.UUID, func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+func (m mockRepo) UpdateVoucherHeader(context.Context, uuid.UUID, func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+	panic("implement me")
+}
+
+func (m mockRepo) UpdateEntireVoucher(context.Context, uuid.UUID, func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
 	panic("implement me")
 }
 

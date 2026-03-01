@@ -50,7 +50,7 @@ func (h UpdateVoucherHandler) Handle(ctx context.Context, cmd UpdateVoucherCmd) 
 }
 
 func (h UpdateVoucherHandler) updateVoucher(ctx context.Context, cmd UpdateVoucherCmd) error {
-	return h.repo.UpdateVoucher(
+	return h.repo.UpdateEntireVoucher(
 		ctx,
 		cmd.VoucherId,
 		func(v *voucher.Voucher) (*voucher.Voucher, error) {

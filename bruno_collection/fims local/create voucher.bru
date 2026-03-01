@@ -22,15 +22,15 @@ script:pre-request {
           items: [
               {
                   account: "100201",
-                  debit: 500000
+                  amount: 500000
               },
               {
                   account: "300101",
-                  credit: 300000
+                  amount: -300000
               },
               {
                   account: "300102",
-                  credit: 200000
+                  amount: -200000
               }
           ]
       },
@@ -40,11 +40,11 @@ script:pre-request {
           items: [
               {
                   account: "1001",
-                  debit: 100000
+                  amount: 100000
               },
               {
                   account: "100201",
-                  credit: 100000
+                  amount: -100000
               }
           ]
       },
@@ -54,11 +54,11 @@ script:pre-request {
           items: [
               {
                   account: "560201",
-                  debit: 1000
+                  amount: 1000
               },
               {
                   account: "1001",
-                  credit: 1000
+                  amount: -1000
               }
           ]
       },
@@ -68,11 +68,11 @@ script:pre-request {
           items: [
               {
                   account: "560202",
-                  debit: 500
+                  amount: 500
               },
               {
                   account: "100201",
-                  credit: 500
+                  amount: -500
               }
           ]
       },
@@ -82,11 +82,11 @@ script:pre-request {
           items: [
               {
                   account: "560201",
-                  debit: 600
+                  amount: 600
               },
               {
                   account: "1001",
-                  credit: 600
+                  amount: -600
               }
           ]
       },
@@ -96,11 +96,11 @@ script:pre-request {
           items: [
               {
                   account: "160101",
-                  debit: 18500
+                  amount: 18500
               },
               {
                   account: "100201",
-                  credit: 18500
+                  amount: -18500
               }
           ]
       },
@@ -110,11 +110,11 @@ script:pre-request {
           items: [
               {
                   account: "170101",
-                  debit: 36000
+                  amount: 36000
               },
               {
                   account: "100201",
-                  credit: 36000
+                  amount: -36000
               }
           ]
       },
@@ -124,11 +124,11 @@ script:pre-request {
           items: [
               {
                   account: "180101",
-                  debit: 60000
+                  amount: 60000
               },
               {
                   account: "100201",
-                  credit: 60000
+                  amount: -60000
               }
           ]
       },
@@ -138,11 +138,11 @@ script:pre-request {
           items: [
               {
                   account: "560203",
-                  debit: 10000
+                  amount: 10000
               },
               {
                   account: "221101",
-                  credit: 10000
+                  amount: -10000
               }
           ]
       },
@@ -152,11 +152,11 @@ script:pre-request {
           items: [
               {
                   account: "560204",
-                  debit: 1000
+                  amount: 1000
               },
               {
                   account: "1702",
-                  credit: 1000
+                  amount: -1000
               }
           ]
       },
@@ -166,11 +166,11 @@ script:pre-request {
           items: [
               {
                   account: "560205",
-                  debit: 2500
+                  amount: 2500
               },
               {
                   account: "180101",
-                  credit: 2500
+                  amount: -2500
               }
           ]
       },
@@ -180,46 +180,46 @@ script:pre-request {
           items: [
               {
                   account: "3103",
-                  debit: 15600
+                  amount: 15600
               },
               {
                   account: "560201",
-                  credit: 1000
+                  amount: -1000
               },
               {
                   account: "560202",
-                  credit: 500
+                  amount: -500
               },
               {
                   account: "560201",
-                  credit: 600
+                  amount: -600
               },
               {
                   account: "560203",
-                  credit: 10000
+                  amount: -10000
               },
               {
                   account: "560204",
-                  credit: 1000
+                  amount: -1000
               },
               {
                   account: "560205",
-                  credit: 2500
+                  amount: -2500
               }
           ]
       }
   ]
-  
+
   let sampleVouchers = bru.getVar("sample_vouchers")
-  
+
   if(!sampleVouchers || sampleVouchers.length == 0) {
       sampleVouchers = testSamples
   }
-  
+
   let currentSampleVoucher = sampleVouchers.shift()
   bru.setVar("sample_vouchers", sampleVouchers)
-  
-  
+
+
   // build current payload
   const payload = {
       "voucherType": "general_voucher",
@@ -229,12 +229,11 @@ script:pre-request {
       "creator": bru.getCollectionVar("user_1"),
       "transactionDate": currentSampleVoucher.date
   }
-  
+
   currentSampleVoucher.items.forEach(sampleItem => payload.lineItems.push({
       "text": currentSampleVoucher.summary,
       "accountNumber": sampleItem.account,
-      "debit": sampleItem.debit,
-      "credit": sampleItem.credit,
+      "amount": sampleItem.amount
   }))
   
   bru.setVar("current_voucher_payload", JSON.stringify(payload))
