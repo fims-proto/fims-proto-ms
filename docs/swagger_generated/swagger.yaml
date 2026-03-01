@@ -60,21 +60,6 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.LedgerResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_ReportResponse:
     properties:
       content:
@@ -379,16 +364,20 @@ definitions:
     type: object
   http.LedgerResponse:
     properties:
-      account:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+      accountClass:
+        type: string
+      accountGroup:
+        type: string
       accountId:
         type: string
-      createdAt:
+      accountNumber:
+        type: string
+      accountTitle:
+        type: string
+      balanceDirection:
         type: string
       endingAmount:
         type: number
-      id:
-        type: string
       openingAmount:
         type: number
       periodAmount:
@@ -397,11 +386,7 @@ definitions:
         type: number
       periodDebit:
         type: number
-      periodId:
-        type: string
       sobId:
-        type: string
-      updatedAt:
         type: string
     type: object
   http.LedgerSummaryResponse:
@@ -1375,6 +1360,48 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
+  /sob/{sobId}/ledgers:
+    get:
+      consumes:
+      - application/json
+      description: List all ledgers for a SoB aggregated across a period range. Returns
+        one entry per account with opening amount from the first period, summed period
+        debit/credit/amount, and ending amount from the last period.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.LedgerResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
   /sob/{sobId}/ledgers/initialize:
     post:
       consumes:
@@ -1434,55 +1461,6 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
-  /sob/{sobId}/period/{periodId}/ledgers:
-    get:
-      consumes:
-      - application/json
-      description: List ledgers in period
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Period ID
-        in: path
-        name: periodId
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - ledgers
   /sob/{sobId}/periods:
     get:
       consumes:

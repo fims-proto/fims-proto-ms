@@ -818,6 +818,66 @@
                 }
             }
         },
+        "/sob/{sobId}/ledgers": {
+            "get": {
+                "description": "List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From period (YYYY-MM)",
+                        "name": "fromPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To period (YYYY-MM)",
+                        "name": "toPeriod",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.LedgerResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/ledgers/initialize": {
             "post": {
                 "description": "Initialize ledgers in first period of current SoB",
@@ -898,78 +958,6 @@
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/period/{periodId}/ledgers": {
-            "get": {
-                "description": "List ledgers in period",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Period ID",
-                        "name": "periodId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse"
-                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -2208,29 +2196,6 @@
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LedgerResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_ReportResponse": {
             "type": "object",
             "properties": {
@@ -2698,20 +2663,26 @@
         "http.LedgerResponse": {
             "type": "object",
             "properties": {
-                "account": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                "accountClass": {
+                    "type": "string"
+                },
+                "accountGroup": {
+                    "type": "string"
                 },
                 "accountId": {
                     "type": "string"
                 },
-                "createdAt": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "accountTitle": {
+                    "type": "string"
+                },
+                "balanceDirection": {
                     "type": "string"
                 },
                 "endingAmount": {
                     "type": "number"
-                },
-                "id": {
-                    "type": "string"
                 },
                 "openingAmount": {
                     "type": "number"
@@ -2725,13 +2696,7 @@
                 "periodDebit": {
                     "type": "number"
                 },
-                "periodId": {
-                    "type": "string"
-                },
                 "sobId": {
-                    "type": "string"
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }
