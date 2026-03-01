@@ -177,6 +177,34 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 	return result, nil
 }
 
+// AllLedgersByPeriodRange queries all ledgers across all accounts for a SoB within a fiscal year/period number range.
+// Results are ordered by account_number asc, fiscal_year asc, period_number asc for aggregation by the caller.
+func (r GeneralLedgerPostgresReadRepository) AllLedgersByPeriodRange(
+	ctx context.Context,
+	sobId uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+) ([]query.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []ledgerPO
+	q := db.Model(&ledgerPO{}).
+		InnerJoins("Account").
+		InnerJoins("Period").
+		Where("a_ledgers.sob_id = ?", sobId).
+		Where(
+			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
+				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
+			fromFiscalYear, fromFiscalYear, fromPeriodNumber, toFiscalYear, toFiscalYear, toPeriodNumber,
+		).
+		Order("a_accounts.account_number asc, fiscal_year asc, period_number asc")
+
+	if err := q.Find(&pos).Error; err != nil {
+		return nil, err
+	}
+
+	return converter.POsToDTOs(pos, ledgerPOToDTO), nil
+}
+
 // CheckPeriodContinuity verifies that all periods in the range [fromFiscalYear, fromPeriodNumber] to [toFiscalYear, toPeriodNumber] exist
 // Returns error if any period in the range is missing
 func (r GeneralLedgerPostgresReadRepository) CheckPeriodContinuity(

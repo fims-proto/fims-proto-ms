@@ -18,6 +18,7 @@ type GeneralLedgerReadModel interface {
 	SearchVouchers(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Voucher], error)
 
 	LedgersByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
+	AllLedgersByPeriodRange(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
 	AuxiliariesByPeriodRange(ctx context.Context, sobId, accountId, auxiliaryCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[AuxiliaryLedger], error)
 	LedgerEntriesByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, auxiliaryAccountId *uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerEntry], error)
 

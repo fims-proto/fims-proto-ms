@@ -17,7 +17,7 @@ type Queries struct {
 	CurrentPeriod             query.CurrentPeriodHandler
 	AllPeriods                query.AllPeriodsHandler
 	FirstPeriodLedgers        query.FirstPeriodLedgersHandler
-	PagingLedgersByPeriod     query.PagingLedgersByPeriodHandler
+	PagingLedgersByPeriod     query.LedgersByPeriodRangeHandler
 	LedgerSummary             query.LedgerSummaryHandler
 	AuxiliaryLedgerSummary    query.AuxiliaryLedgerSummaryHandler
 	PagingLedgerEntries       query.PagingLedgerEntriesHandler
@@ -74,7 +74,7 @@ func (a *Application) Inject(
 		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
 		AllPeriods:                query.NewAllPeriodsHandler(readModel),
 		FirstPeriodLedgers:        query.NewFirstPeriodLedgersHandler(readModel),
-		PagingLedgersByPeriod:     query.NewPagingLedgersByPeriodHandler(readModel),
+		PagingLedgersByPeriod:     query.NewLedgersByPeriodRangeHandler(readModel),
 		LedgerSummary:             query.NewLedgerSummaryHandler(readModel),
 		AuxiliaryLedgerSummary:    query.NewAuxiliaryLedgerSummaryHandler(readModel),
 		PagingLedgerEntries:       query.NewPagingLedgerEntriesHandler(readModel),

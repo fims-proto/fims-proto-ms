@@ -44,30 +44,33 @@ func (h Handler) ReadLedgerSummary(c *gin.Context) {
 	c.JSON(http.StatusOK, ledgerSummaryToVO(summary))
 }
 
-// ReadPagingLedgersByPeriod godoc
+// ReadLedgersByPeriodRange godoc
 //
-//	@Text			List ledgers in period
-//	@Description	List ledgers in period
+//	@Text			List ledgers aggregated across a period range
+//	@Description	List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period.
 //	@Tags			ledgers
 //	@Accept			application/json
 //	@Produce		application/json
 //	@Param			sobId		path		string	true	"Sob ID"
-//	@Param			periodId	path		string	true	"Period ID"
-//	@Param			$page		query		int		false	"page number"			default(1)
-//	@Param			$size		query		int		false	"page size"				default(40)
-//	@Param			$sort		query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
-//	@Param			$filter		query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
-//	@Success		200			{object}	data.PageResponse[LedgerResponse]
+//	@Param			fromPeriod	query		string	true	"From period (YYYY-MM)"
+//	@Param			toPeriod	query		string	true	"To period (YYYY-MM)"
+//	@Success		200			{array}		LedgerResponse
+//	@Failure		400			{object}	Error
 //	@Failure		500			{object}	Error
-//	@Router			/sob/{sobId}/period/{periodId}/ledgers [get]
-func (h Handler) ReadPagingLedgersByPeriod(c *gin.Context) {
-	data.PagingResponseProcessor(
+//	@Router			/sob/{sobId}/ledgers [get]
+func (h Handler) ReadLedgersByPeriodRange(c *gin.Context) {
+	ledgers, err := h.app.Queries.PagingLedgersByPeriod.Handle(
 		c,
-		func(pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
-			return h.app.Queries.PagingLedgersByPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), uuid.MustParse(c.Param("periodId")), pageRequest)
-		},
-		ledgerDTOToVO,
+		uuid.MustParse(c.Param("sobId")),
+		c.Query("fromPeriod"),
+		c.Query("toPeriod"),
 	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, converter.DTOsToVOs(ledgers, ledgerDTOToVO))
 }
 
 // ReadFirstPeriodLedgers godoc
