@@ -196,7 +196,7 @@ func (r GeneralLedgerPostgresReadRepository) AllLedgersByPeriodRange(
 				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
 			fromFiscalYear, fromFiscalYear, fromPeriodNumber, toFiscalYear, toFiscalYear, toPeriodNumber,
 		).
-		Order("a_accounts.account_number asc, fiscal_year asc, period_number asc")
+		Order("account_number asc, fiscal_year asc, period_number asc")
 
 	if err := q.Find(&pos).Error; err != nil {
 		return nil, err

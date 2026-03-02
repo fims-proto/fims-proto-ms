@@ -2690,6 +2690,9 @@ const docTemplate = `{
                 "endingAmount": {
                     "type": "number"
                 },
+                "isLeaf": {
+                    "type": "boolean"
+                },
                 "openingAmount": {
                     "type": "number"
                 },
@@ -2703,6 +2706,9 @@ const docTemplate = `{
                     "type": "number"
                 },
                 "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
                     "type": "string"
                 }
             }

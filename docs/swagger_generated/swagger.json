@@ -2684,6 +2684,9 @@
                 "endingAmount": {
                     "type": "number"
                 },
+                "isLeaf": {
+                    "type": "boolean"
+                },
                 "openingAmount": {
                     "type": "number"
                 },
@@ -2697,6 +2700,9 @@
                     "type": "number"
                 },
                 "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
                     "type": "string"
                 }
             }

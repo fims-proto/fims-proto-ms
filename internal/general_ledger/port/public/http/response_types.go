@@ -73,18 +73,20 @@ type PeriodResponse struct {
 }
 
 type LedgerResponse struct {
-	SobId            uuid.UUID       `json:"sobId,omitempty"`
-	AccountId        uuid.UUID       `json:"accountId,omitempty"`
-	AccountNumber    string          `json:"accountNumber,omitempty"`
-	AccountTitle     string          `json:"accountTitle,omitempty"`
-	AccountClass     string          `json:"accountClass"`
-	AccountGroup     string          `json:"accountGroup"`
-	BalanceDirection string          `json:"balanceDirection,omitempty"`
-	OpeningAmount    decimal.Decimal `json:"openingAmount"`
-	PeriodAmount     decimal.Decimal `json:"periodAmount"`
-	PeriodDebit      decimal.Decimal `json:"periodDebit"`
-	PeriodCredit     decimal.Decimal `json:"periodCredit"`
-	EndingAmount     decimal.Decimal `json:"endingAmount"`
+	SobId             uuid.UUID       `json:"sobId,omitempty"`
+	AccountId         uuid.UUID       `json:"accountId,omitempty"`
+	SuperiorAccountId *uuid.UUID      `json:"superiorAccountId,omitempty"`
+	AccountNumber     string          `json:"accountNumber,omitempty"`
+	AccountTitle      string          `json:"accountTitle,omitempty"`
+	AccountClass      string          `json:"accountClass"`
+	AccountGroup      string          `json:"accountGroup"`
+	BalanceDirection  string          `json:"balanceDirection,omitempty"`
+	IsLeaf            bool            `json:"isLeaf"`
+	OpeningAmount     decimal.Decimal `json:"openingAmount"`
+	PeriodAmount      decimal.Decimal `json:"periodAmount"`
+	PeriodDebit       decimal.Decimal `json:"periodDebit"`
+	PeriodCredit      decimal.Decimal `json:"periodCredit"`
+	EndingAmount      decimal.Decimal `json:"endingAmount"`
 }
 
 type LedgerSummaryResponse struct {
@@ -219,18 +221,20 @@ func periodDTOToVO(dto query.Period) PeriodResponse {
 
 func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 	return LedgerResponse{
-		SobId:            dto.SobId,
-		AccountId:        dto.AccountId,
-		AccountNumber:    dto.Account.AccountNumber,
-		AccountTitle:     dto.Account.Title,
-		AccountClass:     strconv.Itoa(dto.Account.Class),
-		AccountGroup:     strconv.Itoa(dto.Account.Group),
-		BalanceDirection: dto.Account.BalanceDirection,
-		OpeningAmount:    dto.OpeningAmount,
-		PeriodAmount:     dto.PeriodAmount,
-		PeriodDebit:      dto.PeriodDebit,
-		PeriodCredit:     dto.PeriodCredit,
-		EndingAmount:     dto.EndingAmount,
+		SobId:             dto.SobId,
+		AccountId:         dto.AccountId,
+		SuperiorAccountId: dto.Account.SuperiorAccountId,
+		AccountNumber:     dto.Account.AccountNumber,
+		AccountTitle:      dto.Account.Title,
+		AccountClass:      strconv.Itoa(dto.Account.Class),
+		AccountGroup:      strconv.Itoa(dto.Account.Group),
+		BalanceDirection:  dto.Account.BalanceDirection,
+		IsLeaf:            dto.Account.IsLeaf,
+		OpeningAmount:     dto.OpeningAmount,
+		PeriodAmount:      dto.PeriodAmount,
+		PeriodDebit:       dto.PeriodDebit,
+		PeriodCredit:      dto.PeriodCredit,
+		EndingAmount:      dto.EndingAmount,
 	}
 }
 
