@@ -15,8 +15,8 @@ type LedgerEntry struct {
 	id                uuid.UUID
 	sobId             uuid.UUID
 	periodId          uuid.UUID
-	voucherId         uuid.UUID
-	lineItemId        uuid.UUID
+	journalId         uuid.UUID
+	journalLineId     uuid.UUID
 	accountId         uuid.UUID
 	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount
 	transactionDate   transaction_date.TransactionDate
@@ -27,8 +27,8 @@ func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	periodId uuid.UUID,
-	voucherId uuid.UUID,
-	lineItemId uuid.UUID,
+	journalId uuid.UUID,
+	journalLineId uuid.UUID,
 	accountId uuid.UUID,
 	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount,
 	transactionDate transaction_date.TransactionDate,
@@ -46,12 +46,12 @@ func New(
 		return nil, errors.New("nil period id")
 	}
 
-	if voucherId == uuid.Nil {
-		return nil, errors.New("nil voucher id")
+	if journalId == uuid.Nil {
+		return nil, errors.New("nil journal id")
 	}
 
-	if lineItemId == uuid.Nil {
-		return nil, errors.New("nil line item id")
+	if journalLineId == uuid.Nil {
+		return nil, errors.New("nil journal line id")
 	}
 
 	if accountId == uuid.Nil {
@@ -70,8 +70,8 @@ func New(
 		id:                id,
 		sobId:             sobId,
 		periodId:          periodId,
-		voucherId:         voucherId,
-		lineItemId:        lineItemId,
+		journalId:         journalId,
+		journalLineId:     journalLineId,
 		accountId:         accountId,
 		auxiliaryAccounts: auxiliaryAccounts,
 		transactionDate:   transactionDate,
@@ -91,12 +91,12 @@ func (l *LedgerEntry) PeriodId() uuid.UUID {
 	return l.periodId
 }
 
-func (l *LedgerEntry) VoucherId() uuid.UUID {
-	return l.voucherId
+func (l *LedgerEntry) JournalId() uuid.UUID {
+	return l.journalId
 }
 
-func (l *LedgerEntry) LineItemId() uuid.UUID {
-	return l.lineItemId
+func (l *LedgerEntry) JournalLineId() uuid.UUID {
+	return l.journalLineId
 }
 
 func (l *LedgerEntry) AccountId() uuid.UUID {

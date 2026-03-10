@@ -1,11 +1,11 @@
 meta {
-  name: [NOT USED] update voucher transaction time
+  name: [NOT USED] update journal transaction time
   type: http
   seq: 27
 }
 
 patch {
-  url: {{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}
+  url: {{base_path}}/sob/{{sob_1}}/journal/{{journalUUID_1}}
   body: json
   auth: none
 }
@@ -18,7 +18,7 @@ body:json {
 }
 
 tests {
-  test("Update voucher 204", function () {
+  test("Update journal 204", function () {
       expect(res.getStatus()).to.equal(204);
   });
 }

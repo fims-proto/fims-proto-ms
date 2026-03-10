@@ -16,18 +16,18 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github.com/google/uuid"
 )
 
-// prepareLineItems prepares line item domain objects and performs necessary checks
-func prepareLineItems(
+// prepareJournalLines prepares journal line domain objects and performs necessary checks
+func prepareJournalLines(
 	ctx context.Context,
 	repo domain.Repository,
 	sobId uuid.UUID,
-	commands []LineItemCmd,
-) ([]*voucher.LineItem, error) {
+	commands []JournalLineCmd,
+) ([]*journal.JournalLine, error) {
 	var accountNumbers []string
 	var auxiliaryPair []auxiliary_account.AuxiliaryPair
 	for _, item := range commands {
@@ -70,8 +70,8 @@ func prepareLineItems(
 		}
 	}
 
-	// prepare line items
-	var lineItems []*voucher.LineItem
+	// prepare journal lines
+	var journalLines []*journal.JournalLine
 	for _, item := range commands {
 		itemId := item.Id
 		if itemId == uuid.Nil {
@@ -82,7 +82,7 @@ func prepareLineItems(
 		for _, key := range item.AuxiliaryAccounts {
 			auxiliaryAccountsForItem = append(auxiliaryAccountsForItem, auxiliaryAccountsMap[key.CategoryKey+key.AccountKey])
 		}
-		lineItem, err := voucher.NewLineItem(
+		journalLine, err := journal.NewJournalLine(
 			itemId,
 			a,
 			auxiliaryAccountsForItem,
@@ -92,13 +92,13 @@ func prepareLineItems(
 		if err != nil {
 			return nil, err
 		}
-		lineItems = append(lineItems, lineItem)
+		journalLines = append(journalLines, journalLine)
 	}
 
-	return lineItems, nil
+	return journalLines, nil
 }
 
-// readPeriodIdAndCheck tries to get period id by given transaction date of a voucher, and will also check if the period is closed.
+// readPeriodIdAndCheck tries to get period id by given transaction date of a journal, and will also check if the period is closed.
 // if no period exists for given transaction date, it creates one
 func readPeriodIdAndCheck(
 	ctx context.Context,

@@ -1,18 +1,18 @@
 meta {
-  name: read all vouchers
+  name: read all journals
   type: http
   seq: 11
 }
 
 get {
-  url: {{base_path}}/sob/{{sob}}/vouchers
+  url: {{base_path}}/sob/{{sob}}/journals
   body: none
   auth: none
 }
 
 tests {
-  test("Read all vouchers", function () {
+  test("Read all journals", function () {
       expect(res.getStatus()).to.equal(200)
   });
-  
+
 }

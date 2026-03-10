@@ -5,7 +5,7 @@ meta {
 }
 
 post {
-  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-audit
+  url: {{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/cancel-audit
   body: json
   auth: none
 }
@@ -17,7 +17,7 @@ body:json {
 }
 
 tests {
-  test("Cancel audit voucher", function () {
+  test("Cancel audit journal", function () {
       expect(res.getStatus()).to.equal(204);
   });
 }

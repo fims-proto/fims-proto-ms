@@ -38,11 +38,11 @@ func NewClosePeriodHandler(repo domain.Repository, numberingService service.Numb
 }
 
 func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) error {
-	// check all vouchers are posted
-	if notPostedVoucherExists, err := h.repo.ExistsVouchersNotPostedInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-		return fmt.Errorf("failed to check vouchers posted status: %w", err)
-	} else if notPostedVoucherExists {
-		return commonErrors.NewSlugError("period-close-notAllVouchersPosted")
+	// check all journals are posted
+	if notPostedJournalExists, err := h.repo.ExistsJournalsNotPostedInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
+		return fmt.Errorf("failed to check journals posted status: %w", err)
+	} else if notPostedJournalExists {
+		return commonErrors.NewSlugError("period-close-notAllJournalsPosted")
 	}
 
 	// check all profit and loss ledgers have zero ending balance

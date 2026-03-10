@@ -130,7 +130,7 @@ type AuxiliaryLedgerResponse struct {
 	UpdatedAt            time.Time                 `json:"updatedAt"`
 }
 
-type LineItemResponse struct {
+type JournalLineResponse struct {
 	Id                uuid.UUID                  `json:"id,omitempty"`
 	Account           AccountResponse            `json:"account"`
 	AuxiliaryAccounts []AuxiliaryAccountResponse `json:"auxiliaryAccounts,omitempty"`
@@ -140,13 +140,13 @@ type LineItemResponse struct {
 	UpdatedAt         time.Time                  `json:"updatedAt"`
 }
 
-type VoucherResponse struct {
+type JournalResponse struct {
 	Id                 uuid.UUID                        `json:"id,omitempty"`
 	SobId              uuid.UUID                        `json:"sobId,omitempty"`
 	Period             PeriodResponse                   `json:"period"`
 	HeaderText         string                           `json:"headerText,omitempty"`
 	DocumentNumber     string                           `json:"documentNumber,omitempty"`
-	VoucherType        string                           `json:"voucherType,omitempty"`
+	JournalType        string                           `json:"journalType,omitempty"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            *UserResponse                    `json:"creator"`
 	Auditor            *UserResponse                    `json:"auditor"`
@@ -157,7 +157,7 @@ type VoucherResponse struct {
 	IsPosted           bool                             `json:"isPosted"`
 	IsReviewed         bool                             `json:"isReviewed"`
 	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
-	LineItems          []LineItemResponse               `json:"lineItems,omitempty"`
+	JournalLines       []JournalLineResponse            `json:"journalLines,omitempty"`
 	CreatedAt          time.Time                        `json:"createdAt"`
 	UpdatedAt          time.Time                        `json:"updatedAt"`
 }
@@ -168,8 +168,8 @@ type UserResponse struct {
 }
 
 type LedgerEntryResponse struct {
-	VoucherId       uuid.UUID                        `json:"voucherId"`
-	VoucherNumber   string                           `json:"voucherNumber"`
+	JournalId       uuid.UUID                        `json:"journalId"`
+	JournalNumber   string                           `json:"journalNumber"`
 	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	Text            string                           `json:"text"`
 	Amount          decimal.Decimal                  `json:"amount"`
@@ -245,8 +245,8 @@ func auxiliaryLedgerSummaryToVO(dto query.AuxiliaryLedgerSummary) AuxiliaryLedge
 	return AuxiliaryLedgerSummaryResponse(dto)
 }
 
-func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
-	return LineItemResponse{
+func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
+	return JournalLineResponse{
 		Id:                dto.Id,
 		Account:           accountDTOToVO(dto.Account),
 		AuxiliaryAccounts: converter.DTOsToVOs(dto.AuxiliaryAccounts, auxiliaryAccountDTOToVO),
@@ -257,7 +257,7 @@ func lineItemDTOToVO(dto query.LineItem) LineItemResponse {
 	}
 }
 
-func voucherDTOToVO(dto query.Voucher) VoucherResponse {
+func journalDTOToVO(dto query.Journal) JournalResponse {
 	userOrNil := func(u *query.User) *UserResponse {
 		if u != nil {
 			return &UserResponse{
@@ -268,12 +268,12 @@ func voucherDTOToVO(dto query.Voucher) VoucherResponse {
 		return nil
 	}
 
-	return VoucherResponse{
+	return JournalResponse{
 		SobId:              dto.SobId,
 		Id:                 dto.Id,
 		Period:             periodDTOToVO(dto.Period),
 		HeaderText:         dto.HeaderText,
-		VoucherType:        dto.VoucherType,
+		JournalType:        dto.JournalType,
 		DocumentNumber:     dto.DocumentNumber,
 		AttachmentQuantity: dto.AttachmentQuantity,
 		Amount:             dto.Amount,
@@ -285,12 +285,20 @@ func voucherDTOToVO(dto query.Voucher) VoucherResponse {
 		IsAudited:          dto.IsAudited,
 		IsPosted:           dto.IsPosted,
 		TransactionDate:    dto.TransactionDate,
-		LineItems:          converter.DTOsToVOs(dto.LineItems, lineItemDTOToVO),
+		JournalLines:       converter.DTOsToVOs(dto.JournalLines, journalLineDTOToVO),
 		CreatedAt:          dto.CreatedAt,
 		UpdatedAt:          dto.UpdatedAt,
 	}
 }
 
 func ledgerEntryDTOToVO(dto query.LedgerEntry) LedgerEntryResponse {
-	return LedgerEntryResponse(dto)
+	return LedgerEntryResponse{
+		JournalId:       dto.JournalId,
+		JournalNumber:   dto.JournalNumber,
+		TransactionDate: dto.TransactionDate,
+		Text:            dto.Text,
+		Amount:          dto.Amount,
+		CreatedAt:       dto.CreatedAt,
+		UpdatedAt:       dto.UpdatedAt,
+	}
 }

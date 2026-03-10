@@ -31,8 +31,8 @@ func createPeriod(
 		return fmt.Errorf("failed to create period: %w", err)
 	}
 
-	// create numbering configuration for voucher entries in this period
-	if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, cmd.PeriodId); err != nil {
+	// create numbering configuration for journal entries in this period
+	if err = numberingService.CreateIdentifierConfigurationForJournal(ctx, cmd.PeriodId); err != nil {
 		return fmt.Errorf("failed to create period: %w", err)
 	}
 
@@ -57,8 +57,8 @@ func createPeriodIfNotExists(
 	}
 
 	if created {
-		// create numbering configuration for voucher entries in this period
-		if err = numberingService.CreateIdentifierConfigurationForVoucher(ctx, p.Id()); err != nil {
+		// create numbering configuration for journal entries in this period
+		if err = numberingService.CreateIdentifierConfigurationForJournal(ctx, p.Id()); err != nil {
 			return nil, fmt.Errorf("failed to create period: %w", err)
 		}
 	}

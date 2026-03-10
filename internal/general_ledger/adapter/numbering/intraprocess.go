@@ -18,12 +18,12 @@ func NewIntraProcessAdapter(numberingInterface numberingPort.NumberingInterface)
 	return IntraProcessAdapter{numberingInterface: numberingInterface}
 }
 
-func (i IntraProcessAdapter) GenerateIdentifier(ctx context.Context, periodId uuid.UUID, voucherType string) (string, error) {
+func (i IntraProcessAdapter) GenerateIdentifier(ctx context.Context, periodId uuid.UUID, journalType string) (string, error) {
 	cmd := command.GenerateNextIdentifierCmd{
 		IdentifierId:         uuid.New(),
-		TargetBusinessObject: "voucher",
+		TargetBusinessObject: "journal",
 		ObjectsToMatch: map[string]string{
-			"voucher_type": voucherType,
+			"journal_type": journalType,
 			"period_id":    periodId.String(),
 		},
 	}
@@ -31,14 +31,14 @@ func (i IntraProcessAdapter) GenerateIdentifier(ctx context.Context, periodId uu
 	return i.numberingInterface.GenerateIdentifier(ctx, cmd)
 }
 
-func (i IntraProcessAdapter) CreateIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error {
+func (i IntraProcessAdapter) CreateIdentifierConfigurationForJournal(ctx context.Context, periodId uuid.UUID) error {
 	cmd := command.CreateIdentifierConfigurationCmd{
 		IdentifierConfigurationId: uuid.New(),
-		TargetBusinessObject:      "voucher",
+		TargetBusinessObject:      "journal",
 		PropertyMatchers: []struct{ Name, Value string }{
 			{
-				Name:  "voucher_type",
-				Value: "general_voucher",
+				Name:  "journal_type",
+				Value: "general_journal",
 			},
 			{
 				Name:  "period_id",

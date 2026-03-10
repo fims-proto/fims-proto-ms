@@ -554,6 +554,495 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/journal/{journalId}": {
+            "get": {
+                "description": "Show journal by sob and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.JournalResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Update journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update journal request",
+                        "name": "UpdateJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journal/{journalId}/audit": {
+            "post": {
+                "description": "AuditJournal journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "AuditJournal journal request, auditor user ID",
+                        "name": "AuditJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.AuditJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journal/{journalId}/cancel-audit": {
+            "post": {
+                "description": "Cancel audit journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cancel audit journal request, auditor user ID",
+                        "name": "AuditJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.AuditJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journal/{journalId}/cancel-review": {
+            "post": {
+                "description": "Cancel review journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Cancel review journal request, reviewer user ID",
+                        "name": "ReviewJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.ReviewJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journal/{journalId}/post": {
+            "post": {
+                "description": "PostJournal journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PostJournal journal request, poster user ID",
+                        "name": "PostJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.PostJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journal/{journalId}/review": {
+            "post": {
+                "description": "ReviewJournal journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "ReviewJournal journal request, reviewer user ID",
+                        "name": "ReviewJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.ReviewJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journals": {
+            "get": {
+                "description": "List all journals by sob with pagination",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create journal",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create journal request",
+                        "name": "CreateJournalRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateJournalRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.JournalResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/ledger/{accountId}": {
             "get": {
                 "description": "Get aggregated ledger summary for a single account across a period range",
@@ -1374,495 +1863,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/voucher/{voucherId}": {
-            "get": {
-                "description": "Show voucher by sob and id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.VoucherResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Update voucher request",
-                        "name": "UpdateVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.UpdateVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/voucher/{voucherId}/audit": {
-            "post": {
-                "description": "AuditVoucher voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "AuditVoucher voucher request, auditor user ID",
-                        "name": "AuditVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.AuditVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/voucher/{voucherId}/cancel-audit": {
-            "post": {
-                "description": "Cancel audit voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Cancel audit voucher request, auditor user ID",
-                        "name": "AuditVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.AuditVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/voucher/{voucherId}/cancel-review": {
-            "post": {
-                "description": "Cancel review voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Cancel review voucher request, reviewer user ID",
-                        "name": "ReviewVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.ReviewVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/voucher/{voucherId}/post": {
-            "post": {
-                "description": "PostVoucher voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "PostVoucher voucher request, poster user ID",
-                        "name": "PostVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.PostVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/voucher/{voucherId}/review": {
-            "post": {
-                "description": "ReviewVoucher voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Voucher ID",
-                        "name": "voucherId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "ReviewVoucher voucher request, reviewer user ID",
-                        "name": "ReviewVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.ReviewVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/vouchers": {
-            "get": {
-                "description": "List all vouchers by sob with pagination",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create voucher",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "vouchers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create voucher request",
-                        "name": "CreateVoucherRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.CreateVoucherRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/http.VoucherResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sobs": {
             "get": {
                 "description": "List all sobs",
@@ -1993,7 +1993,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "UpdateLineItems sob request",
+                        "description": "UpdateJournalLines sob request",
                         "name": "UpdateSobRequest",
                         "in": "body",
                         "required": true,
@@ -2179,6 +2179,29 @@ const docTemplate = `{
                 }
             }
         },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.JournalResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse": {
             "type": "object",
             "properties": {
@@ -2248,29 +2271,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.VoucherResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse": {
             "type": "object",
             "properties": {
@@ -2322,7 +2322,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AuditVoucherRequest": {
+        "http.AuditJournalRequest": {
             "type": "object",
             "properties": {
                 "auditor": {
@@ -2473,6 +2473,32 @@ const docTemplate = `{
                 }
             }
         },
+        "http.CreateJournalRequest": {
+            "type": "object",
+            "properties": {
+                "attachmentQuantity": {
+                    "type": "integer"
+                },
+                "creator": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "journalLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.JournalLineRequest"
+                    }
+                },
+                "journalType": {
+                    "type": "string"
+                },
+                "transactionDate": {
+                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
+                }
+            }
+        },
         "http.CreateSobRequest": {
             "type": "object",
             "properties": {
@@ -2496,32 +2522,6 @@ const docTemplate = `{
                 },
                 "startingPeriodYear": {
                     "type": "integer"
-                }
-            }
-        },
-        "http.CreateVoucherRequest": {
-            "type": "object",
-            "properties": {
-                "attachmentQuantity": {
-                    "type": "integer"
-                },
-                "creator": {
-                    "type": "string"
-                },
-                "headerText": {
-                    "type": "string"
-                },
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemRequest"
-                    }
-                },
-                "transactionDate": {
-                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
-                },
-                "voucherType": {
-                    "type": "string"
                 }
             }
         },
@@ -2640,6 +2640,123 @@ const docTemplate = `{
                 }
             }
         },
+        "http.JournalLineRequest": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "auxiliaryAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.JournalLineResponse": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "auxiliaryAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.JournalResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "attachmentQuantity": {
+                    "type": "integer"
+                },
+                "auditor": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAudited": {
+                    "type": "boolean"
+                },
+                "isPosted": {
+                    "type": "boolean"
+                },
+                "isReviewed": {
+                    "type": "boolean"
+                },
+                "journalLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.JournalLineResponse"
+                    }
+                },
+                "journalType": {
+                    "type": "string"
+                },
+                "period": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                },
+                "poster": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "reviewer": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "transactionDate": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "http.LedgerEntryResponse": {
             "type": "object",
             "properties": {
@@ -2649,6 +2766,12 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "journalId": {
+                    "type": "string"
+                },
+                "journalNumber": {
+                    "type": "string"
+                },
                 "text": {
                     "type": "string"
                 },
@@ -2656,12 +2779,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
-                    "type": "string"
-                },
-                "voucherId": {
-                    "type": "string"
-                },
-                "voucherNumber": {
                     "type": "string"
                 }
             }
@@ -2736,58 +2853,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.LineItemRequest": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "amount": {
-                    "type": "number"
-                },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.LineItemResponse": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
-                },
-                "amount": {
-                    "type": "number"
-                },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
-                    }
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "http.PeriodAndLedgersResponse": {
             "type": "object",
             "properties": {
@@ -2802,7 +2867,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.PostVoucherRequest": {
+        "http.PostJournalRequest": {
             "type": "object",
             "properties": {
                 "poster": {
@@ -2851,7 +2916,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.ReviewVoucherRequest": {
+        "http.ReviewJournalRequest": {
             "type": "object",
             "properties": {
                 "reviewer": {
@@ -2945,6 +3010,9 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "http.UpdateJournalRequest": {
+            "type": "object"
         },
         "http.UpdateReportFormulaRequest": {
             "type": "object",
@@ -3076,74 +3144,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "traits": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.UpdateVoucherRequest": {
-            "type": "object"
-        },
-        "http.VoucherResponse": {
-            "type": "object",
-            "properties": {
-                "amount": {
-                    "type": "number"
-                },
-                "attachmentQuantity": {
-                    "type": "integer"
-                },
-                "auditor": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "creator": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
-                },
-                "documentNumber": {
-                    "type": "string"
-                },
-                "headerText": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isAudited": {
-                    "type": "boolean"
-                },
-                "isPosted": {
-                    "type": "boolean"
-                },
-                "isReviewed": {
-                    "type": "boolean"
-                },
-                "lineItems": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.LineItemResponse"
-                    }
-                },
-                "period": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
-                },
-                "poster": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
-                },
-                "reviewer": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "transactionDate": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "voucherType": {
                     "type": "string"
                 }
             }

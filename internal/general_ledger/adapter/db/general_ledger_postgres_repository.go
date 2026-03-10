@@ -17,10 +17,10 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -53,8 +53,8 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 		&ledgerEntryPO{},
 		&ledgerPO{},
 		&auxiliaryLedgerPO{},
-		&voucherPO{},
-		&lineItemPO{},
+		&journalPO{},
+		&journalLinePO{},
 	)
 }
 
@@ -503,92 +503,92 @@ func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx conte
 	return converter.POsToBOs(ledgerPOs, ledgerPOToBO)
 }
 
-func (r GeneralLedgerPostgresRepository) CreateVoucher(ctx context.Context, v *voucher.Voucher) error {
+func (r GeneralLedgerPostgresRepository) CreateJournal(ctx context.Context, j *journal.Journal) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Create(new(voucherBOToPO(*v))).Error
+	return db.Create(new(journalBOToPO(*j))).Error
 }
 
-func (r GeneralLedgerPostgresRepository) UpdateVoucherHeader(
+func (r GeneralLedgerPostgresRepository) UpdateJournalHeader(
 	ctx context.Context,
-	voucherId uuid.UUID,
-	updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+	journalId uuid.UUID,
+	updateFn func(j *journal.Journal) (*journal.Journal, error),
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := voucherPO{Id: voucherId}
+	po := journalPO{Id: journalId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("LineItems.Account.AuxiliaryCategories").
-		Preload("LineItems.AuxiliaryAccounts.Category").
+		Preload("JournalLines.Account.AuxiliaryCategories").
+		Preload("JournalLines.AuxiliaryAccounts.Category").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
 	}
 
-	bo, err := voucherPOToBO(po)
+	bo, err := journalPOToBO(po)
 	if err != nil {
-		return fmt.Errorf("failed to update voucher header: %w", err)
+		return fmt.Errorf("failed to update journal header: %w", err)
 	}
 
 	updatedBO, err := updateFn(bo)
 	if err != nil {
-		return fmt.Errorf("failed to update voucher header: %w", err)
+		return fmt.Errorf("failed to update journal header: %w", err)
 	}
 
-	updatedPO := voucherBOToPO(*updatedBO)
+	updatedPO := journalBOToPO(*updatedBO)
 
-	// Only persist the voucher table columns; omit associations to avoid touching line_items.
-	return db.Omit("LineItems", "Period").Save(&updatedPO).Error
+	// Only persist the journal table columns; omit associations to avoid touching journal_lines.
+	return db.Omit("JournalLines", "Period").Save(&updatedPO).Error
 }
 
-func (r GeneralLedgerPostgresRepository) UpdateEntireVoucher(
+func (r GeneralLedgerPostgresRepository) UpdateEntireJournal(
 	ctx context.Context,
-	voucherId uuid.UUID,
-	updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+	journalId uuid.UUID,
+	updateFn func(j *journal.Journal) (*journal.Journal, error),
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := voucherPO{Id: voucherId}
+	po := journalPO{Id: journalId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("LineItems.Account.AuxiliaryCategories").
-		Preload("LineItems.AuxiliaryAccounts.Category").
+		Preload("JournalLines.Account.AuxiliaryCategories").
+		Preload("JournalLines.AuxiliaryAccounts.Category").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
 	}
 
-	// remove existing link between line item and auxiliary account
-	for _, item := range po.LineItems {
+	// remove existing link between journal line and auxiliary account
+	for _, item := range po.JournalLines {
 		if err := db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
-			return fmt.Errorf("failed to remove line item auxiliary account associations: %w", err)
+			return fmt.Errorf("failed to remove journal line auxiliary account associations: %w", err)
 		}
 	}
 
-	bo, err := voucherPOToBO(po)
+	bo, err := journalPOToBO(po)
 	if err != nil {
-		return fmt.Errorf("failed to update voucher: %w", err)
+		return fmt.Errorf("failed to update journal: %w", err)
 	}
 
 	updatedBO, err := updateFn(bo)
 	if err != nil {
-		return fmt.Errorf("failed to update voucher: %w", err)
+		return fmt.Errorf("failed to update journal: %w", err)
 	}
 
-	po = voucherBOToPO(*updatedBO)
+	po = journalBOToPO(*updatedBO)
 
-	// remove existing line items
-	if err = db.Where("voucher_id = ?", po.Id).Delete(&lineItemPO{}).Error; err != nil {
-		return fmt.Errorf("failed to delete line items: %w", err)
+	// remove existing journal lines
+	if err = db.Where("journal_id = ?", po.Id).Delete(&journalLinePO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete journal lines: %w", err)
 	}
 
 	return db.Save(&po).Error
 }
 
-func (r GeneralLedgerPostgresRepository) ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
+func (r GeneralLedgerPostgresRepository) ExistsJournalsNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error) {
 	db := r.dataSource.GetConnection(ctx)
 
 	var count int64
-	err := db.Model(&voucherPO{}).
+	err := db.Model(&journalPO{}).
 		Where("sob_id = ? AND period_id = ? AND is_posted = false", sobId, periodId).
 		Count(&count).
 		Error

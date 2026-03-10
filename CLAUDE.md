@@ -27,10 +27,10 @@ make test          # Run all tests with -count=1
 go test ./...      # Alternative without make
 
 # Run single package tests
-go test ./internal/general_ledger/domain/voucher/... -count=1
+go test ./internal/general_ledger/domain/journal/... -count=1
 
 # Run specific test
-go test ./internal/general_ledger/domain/voucher/... -run TestVoucherPost -count=1
+go test ./internal/general_ledger/domain/journal/... -run TestJournalPost -count=1
 ```
 
 ### Code Quality
@@ -65,7 +65,7 @@ Each domain module follows this structure:
 ```
 internal/{domain}/
 ├── domain/        # Business logic, value objects, aggregates
-│                  # Domain methods enforce business rules (e.g., voucher.Post(), voucher.Audit())
+│                  # Domain methods enforce business rules (e.g., journal.Post(), journal.Audit())
 ├── app/           # Application services organized as Commands (writes) and Queries (reads)
 │   ├── command/   # Write operations with handler pattern
 │   ├── query/     # Read operations and read models
@@ -119,8 +119,8 @@ Subdomain resolution: `ResolveSubdomain()` middleware extracts tenant from URL (
 ```go
 return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
     // All repository operations use txCtx
-    return h.repo.UpdateVoucher(txCtx, id, func(v *voucher.Voucher) (*voucher.Voucher, error) {
-        return v, v.Post(poster)
+    return h.repo.UpdateJournal(txCtx, id, func(j *journal.Journal) (*journal.Journal, error) {
+        return j, j.Post(poster)
     })
 })
 ```
@@ -130,22 +130,22 @@ return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 Domain state changes use update callbacks with domain methods:
 
 ```go
-repo.UpdateVoucher(ctx, voucherId, func(v *voucher.Voucher) (*voucher.Voucher, error) {
-    if err := v.Post(poster); err != nil {  // Domain method enforces rules
+repo.UpdateJournal(ctx, journalId, func(j *journal.Journal) (*journal.Journal, error) {
+    if err := j.Post(poster); err != nil {  // Domain method enforces rules
         return nil, err
     }
-    return v, nil
+    return j, nil
 })
 ```
 
-Never mutate domain objects directly - always use their methods (e.g., `v.Post()`, `v.Audit()`, `v.Review()`).
+Never mutate domain objects directly - always use their methods (e.g., `j.Post()`, `j.Audit()`, `j.Review()`).
 
 ### Error Handling with i18n
 
 Use slug-based errors for business logic:
 
 ```go
-return errors.NewSlugError("voucher-post-notAudited")
+return errors.NewSlugError("journal-post-notAudited")
 ```
 
 When adding new slugs:
@@ -164,7 +164,7 @@ See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middlew
 - **period** - Accounting periods (monthly/quarterly/yearly)
 - **ledger** - Account balance tracking per period
 - **auxiliary_ledger** - Detailed balance tracking with auxiliary dimensions
-- **voucher** - Journal entries with line items
+- **journal** - Journal entries with journal lines
 
 ### Signed Amount Model
 
@@ -176,8 +176,8 @@ See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middlew
 
 **Domain Model Changes**:
 
-1. **LineItem**: Single `amount` field (signed) instead of separate `debitAmount`/`creditAmount`
-2. **Voucher**: Single `amount` field (transaction total = sum of positive/debit amounts)
+1. **JournalLine**: Single `amount` field (signed) instead of separate `debitAmount`/`creditAmount`
+2. **Journal**: Single `amount` field (transaction total = sum of positive/debit amounts)
 3. **LedgerEntry**: Single `amount` field (signed)
 4. **Ledger/AuxiliaryLedger**:
    - `openingAmount` - Signed opening balance
@@ -191,7 +191,7 @@ endingAmount = openingAmount + periodAmount
 ```
 
 **Trial Balance Validation**:
-- Sum of all signed line item amounts must equal zero
+- Sum of all signed journal line amounts must equal zero
 - Instead of checking `totalDebits == totalCredits`
 
 **Posting Logic** (`ledger.update_balance`):
@@ -204,13 +204,13 @@ if amount.IsPositive() {
 }
 ```
 
-### Voucher Lifecycle
+### Journal Lifecycle
 
 Workflow: Create → Review → Audit → Post (登账) → affects Ledgers
 
-Business rules enforced in `internal/general_ledger/domain/voucher/`:
+Business rules enforced in `internal/general_ledger/domain/journal/`:
 
-- Voucher must be reviewed AND audited before posting
+- Journal must be reviewed AND audited before posting
 - Creator ≠ Reviewer ≠ Auditor (segregation of duties)
 - Cannot modify after audit/review
 - Period must be current and open for posting
@@ -218,12 +218,12 @@ Business rules enforced in `internal/general_ledger/domain/voucher/`:
 
 ### Posting Mechanics
 
-File: `internal/general_ledger/app/command/post_voucher.go`
+File: `internal/general_ledger/app/command/post_journal.go`
 
 Process:
 
-1. Call `v.Post(poster)` to validate and mark voucher
-2. Build posting records for all line items + their superior accounts (each with signed amount)
+1. Call `j.Post(poster)` to validate and mark journal
+2. Build posting records for all journal lines + their superior accounts (each with signed amount)
 3. Merge identical account records (sum signed amounts)
 4. Batch update: `UpdateLedgersByPeriodAndAccountIds()` and `UpdateAuxiliaryLedgersByPeriodAndAccountIds()`
 
@@ -244,7 +244,7 @@ Reports use two data source types:
 
 ### Numbering Service
 
-Generates sequential identifiers for vouchers: `numberingService.GenerateIdentifier(ctx, periodId, voucherType)`
+Generates sequential identifiers for journals: `numberingService.GenerateIdentifier(ctx, periodId, journalType)`
 
 Configurations define patterns with auto-increment counters per period/type.
 
@@ -254,7 +254,7 @@ A SoB (账套) represents a complete accounting entity with its own:
 
 - Chart of accounts
 - Accounting periods
-- Vouchers and ledgers
+- Journals and ledgers
 - Reporting configurations
 
 Multi-tenancy is achieved through SoB isolation.
@@ -279,13 +279,13 @@ Grammar defined in `filterable.peg`. Generate parser with `make peg`.
 
 Focus on:
 
-- Domain logic: voucher state transitions, business rule enforcement
+- Domain logic: journal state transitions, business rule enforcement
 - Report generator: formula calculations
 - Repository updates with transactions
 
 ### Integration Tests
 
-Bruno API tests in `bruno_collection/fims local/`: voucher creation → review → audit → post → verify ledgers.
+Bruno API tests in `bruno_collection/fims local/`: journal creation → review → audit → post → verify ledgers.
 
 Use these flows as integration test templates.
 
@@ -307,13 +307,13 @@ Use these flows as integration test templates.
 
 **Domain Examples**:
 
-- `internal/general_ledger/domain/voucher/` - Voucher aggregate with business rules
+- `internal/general_ledger/domain/journal/` - Journal aggregate with business rules
 - `internal/general_ledger/domain/ledger/` - Ledger balance tracking
 - `internal/sob/domain/sob/` - Set of Books configuration
 
 **Critical Implementations**:
 
-- `internal/general_ledger/app/command/post_voucher.go` - Posting logic
+- `internal/general_ledger/app/command/post_journal.go` - Posting logic
 - `internal/report/domain/generator/generator.go` - Report generation
 - `internal/common/errors/gin_middleware.go` - Error translation
 
@@ -331,10 +331,10 @@ Use these flows as integration test templates.
 HTTP handlers require swagger annotations:
 
 ```go
-// @Tags        vouchers
-// @Summary     Post voucher to ledgers
+// @Tags        journals
+// @Summary     Post journal to ledgers
 // @Param       sobId path string true "Sob ID"
-// @Router      /sob/{sobId}/voucher/{voucherId}/post [patch]
+// @Router      /sob/{sobId}/journal/{journalId}/post [patch]
 ```
 
 Main swagger config in `api/api.go`

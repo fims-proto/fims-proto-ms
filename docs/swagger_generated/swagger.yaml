@@ -45,6 +45,21 @@ definitions:
       totalPage:
         type: integer
     type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.JournalResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse:
     properties:
       content:
@@ -90,21 +105,6 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.VoucherResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse:
     properties:
       content:
@@ -138,7 +138,7 @@ definitions:
       id:
         type: string
     type: object
-  http.AuditVoucherRequest:
+  http.AuditJournalRequest:
     properties:
       auditor:
         type: string
@@ -236,6 +236,23 @@ definitions:
       title:
         type: string
     type: object
+  http.CreateJournalRequest:
+    properties:
+      attachmentQuantity:
+        type: integer
+      creator:
+        type: string
+      headerText:
+        type: string
+      journalLines:
+        items:
+          $ref: '#/definitions/http.JournalLineRequest'
+        type: array
+      journalType:
+        type: string
+      transactionDate:
+        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
+    type: object
   http.CreateSobRequest:
     properties:
       accountsCodeLength:
@@ -252,23 +269,6 @@ definitions:
         type: integer
       startingPeriodYear:
         type: integer
-    type: object
-  http.CreateVoucherRequest:
-    properties:
-      attachmentQuantity:
-        type: integer
-      creator:
-        type: string
-      headerText:
-        type: string
-      lineItems:
-        items:
-          $ref: '#/definitions/http.LineItemRequest'
-        type: array
-      transactionDate:
-        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
-      voucherType:
-        type: string
     type: object
   http.FormulaResponse:
     properties:
@@ -345,21 +345,98 @@ definitions:
       text:
         type: string
     type: object
+  http.JournalLineRequest:
+    properties:
+      accountNumber:
+        type: string
+      amount:
+        type: number
+      auxiliaryAccounts:
+        items:
+          $ref: '#/definitions/http.AuxiliaryItemRequest'
+        type: array
+      id:
+        type: string
+      text:
+        type: string
+    type: object
+  http.JournalLineResponse:
+    properties:
+      account:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+      amount:
+        type: number
+      auxiliaryAccounts:
+        items:
+          $ref: '#/definitions/http.AuxiliaryAccountResponse'
+        type: array
+      createdAt:
+        type: string
+      id:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.JournalResponse:
+    properties:
+      amount:
+        type: number
+      attachmentQuantity:
+        type: integer
+      auditor:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      createdAt:
+        type: string
+      creator:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      documentNumber:
+        type: string
+      headerText:
+        type: string
+      id:
+        type: string
+      isAudited:
+        type: boolean
+      isPosted:
+        type: boolean
+      isReviewed:
+        type: boolean
+      journalLines:
+        items:
+          $ref: '#/definitions/http.JournalLineResponse'
+        type: array
+      journalType:
+        type: string
+      period:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
+      poster:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      reviewer:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      sobId:
+        type: string
+      transactionDate:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   http.LedgerEntryResponse:
     properties:
       amount:
         type: number
       createdAt:
         type: string
+      journalId:
+        type: string
+      journalNumber:
+        type: string
       text:
         type: string
       transactionDate:
         type: string
       updatedAt:
-        type: string
-      voucherId:
-        type: string
-      voucherNumber:
         type: string
     type: object
   http.LedgerResponse:
@@ -408,40 +485,6 @@ definitions:
       periodDebit:
         type: number
     type: object
-  http.LineItemRequest:
-    properties:
-      accountNumber:
-        type: string
-      amount:
-        type: number
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryItemRequest'
-        type: array
-      id:
-        type: string
-      text:
-        type: string
-    type: object
-  http.LineItemResponse:
-    properties:
-      account:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
-      amount:
-        type: number
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryAccountResponse'
-        type: array
-      createdAt:
-        type: string
-      id:
-        type: string
-      text:
-        type: string
-      updatedAt:
-        type: string
-    type: object
   http.PeriodAndLedgersResponse:
     properties:
       ledgers:
@@ -451,7 +494,7 @@ definitions:
       period:
         $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
     type: object
-  http.PostVoucherRequest:
+  http.PostJournalRequest:
     properties:
       poster:
         type: string
@@ -483,7 +526,7 @@ definitions:
       updatedAt:
         type: string
     type: object
-  http.ReviewVoucherRequest:
+  http.ReviewJournalRequest:
     properties:
       reviewer:
         type: string
@@ -544,6 +587,8 @@ definitions:
         type: integer
       title:
         type: string
+    type: object
+  http.UpdateJournalRequest:
     type: object
   http.UpdateReportFormulaRequest:
     properties:
@@ -635,51 +680,6 @@ definitions:
   http.UpdateUserRequest:
     properties:
       traits:
-        type: string
-    type: object
-  http.UpdateVoucherRequest:
-    type: object
-  http.VoucherResponse:
-    properties:
-      amount:
-        type: number
-      attachmentQuantity:
-        type: integer
-      auditor:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
-      createdAt:
-        type: string
-      creator:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
-      documentNumber:
-        type: string
-      headerText:
-        type: string
-      id:
-        type: string
-      isAudited:
-        type: boolean
-      isPosted:
-        type: boolean
-      isReviewed:
-        type: boolean
-      lineItems:
-        items:
-          $ref: '#/definitions/http.LineItemResponse'
-        type: array
-      period:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
-      poster:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
-      reviewer:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
-      sobId:
-        type: string
-      transactionDate:
-        type: string
-      updatedAt:
-        type: string
-      voucherType:
         type: string
     type: object
   internal_general_ledger_port_public_http.AccountResponse:
@@ -1175,6 +1175,330 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
+  /sob/{sobId}/journal/{journalId}:
+    get:
+      consumes:
+      - application/json
+      description: Show journal by sob and id
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.JournalResponse'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+    patch:
+      consumes:
+      - application/json
+      description: Update journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      - description: Update journal request
+        in: body
+        name: UpdateJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journal/{journalId}/audit:
+    post:
+      consumes:
+      - application/json
+      description: AuditJournal journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      - description: AuditJournal journal request, auditor user ID
+        in: body
+        name: AuditJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.AuditJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journal/{journalId}/cancel-audit:
+    post:
+      consumes:
+      - application/json
+      description: Cancel audit journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      - description: Cancel audit journal request, auditor user ID
+        in: body
+        name: AuditJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.AuditJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journal/{journalId}/cancel-review:
+    post:
+      consumes:
+      - application/json
+      description: Cancel review journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      - description: Cancel review journal request, reviewer user ID
+        in: body
+        name: ReviewJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReviewJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journal/{journalId}/post:
+    post:
+      consumes:
+      - application/json
+      description: PostJournal journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      - description: PostJournal journal request, poster user ID
+        in: body
+        name: PostJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.PostJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journal/{journalId}/review:
+    post:
+      consumes:
+      - application/json
+      description: ReviewJournal journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      - description: ReviewJournal journal request, reviewer user ID
+        in: body
+        name: ReviewJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.ReviewJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journals:
+    get:
+      consumes:
+      - application/json
+      description: List all journals by sob with pagination
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+    post:
+      consumes:
+      - application/json
+      description: Create journal
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Create journal request
+        in: body
+        name: CreateJournalRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateJournalRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.JournalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
   /sob/{sobId}/ledger/{accountId}:
     get:
       consumes:
@@ -1730,330 +2054,6 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - accounts
-  /sob/{sobId}/voucher/{voucherId}:
-    get:
-      consumes:
-      - application/json
-      description: Show voucher by sob and id
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.VoucherResponse'
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-    patch:
-      consumes:
-      - application/json
-      description: Update voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      - description: Update voucher request
-        in: body
-        name: UpdateVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.UpdateVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-  /sob/{sobId}/voucher/{voucherId}/audit:
-    post:
-      consumes:
-      - application/json
-      description: AuditVoucher voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      - description: AuditVoucher voucher request, auditor user ID
-        in: body
-        name: AuditVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.AuditVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-  /sob/{sobId}/voucher/{voucherId}/cancel-audit:
-    post:
-      consumes:
-      - application/json
-      description: Cancel audit voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      - description: Cancel audit voucher request, auditor user ID
-        in: body
-        name: AuditVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.AuditVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-  /sob/{sobId}/voucher/{voucherId}/cancel-review:
-    post:
-      consumes:
-      - application/json
-      description: Cancel review voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      - description: Cancel review voucher request, reviewer user ID
-        in: body
-        name: ReviewVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.ReviewVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-  /sob/{sobId}/voucher/{voucherId}/post:
-    post:
-      consumes:
-      - application/json
-      description: PostVoucher voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      - description: PostVoucher voucher request, poster user ID
-        in: body
-        name: PostVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.PostVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-  /sob/{sobId}/voucher/{voucherId}/review:
-    post:
-      consumes:
-      - application/json
-      description: ReviewVoucher voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Voucher ID
-        in: path
-        name: voucherId
-        required: true
-        type: string
-      - description: ReviewVoucher voucher request, reviewer user ID
-        in: body
-        name: ReviewVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.ReviewVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-  /sob/{sobId}/vouchers:
-    get:
-      consumes:
-      - application/json
-      description: List all vouchers by sob with pagination
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_VoucherResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
-    post:
-      consumes:
-      - application/json
-      description: Create voucher
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Create voucher request
-        in: body
-        name: CreateVoucherRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.CreateVoucherRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/http.VoucherResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - vouchers
   /sobs:
     get:
       consumes:
@@ -2136,7 +2136,7 @@ paths:
         name: sobId
         required: true
         type: string
-      - description: UpdateLineItems sob request
+      - description: UpdateJournalLines sob request
         in: body
         name: UpdateSobRequest
         required: true

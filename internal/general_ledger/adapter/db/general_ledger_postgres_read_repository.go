@@ -85,13 +85,13 @@ func (r GeneralLedgerPostgresReadRepository) SearchPeriods(
 	return data.SearchEntities(ctx, pageRequest, periodPO{}, periodPOToDTO, r.dataSource.GetConnection(ctx))
 }
 
-func (r GeneralLedgerPostgresReadRepository) SearchVouchers(
+func (r GeneralLedgerPostgresReadRepository) SearchJournals(
 	ctx context.Context,
 	sobId uuid.UUID,
 	pageRequest data.PageRequest,
-) (data.Page[query.Voucher], error) {
+) (data.Page[query.Journal], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, voucherPO{}, voucherPOToDTO, r.dataSource.GetConnection(ctx).Preload("LineItems.Account").InnerJoins("Period"))
+	return data.SearchEntities(ctx, pageRequest, journalPO{}, journalPOToDTO, r.dataSource.GetConnection(ctx).Preload("JournalLines.Account").InnerJoins("Period"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
@@ -120,19 +120,19 @@ func (r GeneralLedgerPostgresReadRepository) FirstPeriod(ctx context.Context, so
 	return query.Period{}, err
 }
 
-func (r GeneralLedgerPostgresReadRepository) VoucherById(ctx context.Context, voucherId uuid.UUID) (query.Voucher, error) {
+func (r GeneralLedgerPostgresReadRepository) JournalById(ctx context.Context, journalId uuid.UUID) (query.Journal, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := voucherPO{Id: voucherId}
+	po := journalPO{Id: journalId}
 	if err := db.
-		Preload("LineItems.Account.AuxiliaryCategories").
-		Preload("LineItems.AuxiliaryAccounts.Category").
+		Preload("JournalLines.Account.AuxiliaryCategories").
+		Preload("JournalLines.AuxiliaryAccounts.Category").
 		Preload("Period").
 		First(&po).Error; err != nil {
-		return query.Voucher{}, err
+		return query.Journal{}, err
 	}
 
-	return voucherPOToDTO(po), nil
+	return journalPOToDTO(po), nil
 }
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
@@ -280,9 +280,9 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 ) (data.Page[query.LedgerEntry], error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	// Build base query joining ledger_entries with vouchers
+	// Build base query joining ledger_entries with journals
 	q := db.Model(&ledgerEntryPO{}).
-		InnerJoins("Voucher").
+		InnerJoins("Journal").
 		InnerJoins("Period").
 		Where("a_ledger_entries.sob_id = ?", sobId).
 		Where("a_ledger_entries.account_id = ?", accountId).

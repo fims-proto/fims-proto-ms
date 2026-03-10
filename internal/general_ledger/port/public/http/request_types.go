@@ -37,16 +37,16 @@ type CreateAuxiliaryAccountRequest struct {
 	Description string `json:"description"`
 }
 
-type CreateVoucherRequest struct {
+type CreateJournalRequest struct {
 	HeaderText         string                           `json:"headerText"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            string                           `json:"creator"`
-	VoucherType        string                           `json:"voucherType"`
+	JournalType        string                           `json:"journalType"`
 	TransactionDate    transaction_date.TransactionDate `json:"transactionDate"`
-	LineItems          []LineItemRequest                `json:"lineItems"`
+	JournalLines       []JournalLineRequest             `json:"journalLines"`
 }
 
-type LineItemRequest struct {
+type JournalLineRequest struct {
 	Id                uuid.UUID              `json:"id"`
 	AccountNumber     string                 `json:"accountNumber"`
 	AuxiliaryAccounts []AuxiliaryItemRequest `json:"auxiliaryAccounts"`
@@ -59,22 +59,22 @@ type AuxiliaryItemRequest struct {
 	AccountKey  string `json:"accountKey"`
 }
 
-type AuditVoucherRequest struct {
+type AuditJournalRequest struct {
 	Auditor uuid.UUID `json:"auditor"`
 }
 
-type ReviewVoucherRequest struct {
+type ReviewJournalRequest struct {
 	Reviewer uuid.UUID `json:"reviewer"`
 }
 
-type PostVoucherRequest struct {
+type PostJournalRequest struct {
 	Poster uuid.UUID `json:"poster"`
 }
 
-type UpdateVoucherRequest struct {
+type UpdateJournalRequest struct {
 	HeaderText      string                           `json:"headerText"`
 	TransactionDate transaction_date.TransactionDate `json:"transactionDate"`
-	LineItems       []LineItemRequest                `json:"lineItems"`
+	JournalLines    []JournalLineRequest             `json:"journalLines"`
 	Updater         uuid.UUID                        `json:"updater"`
 }
 
@@ -89,7 +89,7 @@ type InitializeLedgersBalanceItemRequest struct {
 
 // mapper
 
-func (r LineItemRequest) mapToCommand() command.LineItemCmd {
+func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
 	var auxiliaryItemCmds []command.AuxiliaryItemCmd
 	for _, auxiliaryAccount := range r.AuxiliaryAccounts {
 		auxiliaryItemCmds = append(auxiliaryItemCmds, command.AuxiliaryItemCmd{
@@ -98,7 +98,7 @@ func (r LineItemRequest) mapToCommand() command.LineItemCmd {
 		})
 	}
 
-	return command.LineItemCmd{
+	return command.JournalLineCmd{
 		Id:                r.Id,
 		Text:              r.Text,
 		AccountNumber:     r.AccountNumber,
@@ -107,18 +107,18 @@ func (r LineItemRequest) mapToCommand() command.LineItemCmd {
 	}
 }
 
-func (r CreateVoucherRequest) mapToCommand(sobId uuid.UUID) command.CreateVoucherCmd {
-	var itemCmd []command.LineItemCmd
-	for _, item := range r.LineItems {
+func (r CreateJournalRequest) mapToCommand(sobId uuid.UUID) command.CreateJournalCmd {
+	var itemCmd []command.JournalLineCmd
+	for _, item := range r.JournalLines {
 		itemCmd = append(itemCmd, item.mapToCommand())
 	}
-	return command.CreateVoucherCmd{
-		VoucherId:          uuid.New(),
+	return command.CreateJournalCmd{
+		JournalId:          uuid.New(),
 		SobId:              sobId,
 		HeaderText:         r.HeaderText,
-		VoucherType:        r.VoucherType,
+		JournalType:        r.JournalType,
 		AttachmentQuantity: r.AttachmentQuantity,
-		LineItems:          itemCmd,
+		JournalLines:       itemCmd,
 		Creator:            uuid.MustParse(r.Creator),
 		TransactionDate:    r.TransactionDate,
 	}

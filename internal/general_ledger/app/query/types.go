@@ -90,7 +90,7 @@ type AuxiliaryLedger struct {
 	UpdatedAt         time.Time
 }
 
-type LineItem struct {
+type JournalLine struct {
 	Id                uuid.UUID
 	Account           Account
 	AuxiliaryAccounts []AuxiliaryAccount
@@ -100,11 +100,11 @@ type LineItem struct {
 	UpdatedAt         time.Time
 }
 
-type Voucher struct {
+type Journal struct {
 	SobId              uuid.UUID
 	Id                 uuid.UUID
 	Period             Period
-	VoucherType        string
+	JournalType        string
 	HeaderText         string
 	DocumentNumber     string
 	AttachmentQuantity int
@@ -117,7 +117,7 @@ type Voucher struct {
 	IsAudited          bool
 	IsPosted           bool
 	TransactionDate    transaction_date.TransactionDate
-	LineItems          []LineItem
+	JournalLines       []JournalLine
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
 }
@@ -128,8 +128,8 @@ type User struct {
 }
 
 type LedgerEntry struct {
-	VoucherId       uuid.UUID
-	VoucherNumber   string
+	JournalId       uuid.UUID
+	JournalNumber   string
 	TransactionDate transaction_date.TransactionDate
 	Text            string
 	Amount          decimal.Decimal

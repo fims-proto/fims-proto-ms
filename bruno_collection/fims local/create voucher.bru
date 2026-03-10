@@ -1,17 +1,17 @@
 meta {
-  name: create voucher
+  name: create journal
   type: http
   seq: 10
 }
 
 post {
-  url: {{base_path}}/sob/{{sob}}/vouchers
+  url: {{base_path}}/sob/{{sob}}/journals
   body: json
   auth: none
 }
 
 body:json {
-  {{current_voucher_payload}}
+  {{current_journal_payload}}
 }
 
 script:pre-request {
@@ -210,54 +210,54 @@ script:pre-request {
       }
   ]
 
-  let sampleVouchers = bru.getVar("sample_vouchers")
+  let sampleJournals = bru.getVar("sample_journals")
 
-  if(!sampleVouchers || sampleVouchers.length == 0) {
-      sampleVouchers = testSamples
+  if(!sampleJournals || sampleJournals.length == 0) {
+      sampleJournals = testSamples
   }
 
-  let currentSampleVoucher = sampleVouchers.shift()
-  bru.setVar("sample_vouchers", sampleVouchers)
+  let currentSampleJournal = sampleJournals.shift()
+  bru.setVar("sample_journals", sampleJournals)
 
 
   // build current payload
   const payload = {
-      "voucherType": "general_voucher",
-      "headerText": currentSampleVoucher.summary,
+      "journalType": "general_journal",
+      "headerText": currentSampleJournal.summary,
       "attachmentQuantity": 0,
-      "lineItems": [],
+      "journalLines": [],
       "creator": bru.getCollectionVar("user_1"),
-      "transactionDate": currentSampleVoucher.date
+      "transactionDate": currentSampleJournal.date
   }
 
-  currentSampleVoucher.items.forEach(sampleItem => payload.lineItems.push({
-      "text": currentSampleVoucher.summary,
+  currentSampleJournal.items.forEach(sampleItem => payload.journalLines.push({
+      "text": currentSampleJournal.summary,
       "accountNumber": sampleItem.account,
       "amount": sampleItem.amount
   }))
-  
-  bru.setVar("current_voucher_payload", JSON.stringify(payload))
+
+  bru.setVar("current_journal_payload", JSON.stringify(payload))
 }
 
 tests {
-  let voucherIds = bru.getVar("voucher_ids")
-  if (!voucherIds || voucherIds.length == 0 || !Array.isArray(voucherIds)) {
-      voucherIds = []
+  let journalIds = bru.getVar("journal_ids")
+  if (!journalIds || journalIds.length == 0 || !Array.isArray(journalIds)) {
+      journalIds = []
   }
-  voucherIds.push(res.getBody().id)
-  bru.setVar("voucher_ids", voucherIds)
-  
+  journalIds.push(res.getBody().id)
+  bru.setVar("journal_ids", journalIds)
+
   // let jsonData = pm.response.json()
-  // pm.collectionVariables.set("voucher_1_item_1", jsonData.lineItems[0].id)
-  // pm.collectionVariables.set("voucher_1_item_2", jsonData.lineItems[1].id)
-  
-  const sampleVouchers = bru.getVar("sample_vouchers")
-  if (sampleVouchers && sampleVouchers.length > 0){
-      bru.setNextRequest("create voucher")
+  // pm.collectionVariables.set("journal_1_item_1", jsonData.journalLines[0].id)
+  // pm.collectionVariables.set("journal_1_item_2", jsonData.journalLines[1].id)
+
+  const sampleJournals = bru.getVar("sample_journals")
+  if (sampleJournals && sampleJournals.length > 0){
+      bru.setNextRequest("create journal")
   }
-  
-  test("Create voucher", function () {
+
+  test("Create journal", function () {
       expect(res.getStatus()).to.equal(201)
   })
-  
+
 }

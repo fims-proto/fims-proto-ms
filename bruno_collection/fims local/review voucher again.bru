@@ -1,11 +1,11 @@
 meta {
-  name: review voucher again
+  name: review journal again
   type: http
   seq: 18
 }
 
 post {
-  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/review
+  url: {{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/review
   body: json
   auth: none
 }
@@ -17,8 +17,8 @@ body:json {
 }
 
 tests {
-  test("Review voucher", function () {
+  test("Review journal", function () {
       expect(res.getStatus()).to.equal(204);
   });
-  
+
 }

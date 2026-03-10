@@ -8,7 +8,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
@@ -65,22 +65,22 @@ type Repository interface {
 	ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error)
 	ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
-	CreateVoucher(ctx context.Context, v *voucher.Voucher) error
-	// UpdateVoucherHeader updates only the voucher header row (status flags, reviewer, auditor, poster, etc).
-	// Line items are loaded for the callback to read but are NOT deleted or re-saved.
-	UpdateVoucherHeader(
+	CreateJournal(ctx context.Context, j *journal.Journal) error
+	// UpdateJournalHeader updates only the journal header row (status flags, reviewer, auditor, poster, etc).
+	// Journal lines are loaded for the callback to read but are NOT deleted or re-saved.
+	UpdateJournalHeader(
 		ctx context.Context,
-		voucherId uuid.UUID,
-		updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+		journalId uuid.UUID,
+		updateFn func(j *journal.Journal) (*journal.Journal, error),
 	) error
-	// UpdateEntireVoucher replaces the voucher header and all its line items.
-	// Use this when line items may be modified; prefer UpdateVoucherHeader for header-only changes.
-	UpdateEntireVoucher(
+	// UpdateEntireJournal replaces the journal header and all its journal lines.
+	// Use this when journal lines may be modified; prefer UpdateJournalHeader for header-only changes.
+	UpdateEntireJournal(
 		ctx context.Context,
-		voucherId uuid.UUID,
-		updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+		journalId uuid.UUID,
+		updateFn func(j *journal.Journal) (*journal.Journal, error),
 	) error
-	ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
+	ExistsJournalsNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
 	CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error
 	ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error)

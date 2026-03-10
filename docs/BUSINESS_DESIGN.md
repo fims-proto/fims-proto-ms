@@ -13,7 +13,7 @@ _Date: 2026-02-15_
 2. [Core Business Domains](#2-core-business-domains)
 3. [Multi-Entity Model](#3-multi-entity-model)
 4. [General Ledger Management](#4-general-ledger-management)
-5. [Voucher Lifecycle & Workflow](#5-voucher-lifecycle--workflow)
+5. [Journal Lifecycle & Workflow](#5-journal-lifecycle--workflow)
 6. [Period Management & Closing](#6-period-management--closing)
 7. [Financial Reporting](#7-financial-reporting)
 8. [Numbering & Identifier Management](#8-numbering--identifier-management)
@@ -70,7 +70,7 @@ FIMS consists of five primary business domains:
 
 - Each SoB is completely isolated from other SoBs within the same deployment
 - A customer may have multiple SoBs (e.g., separate legal entities, subsidiaries, divisions)
-- All accounting data (accounts, periods, vouchers, reports) belongs to a specific SoB
+- All accounting data (accounts, periods, journals, reports) belongs to a specific SoB
 
 ### 2.2 General Ledger - 总账
 
@@ -113,7 +113,7 @@ FIMS consists of five primary business domains:
   - **Period Amount**: Signed net movement during the period (positive = net debit, negative = net credit)
   - **Period Debit/Credit**: Positive values representing total debit and credit movements (kept for query performance)
   - **Ending Amount**: Calculated as openingAmount + periodAmount
-- **Hierarchical Posting**: When vouchers post, both detail accounts and all parent accounts update
+- **Hierarchical Posting**: When journals post, both detail accounts and all parent accounts update
 
 #### 2.2.4 Auxiliary Ledger (Subsidiary Ledger - 辅助核算账)
 
@@ -127,7 +127,7 @@ FIMS consists of five primary business domains:
 - **Key Distinction**: This is NOT "明细科目" (detail accounts in CoA), but "辅助核算" (multi-dimensional tracking)
 - **Use Case Example**: Track "Accounts Receivable" (an account) broken down by individual customers (auxiliary dimension)
 
-#### 2.2.5 Voucher (记账凭证)
+#### 2.2.5 Journal (分录)
 
 See detailed section below (Section 5)
 
@@ -144,7 +144,7 @@ See detailed section below (Section 5)
 
 - **Template vs. Instance**: Templates define structure; instances contain actual data for specific periods
 - **Sections**: Logical groupings (Assets, Liabilities, Revenue, Expenses, etc.)
-- **Items**: Individual line items with display order
+- **Items**: Individual journal lines with display order
 - **Data Sources**:
   - **Sum**: Aggregate ledger balances by account filters (class, group, specific accounts)
   - **Formula**: Calculate from other items using rules (Net, Debit, Credit, Transaction)
@@ -167,12 +167,12 @@ See detailed section below (Section 5)
 
 - **Configurable Patterns**: Prefix + Auto-incrementing Counter + Suffix
 - **Context-Aware**: Different numbering sequences based on business object properties
-- **Property Matchers**: Configure different sequences for different voucher types, periods, etc.
-- **Example**: Voucher numbering might be "JV-202401-0001", "JV-202401-0002" for January 2024
+- **Property Matchers**: Configure different sequences for different journal types, periods, etc.
+- **Example**: Journal numbering might be "JV-202401-0001", "JV-202401-0002" for January 2024
 
 **Use Cases**:
 
-- Voucher document numbers
+- Journal document numbers
 - Account codes (automated sequential assignment within each level)
 - Report identifiers
 
@@ -184,7 +184,7 @@ See detailed section below (Section 5)
 
 - **Authentication**: Delegated to Ory Kratos (external identity provider)
 - **User Records**: FIMS maintains minimal user information (ID, name, email)
-- **Authorization**: Users referenced in vouchers (creator, reviewer, auditor, poster)
+- **Authorization**: Users referenced in journals (creator, reviewer, auditor, poster)
 
 ---
 
@@ -200,7 +200,7 @@ See detailed section below (Section 5)
 
 - **Multiple SoBs per Deployment**: Within one customer's deployment, they can create multiple Set of Books
 - **SoB Isolation**: Each Set of Books represents a completely isolated accounting entity
-- **Data Segregation**: All domain entities (accounts, periods, vouchers, reports) belong to exactly one SoB
+- **Data Segregation**: All domain entities (accounts, periods, journals, reports) belong to exactly one SoB
 - **Shared Nothing Between SoBs**: No data sharing between different SoBs within the same deployment
 
 ### 3.3 Use Cases for Multiple SoBs
@@ -305,7 +305,7 @@ A single customer may create multiple SoBs for:
 ```
 Main Account: 1110 - Accounts Receivable (assigned Auxiliary Category: Customer)
 
-Voucher Line Items:
+Journal Lines:
   - Account 1110 (Customer: ABC Inc.) Amount: +$5,000 (debit)
   - Account 1110 (Customer: XYZ Corp.) Amount: +$3,000 (debit)
   - Account 4010 - Sales Revenue     Amount: -$8,000 (credit)
@@ -318,9 +318,9 @@ Result:
 
 ### 4.3 Ledger Posting Mechanics
 
-**Posting Process** (when voucher is posted):
+**Posting Process** (when journal is posted):
 
-1. **Line Item Processing**: For each voucher line item
+1. **Journal Line Processing**: For each journal journal line
    - Update detail account ledger (明细科目) - add debit/credit to period activity
    - Update all parent account ledgers (上级科目) - hierarchical rollup
    - Update subsidiary ledgers (辅助核算账) if applicable
@@ -339,25 +339,25 @@ Result:
    - Negative amounts represent credits
    - `PeriodDebit` and `PeriodCredit` are maintained separately for query performance (always positive values)
 
-4. **Batch Updates**: Multiple voucher lines to same account are merged before posting (performance optimization)
+4. **Batch Updates**: Multiple journal lines to same account are merged before posting (performance optimization)
 
 ---
 
-## 5. Voucher Lifecycle & Workflow
+## 5. Journal Lifecycle & Workflow
 
-### 5.1 Voucher Structure
+### 5.1 Journal Structure
 
 **Header Information**:
 
 - **Document Number**: Unique identifier (auto-generated by numbering service)
-- **Voucher Type**: Classification (currently only "General Voucher" supported)
-- **Period**: The accounting period this voucher belongs to
+- **Journal Type**: Classification (currently only "General Journal" supported)
+- **Period**: The accounting period this journal belongs to
 - **Transaction Time**: Business date of the transaction
 - **Header Text**: Description of the transaction
 - **Attachment Quantity**: Number of supporting documents
-- **Amount**: Transaction amount (sum of all positive/debit line item amounts)
+- **Amount**: Transaction amount (sum of all positive/debit journal line amounts)
 
-**Line Items**:
+**Journal Lines**:
 
 - **Account**: The general ledger account being debited or credited
 - **Auxiliary Accounts**: Optional multi-dimensional tags (customer, vendor, etc.)
@@ -366,8 +366,8 @@ Result:
 
 **Business Rules**:
 
-- **Balanced Entry**: Sum of all signed line item amounts must equal zero (trial balance)
-- **Minimum Lines**: At least 2 line items (double-entry bookkeeping)
+- **Balanced Entry**: Sum of all signed journal line amounts must equal zero (trial balance)
+- **Minimum Lines**: At least 2 journal lines (double-entry bookkeeping)
 - **Non-zero Amounts**: Each line must have a non-zero signed amount
 - **Detail Accounts Only**: Can only post to detail accounts/明细科目 (not parent accounts/上级科目)
 
@@ -385,7 +385,7 @@ Draft → Reviewed → Audited → Posted
 **State Definitions**:
 
 1. **Draft** (Created):
-   - Initial state after voucher creation
+   - Initial state after journal creation
    - Can be edited by creator
    - Not yet validated by others
 
@@ -402,10 +402,10 @@ Draft → Reviewed → Audited → Posted
    - Can be canceled back to reviewed state
 
 4. **Posted** (登账/过账):
-   - Final state - voucher affects ledger balances
+   - Final state - journal affects ledger balances
    - Cannot be modified or deleted
    - Updates general ledger and auxiliary ledger balances
-   - Cannot be reversed (new voucher needed for corrections)
+   - Cannot be reversed (new journal needed for corrections)
 
 ### 5.3 Segregation of Duties
 
@@ -426,7 +426,7 @@ Draft → Reviewed → Audited → Posted
 
 **Pre-Posting Validations**:
 
-- ✓ Voucher must be both reviewed AND audited
+- ✓ Journal must be both reviewed AND audited
 - ✓ Period must be open (not closed)
 - ✓ Period must be the current period
 - ✓ Debit and credit totals must balance
@@ -436,15 +436,15 @@ Draft → Reviewed → Audited → Posted
 
 - Updates ledger balances for all affected accounts (including parent accounts)
 - Updates auxiliary ledger balances (if auxiliary accounts used)
-- Sets voucher state to "posted"
+- Sets journal state to "posted"
 - Records poster user ID and posting timestamp
 
 **Post-Posting Restrictions**:
 
-- Voucher cannot be edited
-- Voucher cannot be deleted
+- Journal cannot be edited
+- Journal cannot be deleted
 - State cannot be reversed
-- Corrections require creating a reversing voucher
+- Corrections require creating a reversing journal
 
 ---
 
@@ -455,7 +455,7 @@ Draft → Reviewed → Audited → Posted
 **Period States**:
 
 - **Open & Not Current**: Historical periods already closed
-- **Open & Current**: Active period accepting new vouchers
+- **Open & Current**: Active period accepting new journals
 - **Closed & Not Current**: Period is locked, no further changes allowed
 
 **Period Transitions**:
@@ -483,7 +483,7 @@ Period Creation → Start (become current) → Close → Next Period Start
 
 **Pre-Closing Validations**:
 
-1. **All Vouchers Posted**: No unposted vouchers remain in the period
+1. **All Journals Posted**: No unposted journals remain in the period
 2. **Trial Balance**: Sum of all signed ledger amounts across all accounts equals zero
 3. **Profit & Loss Cleared**: All P&L accounts (revenue/expense) have zero ending amount
    - Requires creating closing entries to transfer P&L to Retained Earnings
@@ -500,7 +500,7 @@ Period Creation → Start (become current) → Close → Next Period Start
 
 **Post-Closing State**:
 
-- Closed period cannot accept new vouchers
+- Closed period cannot accept new journals
 - Closed period cannot be modified
 - Next period is now active
 
@@ -527,7 +527,7 @@ Period Creation → Start (become current) → Close → Next Period Start
 ```
 Report
   └─ Sections (e.g., Assets, Liabilities, Revenue, Expenses)
-      └─ Items (individual line items with amounts)
+      └─ Items (individual journal lines with amounts)
 ```
 
 **Item Components**:
@@ -643,7 +643,7 @@ Section: Assets
 **Re-generation**:
 
 - Reports can be regenerated to reflect latest ledger data
-- Useful when vouchers are posted after initial report generation
+- Useful when journals are posted after initial report generation
 
 ---
 
@@ -657,18 +657,18 @@ Provide consistent, unique, sequential identifiers for business documents withou
 
 **Identifier Configuration**:
 
-- **Target Business Object**: What type of document (e.g., "Voucher")
+- **Target Business Object**: What type of document (e.g., "Journal")
 - **Property Matchers**: Conditions that activate this configuration
-  - Example: Period ID = "xyz" AND Voucher Type = "General"
+  - Example: Period ID = "xyz" AND Journal Type = "General"
 - **Counter**: Auto-incrementing number (starts at 0 or 1)
 - **Prefix**: String before the counter (e.g., "JV-202401-")
 - **Suffix**: String after the counter (e.g., empty or "-DRAFT")
 
 ### 8.3 Generation Logic
 
-**When a voucher is created**:
+**When a journal is created**:
 
-1. System calls numbering service with context (period ID, voucher type)
+1. System calls numbering service with context (period ID, journal type)
 2. Service finds matching configuration by property matchers
 3. Service increments configuration counter
 4. Service formats identifier: `{prefix}{counter}{suffix}`
@@ -678,7 +678,7 @@ Provide consistent, unique, sequential identifiers for business documents withou
 
 ```
 Configuration:
-  Target: Voucher
+  Target: Journal
   Matchers: Period = "Jan 2024" AND Type = "General"
   Prefix: "记"
   Counter: 42
@@ -719,7 +719,7 @@ Configuration:
 
 **Purpose**:
 
-- Link voucher activities to users (creator, reviewer, auditor, poster)
+- Link journal activities to users (creator, reviewer, auditor, poster)
 - Display user names in audit trails
 - No sensitive authentication data stored in FIMS
 
@@ -737,9 +737,9 @@ Configuration:
 
 ### 10.1 Double-Entry Bookkeeping
 
-- ✓ Every voucher must have a balanced signed amount sum (sum of all line item amounts equals zero)
-- ✓ Minimum two line items per voucher (one debit/positive, one credit/negative at minimum)
-- ✓ Each line item has a non-zero signed amount (positive = debit, negative = credit)
+- ✓ Every journal must have a balanced signed amount sum (sum of all journal line amounts equals zero)
+- ✓ Minimum two journal lines per journal (one debit/positive, one credit/negative at minimum)
+- ✓ Each journal line has a non-zero signed amount (positive = debit, negative = credit)
 
 ### 10.2 Segregation of Duties
 
@@ -749,14 +749,14 @@ Configuration:
 
 ### 10.3 Period Control
 
-- ✓ Vouchers can only be posted to the current period
+- ✓ Journals can only be posted to the current period
 - ✓ Current period must be open (not closed)
 - ✓ Only one period can be current at a time
 - ✓ Historical periods are read-only after closing
 
 ### 10.4 Period Closing Requirements
 
-- ✓ All vouchers must be posted (none in draft/reviewed/audited state)
+- ✓ All journals must be posted (none in draft/reviewed/audited state)
 - ✓ All profit & loss accounts must have zero ending amount
 - ✓ Trial balance must be satisfied (sum of all signed amounts equals zero)
 
@@ -775,10 +775,10 @@ Configuration:
 - ✓ Hierarchical posting updates all parent accounts
 - ✓ Subsidiary ledgers (辅助核算账) track multi-dimensional balances - different from detail account ledgers (明细科目账)
 
-### 10.7 Voucher Immutability
+### 10.7 Journal Immutability
 
-- ✓ Posted vouchers cannot be edited or deleted
-- ✓ Corrections require creating new reversing/correcting vouchers
+- ✓ Posted journals cannot be edited or deleted
+- ✓ Corrections require creating new reversing/correcting journals
 - ✓ Maintains complete audit trail
 
 ### 10.8 Report Validation
@@ -790,7 +790,7 @@ Configuration:
 ### 10.9 Transaction Boundaries
 
 - ✓ All write operations use database transactions
-- ✓ Voucher posting is atomic (all ledgers update or none)
+- ✓ Journal posting is atomic (all ledgers update or none)
 - ✓ Period closing is atomic (close period + create next + initialize ledgers)
 
 ### 10.10 SoB Isolation (Within Deployment)
@@ -808,7 +808,7 @@ Configuration:
 ```
 Transaction: Sold goods for $10,000 cash
 
-Voucher:
+Journal:
   Line 1: Account 1101 - Cash           Amount: +$10,000  (debit)
   Line 2: Account 4010 - Sales Revenue  Amount: -$10,000 (credit)
 ```
@@ -818,7 +818,7 @@ Voucher:
 ```
 Transaction: Purchased inventory from Vendor ABC for $5,000 on credit
 
-Voucher:
+Journal:
   Line 1: Account 1500 - Inventory                    Amount: +$5,000  (debit)
   Line 2: Account 2100 - Accounts Payable (Vendor: ABC) Amount: -$5,000 (credit)
 
@@ -843,7 +843,7 @@ Closing Entry:
   Line 3: Account 3200 - Retained Earnings  Amount: +$60,000
   Line 4: Account 3200 - Retained Earnings  Amount: -$100,000
 
-(Above shown as two vouchers; actual may vary)
+(Above shown as two journals; actual may vary)
 
 After Closing:
   - All P&L accounts have zero balance
@@ -856,31 +856,31 @@ After Closing:
 
 ## Appendix B: Glossary
 
-| Term                       | Chinese           | Definition                                                                             |
-| -------------------------- | ----------------- | -------------------------------------------------------------------------------------- |
-| SoB                        | 账套              | Set of Books - Independent accounting entity within a deployment                       |
-| Accounting Standards       | 会计准则          | Chinese accounting standards framework (currently supports 小企业会计准则)             |
-| Small Enterprise Standards | 小企业会计准则    | Accounting Standards for Small Enterprises - defines standard CoA structure            |
-| Account                    | 科目/会计科目     | Individual account in chart of accounts                                                |
-| First-level Account        | 一级科目          | Top-level account from standard CoA (e.g., 1001, 1002, 1122)                           |
-| Parent Account             | 上级科目          | Summary account that aggregates child balances (cannot post transactions)              |
-| Detail Account             | 明细科目          | Leaf-level account that can accept transactions (user-defined under standard accounts) |
+| Term                       | Chinese   | Definition                                                                             |
+| -------------------------- |-----------| -------------------------------------------------------------------------------------- |
+| SoB                        | 账套        | Set of Books - Independent accounting entity within a deployment                       |
+| Accounting Standards       | 会计准则      | Chinese accounting standards framework (currently supports 小企业会计准则)             |
+| Small Enterprise Standards | 小企业会计准则   | Accounting Standards for Small Enterprises - defines standard CoA structure            |
+| Account                    | 科目/会计科目   | Individual account in chart of accounts                                                |
+| First-level Account        | 一级科目      | Top-level account from standard CoA (e.g., 1001, 1002, 1122)                           |
+| Parent Account             | 上级科目      | Summary account that aggregates child balances (cannot post transactions)              |
+| Detail Account             | 明细科目      | Leaf-level account that can accept transactions (user-defined under standard accounts) |
 | Chart of Accounts          | 科目表/会计科目表 | Organized hierarchical list of all accounts                                            |
-| Voucher                    | 记账凭证          | Journal entry recording financial transactions (interchangeable term)                  |
-| Journal Entry              | 记账凭证          | Same as Voucher - both terms are correct in accounting                                 |
-| Period                     | 会计期间          | Accounting period (monthly)                                                            |
-| Ledger                     | 总账              | General ledger - balance records for all accounts (both parent and detail)             |
+| Journal                    | 分录        | Journal entry recording financial transactions (interchangeable term)                  |
+| Journal Entry              | 分录      | Same as Journal - both terms are correct in accounting                                 |
+| Period                     | 会计期间      | Accounting period (monthly)                                                            |
+| Ledger                     | 总账        | General ledger - balance records for all accounts (both parent and detail)             |
 | Subsidiary Ledger          | 辅助核算账/辅助账 | Multi-dimensional sub-ledger tracking (customer, vendor, project, etc.)                |
-| Auxiliary Category         | 辅助核算项        | Dimension type for subsidiary tracking (e.g., "Customer", "Vendor")                    |
-| Auxiliary Account          | 辅助核算值        | Specific value within an auxiliary category (e.g., "ABC Corp.", "Project X")           |
-| Review                     | 复核              | First-level approval of voucher by reviewer                                            |
-| Audit                      | 审核              | Second-level approval of voucher by auditor                                            |
-| Post                       | 登账/过账         | Final commit of voucher to ledgers (makes it affect balances)                          |
-| Balance Sheet              | 资产负债表        | Statement of financial position (assets = liabilities + equity)                        |
-| Income Statement           | 利润表            | Profit and loss statement (revenue - expenses)                                         |
-| Trial Balance              | 试算平衡          | Verification that sum of all signed amounts equals zero                               |
-| Formula Rule               | 公式规则          | Rule for extracting value from ledger (Net/Debit/Credit/Transaction)                   |
-| Sum Factor                 | 汇总因子          | +1 (add), -1 (subtract), or 0 (exclude) - controls how item contributes to parent sum  |
+| Auxiliary Category         | 辅助核算项     | Dimension type for subsidiary tracking (e.g., "Customer", "Vendor")                    |
+| Auxiliary Account          | 辅助核算值     | Specific value within an auxiliary category (e.g., "ABC Corp.", "Project X")           |
+| Review                     | 复核        | First-level approval of journal by reviewer                                            |
+| Audit                      | 审核        | Second-level approval of journal by auditor                                            |
+| Post                       | 登账/过账     | Final commit of journal to ledgers (makes it affect balances)                          |
+| Balance Sheet              | 资产负债表     | Statement of financial position (assets = liabilities + equity)                        |
+| Income Statement           | 利润表       | Profit and loss statement (revenue - expenses)                                         |
+| Trial Balance              | 试算平衡      | Verification that sum of all signed amounts equals zero                               |
+| Formula Rule               | 公式规则      | Rule for extracting value from ledger (Net/Debit/Credit/Transaction)                   |
+| Sum Factor                 | 汇总因子      | +1 (add), -1 (subtract), or 0 (exclude) - controls how item contributes to parent sum  |
 
 ---
 

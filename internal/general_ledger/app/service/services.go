@@ -15,8 +15,8 @@ type SobService interface {
 }
 
 type NumberingService interface {
-	GenerateIdentifier(ctx context.Context, periodId uuid.UUID, voucherType string) (string, error)
-	CreateIdentifierConfigurationForVoucher(ctx context.Context, periodId uuid.UUID) error
+	GenerateIdentifier(ctx context.Context, periodId uuid.UUID, journalType string) (string, error)
+	CreateIdentifierConfigurationForJournal(ctx context.Context, periodId uuid.UUID) error
 }
 
 type UserService interface {

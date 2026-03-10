@@ -13,10 +13,10 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgtype"
@@ -122,28 +122,28 @@ type ledgerEntryPO struct {
 	Id              uuid.UUID       `gorm:"type:uuid;primaryKey"`
 	SobId           uuid.UUID       `gorm:"type:uuid"`
 	PeriodId        uuid.UUID       `gorm:"type:uuid"`
-	VoucherId       uuid.UUID       `gorm:"type:uuid"`
-	LineItemId      uuid.UUID       `gorm:"type:uuid"`
+	JournalId       uuid.UUID       `gorm:"type:uuid;column:journal_id"`
+	JournalLineId   uuid.UUID       `gorm:"type:uuid;column:journal_line_id"`
 	AccountId       uuid.UUID       `gorm:"type:uuid"`
 	TransactionDate time.Time       `gorm:"type:date"`
 	Amount          decimal.Decimal `gorm:"type:numeric"`
 
 	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:ledger_entry_auxiliary_account_links;joinForeignKey:Id;joinReferences:AuxiliaryAccountId"`
-	Voucher           voucherPO            `gorm:"foreignKey:VoucherId"`
-	LineItem          lineItemPO           `gorm:"foreignKey:LineItemId"`
+	Journal           journalPO            `gorm:"foreignKey:JournalId"`
+	JournalLine       journalLinePO        `gorm:"foreignKey:JournalLineId"`
 	Period            periodPO             `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
 }
 
-type voucherPO struct {
+type journalPO struct {
 	Id                 uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Vouchers_SobId_PeriodId_DocumentNumber"`
-	PeriodId           uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Vouchers_SobId_PeriodId_DocumentNumber"`
-	VoucherType        string
+	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
+	PeriodId           uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
+	JournalType        string
 	HeaderText         string
-	DocumentNumber     string `gorm:"uniqueIndex:UQ_Vouchers_SobId_PeriodId_DocumentNumber"`
+	DocumentNumber     string `gorm:"uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
 	AttachmentQuantity int
 	Amount             decimal.Decimal `gorm:"type:numeric"`
 	Creator            uuid.UUID       `gorm:"type:uuid"`
@@ -155,22 +155,22 @@ type voucherPO struct {
 	IsPosted           bool
 	TransactionDate    time.Time `gorm:"type:date"`
 
-	LineItems []lineItemPO `gorm:"foreignKey:VoucherId"`
-	Period    periodPO     `gorm:"foreignKey:PeriodId"`
+	JournalLines []journalLinePO `gorm:"foreignKey:JournalId"`
+	Period       periodPO        `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
 }
 
-type lineItemPO struct {
+type journalLinePO struct {
 	Id        uuid.UUID `gorm:"type:uuid;primaryKey"`
-	VoucherId uuid.UUID `gorm:"type:uuid"`
+	JournalId uuid.UUID `gorm:"type:uuid"`
 	AccountId uuid.UUID `gorm:"type:uuid"`
 	Text      string
 	Amount    decimal.Decimal `gorm:"type:numeric"`
 
 	Account           accountPO            `gorm:"foreignKey:AccountId"`
-	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:line_item_auxiliary_account_links;joinForeignKey:LineItemId;joinReferences:AuxiliaryAccountId"`
+	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:journal_line_auxiliary_account_links;joinForeignKey:JournalLineId;joinReferences:AuxiliaryAccountId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -202,12 +202,12 @@ func (a auxiliaryLedgerPO) TableName() string {
 	return "a_auxiliary_ledgers"
 }
 
-func (v voucherPO) TableName() string {
-	return "a_vouchers"
+func (j journalPO) TableName() string {
+	return "a_journals"
 }
 
-func (l lineItemPO) TableName() string {
-	return "a_line_items"
+func (j journalLinePO) TableName() string {
+	return "a_journal_lines"
 }
 
 func (l ledgerEntryPO) TableName() string {
@@ -270,22 +270,22 @@ func (a auxiliaryLedgerPO) ResolveAssociation(entity string) (string, error) {
 	return "", fmt.Errorf("auxiliaryLedgerPO doesn't have association named %s", entity)
 }
 
-func (v voucherPO) ResolveAssociation(entity string) (string, error) {
+func (j journalPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return v.TableName(), nil
+		return j.TableName(), nil
 	}
-	if strings.EqualFold(entity, "lineItems") {
-		return "LineItems", nil
+	if strings.EqualFold(entity, "journalLines") {
+		return "JournalLines", nil
 	}
 	if strings.EqualFold(entity, "period") {
 		return "Period", nil
 	}
-	return "", fmt.Errorf("voucherPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("journalPO doesn't have association named %s", entity)
 }
 
-func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
+func (j journalLinePO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return l.TableName(), nil
+		return j.TableName(), nil
 	}
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
@@ -293,15 +293,15 @@ func (l lineItemPO) ResolveAssociation(entity string) (string, error) {
 	if strings.EqualFold(entity, "auxiliaryAccount") {
 		return "AuxiliaryAccount", nil
 	}
-	return "", fmt.Errorf("lineItemPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("journalLinePO doesn't have association named %s", entity)
 }
 
 func (l ledgerEntryPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return l.TableName(), nil
 	}
-	if strings.EqualFold(entity, "voucher") {
-		return "Voucher", nil
+	if strings.EqualFold(entity, "journal") {
+		return "Journal", nil
 	}
 	return "", fmt.Errorf("ledgerEntryPO doesn't have association named %s", entity)
 }
@@ -611,10 +611,10 @@ func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
 	}
 }
 
-func voucherBOToPO(bo voucher.Voucher) voucherPO {
-	var itemPOs []lineItemPO
-	for _, item := range bo.LineItems() {
-		itemPOs = append(itemPOs, lineItemBOToPO(*item, bo.Id()))
+func journalBOToPO(bo journal.Journal) journalPO {
+	var linePOs []journalLinePO
+	for _, line := range bo.JournalLines() {
+		linePOs = append(linePOs, journalLineBOToPO(*line, bo.Id()))
 	}
 
 	// Convert TransactionDate to time.Time for PostgreSQL DATE type
@@ -625,11 +625,11 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		0, 0, 0, 0, time.UTC,
 	)
 
-	return voucherPO{
+	return journalPO{
 		SobId:              bo.SobId(),
 		Id:                 bo.Id(),
 		PeriodId:           bo.PeriodId(),
-		VoucherType:        bo.VoucherType().String(),
+		JournalType:        bo.JournalType().String(),
 		HeaderText:         bo.HeaderText(),
 		DocumentNumber:     bo.DocumentNumber(),
 		AttachmentQuantity: bo.AttachmentQuantity(),
@@ -642,12 +642,12 @@ func voucherBOToPO(bo voucher.Voucher) voucherPO {
 		IsAudited:          bo.IsAudited(),
 		IsPosted:           bo.IsPosted(),
 		TransactionDate:    transactionDate,
-		LineItems:          itemPOs,
+		JournalLines:       linePOs,
 	}
 }
 
-func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
-	itemBOs, err := converter.POsToBOs(po.LineItems, lineItemPOToBO)
+func journalPOToBO(po journalPO) (*journal.Journal, error) {
+	lineBOs, err := converter.POsToBOs(po.JournalLines, journalLinePOToBO)
 	if err != nil {
 		return nil, err
 	}
@@ -664,11 +664,11 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 		Day:   po.TransactionDate.Day(),
 	}
 
-	return voucher.New(
+	return journal.New(
 		po.Id,
 		po.SobId,
 		periodBO,
-		po.VoucherType,
+		po.JournalType,
 		po.HeaderText,
 		po.DocumentNumber,
 		po.AttachmentQuantity,
@@ -680,14 +680,14 @@ func voucherPOToBO(po voucherPO) (*voucher.Voucher, error) {
 		po.IsAudited,
 		po.IsPosted,
 		transactionDate,
-		itemBOs,
+		lineBOs,
 	)
 }
 
-func voucherPOToDTO(po voucherPO) query.Voucher {
+func journalPOToDTO(po journalPO) query.Journal {
 	periodDTO := periodPOToDTO(po.Period)
 
-	itemDTOs := converter.POsToDTOs(po.LineItems, lineItemPOToDTO)
+	lineDTOs := converter.POsToDTOs(po.JournalLines, journalLinePOToDTO)
 
 	userOrNil := func(id uuid.UUID) *query.User {
 		if id != uuid.Nil {
@@ -703,11 +703,11 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 		Day:   po.TransactionDate.Day(),
 	}
 
-	return query.Voucher{
+	return query.Journal{
 		SobId:              po.SobId,
 		Id:                 po.Id,
 		Period:             periodDTO,
-		VoucherType:        po.VoucherType,
+		JournalType:        po.JournalType,
 		HeaderText:         po.HeaderText,
 		DocumentNumber:     po.DocumentNumber,
 		AttachmentQuantity: po.AttachmentQuantity,
@@ -720,15 +720,15 @@ func voucherPOToDTO(po voucherPO) query.Voucher {
 		IsAudited:          po.IsAudited,
 		IsPosted:           po.IsPosted,
 		TransactionDate:    transactionDate,
-		LineItems:          itemDTOs,
+		JournalLines:       lineDTOs,
 		CreatedAt:          po.CreatedAt,
 		UpdatedAt:          po.UpdatedAt,
 	}
 }
 
-func lineItemBOToPO(bo voucher.LineItem, voucherId uuid.UUID) lineItemPO {
-	return lineItemPO{
-		VoucherId:         voucherId,
+func journalLineBOToPO(bo journal.JournalLine, journalId uuid.UUID) journalLinePO {
+	return journalLinePO{
+		JournalId:         journalId,
 		Id:                bo.Id(),
 		AccountId:         bo.AccountId(),
 		AuxiliaryAccounts: converter.BOsToPOs(bo.AuxiliaryAccounts(), auxiliaryAccountBOToPO),
@@ -737,7 +737,7 @@ func lineItemBOToPO(bo voucher.LineItem, voucherId uuid.UUID) lineItemPO {
 	}
 }
 
-func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
+func journalLinePOToBO(po journalLinePO) (*journal.JournalLine, error) {
 	accountBO, err := accountPOToBO(po.Account)
 	if err != nil {
 		return nil, err
@@ -748,7 +748,7 @@ func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 		return nil, err
 	}
 
-	return voucher.NewLineItem(
+	return journal.NewJournalLine(
 		po.Id,
 		accountBO,
 		auxiliaryAccountBOs,
@@ -757,7 +757,7 @@ func lineItemPOToBO(po lineItemPO) (*voucher.LineItem, error) {
 	)
 }
 
-func lineItemPOToDTO(po lineItemPO) query.LineItem {
+func journalLinePOToDTO(po journalLinePO) query.JournalLine {
 	accountDTO := accountPOToDTO(po.Account)
 
 	var auxiliaryAccounts []query.AuxiliaryAccount
@@ -765,7 +765,7 @@ func lineItemPOToDTO(po lineItemPO) query.LineItem {
 		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountPOToDTO(auxiliaryAccount))
 	}
 
-	return query.LineItem{
+	return query.JournalLine{
 		Id:                po.Id,
 		Account:           accountDTO,
 		AuxiliaryAccounts: auxiliaryAccounts,
@@ -789,8 +789,8 @@ func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
 		Id:                bo.Id(),
 		SobId:             bo.SobId(),
 		PeriodId:          bo.PeriodId(),
-		VoucherId:         bo.VoucherId(),
-		LineItemId:        bo.LineItemId(),
+		JournalId:         bo.JournalId(),
+		JournalLineId:     bo.JournalLineId(),
 		AccountId:         bo.AccountId(),
 		AuxiliaryAccounts: converter.BOsToPOs(bo.AuxiliaryAccounts(), auxiliaryAccountBOToPO),
 		TransactionDate:   transactionDate,
@@ -811,10 +811,10 @@ func ledgerEntryPOToDTO(po ledgerEntryPO) query.LedgerEntry {
 	}
 
 	return query.LedgerEntry{
-		VoucherId:       po.VoucherId,
-		VoucherNumber:   po.Voucher.DocumentNumber,
+		JournalId:       po.JournalId,
+		JournalNumber:   po.Journal.DocumentNumber,
 		TransactionDate: transactionDate,
-		Text:            po.Voucher.HeaderText,
+		Text:            po.Journal.HeaderText,
 		Amount:          po.Amount,
 		CreatedAt:       po.CreatedAt,
 		UpdatedAt:       po.UpdatedAt,
