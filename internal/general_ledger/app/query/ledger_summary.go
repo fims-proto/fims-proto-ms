@@ -10,7 +10,6 @@ import (
 
 type LedgerSummary struct {
 	AccountId     uuid.UUID
-	PeriodId      uuid.UUID
 	OpeningAmount decimal.Decimal
 	PeriodAmount  decimal.Decimal
 	PeriodDebit   decimal.Decimal
@@ -57,8 +56,6 @@ func (h LedgerSummaryHandler) Handle(ctx context.Context, sobId, accountId uuid.
 	// Aggregate across all periods
 	var sumDebit, sumCredit decimal.Decimal
 	firstLedger := ledgers[0]
-	lastLedger := ledgers[len(ledgers)-1]
-
 	for _, l := range ledgers {
 		sumDebit = sumDebit.Add(l.PeriodDebit)
 		sumCredit = sumCredit.Add(l.PeriodCredit)
@@ -66,7 +63,6 @@ func (h LedgerSummaryHandler) Handle(ctx context.Context, sobId, accountId uuid.
 
 	return LedgerSummary{
 		AccountId:     accountId,
-		PeriodId:      lastLedger.PeriodId,
 		OpeningAmount: firstLedger.OpeningAmount,
 		PeriodAmount:  firstLedger.PeriodAmount,
 		PeriodDebit:   sumDebit,

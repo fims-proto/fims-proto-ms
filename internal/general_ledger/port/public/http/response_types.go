@@ -91,7 +91,6 @@ type LedgerResponse struct {
 
 type LedgerSummaryResponse struct {
 	AccountId     uuid.UUID       `json:"accountId"`
-	PeriodId      uuid.UUID       `json:"periodId"`
 	OpeningAmount decimal.Decimal `json:"openingAmount"`
 	PeriodAmount  decimal.Decimal `json:"periodAmount"`
 	PeriodDebit   decimal.Decimal `json:"periodDebit"`

@@ -71,9 +71,9 @@ func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryLedgers(
 	addSobFilter(sobId, pageRequest)
 	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO,
 		r.dataSource.GetConnection(ctx).
-			Joins("AuxiliaryAccount.Category").
-			Joins("AuxiliaryCategory").
-			Joins("Account"))
+			InnerJoins("AuxiliaryAccount.Category").
+			InnerJoins("AuxiliaryCategory").
+			InnerJoins("Account"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchPeriods(
@@ -250,10 +250,10 @@ func (r GeneralLedgerPostgresReadRepository) AuxiliariesByPeriodRange(
 
 	// Build base query with period range filtering
 	q := db.Model(&auxiliaryLedgerPO{}).
-		Joins("AuxiliaryAccount.Category").
-		Joins("AuxiliaryCategory").
-		Joins("Account").
-		Joins("Period").
+		InnerJoins("AuxiliaryAccount.Category").
+		InnerJoins("AuxiliaryCategory").
+		InnerJoins("Account").
+		InnerJoins("Period").
 		Where("a_auxiliary_ledgers.sob_id = ?", sobId).
 		Where("a_auxiliary_ledgers.account_id = ?", accountId).
 		Where("a_auxiliary_ledgers.auxiliary_category_id = ?", auxiliaryCategoryId).
@@ -282,8 +282,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 
 	// Build base query joining ledger_entries with vouchers
 	q := db.Model(&ledgerEntryPO{}).
-		Joins("Voucher").
-		Joins("Period").
+		InnerJoins("Voucher").
+		InnerJoins("Period").
 		Where("a_ledger_entries.sob_id = ?", sobId).
 		Where("a_ledger_entries.account_id = ?", accountId).
 		Where(
@@ -296,7 +296,7 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 
 	// Add optional auxiliary account filter
 	if auxiliaryAccountId != nil {
-		q = q.Joins("INNER JOIN ledger_entry_auxiliary_account_links leaal ON a_ledger_entries.id = leaal.id").
+		q = q.Joins("INNER JOIN a_ledger_entry_auxiliary_account_links leaal ON a_ledger_entries.id = leaal.id").
 			Where("leaal.auxiliary_account_id = ?", *auxiliaryAccountId)
 	}
 

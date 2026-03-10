@@ -116,7 +116,7 @@ func (s GeneralLedgerPostgresService) ReadLedgersByAccountAndPeriodsOrderByPerio
 	var pos []ledgerPO
 
 	if err := db.InnerJoins("Account", db.Where(accountPO{Id: accountId})).
-		Joins("Period", db.Where("(fiscal_year, period_number) IN ?", periodConditions)).
+		InnerJoins("Period", db.Where("(fiscal_year, period_number) IN ?", periodConditions)).
 		Where(ledgerPO{SobId: sobId}).
 		Order("fiscal_year, period_number ASC").
 		Find(&pos).Error; err != nil {

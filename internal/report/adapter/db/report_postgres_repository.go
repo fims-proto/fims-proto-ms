@@ -124,7 +124,7 @@ func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId u
 
 	po := reportPO{Id: reportId}
 	if err := db.Preload("Sections.Items.Formulas.Account").
-		Joins("Period").
+		InnerJoins("Period").
 		First(&po).Error; err != nil {
 		return nil, err
 	}

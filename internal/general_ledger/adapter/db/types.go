@@ -131,6 +131,7 @@ type ledgerEntryPO struct {
 	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:ledger_entry_auxiliary_account_links;joinForeignKey:Id;joinReferences:AuxiliaryAccountId"`
 	Voucher           voucherPO            `gorm:"foreignKey:VoucherId"`
 	LineItem          lineItemPO           `gorm:"foreignKey:LineItemId"`
+	Period            periodPO             `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time

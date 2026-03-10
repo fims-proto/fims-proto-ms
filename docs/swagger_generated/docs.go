@@ -2733,9 +2733,6 @@ const docTemplate = `{
                 },
                 "periodDebit": {
                     "type": "number"
-                },
-                "periodId": {
-                    "type": "string"
                 }
             }
         },
