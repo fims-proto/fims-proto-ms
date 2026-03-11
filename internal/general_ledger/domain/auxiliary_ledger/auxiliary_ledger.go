@@ -8,18 +8,17 @@ import (
 )
 
 type AuxiliaryLedger struct {
-	id                   uuid.UUID
-	sobId                uuid.UUID
-	periodId             uuid.UUID
-	accountId            uuid.UUID
-	auxiliaryCategoryId  uuid.UUID
-	auxiliaryAccountId   uuid.UUID
-	openingDebitBalance  decimal.Decimal
-	openingCreditBalance decimal.Decimal
-	periodDebit          decimal.Decimal
-	periodCredit         decimal.Decimal
-	endingDebitBalance   decimal.Decimal
-	endingCreditBalance  decimal.Decimal
+	id                  uuid.UUID
+	sobId               uuid.UUID
+	periodId            uuid.UUID
+	accountId           uuid.UUID
+	auxiliaryCategoryId uuid.UUID
+	auxiliaryAccountId  uuid.UUID
+	openingAmount       decimal.Decimal
+	periodAmount        decimal.Decimal
+	periodDebit         decimal.Decimal // positive amount, only for query performance
+	periodCredit        decimal.Decimal // positive amount, only for query performance
+	endingAmount        decimal.Decimal
 }
 
 func New(
@@ -29,12 +28,11 @@ func New(
 	accountId uuid.UUID,
 	auxiliaryCategoryId uuid.UUID,
 	auxiliaryAccountId uuid.UUID,
-	openingDebitBalance decimal.Decimal,
-	openingCreditBalance decimal.Decimal,
+	openingAmount decimal.Decimal,
+	periodAmount decimal.Decimal,
 	periodDebit decimal.Decimal,
 	periodCredit decimal.Decimal,
-	endingDebitBalance decimal.Decimal,
-	endingCreditBalance decimal.Decimal,
+	endingAmount decimal.Decimal,
 ) (*AuxiliaryLedger, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil auxiliary ledger id")
@@ -61,18 +59,17 @@ func New(
 	}
 
 	return &AuxiliaryLedger{
-		id:                   id,
-		sobId:                sobId,
-		periodId:             periodId,
-		accountId:            accountId,
-		auxiliaryCategoryId:  auxiliaryCategoryId,
-		auxiliaryAccountId:   auxiliaryAccountId,
-		openingDebitBalance:  openingDebitBalance,
-		openingCreditBalance: openingCreditBalance,
-		periodDebit:          periodDebit,
-		periodCredit:         periodCredit,
-		endingDebitBalance:   endingDebitBalance,
-		endingCreditBalance:  endingCreditBalance,
+		id:                  id,
+		sobId:               sobId,
+		periodId:            periodId,
+		accountId:           accountId,
+		auxiliaryCategoryId: auxiliaryCategoryId,
+		auxiliaryAccountId:  auxiliaryAccountId,
+		openingAmount:       openingAmount,
+		periodAmount:        periodAmount,
+		periodDebit:         periodDebit,
+		periodCredit:        periodCredit,
+		endingAmount:        endingAmount,
 	}, nil
 }
 
@@ -100,12 +97,12 @@ func (l *AuxiliaryLedger) AuxiliaryAccountId() uuid.UUID {
 	return l.auxiliaryAccountId
 }
 
-func (l *AuxiliaryLedger) OpeningDebitBalance() decimal.Decimal {
-	return l.openingDebitBalance
+func (l *AuxiliaryLedger) OpeningAmount() decimal.Decimal {
+	return l.openingAmount
 }
 
-func (l *AuxiliaryLedger) OpeningCreditBalance() decimal.Decimal {
-	return l.openingCreditBalance
+func (l *AuxiliaryLedger) PeriodAmount() decimal.Decimal {
+	return l.periodAmount
 }
 
 func (l *AuxiliaryLedger) PeriodDebit() decimal.Decimal {
@@ -116,10 +113,6 @@ func (l *AuxiliaryLedger) PeriodCredit() decimal.Decimal {
 	return l.periodCredit
 }
 
-func (l *AuxiliaryLedger) EndingDebitBalance() decimal.Decimal {
-	return l.endingDebitBalance
-}
-
-func (l *AuxiliaryLedger) EndingCreditBalance() decimal.Decimal {
-	return l.endingCreditBalance
+func (l *AuxiliaryLedger) EndingAmount() decimal.Decimal {
+	return l.endingAmount
 }

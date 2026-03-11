@@ -1,11 +1,11 @@
 meta {
-  name: [NOT USED] update voucher
+  name: [NOT USED] update journal
   type: http
   seq: 26
 }
 
 patch {
-  url: {{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}
+  url: {{base_path}}/sob/{{sob_1}}/journal/{{journalUUID_1}}
   body: json
   auth: none
 }
@@ -13,24 +13,24 @@ patch {
 body:json {
   {
       "updater": "{{user_1}}",
-      "lineItems": [
+      "journalLines": [
           {
-              "id": "{{voucher_1_item_1}}",
+              "id": "{{journal_1_item_1}}",
               "text": "从银行取现金",
               "accountNumber": "1001",
-              "debit": "101"
+              "amount": "101"
           },
           {
               "text": "从招商银行取现金",
               "accountNumber": "1002002",
-              "credit": "101"
+              "amount": "-101"
           }
       ]
   }
 }
 
 tests {
-  test("Update voucher 204", function () {
+  test("Update journal 204", function () {
       expect(res.getStatus()).to.equal(204);
   });
 }

@@ -154,7 +154,9 @@ func composeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
 
 	var builder strings.Builder
 	for i, number := range numberHierarchy {
-		builder.WriteString(fmt.Sprintf("%0*d", codeLengths[i], number))
+		if _, err := fmt.Fprintf(&builder, "%0*d", codeLengths[i], number); err != nil {
+			return "", fmt.Errorf("failed to compose account number: %w", err)
+		}
 	}
 
 	return builder.String(), nil

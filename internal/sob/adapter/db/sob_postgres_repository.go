@@ -39,8 +39,7 @@ func (r SobPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx con
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	po := sobBOToPO(*sob)
-	return db.Create(&po).Error
+	return db.Create(new(sobBOToPO(*sob))).Error
 }
 
 func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {

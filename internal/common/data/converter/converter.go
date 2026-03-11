@@ -32,9 +32,9 @@ func POsToDTOs[P any, D any](pos []P, convert func(po P) D) []D {
 	return dtos
 }
 
-func DTOsToVOs[D any, V any](pos []D, convert func(po D) V) []V {
+func DTOsToVOs[D any, V any](dtos []D, convert func(dto D) V) []V {
 	// same logic as persistence object to data transfer object
-	return POsToDTOs(pos, convert)
+	return POsToDTOs(dtos, convert)
 }
 
 func UUIDToPtr(id uuid.UUID) *uuid.UUID {

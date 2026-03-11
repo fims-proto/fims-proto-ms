@@ -5,13 +5,12 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-type LineItemCmd struct {
+type JournalLineCmd struct {
 	Id                uuid.UUID
 	Text              string
 	AccountNumber     string
 	AuxiliaryAccounts []AuxiliaryItemCmd
-	Debit             decimal.Decimal
-	Credit            decimal.Decimal
+	Amount            decimal.Decimal
 }
 
 type AuxiliaryItemCmd struct {

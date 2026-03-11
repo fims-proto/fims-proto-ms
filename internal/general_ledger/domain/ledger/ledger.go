@@ -3,7 +3,6 @@ package ledger
 import (
 	"errors"
 
-	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
 	"github.com/google/uuid"
@@ -11,17 +10,16 @@ import (
 )
 
 type Ledger struct {
-	id                   uuid.UUID
-	sobId                uuid.UUID
-	periodId             uuid.UUID
-	accountId            uuid.UUID
-	account              *account.Account
-	openingDebitBalance  decimal.Decimal
-	openingCreditBalance decimal.Decimal
-	periodDebit          decimal.Decimal
-	periodCredit         decimal.Decimal
-	endingDebitBalance   decimal.Decimal
-	endingCreditBalance  decimal.Decimal
+	id            uuid.UUID
+	sobId         uuid.UUID
+	periodId      uuid.UUID
+	accountId     uuid.UUID
+	account       *account.Account
+	openingAmount decimal.Decimal
+	periodAmount  decimal.Decimal
+	periodDebit   decimal.Decimal
+	periodCredit  decimal.Decimal
+	endingAmount  decimal.Decimal
 }
 
 func New(
@@ -30,12 +28,11 @@ func New(
 	periodId uuid.UUID,
 	accountId uuid.UUID,
 	account *account.Account,
-	openingDebitBalance decimal.Decimal,
-	openingCreditBalance decimal.Decimal,
+	openingAmount decimal.Decimal,
+	periodAmount decimal.Decimal,
 	periodDebit decimal.Decimal,
 	periodCredit decimal.Decimal,
-	endingDebitBalance decimal.Decimal,
-	endingCreditBalance decimal.Decimal,
+	endingAmount decimal.Decimal,
 ) (*Ledger, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil ledger id")
@@ -57,22 +54,17 @@ func New(
 		return nil, errors.New("nil account")
 	}
 
-	if openingDebitBalance.Compare(decimal.Zero) != 0 && openingCreditBalance.Compare(decimal.Zero) != 0 {
-		return nil, commonerrors.NewSlugError("ledger-conflictOpeningBalance")
-	}
-
 	return &Ledger{
-		id:                   id,
-		sobId:                sobId,
-		accountId:            accountId,
-		periodId:             periodId,
-		openingDebitBalance:  openingDebitBalance,
-		openingCreditBalance: openingCreditBalance,
-		periodDebit:          periodDebit,
-		periodCredit:         periodCredit,
-		endingDebitBalance:   endingDebitBalance,
-		endingCreditBalance:  endingCreditBalance,
-		account:              account,
+		id:            id,
+		sobId:         sobId,
+		accountId:     accountId,
+		periodId:      periodId,
+		openingAmount: openingAmount,
+		periodAmount:  periodAmount,
+		periodDebit:   periodDebit,
+		periodCredit:  periodCredit,
+		endingAmount:  endingAmount,
+		account:       account,
 	}, nil
 }
 
@@ -96,12 +88,12 @@ func (l *Ledger) Account() *account.Account {
 	return l.account
 }
 
-func (l *Ledger) OpeningDebitBalance() decimal.Decimal {
-	return l.openingDebitBalance
+func (l *Ledger) OpeningAmount() decimal.Decimal {
+	return l.openingAmount
 }
 
-func (l *Ledger) OpeningCreditBalance() decimal.Decimal {
-	return l.openingCreditBalance
+func (l *Ledger) PeriodAmount() decimal.Decimal {
+	return l.periodAmount
 }
 
 func (l *Ledger) PeriodDebit() decimal.Decimal {
@@ -112,10 +104,6 @@ func (l *Ledger) PeriodCredit() decimal.Decimal {
 	return l.periodCredit
 }
 
-func (l *Ledger) EndingDebitBalance() decimal.Decimal {
-	return l.endingDebitBalance
-}
-
-func (l *Ledger) EndingCreditBalance() decimal.Decimal {
-	return l.endingCreditBalance
+func (l *Ledger) EndingAmount() decimal.Decimal {
+	return l.endingAmount
 }

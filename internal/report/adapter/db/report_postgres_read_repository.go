@@ -29,7 +29,7 @@ func (r ReportPostgresReadRepository) SearchReport(
 	addSobFilter(sobId, pageRequest)
 	return data.SearchEntities(ctx, pageRequest, reportPO{}, reportPOToDTO, r.dataSource.GetConnection(ctx).
 		Preload("Sections.Items.Formulas.Account").
-		Joins("Period"))
+		InnerJoins("Period"))
 }
 
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {

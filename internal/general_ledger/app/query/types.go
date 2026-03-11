@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"time"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
+
 	"github.com/shopspring/decimal"
 
 	"github.com/google/uuid"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 )
 
 type Account struct {
@@ -60,59 +60,55 @@ type Period struct {
 }
 
 type Ledger struct {
-	Id                   uuid.UUID
-	SobId                uuid.UUID
-	AccountId            uuid.UUID
-	PeriodId             uuid.UUID
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
-	Account              Account
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	Id            uuid.UUID
+	SobId         uuid.UUID
+	AccountId     uuid.UUID
+	PeriodId      uuid.UUID
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	PeriodDebit   decimal.Decimal
+	PeriodCredit  decimal.Decimal
+	EndingAmount  decimal.Decimal
+	Account       Account
+	CreatedAt     time.Time
+	UpdatedAt     time.Time
 }
 
 type AuxiliaryLedger struct {
-	Id                   uuid.UUID
-	SobId                uuid.UUID
-	PeriodId             uuid.UUID
-	Account              Account
-	AuxiliaryCategory    AuxiliaryCategory
-	AuxiliaryAccount     AuxiliaryAccount
-	OpeningDebitBalance  decimal.Decimal
-	OpeningCreditBalance decimal.Decimal
-	PeriodDebit          decimal.Decimal
-	PeriodCredit         decimal.Decimal
-	EndingDebitBalance   decimal.Decimal
-	EndingCreditBalance  decimal.Decimal
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
-}
-
-type LineItem struct {
 	Id                uuid.UUID
+	SobId             uuid.UUID
+	PeriodId          uuid.UUID
 	Account           Account
-	AuxiliaryAccounts []AuxiliaryAccount
-	Text              string
-	Debit             decimal.Decimal
-	Credit            decimal.Decimal
+	AuxiliaryCategory AuxiliaryCategory
+	AuxiliaryAccount  AuxiliaryAccount
+	OpeningAmount     decimal.Decimal
+	PeriodAmount      decimal.Decimal
+	PeriodDebit       decimal.Decimal
+	PeriodCredit      decimal.Decimal
+	EndingAmount      decimal.Decimal
 	CreatedAt         time.Time
 	UpdatedAt         time.Time
 }
 
-type Voucher struct {
+type JournalLine struct {
+	Id                uuid.UUID
+	Account           Account
+	AuxiliaryAccounts []AuxiliaryAccount
+	Text              string
+	Amount            decimal.Decimal
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
+}
+
+type Journal struct {
 	SobId              uuid.UUID
 	Id                 uuid.UUID
 	Period             Period
-	VoucherType        string
+	JournalType        string
 	HeaderText         string
 	DocumentNumber     string
 	AttachmentQuantity int
-	Debit              decimal.Decimal
-	Credit             decimal.Decimal
+	Amount             decimal.Decimal
 	Creator            *User
 	Reviewer           *User
 	Auditor            *User
@@ -120,8 +116,8 @@ type Voucher struct {
 	IsReviewed         bool
 	IsAudited          bool
 	IsPosted           bool
-	TransactionDate    voucher.TransactionDate
-	LineItems          []LineItem
+	TransactionDate    transaction_date.TransactionDate
+	JournalLines       []JournalLine
 	CreatedAt          time.Time
 	UpdatedAt          time.Time
 }
@@ -129,4 +125,14 @@ type Voucher struct {
 type User struct {
 	Id     uuid.UUID
 	Traits json.RawMessage
+}
+
+type LedgerEntry struct {
+	JournalId       uuid.UUID
+	JournalNumber   string
+	TransactionDate transaction_date.TransactionDate
+	Text            string
+	Amount          decimal.Decimal
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
 }

@@ -9,15 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type VoucherByIdHandler struct {
+type JournalByIdHandler struct {
 	readModel   GeneralLedgerReadModel
 	userService service.UserService
 }
 
-func NewVoucherByIdHandler(
+func NewJournalByIdHandler(
 	readModel GeneralLedgerReadModel,
 	userService service.UserService,
-) VoucherByIdHandler {
+) JournalByIdHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
@@ -26,21 +26,21 @@ func NewVoucherByIdHandler(
 		panic("nil user service")
 	}
 
-	return VoucherByIdHandler{
+	return JournalByIdHandler{
 		readModel:   readModel,
 		userService: userService,
 	}
 }
 
-func (h VoucherByIdHandler) Handle(ctx context.Context, voucherId uuid.UUID) (Voucher, error) {
-	v, err := h.readModel.VoucherById(ctx, voucherId)
+func (h JournalByIdHandler) Handle(ctx context.Context, journalId uuid.UUID) (Journal, error) {
+	v, err := h.readModel.JournalById(ctx, journalId)
 	if err != nil {
-		return Voucher{}, fmt.Errorf("failed to read voucher: %w", err)
+		return Journal{}, fmt.Errorf("failed to read journal: %w", err)
 	}
 
-	singletonList, err := enrichUserName(ctx, h.userService, []Voucher{v})
+	singletonList, err := enrichUserName(ctx, h.userService, []Journal{v})
 	if err != nil {
-		return Voucher{}, fmt.Errorf("failed to enrich user in voucher: %w", err)
+		return Journal{}, fmt.Errorf("failed to enrich user in journal: %w", err)
 	}
 
 	return singletonList[0], nil

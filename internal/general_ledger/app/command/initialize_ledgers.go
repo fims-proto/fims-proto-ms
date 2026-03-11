@@ -65,17 +65,13 @@ func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.U
 	var ledgers []*ledger.Ledger
 	for _, account := range accounts {
 		// move previous ending balance to current balance
-		openingDebitBalance := decimal.Zero
-		openingCreditBalance := decimal.Zero
-		endingDebitBalance := decimal.Zero
-		endingCreditBalance := decimal.Zero
+		openingAmount := decimal.Zero
+		endingAmount := decimal.Zero
 
 		previousLedger, ok := ledgersInPreviousPeriod[account.Id()]
 		if ok {
-			openingDebitBalance = previousLedger.EndingDebitBalance()
-			openingCreditBalance = previousLedger.EndingCreditBalance()
-			endingDebitBalance = previousLedger.EndingDebitBalance()
-			endingCreditBalance = previousLedger.EndingCreditBalance()
+			openingAmount = previousLedger.EndingAmount()
+			endingAmount = previousLedger.EndingAmount()
 		}
 
 		ledgerBO, err := ledger.New(
@@ -84,12 +80,11 @@ func initializeLedgers(ctx context.Context, repo domain.Repository, sobId uuid.U
 			currentPeriod.Id(),
 			account.Id(),
 			account,
-			openingDebitBalance,
-			openingCreditBalance,
-			decimal.Zero,
-			decimal.Zero,
-			endingDebitBalance,
-			endingCreditBalance,
+			openingAmount, // openingAmount
+			decimal.Zero,  // periodAmount
+			decimal.Zero,  // periodDebit
+			decimal.Zero,  // periodCredit
+			endingAmount,  // endingAmount
 		)
 		if err != nil {
 			return fmt.Errorf("should not happen, failed to create ledger: %w", err)
@@ -127,12 +122,11 @@ func initializeAuxiliaryLedgers(ctx context.Context, repo domain.Repository, sob
 			previousLedger.AccountId(),
 			previousLedger.AuxiliaryCategoryId(),
 			previousLedger.AuxiliaryAccountId(),
-			previousLedger.EndingDebitBalance(),  // opening = previous ending
-			previousLedger.EndingCreditBalance(), // opening = previous ending
-			decimal.Zero,                         // period debit = 0
-			decimal.Zero,                         // period credit = 0
-			previousLedger.EndingDebitBalance(),  // ending = opening (no transactions yet)
-			previousLedger.EndingCreditBalance(), // ending = opening (no transactions yet)
+			previousLedger.EndingAmount(), // opening = previous ending
+			decimal.Zero,                  // periodAmount = 0
+			decimal.Zero,                  // periodDebit = 0
+			decimal.Zero,                  // periodCredit = 0
+			previousLedger.EndingAmount(), // ending = opening (no transactions yet)
 		)
 		if err != nil {
 			return fmt.Errorf("failed to create auxiliary ledger: %w", err)

@@ -6,8 +6,9 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
@@ -52,6 +53,7 @@ type Repository interface {
 	ReadPreviousPeriod(ctx context.Context, currentPeriodId uuid.UUID) (*period.Period, error)
 	ReadFirstPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
 
+	CreateLedgerEntries(ctx context.Context, entries []*ledger_entry.LedgerEntry) error
 	CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error
 	UpdateLedgersByPeriodAndAccountIds(
 		ctx context.Context,
@@ -63,13 +65,22 @@ type Repository interface {
 	ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error)
 	ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
-	CreateVoucher(ctx context.Context, v *voucher.Voucher) error
-	UpdateVoucher(
+	CreateJournal(ctx context.Context, j *journal.Journal) error
+	// UpdateJournalHeader updates only the journal header row (status flags, reviewer, auditor, poster, etc).
+	// Journal lines are loaded for the callback to read but are NOT deleted or re-saved.
+	UpdateJournalHeader(
 		ctx context.Context,
-		voucherId uuid.UUID,
-		updateFn func(v *voucher.Voucher) (*voucher.Voucher, error),
+		journalId uuid.UUID,
+		updateFn func(j *journal.Journal) (*journal.Journal, error),
 	) error
-	ExistsVouchersNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
+	// UpdateEntireJournal replaces the journal header and all its journal lines.
+	// Use this when journal lines may be modified; prefer UpdateJournalHeader for header-only changes.
+	UpdateEntireJournal(
+		ctx context.Context,
+		journalId uuid.UUID,
+		updateFn func(j *journal.Journal) (*journal.Journal, error),
+	) error
+	ExistsJournalsNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
 	CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error
 	ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error)

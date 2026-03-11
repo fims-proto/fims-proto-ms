@@ -3,38 +3,33 @@ package http
 import (
 	"net/http"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 
-	"github/fims-proto/fims-proto-ms/internal/common/data"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-// ReadPagingPeriods godoc
+// ReadPeriods godoc
 //
-//	@Text			List periods
-//	@Description	List periods
+//	@Text			List all periods
+//	@Description	List all periods
 //	@Tags			periods
 //	@Accept			application/json
 //	@Produce		application/json
 //	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			$page	query		int		false	"page number"			default(1)
-//	@Param			$size	query		int		false	"page size"				default(40)
-//	@Param			$sort	query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
-//	@Param			$filter	query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
-//	@Success		200		{object}	data.PageResponse[PeriodResponse]
+//	@Success		200		{array}		PeriodResponse
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/periods [get]
-func (h Handler) ReadPagingPeriods(c *gin.Context) {
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.Period], error) {
-			return h.app.Queries.PagingPeriods.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
-		},
-		periodDTOToVO,
-	)
+func (h Handler) ReadPeriods(c *gin.Context) {
+	periods, err := h.app.Queries.AllPeriods.Handle(c, uuid.MustParse(c.Param("sobId")))
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, converter.DTOsToVOs(periods, periodDTOToVO))
 }
 
 // ReadSobCurrentPeriod godoc

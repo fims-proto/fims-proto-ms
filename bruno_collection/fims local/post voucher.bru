@@ -1,11 +1,11 @@
 meta {
-  name: post voucher
+  name: post journal
   type: http
   seq: 20
 }
 
 post {
-  url: {{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post
+  url: {{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/post
   body: json
   auth: none
 }
@@ -17,12 +17,12 @@ body:json {
 }
 
 tests {
-  test("Post voucher", function () {
+  test("Post journal", function () {
       expect(res.getStatus()).to.equal(204)
   })
-  
-  const voucherIds = bru.getVar("voucher_ids")
-  if (voucherIds && bru.getVar("voucher_index") < voucherIds.length) {
-      bru.setNextRequest("read voucher")
+
+  const journalIds = bru.getVar("journal_ids")
+  if (journalIds && bru.getVar("journal_index") < journalIds.length) {
+      bru.setNextRequest("read journal")
   }
 }

@@ -471,29 +471,29 @@
 			"response": []
 		},
 		{
-			"name": "create voucher",
+			"name": "create journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"let voucherIds = pm.collectionVariables.get(\"voucher_ids\")",
-							"if (!voucherIds || voucherIds.length == 0 || !Array.isArray(voucherIds)) {",
-							"    voucherIds = []",
+							"let journalIds = pm.collectionVariables.get(\"journal_ids\")",
+							"if (!journalIds || journalIds.length == 0 || !Array.isArray(journalIds)) {",
+							"    journalIds = []",
 							"}",
-							"voucherIds.push(pm.response.json()['id'])",
-							"pm.collectionVariables.set(\"voucher_ids\", voucherIds)",
+							"journalIds.push(pm.response.json()['id'])",
+							"pm.collectionVariables.set(\"journal_ids\", journalIds)",
 							"",
 							"// let jsonData = pm.response.json()",
-							"// pm.collectionVariables.set(\"voucher_1_item_1\", jsonData.lineItems[0].id)",
-							"// pm.collectionVariables.set(\"voucher_1_item_2\", jsonData.lineItems[1].id)",
+							"// pm.collectionVariables.set(\"journal_1_item_1\", jsonData.journalLines[0].id)",
+							"// pm.collectionVariables.set(\"journal_1_item_2\", jsonData.journalLines[1].id)",
 							"",
-							"const sampleVouchers = pm.collectionVariables.get(\"sample_vouchers\")",
-							"if (sampleVouchers && sampleVouchers.length > 0){",
-							"    postman.setNextRequest(\"create voucher\")",
+							"const sampleJournals = pm.collectionVariables.get(\"sample_journals\")",
+							"if (sampleJournals && sampleJournals.length > 0){",
+							"    postman.setNextRequest(\"create journal\")",
 							"}",
 							"",
-							"pm.test(\"Create voucher\", function () {",
+							"pm.test(\"Create journal\", function () {",
 							"    pm.response.to.have.status(201)",
 							"})",
 							""
@@ -700,34 +700,34 @@
 							"    }",
 							"]",
 							"",
-							"let sampleVouchers = pm.collectionVariables.get(\"sample_vouchers\")",
+							"let sampleJournals = pm.collectionVariables.get(\"sample_journals\")",
 							"",
-							"if(!sampleVouchers || sampleVouchers.length == 0) {",
-							"    sampleVouchers = testSamples",
+							"if(!sampleJournals || sampleJournals.length == 0) {",
+							"    sampleJournals = testSamples",
 							"}",
 							"",
-							"let currentSampleVoucher = sampleVouchers.shift()",
-							"pm.collectionVariables.set(\"sample_vouchers\", sampleVouchers)",
+							"let currentSampleJournal = sampleJournals.shift()",
+							"pm.collectionVariables.set(\"sample_journals\", sampleJournals)",
 							"",
 							"",
 							"// build current payload",
 							"const payload = {",
-							"    \"voucherType\": \"general_voucher\",",
-							"    \"headerText\": currentSampleVoucher.summary,",
+							"    \"journalType\": \"general_journal\",",
+							"    \"headerText\": currentSampleJournal.summary,",
 							"    \"attachmentQuantity\": 0,",
-							"    \"lineItems\": [],",
+							"    \"journalLines\": [],",
 							"    \"creator\": pm.collectionVariables.get(\"user_1\"),",
-							"    \"transactionTime\": currentSampleVoucher.date",
+							"    \"transactionTime\": currentSampleJournal.date",
 							"}",
 							"",
-							"currentSampleVoucher.items.forEach(sampleItem => payload.lineItems.push({",
-							"    \"text\": currentSampleVoucher.summary,",
+							"currentSampleJournal.items.forEach(sampleItem => payload.journalLines.push({",
+							"    \"text\": currentSampleJournal.summary,",
 							"    \"accountNumber\": sampleItem.account,",
 							"    \"debit\": sampleItem.debit,",
 							"    \"credit\": sampleItem.credit,",
 							"}))",
 							"",
-							"pm.collectionVariables.set(\"current_voucher_payload\", JSON.stringify(payload))"
+							"pm.collectionVariables.set(\"current_journal_payload\", JSON.stringify(payload))"
 						],
 						"type": "text/javascript"
 					}
@@ -738,7 +738,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{{current_voucher_payload}}",
+					"raw": "{{current_journal_payload}}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -746,27 +746,27 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/vouchers",
+					"raw": "{{base_path}}/sob/{{sob}}/journals",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"vouchers"
+						"journals"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "read all vouchers",
+			"name": "read all journals",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read all vouchers\", function () {",
+							"pm.test(\"Read all journals\", function () {",
 							"    pm.response.to.have.status(200)",
 							"});",
 							""
@@ -779,36 +779,36 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/vouchers",
+					"raw": "{{base_path}}/sob/{{sob}}/journals",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"vouchers"
+						"journals"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "read voucher",
+			"name": "read journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Read voucher by id 200\", function () {",
+							"pm.test(\"Read journal by id 200\", function () {",
 							"    pm.response.to.have.status(200)",
 							"})",
 							"",
 							"pm.test(\"Number check\", function () {",
 							"    var jsonData = pm.response.json()",
-							"    pm.expect(jsonData.documentNumber).to.eql(`记 ${pm.collectionVariables.get(\"voucher_index\")} 号`)",
+							"    pm.expect(jsonData.documentNumber).to.eql(`记 ${pm.collectionVariables.get(\"journal_index\")} 号`)",
 							"})",
 							"",
-							"postman.setNextRequest(\"review voucher\")"
+							"postman.setNextRequest(\"review journal\")"
 						],
 						"type": "text/javascript"
 					}
@@ -817,11 +817,11 @@
 					"listen": "prerequest",
 					"script": {
 						"exec": [
-							"const voucherIds = pm.collectionVariables.get(\"voucher_ids\")",
-							"const index = Number(pm.collectionVariables.get(\"voucher_index\")) || 0",
+							"const journalIds = pm.collectionVariables.get(\"journal_ids\")",
+							"const index = Number(pm.collectionVariables.get(\"journal_index\")) || 0",
 							"",
-							"pm.collectionVariables.set(\"current_voucher_id\", voucherIds[index])",
-							"pm.collectionVariables.set(\"voucher_index\", index + 1)"
+							"pm.collectionVariables.set(\"current_journal_id\", journalIds[index])",
+							"pm.collectionVariables.set(\"journal_index\", index + 1)"
 						],
 						"type": "text/javascript"
 					}
@@ -831,28 +831,28 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}"
+						"journal",
+						"{{current_journal_id}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "review voucher",
+			"name": "review journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Review voucher\", function () {",
+							"pm.test(\"Review journal\", function () {",
 							"    pm.response.to.have.status(204)",
 							"})"
 						],
@@ -873,15 +873,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/review",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/review",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"review"
 					]
 				}
@@ -889,13 +889,13 @@
 			"response": []
 		},
 		{
-			"name": "audit voucher",
+			"name": "audit journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Audit voucher\", function () {",
+							"pm.test(\"Audit journal\", function () {",
 							"    pm.response.to.have.status(204)",
 							"})",
 							""
@@ -917,15 +917,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/audit",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/audit",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"audit"
 					]
 				}
@@ -939,7 +939,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Cancel review voucher\", function () {",
+							"pm.test(\"Cancel review journal\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],
@@ -960,15 +960,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-review",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/cancel-review",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"cancel-review"
 					]
 				}
@@ -982,7 +982,7 @@
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Cancel audit voucher\", function () {",
+							"pm.test(\"Cancel audit journal\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],
@@ -1003,15 +1003,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/cancel-audit",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/cancel-audit",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"cancel-audit"
 					]
 				}
@@ -1019,13 +1019,13 @@
 			"response": []
 		},
 		{
-			"name": "attempt post voucher",
+			"name": "attempt post journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Post voucher failed\", function () {",
+							"pm.test(\"Post journal failed\", function () {",
 							"    pm.response.to.have.status(400);",
 							"});"
 						],
@@ -1046,15 +1046,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/post",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"post"
 					]
 				}
@@ -1062,13 +1062,13 @@
 			"response": []
 		},
 		{
-			"name": "review voucher again",
+			"name": "review journal again",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Review voucher\", function () {",
+							"pm.test(\"Review journal\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});",
 							""
@@ -1090,15 +1090,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/review",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/review",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"review"
 					]
 				}
@@ -1106,13 +1106,13 @@
 			"response": []
 		},
 		{
-			"name": "audit voucher again",
+			"name": "audit journal again",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Audit voucher\", function () {",
+							"pm.test(\"Audit journal\", function () {",
 							"    pm.response.to.have.status(204)",
 							"})",
 							""
@@ -1134,15 +1134,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/audit",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/audit",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"audit"
 					]
 				}
@@ -1150,19 +1150,19 @@
 			"response": []
 		},
 		{
-			"name": "post voucher",
+			"name": "post journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Post voucher\", function () {",
+							"pm.test(\"Post journal\", function () {",
 							"    pm.response.to.have.status(204)",
 							"})",
 							"",
-							"const voucherIds = pm.collectionVariables.get(\"voucher_ids\")",
-							"if (voucherIds && pm.collectionVariables.get(\"voucher_index\") < voucherIds.length) {",
-							"    postman.setNextRequest(\"read voucher\")",
+							"const journalIds = pm.collectionVariables.get(\"journal_ids\")",
+							"if (journalIds && pm.collectionVariables.get(\"journal_index\") < journalIds.length) {",
+							"    postman.setNextRequest(\"read journal\")",
 							"}"
 						],
 						"type": "text/javascript"
@@ -1182,15 +1182,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob}}/voucher/{{current_voucher_id}}/post",
+					"raw": "{{base_path}}/sob/{{sob}}/journal/{{current_journal_id}}/post",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob}}",
-						"voucher",
-						"{{current_voucher_id}}",
+						"journal",
+						"{{current_journal_id}}",
 						"post"
 					]
 				}
@@ -1680,11 +1680,11 @@
 							"pm.collectionVariables.unset(\"now\")",
 							"pm.collectionVariables.unset(\"sob\")",
 							"pm.collectionVariables.unset(\"current_period\")",
-							"pm.collectionVariables.unset(\"sample_vouchers\")",
-							"pm.collectionVariables.unset(\"current_voucher_payload\")",
-							"pm.collectionVariables.unset(\"voucher_ids\")",
-							"pm.collectionVariables.unset(\"current_voucher_id\")",
-							"pm.collectionVariables.unset(\"voucher_index\")",
+							"pm.collectionVariables.unset(\"sample_journals\")",
+							"pm.collectionVariables.unset(\"current_journal_payload\")",
+							"pm.collectionVariables.unset(\"journal_ids\")",
+							"pm.collectionVariables.unset(\"current_journal_id\")",
+							"pm.collectionVariables.unset(\"journal_index\")",
 							""
 						],
 						"type": "text/javascript"
@@ -1708,13 +1708,13 @@
 			"response": []
 		},
 		{
-			"name": "[NOT USED] update voucher",
+			"name": "[NOT USED] update journal",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Update voucher 204\", function () {",
+							"pm.test(\"Update journal 204\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],
@@ -1727,7 +1727,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n    \"updater\": \"{{user_1}}\",\n    \"lineItems\": [\n        {\n            \"id\": \"{{voucher_1_item_1}}\",\n            \"text\": \"从银行取现金\",\n            \"accountNumber\": \"1001\",\n            \"debit\": \"101\"\n        },\n        {\n            \"text\": \"从招商银行取现金\",\n            \"accountNumber\": \"1002002\",\n            \"credit\": \"101\"\n        }\n    ]\n}",
+					"raw": "{\n    \"updater\": \"{{user_1}}\",\n    \"journalLines\": [\n        {\n            \"id\": \"{{journal_1_item_1}}\",\n            \"text\": \"从银行取现金\",\n            \"accountNumber\": \"1001\",\n            \"debit\": \"101\"\n        },\n        {\n            \"text\": \"从招商银行取现金\",\n            \"accountNumber\": \"1002002\",\n            \"credit\": \"101\"\n        }\n    ]\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -1735,28 +1735,28 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}",
+					"raw": "{{base_path}}/sob/{{sob_1}}/journal/{{journalUUID_1}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}"
+						"journal",
+						"{{journalUUID_1}}"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "[NOT USED] update voucher transaction time",
+			"name": "[NOT USED] update journal transaction time",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"pm.test(\"Update voucher 204\", function () {",
+							"pm.test(\"Update journal 204\", function () {",
 							"    pm.response.to.have.status(204);",
 							"});"
 						],
@@ -1777,15 +1777,15 @@
 					}
 				},
 				"url": {
-					"raw": "{{base_path}}/sob/{{sob_1}}/voucher/{{voucherUUID_1}}",
+					"raw": "{{base_path}}/sob/{{sob_1}}/journal/{{journalUUID_1}}",
 					"host": [
 						"{{base_path}}"
 					],
 					"path": [
 						"sob",
 						"{{sob_1}}",
-						"voucher",
-						"{{voucherUUID_1}}"
+						"journal",
+						"{{journalUUID_1}}"
 					]
 				}
 			},

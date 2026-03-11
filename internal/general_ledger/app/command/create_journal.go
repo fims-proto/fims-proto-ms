@@ -4,31 +4,33 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
 	"github.com/google/uuid"
 )
 
-type CreateVoucherCmd struct {
-	VoucherId          uuid.UUID
+type CreateJournalCmd struct {
+	JournalId          uuid.UUID
 	SobId              uuid.UUID
 	HeaderText         string
-	VoucherType        string
+	JournalType        string
 	AttachmentQuantity int
-	LineItems          []LineItemCmd
+	JournalLines       []JournalLineCmd
 	Creator            uuid.UUID
-	TransactionDate    voucher.TransactionDate
+	TransactionDate    transaction_date.TransactionDate
 }
 
-type CreateVoucherHandler struct {
+type CreateJournalHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
 }
 
-func NewCreateVoucherHandler(repo domain.Repository, numberingService service.NumberingService) CreateVoucherHandler {
+func NewCreateJournalHandler(repo domain.Repository, numberingService service.NumberingService) CreateJournalHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -37,41 +39,41 @@ func NewCreateVoucherHandler(repo domain.Repository, numberingService service.Nu
 		panic("nil numbering service")
 	}
 
-	return CreateVoucherHandler{
+	return CreateJournalHandler{
 		repo:             repo,
 		numberingService: numberingService,
 	}
 }
 
-func (h CreateVoucherHandler) Handle(ctx context.Context, cmd CreateVoucherCmd) error {
+func (h CreateJournalHandler) Handle(ctx context.Context, cmd CreateJournalCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		p, err := readPeriodIdAndCheck(txCtx, h.repo, h.numberingService, cmd.SobId, cmd.TransactionDate)
 		if err != nil {
 			return fmt.Errorf("failed to read or create period: %w", err)
 		}
 
-		return h.createVoucher(txCtx, cmd, p)
+		return h.createJournal(txCtx, cmd, p)
 	})
 }
 
-func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVoucherCmd, p *period.Period) error {
-	// prepare line items
-	lineItems, err := prepareLineItems(ctx, h.repo, cmd.SobId, cmd.LineItems)
+func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJournalCmd, p *period.Period) error {
+	// prepare journal lines
+	journalLines, err := prepareJournalLines(ctx, h.repo, cmd.SobId, cmd.JournalLines)
 	if err != nil {
-		return fmt.Errorf("failed to prepare line items: %w", err)
+		return fmt.Errorf("failed to prepare journal lines: %w", err)
 	}
 
 	// get document number
-	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), cmd.VoucherType)
+	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), cmd.JournalType)
 	if err != nil {
 		return fmt.Errorf("failed to generate next number: %w", err)
 	}
 
-	newVoucher, err := voucher.New(
-		cmd.VoucherId,
+	newJournal, err := journal.New(
+		cmd.JournalId,
 		cmd.SobId,
 		p,
-		cmd.VoucherType,
+		cmd.JournalType,
 		cmd.HeaderText,
 		identifier,
 		cmd.AttachmentQuantity,
@@ -83,11 +85,11 @@ func (h CreateVoucherHandler) createVoucher(ctx context.Context, cmd CreateVouch
 		false,
 		false,
 		cmd.TransactionDate,
-		lineItems,
+		journalLines,
 	)
 	if err != nil {
 		return err
 	}
 
-	return h.repo.CreateVoucher(ctx, newVoucher)
+	return h.repo.CreateJournal(ctx, newJournal)
 }

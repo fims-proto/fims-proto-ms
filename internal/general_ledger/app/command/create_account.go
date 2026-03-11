@@ -153,12 +153,11 @@ func (h CreateAccountHandler) createLedger(ctx context.Context, acct *account.Ac
 		p.Id(),
 		acct.Id(),
 		acct,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
-		decimal.Zero,
+		decimal.Zero, // openingAmount
+		decimal.Zero, // periodAmount
+		decimal.Zero, // periodDebit
+		decimal.Zero, // periodCredit
+		decimal.Zero, // endingAmount
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create ledger: %w", err)

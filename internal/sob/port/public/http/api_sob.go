@@ -109,7 +109,7 @@ func (h Handler) CreateSob(c *gin.Context) {
 //	@Accept			application/json
 //	@Produce		application/json
 //	@Param			sobId				path	string				true	"SobId ID"
-//	@Param			UpdateSobRequest	body	UpdateSobRequest	true	"UpdateLineItems sob request"
+//	@Param			UpdateSobRequest	body	UpdateSobRequest	true	"UpdateJournalLines sob request"
 //	@Success		204
 //	@Failure		400	{object}	Error
 //	@Failure		500	{object}	Error

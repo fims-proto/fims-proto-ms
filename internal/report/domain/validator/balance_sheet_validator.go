@@ -11,7 +11,7 @@ import (
 // BalanceSheetValidator validates the balance sheet equation: Assets = Liabilities + Equity
 type BalanceSheetValidator struct{}
 
-func (v *BalanceSheetValidator) Validate(ctx context.Context, r *report.Report) error {
+func (v *BalanceSheetValidator) Validate(_ context.Context, r *report.Report) error {
 	// Find required sections by type
 	assetsSection := findSectionByType(r.Sections(), sectiontype.Assets)
 	if assetsSection == nil {

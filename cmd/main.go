@@ -7,8 +7,8 @@ import (
 	_ "github/fims-proto/fims-proto-ms/docs/swagger_generated"
 	"github/fims-proto/fims-proto-ms/internal/common/config"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
-	dedicated_datasource "github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
-	multitenant_datasource "github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
+	dedicatedDatasource "github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
+	multitenantDatasource "github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
@@ -60,9 +60,9 @@ func main() {
 
 	var dataSource datasource.DataSource
 	if config.GetBool("app.multiTenancy") {
-		dataSource = multitenant_datasource.NewMultiTenantDataSource()
+		dataSource = multitenantDatasource.NewMultiTenantDataSource()
 	} else {
-		dataSource = dedicated_datasource.NewDedicatedDataSource()
+		dataSource = dedicatedDatasource.NewDedicatedDataSource()
 	}
 
 	// repositories

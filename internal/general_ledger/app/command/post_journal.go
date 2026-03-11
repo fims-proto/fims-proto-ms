@@ -6,19 +6,20 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
-type PostVoucherCmd struct {
-	VoucherId uuid.UUID
+type PostJournalCmd struct {
+	JournalId uuid.UUID
 	Poster    uuid.UUID
 }
 
@@ -29,8 +30,7 @@ type postLedgersCmd struct {
 
 type postLedgersRecordCmd struct {
 	accountId uuid.UUID
-	debit     decimal.Decimal
-	credit    decimal.Decimal
+	amount    decimal.Decimal
 }
 
 type postAuxiliaryLedgersCmd struct {
@@ -43,81 +43,108 @@ type postAuxiliaryLedgersRecordCmd struct {
 	accountId           uuid.UUID
 	auxiliaryCategoryId uuid.UUID
 	auxiliaryAccount    auxiliary_account.AuxiliaryAccount
-	debit               decimal.Decimal
-	credit              decimal.Decimal
+	amount              decimal.Decimal
 }
 
-type PostVoucherHandler struct {
+type PostJournalHandler struct {
 	repo domain.Repository
 }
 
-func NewPostVoucherHandler(repo domain.Repository) PostVoucherHandler {
+func NewPostJournalHandler(repo domain.Repository) PostJournalHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
-	return PostVoucherHandler{repo: repo}
+	return PostJournalHandler{repo: repo}
 }
 
-func (h PostVoucherHandler) Handle(ctx context.Context, cmd PostVoucherCmd) error {
+func (h PostJournalHandler) Handle(ctx context.Context, cmd PostJournalCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		return h.postVoucher(txCtx, cmd)
+		return h.postJournal(txCtx, cmd)
 	})
 }
 
-// postVoucher updates voucher, and triggers ledgers and auxiliary ledgers (if applicable) posting
-func (h PostVoucherHandler) postVoucher(ctx context.Context, cmd PostVoucherCmd) error {
-	return h.repo.UpdateVoucher(
+// postJournal updates journal, creates ledger entries, and triggers ledgers and auxiliary ledgers (if applicable) posting
+func (h PostJournalHandler) postJournal(ctx context.Context, cmd PostJournalCmd) error {
+	return h.repo.UpdateJournalHeader(
 		ctx,
-		cmd.VoucherId,
-		func(v *voucher.Voucher) (*voucher.Voucher, error) {
-			if err := v.Post(cmd.Poster); err != nil {
+		cmd.JournalId,
+		func(j *journal.Journal) (*journal.Journal, error) {
+			if err := j.Post(cmd.Poster); err != nil {
 				return nil, err
 			}
 
+			if err := h.insertLedgerEntries(j, ctx); err != nil {
+				return nil, fmt.Errorf("failed to insert ledger entries: %w", err)
+			}
+
 			var records []postLedgersRecordCmd
-			for _, item := range v.LineItems() {
+			for _, item := range j.JournalLines() {
 				records = append(records, postLedgersRecordCmd{
 					accountId: item.AccountId(),
-					debit:     item.Debit(),
-					credit:    item.Credit(),
+					amount:    item.Amount(),
 				})
 			}
 
 			if err := h.postLedgers(ctx, postLedgersCmd{
-				periodId: v.PeriodId(),
+				periodId: j.PeriodId(),
 				records:  records,
 			}); err != nil {
-				return nil, fmt.Errorf("failed to post voucher to ledger: %w", err)
+				return nil, fmt.Errorf("failed to post journal to ledger: %w", err)
 			}
 
 			var auxiliaryRecords []postAuxiliaryLedgersRecordCmd
-			for _, item := range v.LineItems() {
+			for _, item := range j.JournalLines() {
 				for _, auxiliaryAccount := range item.AuxiliaryAccounts() {
 					auxiliaryRecords = append(auxiliaryRecords, postAuxiliaryLedgersRecordCmd{
 						accountId:           item.AccountId(),
 						auxiliaryCategoryId: auxiliaryAccount.Category().Id(),
 						auxiliaryAccount:    *auxiliaryAccount,
-						debit:               item.Debit(),
-						credit:              item.Credit(),
+						amount:              item.Amount(),
 					})
 				}
 			}
 
 			if err := h.postAuxiliaryLedgers(ctx, postAuxiliaryLedgersCmd{
-				sobId:    v.SobId(),
-				periodId: v.PeriodId(),
+				sobId:    j.SobId(),
+				periodId: j.PeriodId(),
 				records:  auxiliaryRecords,
 			}); err != nil {
-				return nil, fmt.Errorf("failed to post voucher to auxiliary ledger: %w", err)
+				return nil, fmt.Errorf("failed to post journal to auxiliary ledger: %w", err)
 			}
 
-			return v, nil
+			return j, nil
 		},
 	)
 }
 
-func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd) error {
+func (h PostJournalHandler) insertLedgerEntries(j *journal.Journal, ctx context.Context) error {
+	var ledgerEntries []*ledger_entry.LedgerEntry
+	for _, item := range j.JournalLines() {
+		entry, err := ledger_entry.New(
+			uuid.New(),
+			j.SobId(),
+			j.PeriodId(),
+			j.Id(),
+			item.Id(),
+			item.AccountId(),
+			item.AuxiliaryAccounts(),
+			j.TransactionDate(),
+			item.Amount(),
+		)
+		if err != nil {
+			return fmt.Errorf("failed to create ledger entry for journal line %s: %w", item.Id(), err)
+		}
+		ledgerEntries = append(ledgerEntries, entry)
+	}
+
+	if err := h.repo.CreateLedgerEntries(ctx, ledgerEntries); err != nil {
+		return fmt.Errorf("failed to create ledger entries: %w", err)
+	}
+	return nil
+}
+
+func (h PostJournalHandler) postLedgers(ctx context.Context, cmd postLedgersCmd) error {
 	accountCommands := cmd.records
 	for _, record := range cmd.records {
 		// read all superior accounts
@@ -129,8 +156,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 		for _, superiorAccount := range superiorAccounts {
 			superiorRecord := postLedgersRecordCmd{
 				accountId: superiorAccount.Id(),
-				debit:     record.debit,
-				credit:    record.credit,
+				amount:    record.amount,
 			}
 			accountCommands = append(accountCommands, superiorRecord)
 		}
@@ -142,8 +168,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 	}, func(c postLedgersRecordCmd) postLedgersRecordCmd {
 		return c
 	}, func(existing, replacement postLedgersRecordCmd) postLedgersRecordCmd {
-		existing.debit = existing.debit.Add(replacement.debit)
-		existing.credit = existing.credit.Add(replacement.credit)
+		existing.amount = existing.amount.Add(replacement.amount)
 		return existing
 	})
 
@@ -158,7 +183,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 					return nil, fmt.Errorf("should not happen, failed to find account %s in accountsMap", l.AccountId())
 				}
 
-				l.UpdateEndingBalance(record.debit, record.credit)
+				l.UpdateBalance(record.amount)
 			}
 
 			return ledgers, nil
@@ -166,7 +191,7 @@ func (h PostVoucherHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 	)
 }
 
-func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAuxiliaryLedgersCmd) error {
+func (h PostJournalHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAuxiliaryLedgersCmd) error {
 	if len(cmd.records) == 0 {
 		return nil
 	}
@@ -184,8 +209,7 @@ func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAu
 			return c
 		},
 		func(existing, replacement postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
-			existing.debit = existing.debit.Add(replacement.debit)
-			existing.credit = existing.credit.Add(replacement.credit)
+			existing.amount = existing.amount.Add(replacement.amount)
 			return existing
 		},
 	)
@@ -223,7 +247,7 @@ func (h PostVoucherHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAu
 					)
 				}
 
-				auxiliaryLedger.UpdateBalance(record.debit, record.credit)
+				auxiliaryLedger.UpdateBalance(record.amount)
 			}
 
 			return auxiliaryLedgers, nil

@@ -15,18 +15,18 @@ type void struct{}
 
 var empty void
 
-func enrichUserName(ctx context.Context, service service.UserService, vouchers []Voucher) ([]Voucher, error) {
+func enrichUserName(ctx context.Context, service service.UserService, journals []Journal) ([]Journal, error) {
 	userSet := make(map[uuid.UUID]void)
 	addSetIfNotNil := func(u *User) {
 		if u != nil {
 			userSet[u.Id] = empty
 		}
 	}
-	for _, v := range vouchers {
-		addSetIfNotNil(v.Creator)
-		addSetIfNotNil(v.Reviewer)
-		addSetIfNotNil(v.Auditor)
-		addSetIfNotNil(v.Poster)
+	for _, j := range journals {
+		addSetIfNotNil(j.Creator)
+		addSetIfNotNil(j.Reviewer)
+		addSetIfNotNil(j.Auditor)
+		addSetIfNotNil(j.Poster)
 	}
 
 	users, err := service.ReadUsersByIds(ctx, utils.MapToKeySlice(userSet))
@@ -44,12 +44,12 @@ func enrichUserName(ctx context.Context, service service.UserService, vouchers [
 		return nil
 	}
 
-	for i := range vouchers {
-		vouchers[i].Creator = enrichUser(vouchers[i].Creator)
-		vouchers[i].Reviewer = enrichUser(vouchers[i].Reviewer)
-		vouchers[i].Auditor = enrichUser(vouchers[i].Auditor)
-		vouchers[i].Poster = enrichUser(vouchers[i].Poster)
+	for i := range journals {
+		journals[i].Creator = enrichUser(journals[i].Creator)
+		journals[i].Reviewer = enrichUser(journals[i].Reviewer)
+		journals[i].Auditor = enrichUser(journals[i].Auditor)
+		journals[i].Poster = enrichUser(journals[i].Poster)
 	}
 
-	return vouchers, nil
+	return journals, nil
 }

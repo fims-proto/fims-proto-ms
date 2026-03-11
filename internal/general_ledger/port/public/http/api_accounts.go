@@ -4,6 +4,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
+
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
@@ -57,11 +59,7 @@ func (h Handler) ReadAccounts(c *gin.Context) {
 		return
 	}
 
-	var accountsResponse []AccountResponse
-	for _, a := range accounts {
-		accountsResponse = append(accountsResponse, accountDTOToVO(a))
-	}
-	c.JSON(http.StatusOK, accountsResponse)
+	c.JSON(http.StatusOK, converter.DTOsToVOs(accounts, accountDTOToVO))
 }
 
 // SearchAccounts godoc

@@ -7,8 +7,9 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/voucher"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
@@ -315,15 +316,23 @@ func (m mockRepo) ExistsProfitAndLossLedgersHavingBalanceInPeriod(context.Contex
 	panic("implement me")
 }
 
-func (m mockRepo) CreateVoucher(context.Context, *voucher.Voucher) error {
+func (m mockRepo) CreateJournal(context.Context, *journal.Journal) error {
 	panic("implement me")
 }
 
-func (m mockRepo) UpdateVoucher(context.Context, uuid.UUID, func(v *voucher.Voucher) (*voucher.Voucher, error)) error {
+func (m mockRepo) CreateLedgerEntries(context.Context, []*ledger_entry.LedgerEntry) error {
 	panic("implement me")
 }
 
-func (m mockRepo) ExistsVouchersNotPostedInPeriod(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
+func (m mockRepo) UpdateJournalHeader(context.Context, uuid.UUID, func(j *journal.Journal) (*journal.Journal, error)) error {
+	panic("implement me")
+}
+
+func (m mockRepo) UpdateEntireJournal(context.Context, uuid.UUID, func(j *journal.Journal) (*journal.Journal, error)) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsJournalsNotPostedInPeriod(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
 	panic("implement me")
 }
 

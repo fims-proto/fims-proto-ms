@@ -5,35 +5,32 @@ import (
 )
 
 type Ledger struct {
-	account              *Account
-	period               *Period
-	openingDebitBalance  decimal.Decimal
-	openingCreditBalance decimal.Decimal
-	periodDebit          decimal.Decimal
-	periodCredit         decimal.Decimal
-	endingDebitBalance   decimal.Decimal
-	endingCreditBalance  decimal.Decimal
+	account       *Account
+	period        *Period
+	openingAmount decimal.Decimal
+	periodAmount  decimal.Decimal
+	periodDebit   decimal.Decimal // positive amount, only for query performance
+	periodCredit  decimal.Decimal // positive amount, only for query performance
+	endingAmount  decimal.Decimal
 }
 
 func NewLedger(
 	account *Account,
 	period *Period,
-	openingDebitBalance decimal.Decimal,
-	openingCreditBalance decimal.Decimal,
+	openingAmount decimal.Decimal,
+	periodAmount decimal.Decimal,
 	periodDebit decimal.Decimal,
 	periodCredit decimal.Decimal,
-	endingDebitBalance decimal.Decimal,
-	endingCreditBalance decimal.Decimal,
+	endingAmount decimal.Decimal,
 ) *Ledger {
 	return &Ledger{
-		account:              account,
-		period:               period,
-		openingDebitBalance:  openingDebitBalance,
-		openingCreditBalance: openingCreditBalance,
-		periodDebit:          periodDebit,
-		periodCredit:         periodCredit,
-		endingDebitBalance:   endingDebitBalance,
-		endingCreditBalance:  endingCreditBalance,
+		account:       account,
+		period:        period,
+		openingAmount: openingAmount,
+		periodAmount:  periodAmount,
+		periodDebit:   periodDebit,
+		periodCredit:  periodCredit,
+		endingAmount:  endingAmount,
 	}
 }
 
@@ -45,12 +42,12 @@ func (l Ledger) Period() *Period {
 	return l.period
 }
 
-func (l Ledger) OpeningDebitBalance() decimal.Decimal {
-	return l.openingDebitBalance
+func (l Ledger) OpeningAmount() decimal.Decimal {
+	return l.openingAmount
 }
 
-func (l Ledger) OpeningCreditBalance() decimal.Decimal {
-	return l.openingCreditBalance
+func (l Ledger) PeriodAmount() decimal.Decimal {
+	return l.periodAmount
 }
 
 func (l Ledger) PeriodDebit() decimal.Decimal {
@@ -61,10 +58,6 @@ func (l Ledger) PeriodCredit() decimal.Decimal {
 	return l.periodCredit
 }
 
-func (l Ledger) EndingDebitBalance() decimal.Decimal {
-	return l.endingDebitBalance
-}
-
-func (l Ledger) EndingCreditBalance() decimal.Decimal {
-	return l.endingCreditBalance
+func (l Ledger) EndingAmount() decimal.Decimal {
+	return l.endingAmount
 }

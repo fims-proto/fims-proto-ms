@@ -18,8 +18,9 @@ import (
 
 type aggregatedLedger struct {
 	direction balance_direction.BalanceDirection
-	debit     decimal.Decimal
-	credit    decimal.Decimal
+	amount    decimal.Decimal // signed: used for "Net" rule
+	debit     decimal.Decimal // for "Debit" rule
+	credit    decimal.Decimal // for "Credit" rule
 }
 
 func (g *Generator) preparePeriods(ctx context.Context) error {
@@ -84,7 +85,7 @@ func (g *Generator) preparePeriods(ctx context.Context) error {
 
 func (g *Generator) aggregateLedgers(ctx context.Context, accountId uuid.UUID) ([]*aggregatedLedger, error) {
 	if cachedLedgers, ok := g.ledgersCache[accountId]; ok {
-		// the result is cached, use it directly
+		// result is cached, use it directly
 		return cachedLedgers, nil
 	}
 
@@ -103,22 +104,26 @@ func (g *Generator) aggregateLedgers(ctx context.Context, accountId uuid.UUID) (
 		case amount_type.YearOpeningBalance:
 			aggregated[i] = &aggregatedLedger{
 				direction: firstLedger.Account().BalanceDirection(),
-				debit:     firstLedger.OpeningDebitBalance(),
-				credit:    firstLedger.OpeningCreditBalance(),
+				amount:    firstLedger.OpeningAmount(),
+				debit:     decimal.Zero, // Not used for opening balance
+				credit:    decimal.Zero, // Not used for opening balance
 			}
 		case amount_type.PeriodEndingBalance:
 			aggregated[i] = &aggregatedLedger{
 				direction: currentLedger.Account().BalanceDirection(),
-				debit:     currentLedger.EndingDebitBalance(),
-				credit:    currentLedger.EndingCreditBalance(),
+				amount:    currentLedger.EndingAmount(),
+				debit:     decimal.Zero, // Not used for ending balance
+				credit:    decimal.Zero, // Not used for ending balance
 			}
 		case amount_type.YearToDateAmount:
-			// the accumulated amount of current year
+			// accumulated amount of the current year
+			totalAmount := decimal.Zero
 			totalDebit := decimal.Zero
 			totalCredit := decimal.Zero
 
 			for _, l := range ledgers {
 				if l.Period().FiscalYear() == currentLedger.Period().FiscalYear() {
+					totalAmount = totalAmount.Add(l.PeriodAmount())
 					totalDebit = totalDebit.Add(l.PeriodDebit())
 					totalCredit = totalCredit.Add(l.PeriodCredit())
 				}
@@ -126,16 +131,19 @@ func (g *Generator) aggregateLedgers(ctx context.Context, accountId uuid.UUID) (
 
 			aggregated[i] = &aggregatedLedger{
 				direction: firstLedger.Account().BalanceDirection(),
+				amount:    totalAmount,
 				debit:     totalDebit,
 				credit:    totalCredit,
 			}
 		case amount_type.LastYearAmount:
-			// the accumulated amount of current year
+			// accumulated amount of the previous year
+			totalAmount := decimal.Zero
 			totalDebit := decimal.Zero
 			totalCredit := decimal.Zero
 
 			for _, l := range ledgers {
 				if l.Period().FiscalYear() == currentLedger.Period().FiscalYear()-1 {
+					totalAmount = totalAmount.Add(l.PeriodAmount())
 					totalDebit = totalDebit.Add(l.PeriodDebit())
 					totalCredit = totalCredit.Add(l.PeriodCredit())
 				}
@@ -143,12 +151,14 @@ func (g *Generator) aggregateLedgers(ctx context.Context, accountId uuid.UUID) (
 
 			aggregated[i] = &aggregatedLedger{
 				direction: firstLedger.Account().BalanceDirection(),
+				amount:    totalAmount,
 				debit:     totalDebit,
 				credit:    totalCredit,
 			}
 		case amount_type.PeriodAmount:
 			aggregated[i] = &aggregatedLedger{
 				direction: currentLedger.Account().BalanceDirection(),
+				amount:    currentLedger.PeriodAmount(),
 				debit:     currentLedger.PeriodDebit(),
 				credit:    currentLedger.PeriodCredit(),
 			}

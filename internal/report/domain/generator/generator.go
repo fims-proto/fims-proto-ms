@@ -168,7 +168,7 @@ func (g *Generator) processFormulaAmounts(ctx context.Context, formula *report.F
 	for i := range g.r.AmountTypes() {
 		switch formula.Rule() {
 		case formula_rule.Net:
-			amounts[i] = ledgerAmounts[i].debit.Sub(ledgerAmounts[i].credit)
+			amounts[i] = ledgerAmounts[i].amount
 			if ledgerAmounts[i].direction == balance_direction.Credit {
 				amounts[i] = amounts[i].Neg()
 			}
