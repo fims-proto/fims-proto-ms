@@ -8,8 +8,6 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
@@ -29,15 +27,8 @@ func prepareJournalLines(
 	commands []JournalLineCmd,
 ) ([]*journal.JournalLine, error) {
 	var accountNumbers []string
-	var auxiliaryPair []auxiliary_account.AuxiliaryPair
 	for _, item := range commands {
 		accountNumbers = append(accountNumbers, item.AccountNumber)
-		for _, pair := range item.AuxiliaryAccounts {
-			auxiliaryPair = append(auxiliaryPair, auxiliary_account.AuxiliaryPair{
-				CategoryKey: pair.CategoryKey,
-				AccountKey:  pair.AccountKey,
-			})
-		}
 	}
 
 	// validate account numbers
@@ -52,24 +43,6 @@ func prepareJournalLines(
 		func(a *account.Account) *account.Account { return a },
 	)
 
-	// validate auxiliary account keys
-	auxiliaryAccounts, err := repo.ReadAuxiliaryAccountsByPairs(ctx, sobId, auxiliaryPair)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read auxiliary accounts: %w", err)
-	}
-
-	auxiliaryAccountsMap := utils.SliceToMap(
-		auxiliaryAccounts,
-		func(a *auxiliary_account.AuxiliaryAccount) string { return a.Category().Key() + a.Key() },
-		func(a *auxiliary_account.AuxiliaryAccount) *auxiliary_account.AuxiliaryAccount { return a },
-	)
-
-	for _, key := range auxiliaryPair {
-		if _, ok := auxiliaryAccountsMap[key.CategoryKey+key.AccountKey]; !ok {
-			return nil, commonErrors.ErrInvalidAuxiliaryAccountKey(key.CategoryKey, key.AccountKey)
-		}
-	}
-
 	// prepare journal lines
 	var journalLines []*journal.JournalLine
 	for _, item := range commands {
@@ -78,14 +51,9 @@ func prepareJournalLines(
 			itemId = uuid.New()
 		}
 		a := accountsMap[item.AccountNumber]
-		var auxiliaryAccountsForItem []*auxiliary_account.AuxiliaryAccount
-		for _, key := range item.AuxiliaryAccounts {
-			auxiliaryAccountsForItem = append(auxiliaryAccountsForItem, auxiliaryAccountsMap[key.CategoryKey+key.AccountKey])
-		}
 		journalLine, err := journal.NewJournalLine(
 			itemId,
 			a,
-			auxiliaryAccountsForItem,
 			item.Text,
 			item.Amount,
 		)

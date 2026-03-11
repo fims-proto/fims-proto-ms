@@ -7,7 +7,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 
 	"github.com/google/uuid"
 )
@@ -19,7 +18,6 @@ type UpdateAccountCmd struct {
 	LevelNumber      int
 	BalanceDirection string
 	Group            int
-	CategoryKeys     []string
 }
 
 type UpdateAccountHandler struct {
@@ -76,21 +74,6 @@ func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd) 
 		if cmd.Group != 0 {
 			if err := a.UpdateGroup(cmd.Group); err != nil {
 				return nil, fmt.Errorf("failed to update group: %w", err)
-			}
-		}
-
-		if cmd.CategoryKeys != nil {
-			var categories []*auxiliary_category.AuxiliaryCategory
-			for _, key := range cmd.CategoryKeys {
-				auxiliaryCategory, err := h.repo.ReadAuxiliaryCategoryByKey(ctx, cmd.SobId, key)
-				if err != nil {
-					return nil, fmt.Errorf("failed to read auxiliary category: %w", err)
-				}
-				categories = append(categories, auxiliaryCategory)
-			}
-
-			if err := a.AssignAuxiliaryCategories(categories); err != nil {
-				return nil, fmt.Errorf("failed to update auxiliary assignment: %w", err)
 			}
 		}
 

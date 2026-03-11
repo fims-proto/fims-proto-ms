@@ -4,8 +4,6 @@
     "period-range-invalid": "期间范围无效，起始期间不能晚于结束期间",
     "period-range-not-continuous": "期间范围不连续，部分期间不存在",
     "account-invalidAccountNumber": "科目编号 {{.A}} 不存在",
-    "account-auxiliary-not-bound": "科目 {{.A}} 未绑定辅助核算维度 {{.B}}",
-    "auxiliary-ledger-summary-no-data": "未找到符合条件的辅助账数据",
     "journal-notFound": "分录不存在",
     "journal-emptyId": "分录 ID 不能为空",
     "journal-emptyPeriodId": "分录账期 ID 不能为空",

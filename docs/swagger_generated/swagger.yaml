@@ -1,50 +1,5 @@
 basePath: /fims/api/v1
 definitions:
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.AuxiliaryAccountResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.AuxiliaryLedgerSummaryResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse:
     properties:
       content:
@@ -143,72 +98,10 @@ definitions:
       auditor:
         type: string
     type: object
-  http.AuxiliaryAccountResponse:
-    properties:
-      category:
-        $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-      createdAt:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      key:
-        type: string
-      title:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  http.AuxiliaryCategoryResponse:
-    properties:
-      createdAt:
-        type: string
-      id:
-        type: string
-      isStandard:
-        type: boolean
-      key:
-        type: string
-      sobId:
-        type: string
-      title:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  http.AuxiliaryItemRequest:
-    properties:
-      accountKey:
-        type: string
-      categoryKey:
-        type: string
-    type: object
-  http.AuxiliaryLedgerSummaryResponse:
-    properties:
-      auxiliaryAccountId:
-        type: string
-      auxiliaryAccountTitle:
-        type: string
-      endingAmount:
-        type: number
-      openingAmount:
-        type: number
-      periodAmount:
-        type: number
-      periodCredit:
-        type: number
-      periodDebit:
-        type: number
-    type: object
   http.CreateAccountRequest:
     properties:
       balanceDirection:
         type: string
-      categoryKeys:
-        items:
-          type: string
-        type: array
       class:
         type: string
       group:
@@ -216,22 +109,6 @@ definitions:
       levelNumber:
         type: integer
       superiorAccountNumber:
-        type: string
-      title:
-        type: string
-    type: object
-  http.CreateAuxiliaryAccountRequest:
-    properties:
-      description:
-        type: string
-      key:
-        type: string
-      title:
-        type: string
-    type: object
-  http.CreateAuxiliaryCategoryRequest:
-    properties:
-      key:
         type: string
       title:
         type: string
@@ -351,10 +228,6 @@ definitions:
         type: string
       amount:
         type: number
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryItemRequest'
-        type: array
       id:
         type: string
       text:
@@ -366,10 +239,6 @@ definitions:
         $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
       amount:
         type: number
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryAccountResponse'
-        type: array
       createdAt:
         type: string
       id:
@@ -577,10 +446,6 @@ definitions:
     properties:
       balanceDirection:
         type: string
-      categoryKeys:
-        items:
-          type: string
-        type: array
       group:
         type: string
       levelNumber:
@@ -686,10 +551,6 @@ definitions:
     properties:
       accountNumber:
         type: string
-      auxiliaryCategories:
-        items:
-          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-        type: array
       balanceDirection:
         type: string
       class:
@@ -960,197 +821,6 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - accounts
-  /sob/{sobId}/auxiliaries:
-    get:
-      consumes:
-      - application/json
-      description: List all auxiliary categories
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - auxiliary accounts
-    post:
-      consumes:
-      - application/json
-      description: Create auxiliary category
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Create auxiliary category request
-        in: body
-        name: CreateAuxiliaryCategoryRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.CreateAuxiliaryCategoryRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - auxiliary accounts
-  /sob/{sobId}/auxiliary/{categoryKey}:
-    get:
-      consumes:
-      - application/json
-      description: Get an auxiliary category by key
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Category Key
-        in: path
-        name: categoryKey
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - auxiliary accounts
-  /sob/{sobId}/auxiliary/{categoryKey}/accounts:
-    get:
-      consumes:
-      - application/json
-      description: List all auxiliary accounts
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Category Key
-        in: path
-        name: categoryKey
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - auxiliary accounts
-    post:
-      consumes:
-      - application/json
-      description: Create auxiliary account
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Category Key
-        in: path
-        name: categoryKey
-        required: true
-        type: string
-      - description: Create auxiliary account request
-        in: body
-        name: CreateAuxiliaryAccountRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.CreateAuxiliaryAccountRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - auxiliary accounts
   /sob/{sobId}/first-period/ledgers:
     get:
       consumes:
@@ -1545,77 +1215,6 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
-  /sob/{sobId}/ledger/{accountId}/auxiliary:
-    get:
-      consumes:
-      - application/json
-      description: Get aggregated auxiliary ledger summary grouped by auxiliary account
-        for a specific category
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Account ID
-        in: path
-        name: accountId
-        required: true
-        type: string
-      - description: Category key (e.g., customer, project)
-        in: query
-        name: categoryKey
-        required: true
-        type: string
-      - description: From period (YYYY-MM)
-        in: query
-        name: fromPeriod
-        required: true
-        type: string
-      - description: To period (YYYY-MM)
-        in: query
-        name: toPeriod
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - ledgers
   /sob/{sobId}/ledger/{accountId}/entries:
     get:
       consumes:
@@ -1642,10 +1241,6 @@ paths:
         in: query
         name: toPeriod
         required: true
-        type: string
-      - description: Auxiliary Account ID (optional)
-        in: query
-        name: auxiliaryAccountId
         type: string
       - default: 1
         description: page number

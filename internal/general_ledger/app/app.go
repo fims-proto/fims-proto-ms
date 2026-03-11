@@ -8,21 +8,17 @@ import (
 )
 
 type Queries struct {
-	AllAccounts               query.AllAccountsHandler
-	PagingAccounts            query.PagingAccountsHandler
-	AccountById               query.AccountByIdHandler
-	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
-	AuxiliaryCategoryByKey    query.AuxiliaryCategoryByKeyHandler
-	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
-	CurrentPeriod             query.CurrentPeriodHandler
-	AllPeriods                query.AllPeriodsHandler
-	FirstPeriodLedgers        query.FirstPeriodLedgersHandler
-	PagingLedgersByPeriod     query.LedgersByPeriodRangeHandler
-	LedgerSummary             query.LedgerSummaryHandler
-	AuxiliaryLedgerSummary    query.AuxiliaryLedgerSummaryHandler
-	PagingLedgerEntries       query.PagingLedgerEntriesHandler
-	JournalById               query.JournalByIdHandler
-	PagingJournals            query.PagingJournalsHandler
+	AllAccounts           query.AllAccountsHandler
+	PagingAccounts        query.PagingAccountsHandler
+	AccountById           query.AccountByIdHandler
+	CurrentPeriod         query.CurrentPeriodHandler
+	AllPeriods            query.AllPeriodsHandler
+	FirstPeriodLedgers    query.FirstPeriodLedgersHandler
+	PagingLedgersByPeriod query.LedgersByPeriodRangeHandler
+	LedgerSummary         query.LedgerSummaryHandler
+	PagingLedgerEntries   query.PagingLedgerEntriesHandler
+	JournalById           query.JournalByIdHandler
+	PagingJournals        query.PagingJournalsHandler
 }
 
 type Commands struct {
@@ -41,9 +37,6 @@ type Commands struct {
 	CancelReviewJournal command.CancelReviewJournalHandler
 	UpdateJournal       command.UpdateJournalHandler
 	PostJournal         command.PostJournalHandler
-
-	CreateAuxiliaryCategory command.CreateAuxiliaryCategoryHandler
-	CreateAuxiliaryAccount  command.CreateAuxiliaryAccountHandler
 
 	Migrate command.MigrationHandler
 }
@@ -65,21 +58,17 @@ func (a *Application) Inject(
 	userService service.UserService,
 ) {
 	a.Queries = Queries{
-		AllAccounts:               query.NewAllAccountsHandler(readModel),
-		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
-		AccountById:               query.NewAccountByIdHandler(readModel),
-		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
-		AuxiliaryCategoryByKey:    query.NewAuxiliaryCategoryByKeyHandler(readModel),
-		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
-		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
-		AllPeriods:                query.NewAllPeriodsHandler(readModel),
-		FirstPeriodLedgers:        query.NewFirstPeriodLedgersHandler(readModel),
-		PagingLedgersByPeriod:     query.NewLedgersByPeriodRangeHandler(readModel),
-		LedgerSummary:             query.NewLedgerSummaryHandler(readModel),
-		AuxiliaryLedgerSummary:    query.NewAuxiliaryLedgerSummaryHandler(readModel),
-		PagingLedgerEntries:       query.NewPagingLedgerEntriesHandler(readModel),
-		JournalById:               query.NewJournalByIdHandler(readModel, userService),
-		PagingJournals:            query.NewPagingJournalsHandler(readModel, userService),
+		AllAccounts:           query.NewAllAccountsHandler(readModel),
+		PagingAccounts:        query.NewPagingAccountsHandler(readModel),
+		AccountById:           query.NewAccountByIdHandler(readModel),
+		CurrentPeriod:         query.NewCurrentPeriodHandler(readModel),
+		AllPeriods:            query.NewAllPeriodsHandler(readModel),
+		FirstPeriodLedgers:    query.NewFirstPeriodLedgersHandler(readModel),
+		PagingLedgersByPeriod: query.NewLedgersByPeriodRangeHandler(readModel),
+		LedgerSummary:         query.NewLedgerSummaryHandler(readModel),
+		PagingLedgerEntries:   query.NewPagingLedgerEntriesHandler(readModel),
+		JournalById:           query.NewJournalByIdHandler(readModel, userService),
+		PagingJournals:        query.NewPagingJournalsHandler(readModel, userService),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
@@ -97,9 +86,6 @@ func (a *Application) Inject(
 		CancelReviewJournal: command.NewCancelReviewJournalHandler(repo),
 		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService),
 		PostJournal:         command.NewPostJournalHandler(repo),
-
-		CreateAuxiliaryCategory: command.NewCreateAuxiliaryCategoryHandler(repo),
-		CreateAuxiliaryAccount:  command.NewCreateAuxiliaryAccountHandler(repo),
 
 		Migrate: command.NewMigrationHandler(repo),
 	}

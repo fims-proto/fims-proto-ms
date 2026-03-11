@@ -163,7 +163,6 @@ See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middlew
 - **account** - Chart of accounts with hierarchical structure
 - **period** - Accounting periods (monthly/quarterly/yearly)
 - **ledger** - Account balance tracking per period
-- **auxiliary_ledger** - Detailed balance tracking with auxiliary dimensions
 - **journal** - Journal entries with journal lines
 
 ### Signed Amount Model
@@ -179,7 +178,7 @@ See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middlew
 1. **JournalLine**: Single `amount` field (signed) instead of separate `debitAmount`/`creditAmount`
 2. **Journal**: Single `amount` field (transaction total = sum of positive/debit amounts)
 3. **LedgerEntry**: Single `amount` field (signed)
-4. **Ledger/AuxiliaryLedger**:
+4. **Ledger**:
    - `openingAmount` - Signed opening balance
    - `periodAmount` - Signed net movement
    - `periodDebit/periodCredit` - Positive values (retained for query performance)
@@ -214,7 +213,7 @@ Business rules enforced in `internal/general_ledger/domain/journal/`:
 - Creator ≠ Reviewer ≠ Auditor (segregation of duties)
 - Cannot modify after audit/review
 - Period must be current and open for posting
-- Posting updates both `ledger` and `auxiliary_ledger` balances
+- Posting updates `ledger` balances
 
 ### Posting Mechanics
 
@@ -225,7 +224,7 @@ Process:
 1. Call `j.Post(poster)` to validate and mark journal
 2. Build posting records for all journal lines + their superior accounts (each with signed amount)
 3. Merge identical account records (sum signed amounts)
-4. Batch update: `UpdateLedgersByPeriodAndAccountIds()` and `UpdateAuxiliaryLedgersByPeriodAndAccountIds()`
+4. Batch update: `UpdateLedgersByPeriodAndAccountIds()`
 
 **Critical**: Maintain merge logic and batch updates to prevent inconsistencies.
 

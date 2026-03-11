@@ -20,12 +20,6 @@ func ErrInvalidAccountGroup(class string, group string) SlugErr {
 	return NewSlugError("invalid-account-group", class, group)
 }
 
-// auxiliary account
-
-func ErrInvalidAuxiliaryAccountKey(categoryKey, accountKey string) SlugErr {
-	return NewSlugError("invalid-auxiliary-account-key", categoryKey, accountKey)
-}
-
 // period
 
 func ErrPeriodClosed() SlugErr {

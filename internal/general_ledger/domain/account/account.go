@@ -9,25 +9,23 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 
 	"github.com/google/uuid"
 )
 
 type Account struct {
-	id                  uuid.UUID
-	sobId               uuid.UUID
-	superiorAccountId   uuid.UUID
-	superiorAccount     *Account
-	title               string
-	accountNumber       string
-	numberHierarchy     []int
-	level               int
-	isLeaf              bool
-	class               class.Class
-	group               class.Group
-	balanceDirection    balance_direction.BalanceDirection
-	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
+	id                uuid.UUID
+	sobId             uuid.UUID
+	superiorAccountId uuid.UUID
+	superiorAccount   *Account
+	title             string
+	accountNumber     string
+	numberHierarchy   []int
+	level             int
+	isLeaf            bool
+	class             class.Class
+	group             class.Group
+	balanceDirection  balance_direction.BalanceDirection
 }
 
 // New takes all fields except:
@@ -45,14 +43,13 @@ func New(
 	classId int,
 	groupId int,
 	balanceDirection string,
-	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
 ) (*Account, error) {
 	accountNumber, err := composeAccountNumber(numberHierarchy, codeLengths)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection, auxiliaryCategories)
+	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection)
 }
 
 // NewByAllFields takes all attributes of Account, and doesn't validate accountNumber field
@@ -70,7 +67,6 @@ func NewByAllFields(
 	classId int,
 	groupId int,
 	balanceDirection string,
-	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
 ) (*Account, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil account id")
@@ -115,26 +111,19 @@ func NewByAllFields(
 		return nil, err
 	}
 
-	for _, category := range auxiliaryCategories {
-		if category == nil {
-			return nil, errors.New("nil auxiliary category")
-		}
-	}
-
 	return &Account{
-		id:                  id,
-		sobId:               sobId,
-		superiorAccountId:   superiorAccountId,
-		superiorAccount:     superiorAccount,
-		title:               title,
-		accountNumber:       accountNumber,
-		numberHierarchy:     numberHierarchy,
-		level:               level,
-		isLeaf:              isLeaf,
-		class:               c,
-		group:               g,
-		balanceDirection:    bd,
-		auxiliaryCategories: auxiliaryCategories,
+		id:                id,
+		sobId:             sobId,
+		superiorAccountId: superiorAccountId,
+		superiorAccount:   superiorAccount,
+		title:             title,
+		accountNumber:     accountNumber,
+		numberHierarchy:   numberHierarchy,
+		level:             level,
+		isLeaf:            isLeaf,
+		class:             c,
+		group:             g,
+		balanceDirection:  bd,
 	}, nil
 }
 
@@ -208,8 +197,4 @@ func (a *Account) Group() class.Group {
 
 func (a *Account) BalanceDirection() balance_direction.BalanceDirection {
 	return a.balanceDirection
-}
-
-func (a *Account) AuxiliaryCategories() []*auxiliary_category.AuxiliaryCategory {
-	return a.auxiliaryCategories
 }

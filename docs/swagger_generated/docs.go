@@ -232,291 +232,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/auxiliaries": {
-            "get": {
-                "description": "List all auxiliary categories",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auxiliary accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create auxiliary category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auxiliary accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create auxiliary category request",
-                        "name": "CreateAuxiliaryCategoryRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.CreateAuxiliaryCategoryRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/auxiliary/{categoryKey}": {
-            "get": {
-                "description": "Get an auxiliary category by key",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auxiliary accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Category Key",
-                        "name": "categoryKey",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/auxiliary/{categoryKey}/accounts": {
-            "get": {
-                "description": "List all auxiliary accounts",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auxiliary accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Category Key",
-                        "name": "categoryKey",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create auxiliary account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auxiliary accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Category Key",
-                        "name": "categoryKey",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Create auxiliary account request",
-                        "name": "CreateAuxiliaryAccountRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.CreateAuxiliaryAccountRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sob/{sobId}/first-period/ledgers": {
             "get": {
                 "description": "List ledgers in first period",
@@ -1110,108 +825,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledger/{accountId}/auxiliary": {
-            "get": {
-                "description": "Get aggregated auxiliary ledger summary grouped by auxiliary account for a specific category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Category key (e.g., customer, project)",
-                        "name": "categoryKey",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "From period (YYYY-MM)",
-                        "name": "fromPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "To period (YYYY-MM)",
-                        "name": "toPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sob/{sobId}/ledger/{accountId}/entries": {
             "get": {
                 "description": "Get detailed ledger entries for a single account across a period range",
@@ -1252,12 +865,6 @@ const docTemplate = `{
                         "name": "toPeriod",
                         "in": "query",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Auxiliary Account ID (optional)",
-                        "name": "auxiliaryAccountId",
-                        "in": "query"
                     },
                     {
                         "type": "integer",
@@ -2110,75 +1717,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryLedgerSummaryResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse": {
             "type": "object",
             "properties": {
@@ -2330,106 +1868,11 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AuxiliaryAccountResponse": {
-            "type": "object",
-            "properties": {
-                "category": {
-                    "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.AuxiliaryCategoryResponse": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isStandard": {
-                    "type": "boolean"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.AuxiliaryItemRequest": {
-            "type": "object",
-            "properties": {
-                "accountKey": {
-                    "type": "string"
-                },
-                "categoryKey": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.AuxiliaryLedgerSummaryResponse": {
-            "type": "object",
-            "properties": {
-                "auxiliaryAccountId": {
-                    "type": "string"
-                },
-                "auxiliaryAccountTitle": {
-                    "type": "string"
-                },
-                "endingAmount": {
-                    "type": "number"
-                },
-                "openingAmount": {
-                    "type": "number"
-                },
-                "periodAmount": {
-                    "type": "number"
-                },
-                "periodCredit": {
-                    "type": "number"
-                },
-                "periodDebit": {
-                    "type": "number"
-                }
-            }
-        },
         "http.CreateAccountRequest": {
             "type": "object",
             "properties": {
                 "balanceDirection": {
                     "type": "string"
-                },
-                "categoryKeys": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 },
                 "class": {
                     "type": "string"
@@ -2441,31 +1884,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "superiorAccountNumber": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.CreateAuxiliaryAccountRequest": {
-            "type": "object",
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.CreateAuxiliaryCategoryRequest": {
-            "type": "object",
-            "properties": {
-                "key": {
                     "type": "string"
                 },
                 "title": {
@@ -2649,12 +2067,6 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
-                    }
-                },
                 "id": {
                     "type": "string"
                 },
@@ -2671,12 +2083,6 @@ const docTemplate = `{
                 },
                 "amount": {
                     "type": "number"
-                },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
-                    }
                 },
                 "createdAt": {
                     "type": "string"
@@ -2994,12 +2400,6 @@ const docTemplate = `{
                 "balanceDirection": {
                     "type": "string"
                 },
-                "categoryKeys": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "group": {
                     "type": "string"
                 },
@@ -3153,12 +2553,6 @@ const docTemplate = `{
             "properties": {
                 "accountNumber": {
                     "type": "string"
-                },
-                "auxiliaryCategories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                    }
                 },
                 "balanceDirection": {
                     "type": "string"

@@ -25,40 +25,19 @@ type AccountClass struct {
 }
 
 type AccountResponse struct {
-	Id                  uuid.UUID                   `json:"id,omitempty"`
-	SobId               uuid.UUID                   `json:"sobId,omitempty"`
-	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
-	Title               string                      `json:"title,omitempty"`
-	AccountNumber       string                      `json:"accountNumber,omitempty"`
-	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
-	Level               int                         `json:"level"`
-	IsLeaf              bool                        `json:"isLeaf"`
-	Class               string                      `json:"class"`
-	Group               string                      `json:"group"`
-	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
-	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories,omitempty"`
-	CreatedAt           time.Time                   `json:"createdAt"`
-	UpdatedAt           time.Time                   `json:"updatedAt"`
-}
-
-type AuxiliaryCategoryResponse struct {
-	Id         uuid.UUID `json:"id,omitempty"`
-	SobId      uuid.UUID `json:"sobId,omitempty"`
-	Key        string    `json:"key,omitempty"`
-	Title      string    `json:"title,omitempty"`
-	IsStandard bool      `json:"isStandard"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
-}
-
-type AuxiliaryAccountResponse struct {
-	Id          uuid.UUID                 `json:"id,omitempty"`
-	Category    AuxiliaryCategoryResponse `json:"category"`
-	Key         string                    `json:"key,omitempty"`
-	Title       string                    `json:"title,omitempty"`
-	Description string                    `json:"description,omitempty"`
-	CreatedAt   time.Time                 `json:"createdAt"`
-	UpdatedAt   time.Time                 `json:"updatedAt"`
+	Id                uuid.UUID  `json:"id,omitempty"`
+	SobId             uuid.UUID  `json:"sobId,omitempty"`
+	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
+	Title             string     `json:"title,omitempty"`
+	AccountNumber     string     `json:"accountNumber,omitempty"`
+	NumberHierarchy   []int      `json:"numberHierarchy,omitempty"`
+	Level             int        `json:"level"`
+	IsLeaf            bool       `json:"isLeaf"`
+	Class             string     `json:"class"`
+	Group             string     `json:"group"`
+	BalanceDirection  string     `json:"balanceDirection,omitempty"`
+	CreatedAt         time.Time  `json:"createdAt"`
+	UpdatedAt         time.Time  `json:"updatedAt"`
 }
 
 type PeriodResponse struct {
@@ -98,46 +77,18 @@ type LedgerSummaryResponse struct {
 	EndingAmount  decimal.Decimal `json:"endingAmount"`
 }
 
-type AuxiliaryLedgerSummaryResponse struct {
-	AuxiliaryAccountId    uuid.UUID       `json:"auxiliaryAccountId"`
-	AuxiliaryAccountTitle string          `json:"auxiliaryAccountTitle"`
-	OpeningAmount         decimal.Decimal `json:"openingAmount"`
-	PeriodAmount          decimal.Decimal `json:"periodAmount"`
-	PeriodDebit           decimal.Decimal `json:"periodDebit"`
-	PeriodCredit          decimal.Decimal `json:"periodCredit"`
-	EndingAmount          decimal.Decimal `json:"endingAmount"`
-}
-
 type PeriodAndLedgersResponse struct {
 	Period  PeriodResponse   `json:"period"`
 	Ledgers []LedgerResponse `json:"ledgers"`
 }
 
-type AuxiliaryLedgerResponse struct {
-	Id                   uuid.UUID                 `json:"id,omitempty"`
-	SobId                uuid.UUID                 `json:"sobId,omitempty"`
-	PeriodId             uuid.UUID                 `json:"periodId,omitempty"`
-	Account              AccountResponse           `json:"account"`
-	AuxiliaryCategory    AuxiliaryCategoryResponse `json:"auxiliaryCategory"`
-	AuxiliaryAccount     AuxiliaryAccountResponse  `json:"auxiliaryAccount"`
-	OpeningDebitBalance  decimal.Decimal           `json:"openingBalance"`
-	OpeningCreditBalance decimal.Decimal           `json:"openingCreditBalance"`
-	PeriodDebit          decimal.Decimal           `json:"periodDebit"`
-	PeriodCredit         decimal.Decimal           `json:"periodCredit"`
-	EndingDebitBalance   decimal.Decimal           `json:"endingBalance"`
-	EndingCreditBalance  decimal.Decimal           `json:"endingCreditBalance"`
-	CreatedAt            time.Time                 `json:"createdAt"`
-	UpdatedAt            time.Time                 `json:"updatedAt"`
-}
-
 type JournalLineResponse struct {
-	Id                uuid.UUID                  `json:"id,omitempty"`
-	Account           AccountResponse            `json:"account"`
-	AuxiliaryAccounts []AuxiliaryAccountResponse `json:"auxiliaryAccounts,omitempty"`
-	Text              string                     `json:"text,omitempty"`
-	Amount            decimal.Decimal            `json:"amount"`
-	CreatedAt         time.Time                  `json:"createdAt"`
-	UpdatedAt         time.Time                  `json:"updatedAt"`
+	Id        uuid.UUID       `json:"id,omitempty"`
+	Account   AccountResponse `json:"account"`
+	Text      string          `json:"text,omitempty"`
+	Amount    decimal.Decimal `json:"amount"`
+	CreatedAt time.Time       `json:"createdAt"`
+	UpdatedAt time.Time       `json:"updatedAt"`
 }
 
 type JournalResponse struct {
@@ -181,36 +132,19 @@ type LedgerEntryResponse struct {
 
 func accountDTOToVO(dto query.Account) AccountResponse {
 	return AccountResponse{
-		Id:                  dto.Id,
-		SobId:               dto.SobId,
-		SuperiorAccountId:   dto.SuperiorAccountId,
-		Title:               dto.Title,
-		AccountNumber:       dto.AccountNumber,
-		NumberHierarchy:     dto.NumberHierarchy,
-		Level:               dto.Level,
-		IsLeaf:              dto.IsLeaf,
-		Class:               strconv.Itoa(dto.Class),
-		Group:               strconv.Itoa(dto.Group),
-		BalanceDirection:    dto.BalanceDirection,
-		AuxiliaryCategories: converter.DTOsToVOs(dto.AuxiliaryCategories, auxiliaryCategoryDTOToVO),
-		CreatedAt:           dto.CreatedAt,
-		UpdatedAt:           dto.UpdatedAt,
-	}
-}
-
-func auxiliaryCategoryDTOToVO(dto query.AuxiliaryCategory) AuxiliaryCategoryResponse {
-	return AuxiliaryCategoryResponse(dto)
-}
-
-func auxiliaryAccountDTOToVO(dto query.AuxiliaryAccount) AuxiliaryAccountResponse {
-	return AuxiliaryAccountResponse{
-		Id:          dto.Id,
-		Category:    auxiliaryCategoryDTOToVO(dto.Category),
-		Key:         dto.Key,
-		Title:       dto.Title,
-		Description: dto.Description,
-		CreatedAt:   dto.CreatedAt,
-		UpdatedAt:   dto.UpdatedAt,
+		Id:                dto.Id,
+		SobId:             dto.SobId,
+		SuperiorAccountId: dto.SuperiorAccountId,
+		Title:             dto.Title,
+		AccountNumber:     dto.AccountNumber,
+		NumberHierarchy:   dto.NumberHierarchy,
+		Level:             dto.Level,
+		IsLeaf:            dto.IsLeaf,
+		Class:             strconv.Itoa(dto.Class),
+		Group:             strconv.Itoa(dto.Group),
+		BalanceDirection:  dto.BalanceDirection,
+		CreatedAt:         dto.CreatedAt,
+		UpdatedAt:         dto.UpdatedAt,
 	}
 }
 
@@ -241,19 +175,14 @@ func ledgerSummaryToVO(dto query.LedgerSummary) LedgerSummaryResponse {
 	return LedgerSummaryResponse(dto)
 }
 
-func auxiliaryLedgerSummaryToVO(dto query.AuxiliaryLedgerSummary) AuxiliaryLedgerSummaryResponse {
-	return AuxiliaryLedgerSummaryResponse(dto)
-}
-
 func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
 	return JournalLineResponse{
-		Id:                dto.Id,
-		Account:           accountDTOToVO(dto.Account),
-		AuxiliaryAccounts: converter.DTOsToVOs(dto.AuxiliaryAccounts, auxiliaryAccountDTOToVO),
-		Text:              dto.Text,
-		Amount:            dto.Amount,
-		CreatedAt:         dto.CreatedAt,
-		UpdatedAt:         dto.UpdatedAt,
+		Id:        dto.Id,
+		Account:   accountDTOToVO(dto.Account),
+		Text:      dto.Text,
+		Amount:    dto.Amount,
+		CreatedAt: dto.CreatedAt,
+		UpdatedAt: dto.UpdatedAt,
 	}
 }
 

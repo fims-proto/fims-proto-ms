@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
@@ -33,19 +31,6 @@ type postLedgersRecordCmd struct {
 	amount    decimal.Decimal
 }
 
-type postAuxiliaryLedgersCmd struct {
-	sobId    uuid.UUID
-	periodId uuid.UUID
-	records  []postAuxiliaryLedgersRecordCmd
-}
-
-type postAuxiliaryLedgersRecordCmd struct {
-	accountId           uuid.UUID
-	auxiliaryCategoryId uuid.UUID
-	auxiliaryAccount    auxiliary_account.AuxiliaryAccount
-	amount              decimal.Decimal
-}
-
 type PostJournalHandler struct {
 	repo domain.Repository
 }
@@ -64,7 +49,7 @@ func (h PostJournalHandler) Handle(ctx context.Context, cmd PostJournalCmd) erro
 	})
 }
 
-// postJournal updates journal, creates ledger entries, and triggers ledgers and auxiliary ledgers (if applicable) posting
+// postJournal updates journal, creates ledger entries, and triggers ledgers posting
 func (h PostJournalHandler) postJournal(ctx context.Context, cmd PostJournalCmd) error {
 	return h.repo.UpdateJournalHeader(
 		ctx,
@@ -93,26 +78,6 @@ func (h PostJournalHandler) postJournal(ctx context.Context, cmd PostJournalCmd)
 				return nil, fmt.Errorf("failed to post journal to ledger: %w", err)
 			}
 
-			var auxiliaryRecords []postAuxiliaryLedgersRecordCmd
-			for _, item := range j.JournalLines() {
-				for _, auxiliaryAccount := range item.AuxiliaryAccounts() {
-					auxiliaryRecords = append(auxiliaryRecords, postAuxiliaryLedgersRecordCmd{
-						accountId:           item.AccountId(),
-						auxiliaryCategoryId: auxiliaryAccount.Category().Id(),
-						auxiliaryAccount:    *auxiliaryAccount,
-						amount:              item.Amount(),
-					})
-				}
-			}
-
-			if err := h.postAuxiliaryLedgers(ctx, postAuxiliaryLedgersCmd{
-				sobId:    j.SobId(),
-				periodId: j.PeriodId(),
-				records:  auxiliaryRecords,
-			}); err != nil {
-				return nil, fmt.Errorf("failed to post journal to auxiliary ledger: %w", err)
-			}
-
 			return j, nil
 		},
 	)
@@ -128,7 +93,6 @@ func (h PostJournalHandler) insertLedgerEntries(j *journal.Journal, ctx context.
 			j.Id(),
 			item.Id(),
 			item.AccountId(),
-			item.AuxiliaryAccounts(),
 			j.TransactionDate(),
 			item.Amount(),
 		)
@@ -187,70 +151,6 @@ func (h PostJournalHandler) postLedgers(ctx context.Context, cmd postLedgersCmd)
 			}
 
 			return ledgers, nil
-		},
-	)
-}
-
-func (h PostJournalHandler) postAuxiliaryLedgers(ctx context.Context, cmd postAuxiliaryLedgersCmd) error {
-	if len(cmd.records) == 0 {
-		return nil
-	}
-
-	// Merge records by composite key to sum debits/credits for duplicate combinations
-	auxiliaryLedgerMap := utils.SliceToMapMerge(cmd.records,
-		func(c postAuxiliaryLedgersRecordCmd) domain.AuxiliaryLedgerKey {
-			return domain.AuxiliaryLedgerKey{
-				AccountId:           c.accountId,
-				AuxiliaryCategoryId: c.auxiliaryCategoryId,
-				AuxiliaryAccountId:  c.auxiliaryAccount.Id(),
-			}
-		},
-		func(c postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
-			return c
-		},
-		func(existing, replacement postAuxiliaryLedgersRecordCmd) postAuxiliaryLedgersRecordCmd {
-			existing.amount = existing.amount.Add(replacement.amount)
-			return existing
-		},
-	)
-
-	requiredKeys := make([]domain.AuxiliaryLedgerKey, 0, len(auxiliaryLedgerMap))
-	for key := range auxiliaryLedgerMap {
-		requiredKeys = append(requiredKeys, key)
-	}
-
-	return h.repo.UpsertAuxiliaryLedgersByPeriodAndAccounts(
-		ctx,
-		cmd.sobId,
-		cmd.periodId,
-		requiredKeys,
-		func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
-			ledgerMap := make(map[domain.AuxiliaryLedgerKey]*auxiliary_ledger.AuxiliaryLedger)
-			for _, l := range auxiliaryLedgers {
-				key := domain.AuxiliaryLedgerKey{
-					AccountId:           l.AccountId(),
-					AuxiliaryCategoryId: l.AuxiliaryCategoryId(),
-					AuxiliaryAccountId:  l.AuxiliaryAccountId(),
-				}
-				ledgerMap[key] = l
-			}
-
-			for key, record := range auxiliaryLedgerMap {
-				auxiliaryLedger, ok := ledgerMap[key]
-				if !ok {
-					// Repository guarantees all required keys exist
-					return nil, fmt.Errorf(
-						"auxiliary ledger not found for account=%s, category=%s, auxiliary=%s",
-						record.accountId,
-						record.auxiliaryCategoryId,
-						record.auxiliaryAccount.Key(),
-					)
-				}
-
-				auxiliaryLedger.UpdateBalance(record.amount)
-			}
-
-			return auxiliaryLedgers, nil
 		},
 	)
 }

@@ -150,7 +150,6 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		Class:                 classReq,
 		Group:                 group,
 		SuperiorAccountNumber: req.SuperiorAccountNumber,
-		CategoryKeys:          req.CategoryKeys,
 	}
 
 	if err := h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
@@ -196,7 +195,6 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 		LevelNumber:      req.LevelNumber,
 		BalanceDirection: req.BalanceDirection,
 		Group:            group,
-		CategoryKeys:     req.CategoryKeys,
 	}
 	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)

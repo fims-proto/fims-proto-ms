@@ -148,7 +148,6 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					entry.class,
 					entry.group,
 					entry.balanceDirection,
-					nil,
 				)
 				if err != nil {
 					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)

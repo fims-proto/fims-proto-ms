@@ -124,45 +124,6 @@ func (h Handler) InitializeLedgers(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// ReadAuxiliaryLedgerSummary godoc
-//
-//	@Text			Get auxiliary ledger summary by account across period range
-//	@Description	Get aggregated auxiliary ledger summary grouped by auxiliary account for a specific category
-//	@Tags			ledgers
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId		path		string	true	"Sob ID"
-//	@Param			accountId	path		string	true	"Account ID"
-//	@Param			categoryKey	query		string	true	"Category key (e.g., customer, project)"
-//	@Param			fromPeriod	query		string	true	"From period (YYYY-MM)"
-//	@Param			toPeriod	query		string	true	"To period (YYYY-MM)"
-//	@Param			$page		query		int		false	"page number"			default(1)
-//	@Param			$size		query		int		false	"page size"				default(40)
-//	@Param			$sort		query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
-//	@Param			$filter		query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
-//	@Success		200			{object}	data.PageResponse[AuxiliaryLedgerSummaryResponse]
-//	@Failure		400			{object}	Error
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/ledger/{accountId}/auxiliary [get]
-func (h Handler) ReadAuxiliaryLedgerSummary(c *gin.Context) {
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.AuxiliaryLedgerSummary], error) {
-			return h.app.Queries.AuxiliaryLedgerSummary.Handle(
-				c,
-				uuid.MustParse(c.Param("sobId")),
-				uuid.MustParse(c.Param("accountId")),
-				c.Query("categoryKey"),
-				c.Query("fromPeriod"),
-				c.Query("toPeriod"),
-				pageRequest,
-			)
-		},
-		auxiliaryLedgerSummaryToVO,
-	)
-}
-
 // ReadLedgerEntries godoc
 //
 //	@Text			Get ledger entries by account across period range
@@ -170,28 +131,20 @@ func (h Handler) ReadAuxiliaryLedgerSummary(c *gin.Context) {
 //	@Tags			ledgers
 //	@Accept			application/json
 //	@Produce		application/json
-//	@Param			sobId				path		string	true	"Sob ID"
-//	@Param			accountId			path		string	true	"Account ID"
-//	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
-//	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
-//	@Param			auxiliaryAccountId	query		string	false	"Auxiliary Account ID (optional)"
-//	@Param			$page				query		int		false	"page number"			default(1)
-//	@Param			$size				query		int		false	"page size"				default(40)
-//	@Param			$sort				query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
-//	@Param			$filter				query		string	false	"filter on field(s)"	example(text eq 'something' and amount lt 10)
-//	@Success		200					{object}	data.PageResponse[LedgerEntryResponse]
-//	@Failure		400					{object}	Error
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			accountId	path		string	true	"Account ID"
+//	@Param			fromPeriod	query		string	true	"From period (YYYY-MM)"
+//	@Param			toPeriod	query		string	true	"To period (YYYY-MM)"
+//	@Param			$page		query		int		false	"page number"			default(1)
+//	@Param			$size		query		int		false	"page size"				default(40)
+//	@Param			$sort		query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
+//	@Param			$filter		query		string	false	"filter on field(s)"	example(text eq 'something' and amount lt 10)
+//	@Success		200			{object}	data.PageResponse[LedgerEntryResponse]
+//	@Failure		400			{object}	Error
 //	@Failure		404
 //	@Failure		500	{object}	Error
 //	@Router			/sob/{sobId}/ledger/{accountId}/entries [get]
 func (h Handler) ReadLedgerEntries(c *gin.Context) {
-	// Parse optional auxiliaryAccountId
-	var auxiliaryAccountId *uuid.UUID
-	if auxiliaryAccountIdStr := c.Query("auxiliaryAccountId"); auxiliaryAccountIdStr != "" {
-		id := uuid.MustParse(auxiliaryAccountIdStr)
-		auxiliaryAccountId = &id
-	}
-
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.LedgerEntry], error) {
@@ -199,7 +152,6 @@ func (h Handler) ReadLedgerEntries(c *gin.Context) {
 				c,
 				uuid.MustParse(c.Param("sobId")),
 				uuid.MustParse(c.Param("accountId")),
-				auxiliaryAccountId,
 				c.Query("fromPeriod"),
 				c.Query("toPeriod"),
 				pageRequest,

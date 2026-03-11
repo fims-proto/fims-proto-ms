@@ -32,26 +32,7 @@ func (r GeneralLedgerPostgresReadRepository) SearchAccounts(
 	pageRequest data.PageRequest,
 ) (data.Page[query.Account], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, accountPO{}, accountPOToDTO, r.dataSource.GetConnection(ctx).Preload("AuxiliaryCategories"))
-}
-
-func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryCategories(
-	ctx context.Context,
-	sobId uuid.UUID,
-	pageRequest data.PageRequest,
-) (data.Page[query.AuxiliaryCategory], error) {
-	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, auxiliaryCategoryPO{}, auxiliaryCategoryPOToDTO, r.dataSource.GetConnection(ctx))
-}
-
-func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryAccounts(
-	ctx context.Context,
-	sobId uuid.UUID,
-	pageRequest data.PageRequest,
-) (data.Page[query.AuxiliaryAccount], error) {
-	sobIdFilter, _ := filterable.NewFilter("category.sobId", filterable.OptEq, sobId.String())
-	pageRequest.AddAndFilterable(filterable.NewFilterableAtom(sobIdFilter))
-	return data.SearchEntities(ctx, pageRequest, auxiliaryAccountPO{}, auxiliaryAccountPOToDTO, r.dataSource.GetConnection(ctx).InnerJoins("Category"))
+	return data.SearchEntities(ctx, pageRequest, accountPO{}, accountPOToDTO, r.dataSource.GetConnection(ctx))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchLedgers(
@@ -61,19 +42,6 @@ func (r GeneralLedgerPostgresReadRepository) SearchLedgers(
 ) (data.Page[query.Ledger], error) {
 	addSobFilter(sobId, pageRequest)
 	return data.SearchEntities(ctx, pageRequest, ledgerPO{}, ledgerPOToDTO, r.dataSource.GetConnection(ctx).InnerJoins("Account"))
-}
-
-func (r GeneralLedgerPostgresReadRepository) SearchAuxiliaryLedgers(
-	ctx context.Context,
-	sobId uuid.UUID,
-	pageRequest data.PageRequest,
-) (data.Page[query.AuxiliaryLedger], error) {
-	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO,
-		r.dataSource.GetConnection(ctx).
-			InnerJoins("AuxiliaryAccount.Category").
-			InnerJoins("AuxiliaryCategory").
-			InnerJoins("Account"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) SearchPeriods(
@@ -125,8 +93,7 @@ func (r GeneralLedgerPostgresReadRepository) JournalById(ctx context.Context, jo
 
 	po := journalPO{Id: journalId}
 	if err := db.
-		Preload("JournalLines.Account.AuxiliaryCategories").
-		Preload("JournalLines.AuxiliaryAccounts.Category").
+		Preload("JournalLines.Account").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return query.Journal{}, err
@@ -238,43 +205,11 @@ func (r GeneralLedgerPostgresReadRepository) CheckPeriodContinuity(
 	return nil
 }
 
-// AuxiliariesByPeriodRange queries auxiliary ledgers for a specific account and auxiliary category within a fiscal year/period number range
-// Filters are applied at SQL level for performance and supports pagination
-func (r GeneralLedgerPostgresReadRepository) AuxiliariesByPeriodRange(
-	ctx context.Context,
-	sobId, accountId, auxiliaryCategoryId uuid.UUID,
-	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
-	pageRequest data.PageRequest,
-) (data.Page[query.AuxiliaryLedger], error) {
-	db := r.dataSource.GetConnection(ctx)
-
-	// Build base query with period range filtering
-	q := db.Model(&auxiliaryLedgerPO{}).
-		InnerJoins("AuxiliaryAccount.Category").
-		InnerJoins("AuxiliaryCategory").
-		InnerJoins("Account").
-		InnerJoins("Period").
-		Where("a_auxiliary_ledgers.sob_id = ?", sobId).
-		Where("a_auxiliary_ledgers.account_id = ?", accountId).
-		Where("a_auxiliary_ledgers.auxiliary_category_id = ?", auxiliaryCategoryId).
-		Where(
-			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
-				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
-			toFiscalYear, toFiscalYear, toPeriodNumber,
-		)
-
-	// Apply pageable filters and return
-	return data.SearchEntities(ctx, pageRequest, auxiliaryLedgerPO{}, auxiliaryLedgerPOToDTO, q)
-}
-
 // LedgerEntriesByPeriodRange queries ledger entries for a specific account within a fiscal year/period number range
 // Filters are applied at SQL level for performance and supports pagination
-// Optionally filters by auxiliaryAccountId
 func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 	ctx context.Context,
 	sobId, accountId uuid.UUID,
-	auxiliaryAccountId *uuid.UUID,
 	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
 	pageRequest data.PageRequest,
 ) (data.Page[query.LedgerEntry], error) {
@@ -293,12 +228,6 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 			toFiscalYear, toFiscalYear, toPeriodNumber,
 		).
 		Order("a_ledger_entries.created_at asc")
-
-	// Add optional auxiliary account filter
-	if auxiliaryAccountId != nil {
-		q = q.Joins("INNER JOIN a_ledger_entry_auxiliary_account_links leaal ON a_ledger_entries.id = leaal.id").
-			Where("leaal.auxiliary_account_id = ?", *auxiliaryAccountId)
-	}
 
 	// Apply pageable filters and return
 	return data.SearchEntities(ctx, pageRequest, ledgerEntryPO{}, ledgerEntryPOToDTO, q)

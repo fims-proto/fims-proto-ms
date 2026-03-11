@@ -9,32 +9,19 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Title                 string   `json:"title"`
-	LevelNumber           int      `json:"levelNumber"`
-	SuperiorAccountNumber string   `json:"superiorAccountNumber,omitempty"`
-	BalanceDirection      string   `json:"balanceDirection"`
-	Class                 string   `json:"class,omitempty"`
-	Group                 string   `json:"group,omitempty"`
-	CategoryKeys          []string `json:"categoryKeys,omitempty"`
+	Title                 string `json:"title"`
+	LevelNumber           int    `json:"levelNumber"`
+	SuperiorAccountNumber string `json:"superiorAccountNumber,omitempty"`
+	BalanceDirection      string `json:"balanceDirection"`
+	Class                 string `json:"class,omitempty"`
+	Group                 string `json:"group,omitempty"`
 }
 
 type UpdateAccountRequest struct {
-	Title            string   `json:"title,omitempty"`
-	LevelNumber      int      `json:"levelNumber,omitempty"`
-	BalanceDirection string   `json:"balanceDirection,omitempty"`
-	Group            string   `json:"group"`
-	CategoryKeys     []string `json:"categoryKeys,omitempty"`
-}
-
-type CreateAuxiliaryCategoryRequest struct {
-	Key   string `json:"key"`
-	Title string `json:"title"`
-}
-
-type CreateAuxiliaryAccountRequest struct {
-	Key         string `json:"key"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	Title            string `json:"title,omitempty"`
+	LevelNumber      int    `json:"levelNumber,omitempty"`
+	BalanceDirection string `json:"balanceDirection,omitempty"`
+	Group            string `json:"group"`
 }
 
 type CreateJournalRequest struct {
@@ -47,16 +34,10 @@ type CreateJournalRequest struct {
 }
 
 type JournalLineRequest struct {
-	Id                uuid.UUID              `json:"id"`
-	AccountNumber     string                 `json:"accountNumber"`
-	AuxiliaryAccounts []AuxiliaryItemRequest `json:"auxiliaryAccounts"`
-	Text              string                 `json:"text"`
-	Amount            decimal.Decimal        `json:"amount"`
-}
-
-type AuxiliaryItemRequest struct {
-	CategoryKey string `json:"categoryKey"`
-	AccountKey  string `json:"accountKey"`
+	Id            uuid.UUID       `json:"id"`
+	AccountNumber string          `json:"accountNumber"`
+	Text          string          `json:"text"`
+	Amount        decimal.Decimal `json:"amount"`
 }
 
 type AuditJournalRequest struct {
@@ -90,20 +71,11 @@ type InitializeLedgersBalanceItemRequest struct {
 // mapper
 
 func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
-	var auxiliaryItemCmds []command.AuxiliaryItemCmd
-	for _, auxiliaryAccount := range r.AuxiliaryAccounts {
-		auxiliaryItemCmds = append(auxiliaryItemCmds, command.AuxiliaryItemCmd{
-			CategoryKey: auxiliaryAccount.CategoryKey,
-			AccountKey:  auxiliaryAccount.AccountKey,
-		})
-	}
-
 	return command.JournalLineCmd{
-		Id:                r.Id,
-		Text:              r.Text,
-		AccountNumber:     r.AccountNumber,
-		AuxiliaryAccounts: auxiliaryItemCmds,
-		Amount:            r.Amount,
+		Id:            r.Id,
+		Text:          r.Text,
+		AccountNumber: r.AccountNumber,
+		Amount:        r.Amount,
 	}
 }
 

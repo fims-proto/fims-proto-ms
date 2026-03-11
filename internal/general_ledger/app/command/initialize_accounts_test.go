@@ -4,9 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
@@ -248,10 +245,6 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 
 type mockRepo struct{}
 
-func (m mockRepo) ReadAuxiliaryAccountsByPairs(context.Context, uuid.UUID, []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error) {
-	panic("implement me")
-}
-
 func (m mockRepo) Migrate(context.Context) error {
 	panic("implement me")
 }
@@ -336,34 +329,6 @@ func (m mockRepo) ExistsJournalsNotPostedInPeriod(context.Context, uuid.UUID, uu
 	panic("implement me")
 }
 
-func (m mockRepo) CreateAuxiliaryCategories(context.Context, []*auxiliary_category.AuxiliaryCategory) error {
-	panic("implement me")
-}
-
-func (m mockRepo) CreateAuxiliaryAccounts(context.Context, []*auxiliary_account.AuxiliaryAccount) error {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAllAuxiliaryAccounts(context.Context, uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error) {
-	panic("implement me")
-}
-
-func (m mockRepo) CreateAuxiliaryLedgers(context.Context, []*auxiliary_ledger.AuxiliaryLedger) error {
-	panic("implement me")
-}
-
-func (m mockRepo) UpsertAuxiliaryLedgersByPeriodAndAccounts(context.Context, uuid.UUID, uuid.UUID, []domain.AuxiliaryLedgerKey, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAuxiliaryLedgersByPeriod(context.Context, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAuxiliaryLedgersByAccountAndPeriod(context.Context, uuid.UUID, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
-	panic("implement me")
-}
-
 func (m mockRepo) ReadAccountsWithSuperiorsByIds(context.Context, uuid.UUID, []uuid.UUID) ([]*account.Account, error) {
 	panic("implement me")
 }
@@ -381,14 +346,6 @@ func (m mockRepo) CreateAccount(context.Context, *account.Account) error {
 }
 
 func (m mockRepo) ReadAccountByNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, uuid.UUID, string) (*auxiliary_category.AuxiliaryCategory, error) {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAuxiliaryCategoriesByKeys(context.Context, uuid.UUID, []string) ([]*auxiliary_category.AuxiliaryCategory, error) {
 	panic("implement me")
 }
 

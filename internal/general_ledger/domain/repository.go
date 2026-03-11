@@ -3,9 +3,6 @@ package domain
 import (
 	"context"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
@@ -17,13 +14,6 @@ import (
 
 	"github.com/google/uuid"
 )
-
-// AuxiliaryLedgerKey represents the composite natural key for auxiliary ledgers
-type AuxiliaryLedgerKey struct {
-	AccountId           uuid.UUID
-	AuxiliaryCategoryId uuid.UUID
-	AuxiliaryAccountId  uuid.UUID
-}
 
 type Repository interface {
 	Migrate(ctx context.Context) error
@@ -81,23 +71,4 @@ type Repository interface {
 		updateFn func(j *journal.Journal) (*journal.Journal, error),
 	) error
 	ExistsJournalsNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
-
-	CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error
-	ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error)
-	ReadAuxiliaryCategoriesByKeys(ctx context.Context, sobId uuid.UUID, keys []string) ([]*auxiliary_category.AuxiliaryCategory, error)
-
-	CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error
-	ReadAuxiliaryAccountsByPairs(ctx context.Context, sobId uuid.UUID, pairs []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error)
-	ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error)
-
-	CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error
-	UpsertAuxiliaryLedgersByPeriodAndAccounts(
-		ctx context.Context,
-		sobId uuid.UUID,
-		periodId uuid.UUID,
-		requiredKeys []AuxiliaryLedgerKey,
-		applyFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
-	) error
-	ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)
-	ReadAuxiliaryLedgersByAccountAndPeriod(ctx context.Context, accountId uuid.UUID, periodId uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error)
 }

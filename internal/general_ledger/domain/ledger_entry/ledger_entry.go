@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github.com/google/uuid"
@@ -12,15 +11,14 @@ import (
 )
 
 type LedgerEntry struct {
-	id                uuid.UUID
-	sobId             uuid.UUID
-	periodId          uuid.UUID
-	journalId         uuid.UUID
-	journalLineId     uuid.UUID
-	accountId         uuid.UUID
-	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount
-	transactionDate   transaction_date.TransactionDate
-	amount            decimal.Decimal
+	id              uuid.UUID
+	sobId           uuid.UUID
+	periodId        uuid.UUID
+	journalId       uuid.UUID
+	journalLineId   uuid.UUID
+	accountId       uuid.UUID
+	transactionDate transaction_date.TransactionDate
+	amount          decimal.Decimal
 }
 
 func New(
@@ -30,7 +28,6 @@ func New(
 	journalId uuid.UUID,
 	journalLineId uuid.UUID,
 	accountId uuid.UUID,
-	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount,
 	transactionDate transaction_date.TransactionDate,
 	amount decimal.Decimal,
 ) (*LedgerEntry, error) {
@@ -67,15 +64,14 @@ func New(
 	}
 
 	return &LedgerEntry{
-		id:                id,
-		sobId:             sobId,
-		periodId:          periodId,
-		journalId:         journalId,
-		journalLineId:     journalLineId,
-		accountId:         accountId,
-		auxiliaryAccounts: auxiliaryAccounts,
-		transactionDate:   transactionDate,
-		amount:            amount,
+		id:              id,
+		sobId:           sobId,
+		periodId:        periodId,
+		journalId:       journalId,
+		journalLineId:   journalLineId,
+		accountId:       accountId,
+		transactionDate: transactionDate,
+		amount:          amount,
 	}, nil
 }
 
@@ -101,10 +97,6 @@ func (l *LedgerEntry) JournalLineId() uuid.UUID {
 
 func (l *LedgerEntry) AccountId() uuid.UUID {
 	return l.accountId
-}
-
-func (l *LedgerEntry) AuxiliaryAccounts() []*auxiliary_account.AuxiliaryAccount {
-	return l.auxiliaryAccounts
 }
 
 func (l *LedgerEntry) TransactionDate() transaction_date.TransactionDate {

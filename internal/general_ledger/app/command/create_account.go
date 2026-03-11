@@ -25,7 +25,6 @@ type CreateAccountCmd struct {
 	BalanceDirection      string
 	Class                 int
 	Group                 int
-	CategoryKeys          []string
 }
 
 type CreateAccountHandler struct {
@@ -87,11 +86,6 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		numberHierarchy = append(superiorAccount.NumberHierarchy(), cmd.LevelNumber)
 	}
 
-	categories, err := h.repo.ReadAuxiliaryCategoriesByKeys(ctx, cmd.SobId, cmd.CategoryKeys)
-	if err != nil {
-		return fmt.Errorf("failed to read auxiliary categories: %w", err)
-	}
-
 	newAccount, err := account.New(
 		cmd.AccountId,
 		cmd.SobId,
@@ -104,7 +98,6 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		cmd.Class,
 		cmd.Group,
 		cmd.BalanceDirection,
-		categories,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create new account: %w", err)

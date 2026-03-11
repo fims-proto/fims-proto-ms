@@ -12,40 +12,19 @@ import (
 )
 
 type Account struct {
-	Id                  uuid.UUID
-	SobId               uuid.UUID
-	SuperiorAccountId   *uuid.UUID
-	Title               string
-	AccountNumber       string
-	NumberHierarchy     []int
-	Level               int
-	IsLeaf              bool
-	Class               int
-	Group               int
-	BalanceDirection    string
-	AuxiliaryCategories []AuxiliaryCategory
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
-}
-
-type AuxiliaryCategory struct {
-	Id         uuid.UUID
-	SobId      uuid.UUID
-	Key        string
-	Title      string
-	IsStandard bool
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
-}
-
-type AuxiliaryAccount struct {
-	Id          uuid.UUID
-	Category    AuxiliaryCategory
-	Key         string
-	Title       string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	Id                uuid.UUID
+	SobId             uuid.UUID
+	SuperiorAccountId *uuid.UUID
+	Title             string
+	AccountNumber     string
+	NumberHierarchy   []int
+	Level             int
+	IsLeaf            bool
+	Class             int
+	Group             int
+	BalanceDirection  string
+	CreatedAt         time.Time
+	UpdatedAt         time.Time
 }
 
 type Period struct {
@@ -74,30 +53,13 @@ type Ledger struct {
 	UpdatedAt     time.Time
 }
 
-type AuxiliaryLedger struct {
-	Id                uuid.UUID
-	SobId             uuid.UUID
-	PeriodId          uuid.UUID
-	Account           Account
-	AuxiliaryCategory AuxiliaryCategory
-	AuxiliaryAccount  AuxiliaryAccount
-	OpeningAmount     decimal.Decimal
-	PeriodAmount      decimal.Decimal
-	PeriodDebit       decimal.Decimal
-	PeriodCredit      decimal.Decimal
-	EndingAmount      decimal.Decimal
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-}
-
 type JournalLine struct {
-	Id                uuid.UUID
-	Account           Account
-	AuxiliaryAccounts []AuxiliaryAccount
-	Text              string
-	Amount            decimal.Decimal
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	Id        uuid.UUID
+	Account   Account
+	Text      string
+	Amount    decimal.Decimal
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 type Journal struct {

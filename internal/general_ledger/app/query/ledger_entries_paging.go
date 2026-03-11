@@ -27,7 +27,6 @@ func NewPagingLedgerEntriesHandler(readModel GeneralLedgerReadModel) PagingLedge
 func (h PagingLedgerEntriesHandler) Handle(
 	ctx context.Context,
 	sobId, accountId uuid.UUID,
-	auxiliaryAccountId *uuid.UUID,
 	fromPeriod, toPeriod string,
 	pageRequest data.PageRequest,
 ) (data.Page[LedgerEntry], error) {
@@ -42,7 +41,6 @@ func (h PagingLedgerEntriesHandler) Handle(
 		ctx,
 		sobId,
 		accountId,
-		auxiliaryAccountId,
 		fromFiscalYear,
 		fromPeriodNumber,
 		toFiscalYear,

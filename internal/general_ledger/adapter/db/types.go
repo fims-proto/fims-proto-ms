@@ -10,9 +10,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
@@ -35,32 +32,6 @@ type accountPO struct {
 	Class             int
 	Group             int
 	BalanceDirection  string
-
-	AuxiliaryCategories []auxiliaryCategoryPO `gorm:"many2many:account_auxiliary_category_links;joinForeignKey:AccountId;joinReferences:AuxiliaryCategoryId"`
-
-	CreatedAt time.Time `gorm:"<-:create"`
-	UpdatedAt time.Time
-}
-
-type auxiliaryCategoryPO struct {
-	Id         uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SobId      uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_AuxiliaryCategories_SobId_Key;uniqueIndex:UQ_AuxiliaryCategories_SobId_Title"`
-	Key        string    `gorm:"uniqueIndex:UQ_AuxiliaryCategories_SobId_Key"`
-	Title      string    `gorm:"uniqueIndex:UQ_AuxiliaryCategories_SobId_Title"`
-	IsStandard bool
-
-	CreatedAt time.Time `gorm:"<-:create"`
-	UpdatedAt time.Time
-}
-
-type auxiliaryAccountPO struct {
-	Id          uuid.UUID `gorm:"type:uuid;primaryKey"`
-	CategoryId  uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_AuxiliaryAccounts_CategoryId_Key;uniqueIndex:UQ_AuxiliaryAccounts_CategoryId_Title"`
-	Key         string    `gorm:"uniqueIndex:UQ_AuxiliaryAccounts_CategoryId_Key"`
-	Title       string    `gorm:"uniqueIndex:UQ_AuxiliaryAccounts_CategoryId_Title"`
-	Description string
-
-	Category auxiliaryCategoryPO `gorm:"foreignKey:CategoryId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -96,28 +67,6 @@ type ledgerPO struct {
 	UpdatedAt time.Time
 }
 
-type auxiliaryLedgerPO struct {
-	Id                  uuid.UUID       `gorm:"type:uuid;primaryKey"`
-	SobId               uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	PeriodId            uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AccountId           uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AuxiliaryCategoryId uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	AuxiliaryAccountId  uuid.UUID       `gorm:"type:uuid;not null;uniqueIndex:uq_auxiliary_ledgers_natural_key"`
-	OpeningAmount       decimal.Decimal `gorm:"type:numeric"`
-	PeriodAmount        decimal.Decimal `gorm:"type:numeric"`
-	PeriodDebit         decimal.Decimal `gorm:"type:numeric"`
-	PeriodCredit        decimal.Decimal `gorm:"type:numeric"`
-	EndingAmount        decimal.Decimal `gorm:"type:numeric"`
-
-	Account           accountPO           `gorm:"foreignKey:AccountId"`
-	AuxiliaryCategory auxiliaryCategoryPO `gorm:"foreignKey:AuxiliaryCategoryId"`
-	AuxiliaryAccount  auxiliaryAccountPO  `gorm:"foreignKey:AuxiliaryAccountId"`
-	Period            periodPO            `gorm:"foreignKey:PeriodId"`
-
-	CreatedAt time.Time `gorm:"<-:create"`
-	UpdatedAt time.Time
-}
-
 type ledgerEntryPO struct {
 	Id              uuid.UUID       `gorm:"type:uuid;primaryKey"`
 	SobId           uuid.UUID       `gorm:"type:uuid"`
@@ -128,10 +77,9 @@ type ledgerEntryPO struct {
 	TransactionDate time.Time       `gorm:"type:date"`
 	Amount          decimal.Decimal `gorm:"type:numeric"`
 
-	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:ledger_entry_auxiliary_account_links;joinForeignKey:Id;joinReferences:AuxiliaryAccountId"`
-	Journal           journalPO            `gorm:"foreignKey:JournalId"`
-	JournalLine       journalLinePO        `gorm:"foreignKey:JournalLineId"`
-	Period            periodPO             `gorm:"foreignKey:PeriodId"`
+	Journal     journalPO     `gorm:"foreignKey:JournalId"`
+	JournalLine journalLinePO `gorm:"foreignKey:JournalLineId"`
+	Period      periodPO      `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -169,8 +117,7 @@ type journalLinePO struct {
 	Text      string
 	Amount    decimal.Decimal `gorm:"type:numeric"`
 
-	Account           accountPO            `gorm:"foreignKey:AccountId"`
-	AuxiliaryAccounts []auxiliaryAccountPO `gorm:"many2many:journal_line_auxiliary_account_links;joinForeignKey:JournalLineId;joinReferences:AuxiliaryAccountId"`
+	Account accountPO `gorm:"foreignKey:AccountId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -182,24 +129,12 @@ func (a accountPO) TableName() string {
 	return "a_accounts"
 }
 
-func (a auxiliaryCategoryPO) TableName() string {
-	return "a_auxiliary_categories"
-}
-
-func (a auxiliaryAccountPO) TableName() string {
-	return "a_auxiliary_accounts"
-}
-
 func (p periodPO) TableName() string {
 	return "a_periods"
 }
 
 func (l ledgerPO) TableName() string {
 	return "a_ledgers"
-}
-
-func (a auxiliaryLedgerPO) TableName() string {
-	return "a_auxiliary_ledgers"
 }
 
 func (j journalPO) TableName() string {
@@ -220,27 +155,7 @@ func (a accountPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
 		return a.TableName(), nil
 	}
-	if strings.EqualFold(entity, "auxiliaryCategories") {
-		return "AuxiliaryCategories", nil
-	}
 	return "", fmt.Errorf("accountPO doesn't have association named %s", entity)
-}
-
-func (a auxiliaryCategoryPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return a.TableName(), nil
-	}
-	return "", fmt.Errorf("auxiliaryCategoryPO doesn't have association named %s", entity)
-}
-
-func (a auxiliaryAccountPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return a.TableName(), nil
-	}
-	if strings.EqualFold(entity, "category") {
-		return "Category", nil
-	}
-	return "", fmt.Errorf("auxiliaryAccountPO doesn't have association named %s", entity)
 }
 
 func (p periodPO) ResolveAssociation(entity string) (string, error) {
@@ -258,16 +173,6 @@ func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
 		return "Account", nil
 	}
 	return "", fmt.Errorf("ledgerPO doesn't have association named %s", entity)
-}
-
-func (a auxiliaryLedgerPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return a.TableName(), nil
-	}
-	if strings.EqualFold(entity, "auxiliaryAccount") {
-		return "AuxiliaryAccount", nil
-	}
-	return "", fmt.Errorf("auxiliaryLedgerPO doesn't have association named %s", entity)
 }
 
 func (j journalPO) ResolveAssociation(entity string) (string, error) {
@@ -289,9 +194,6 @@ func (j journalLinePO) ResolveAssociation(entity string) (string, error) {
 	}
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
-	}
-	if strings.EqualFold(entity, "auxiliaryAccount") {
-		return "AuxiliaryAccount", nil
 	}
 	return "", fmt.Errorf("journalLinePO doesn't have association named %s", entity)
 }
@@ -315,18 +217,17 @@ func accountBOToPO(bo *account.Account) accountPO {
 	}
 
 	return accountPO{
-		Id:                  bo.Id(),
-		SobId:               bo.SobId(),
-		SuperiorAccountId:   converter.UUIDToPtr(bo.SuperiorAccountId()),
-		Title:               bo.Title(),
-		AccountNumber:       bo.AccountNumber(),
-		NumberHierarchy:     int4array,
-		Level:               bo.Level(),
-		IsLeaf:              bo.IsLeaf(),
-		Class:               int(bo.Class()),
-		Group:               int(bo.Group()),
-		BalanceDirection:    bo.BalanceDirection().String(),
-		AuxiliaryCategories: converter.BOsToPOs(bo.AuxiliaryCategories(), auxiliaryCategoryBOToPO),
+		Id:                bo.Id(),
+		SobId:             bo.SobId(),
+		SuperiorAccountId: converter.UUIDToPtr(bo.SuperiorAccountId()),
+		Title:             bo.Title(),
+		AccountNumber:     bo.AccountNumber(),
+		NumberHierarchy:   int4array,
+		Level:             bo.Level(),
+		IsLeaf:            bo.IsLeaf(),
+		Class:             int(bo.Class()),
+		Group:             int(bo.Group()),
+		BalanceDirection:  bo.BalanceDirection().String(),
 	}
 }
 
@@ -334,11 +235,6 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
 		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
-	}
-
-	categoryBOs, err := converter.POsToBOs(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
-	if err != nil {
-		return nil, err
 	}
 
 	return account.NewByAllFields(
@@ -354,7 +250,6 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		po.Class,
 		po.Group,
 		po.BalanceDirection,
-		categoryBOs,
 	)
 }
 
@@ -362,11 +257,6 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
 		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
-	}
-
-	categoryBOs, err := converter.POsToBOs(po.AuxiliaryCategories, auxiliaryCategoryPOToBO)
-	if err != nil {
-		return nil, err
 	}
 
 	return account.NewByAllFields(
@@ -382,7 +272,6 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 		po.Class,
 		po.Group,
 		po.BalanceDirection,
-		categoryBOs,
 	)
 }
 
@@ -392,93 +281,20 @@ func accountPOToDTO(po accountPO) query.Account {
 		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
 	}
 
-	categoryDTOs := converter.POsToDTOs(po.AuxiliaryCategories, auxiliaryCategoryPOToDTO)
-
 	return query.Account{
-		SobId:               po.SobId,
-		Id:                  po.Id,
-		SuperiorAccountId:   po.SuperiorAccountId,
-		Title:               po.Title,
-		AccountNumber:       po.AccountNumber,
-		NumberHierarchy:     numberHierarchy,
-		Level:               po.Level,
-		IsLeaf:              po.IsLeaf,
-		Class:               po.Class,
-		Group:               po.Group,
-		BalanceDirection:    po.BalanceDirection,
-		AuxiliaryCategories: categoryDTOs,
-		CreatedAt:           po.CreatedAt,
-		UpdatedAt:           po.UpdatedAt,
-	}
-}
-
-func auxiliaryCategoryPOToBO(po auxiliaryCategoryPO) (*auxiliary_category.AuxiliaryCategory, error) {
-	return auxiliary_category.New(
-		po.Id,
-		po.SobId,
-		po.Key,
-		po.Title,
-		po.IsStandard,
-	)
-}
-
-func auxiliaryCategoryBOToPO(bo *auxiliary_category.AuxiliaryCategory) auxiliaryCategoryPO {
-	return auxiliaryCategoryPO{
-		Id:         bo.Id(),
-		SobId:      bo.SobId(),
-		Key:        bo.Key(),
-		Title:      bo.Title(),
-		IsStandard: bo.IsStandard(),
-	}
-}
-
-func auxiliaryCategoryPOToDTO(po auxiliaryCategoryPO) query.AuxiliaryCategory {
-	return query.AuxiliaryCategory{
-		Id:         po.Id,
-		SobId:      po.SobId,
-		Key:        po.Key,
-		Title:      po.Title,
-		IsStandard: po.IsStandard,
-		CreatedAt:  po.CreatedAt,
-		UpdatedAt:  po.UpdatedAt,
-	}
-}
-
-func auxiliaryAccountPOToBO(po auxiliaryAccountPO) (*auxiliary_account.AuxiliaryAccount, error) {
-	categoryBO, err := auxiliaryCategoryPOToBO(po.Category)
-	if err != nil {
-		return nil, err
-	}
-
-	return auxiliary_account.New(
-		po.Id,
-		categoryBO,
-		po.Key,
-		po.Title,
-		po.Description,
-	)
-}
-
-func auxiliaryAccountBOToPO(bo *auxiliary_account.AuxiliaryAccount) auxiliaryAccountPO {
-	return auxiliaryAccountPO{
-		Id:          bo.Id(),
-		CategoryId:  bo.Category().Id(),
-		Key:         bo.Key(),
-		Title:       bo.Title(),
-		Description: bo.Description(),
-		Category:    auxiliaryCategoryBOToPO(bo.Category()),
-	}
-}
-
-func auxiliaryAccountPOToDTO(po auxiliaryAccountPO) query.AuxiliaryAccount {
-	return query.AuxiliaryAccount{
-		Id:          po.Id,
-		Category:    auxiliaryCategoryPOToDTO(po.Category),
-		Key:         po.Key,
-		Title:       po.Title,
-		Description: po.Description,
-		CreatedAt:   po.CreatedAt,
-		UpdatedAt:   po.UpdatedAt,
+		SobId:             po.SobId,
+		Id:                po.Id,
+		SuperiorAccountId: po.SuperiorAccountId,
+		Title:             po.Title,
+		AccountNumber:     po.AccountNumber,
+		NumberHierarchy:   numberHierarchy,
+		Level:             po.Level,
+		IsLeaf:            po.IsLeaf,
+		Class:             po.Class,
+		Group:             po.Group,
+		BalanceDirection:  po.BalanceDirection,
+		CreatedAt:         po.CreatedAt,
+		UpdatedAt:         po.UpdatedAt,
 	}
 }
 
@@ -558,56 +374,6 @@ func ledgerPOToDTO(po ledgerPO) query.Ledger {
 		Account:       accountDTO,
 		CreatedAt:     po.CreatedAt,
 		UpdatedAt:     po.UpdatedAt,
-	}
-}
-
-func auxiliaryLedgerBOToPO(bo *auxiliary_ledger.AuxiliaryLedger) auxiliaryLedgerPO {
-	return auxiliaryLedgerPO{
-		Id:                  bo.Id(),
-		SobId:               bo.SobId(),
-		PeriodId:            bo.PeriodId(),
-		AccountId:           bo.AccountId(),
-		AuxiliaryCategoryId: bo.AuxiliaryCategoryId(),
-		AuxiliaryAccountId:  bo.AuxiliaryAccountId(),
-		OpeningAmount:       bo.OpeningAmount(),
-		PeriodAmount:        bo.PeriodAmount(),
-		PeriodDebit:         bo.PeriodDebit(),
-		PeriodCredit:        bo.PeriodCredit(),
-		EndingAmount:        bo.EndingAmount(),
-	}
-}
-
-func auxiliaryLedgerPOToBO(po auxiliaryLedgerPO) (*auxiliary_ledger.AuxiliaryLedger, error) {
-	return auxiliary_ledger.New(
-		po.Id,
-		po.SobId,
-		po.PeriodId,
-		po.AccountId,
-		po.AuxiliaryCategoryId,
-		po.AuxiliaryAccountId,
-		po.OpeningAmount,
-		po.PeriodAmount,
-		po.PeriodDebit,
-		po.PeriodCredit,
-		po.EndingAmount,
-	)
-}
-
-func auxiliaryLedgerPOToDTO(po auxiliaryLedgerPO) query.AuxiliaryLedger {
-	return query.AuxiliaryLedger{
-		Id:                po.Id,
-		SobId:             po.SobId,
-		PeriodId:          po.PeriodId,
-		Account:           accountPOToDTO(po.Account),
-		AuxiliaryCategory: auxiliaryCategoryPOToDTO(po.AuxiliaryCategory),
-		AuxiliaryAccount:  auxiliaryAccountPOToDTO(po.AuxiliaryAccount),
-		OpeningAmount:     po.OpeningAmount,
-		PeriodAmount:      po.PeriodAmount,
-		PeriodDebit:       po.PeriodDebit,
-		PeriodCredit:      po.PeriodCredit,
-		EndingAmount:      po.EndingAmount,
-		CreatedAt:         po.CreatedAt,
-		UpdatedAt:         po.UpdatedAt,
 	}
 }
 
@@ -728,12 +494,11 @@ func journalPOToDTO(po journalPO) query.Journal {
 
 func journalLineBOToPO(bo journal.JournalLine, journalId uuid.UUID) journalLinePO {
 	return journalLinePO{
-		JournalId:         journalId,
-		Id:                bo.Id(),
-		AccountId:         bo.AccountId(),
-		AuxiliaryAccounts: converter.BOsToPOs(bo.AuxiliaryAccounts(), auxiliaryAccountBOToPO),
-		Text:              bo.Text(),
-		Amount:            bo.Amount(),
+		JournalId: journalId,
+		Id:        bo.Id(),
+		AccountId: bo.AccountId(),
+		Text:      bo.Text(),
+		Amount:    bo.Amount(),
 	}
 }
 
@@ -743,36 +508,22 @@ func journalLinePOToBO(po journalLinePO) (*journal.JournalLine, error) {
 		return nil, err
 	}
 
-	auxiliaryAccountBOs, err := converter.POsToBOs(po.AuxiliaryAccounts, auxiliaryAccountPOToBO)
-	if err != nil {
-		return nil, err
-	}
-
 	return journal.NewJournalLine(
 		po.Id,
 		accountBO,
-		auxiliaryAccountBOs,
 		po.Text,
 		po.Amount,
 	)
 }
 
 func journalLinePOToDTO(po journalLinePO) query.JournalLine {
-	accountDTO := accountPOToDTO(po.Account)
-
-	var auxiliaryAccounts []query.AuxiliaryAccount
-	for _, auxiliaryAccount := range po.AuxiliaryAccounts {
-		auxiliaryAccounts = append(auxiliaryAccounts, auxiliaryAccountPOToDTO(auxiliaryAccount))
-	}
-
 	return query.JournalLine{
-		Id:                po.Id,
-		Account:           accountDTO,
-		AuxiliaryAccounts: auxiliaryAccounts,
-		Text:              po.Text,
-		Amount:            po.Amount,
-		CreatedAt:         po.CreatedAt,
-		UpdatedAt:         po.UpdatedAt,
+		Id:        po.Id,
+		Account:   accountPOToDTO(po.Account),
+		Text:      po.Text,
+		Amount:    po.Amount,
+		CreatedAt: po.CreatedAt,
+		UpdatedAt: po.UpdatedAt,
 	}
 }
 
@@ -786,15 +537,14 @@ func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
 	)
 
 	return ledgerEntryPO{
-		Id:                bo.Id(),
-		SobId:             bo.SobId(),
-		PeriodId:          bo.PeriodId(),
-		JournalId:         bo.JournalId(),
-		JournalLineId:     bo.JournalLineId(),
-		AccountId:         bo.AccountId(),
-		AuxiliaryAccounts: converter.BOsToPOs(bo.AuxiliaryAccounts(), auxiliaryAccountBOToPO),
-		TransactionDate:   transactionDate,
-		Amount:            bo.Amount(),
+		Id:              bo.Id(),
+		SobId:           bo.SobId(),
+		PeriodId:        bo.PeriodId(),
+		JournalId:       bo.JournalId(),
+		JournalLineId:   bo.JournalLineId(),
+		AccountId:       bo.AccountId(),
+		TransactionDate: transactionDate,
+		Amount:          bo.Amount(),
 	}
 }
 

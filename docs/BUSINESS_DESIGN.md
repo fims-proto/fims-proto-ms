@@ -103,8 +103,6 @@ FIMS consists of five primary business domains:
   - **Detail/Leaf Accounts (明细科目)**: Lowest-level accounts that accept transactions
   - Only detail accounts can have transactions; parent accounts show rolled-up totals
 - **Account Numbering**: Configurable digit length per level, zero-padded as prefix (e.g., 1001001 = 1001 + 001)
-- **Auxiliary Categories**: Optional multi-dimensional tracking (e.g., Customer, Vendor, Department, Project)
-
 #### 2.2.2 Accounting Periods
 
 - **Monthly Periods**: Accounting periods aligned to calendar months
@@ -129,19 +127,8 @@ FIMS consists of five primary business domains:
   - **Ending Amount**: Calculated as openingAmount + periodAmount
 - **Hierarchical Posting**: When journals post, both detail accounts and all parent accounts update
 
-#### 2.2.4 Auxiliary Ledger (Subsidiary Ledger - 辅助核算账)
+#### 2.2.4 Ledger Entry (账簿分录)
 
-- **Purpose**: Track balances by auxiliary dimensions (customers, vendors, projects, etc.) - a different dimension from the chart of accounts hierarchy
-- **One Auxiliary Ledger per Auxiliary Account per Period**
-- **Same Balance Structure**:
-  - **Opening Amount**: Signed decimal value
-  - **Period Amount**: Signed net movement
-  - **Period Debit/Credit**: Positive values (kept for query performance)
-  - **Ending Amount**: Calculated as openingAmount + periodAmount
-- **Key Distinction**: This is NOT "明细科目" (detail accounts in CoA), but "辅助核算" (multi-dimensional tracking)
-- **Use Case Example**: Track "Accounts Receivable" (an account) broken down by individual customers (auxiliary dimension)
-
-#### 2.2.5 Ledger Entry (账簿分录)
 
 - **Purpose**: Stores detailed transaction history when journals are posted
 - **Creation**: One ledger entry is created for each journal line during posting
@@ -149,12 +136,11 @@ FIMS consists of five primary business domains:
   - **Journal Reference**: Links to both journal and journal line IDs for traceability
   - **Account Reference**: The affected account ID
   - **Transaction Date**: Business date (year, month, day) of the transaction
-  - **Auxiliary Accounts**: Optional auxiliary dimension tags for multi-dimensional tracking
   - **Amount**: Signed amount of the transaction
 - **Usage**: Used by ledger explorer to display detailed transaction history for each account
 - **Distinction**: Unlike Ledger (which stores aggregated balances), LedgerEntry stores individual transaction details
 
-#### 2.2.6 Journal (分录)
+#### 2.2.5 Journal (分录)
 
 See detailed section below (Section 5)
 
@@ -278,7 +264,6 @@ A single customer may create multiple SoBs for:
   └─ 1002002 - 工商银行-账户B - 明细科目 (Detail Account - user-defined)
 
 1122 - 应收账款 (Accounts Receivable) - 一级科目 from standard CoA
-  └─ Can assign Auxiliary: Customer for multi-dimensional tracking
 ```
 
 **Account Numbering Rules**:
@@ -311,46 +296,13 @@ A single customer may create multiple SoBs for:
 - **Credit Accounts**: Liabilities, Equities, Revenue (normal credit balance)
 - **Validation**: Used in report validation and trial balance checks
 
-### 4.2 Auxiliary Accounting (Multi-Dimensional Tracking)
-
-**Purpose**: Track balances broken down by additional dimensions beyond accounts.
-
-**Auxiliary Categories** (e.g., Customer, Vendor, Department, Project, Employee):
-
-- **Standard Categories**: Pre-defined by system (Customer, Vendor)
-- **Custom Categories**: User-defined for specific business needs
-- **Account Assignment**: Individual accounts can be configured to track 0 or more auxiliary categories
-
-**Auxiliary Accounts**: Specific values within a category
-
-- Example Category: "Customer"
-  - Auxiliary Account 1: "Customer ABC Inc."
-  - Auxiliary Account 2: "Customer XYZ Corp."
-
-**Business Scenario**:
-
-```
-Main Account: 1110 - Accounts Receivable (assigned Auxiliary Category: Customer)
-
-Journal Lines:
-  - Account 1110 (Customer: ABC Inc.) Amount: +$5,000 (debit)
-  - Account 1110 (Customer: XYZ Corp.) Amount: +$3,000 (debit)
-  - Account 4010 - Sales Revenue     Amount: -$8,000 (credit)
-
-Result:
-  - General Ledger 1110: +$8,000 periodAmount
-  - Auxiliary Ledger (1110 + ABC Inc.): +$5,000 periodAmount
-  - Auxiliary Ledger (1110 + XYZ Corp.): +$3,000 periodAmount
-```
-
-### 4.3 Ledger Posting Mechanics
+### 4.2 Ledger Posting Mechanics
 
 **Posting Process** (when journal is posted):
 
 1. **Journal Line Processing**: For each journal journal line
    - Update detail account ledger (明细科目) - add debit/credit to period activity
    - Update all parent account ledgers (上级科目) - hierarchical rollup
-   - Update subsidiary ledgers (辅助核算账) if applicable
 
 2. **Hierarchical Rollup**: Parent account balances aggregate all child activity
    - Example: Posting to "1001001 - Some Cash Account" (detail account) also updates "1001 - 库存现金" (top-level parent)
@@ -390,7 +342,6 @@ Result:
 **Journal Lines**:
 
 - **Account**: The general ledger account being debited or credited
-- **Auxiliary Accounts**: Optional multi-dimensional tags (customer, vendor, etc.)
 - **Amount**: Signed decimal value (positive = debit, negative = credit)
 - **Line Text**: Description of this specific line
 
@@ -434,7 +385,7 @@ Draft → Reviewed → Audited → Posted
 4. **Posted** (登账/过账):
    - Final state - journal affects ledger balances
    - Cannot be modified or deleted
-   - Updates general ledger and auxiliary ledger balances
+   - Updates general ledger balances
    - Cannot be reversed (new journal needed for corrections)
 
 ### 5.3 Segregation of Duties
@@ -465,7 +416,6 @@ Draft → Reviewed → Audited → Posted
 **Posting Effects**:
 
 - Updates ledger balances for all affected accounts (including parent accounts)
-- Updates auxiliary ledger balances (if auxiliary accounts used)
 - Sets journal state to "posted"
 - Records poster user ID and posting timestamp
 
@@ -831,7 +781,6 @@ Configuration:
 - ✓ Period amount is signed net movement (endingAmount = openingAmount + periodAmount)
 - ✓ Account balance direction guides expected amount sign
 - ✓ Hierarchical posting updates all parent accounts
-- ✓ Subsidiary ledgers (辅助核算账) track multi-dimensional balances - different from detail account ledgers (明细科目账)
 
 ### 10.7 Journal Immutability
 
@@ -871,19 +820,18 @@ Journal:
   Line 2: Account 4010 - Sales Revenue  Amount: -$10,000 (credit)
 ```
 
-### Scenario 2: Purchase with Vendor Tracking
+### Scenario 2: Purchase on Credit
 
 ```
 Transaction: Purchased inventory from Vendor ABC for $5,000 on credit
 
 Journal:
-  Line 1: Account 1500 - Inventory                    Amount: +$5,000  (debit)
-  Line 2: Account 2100 - Accounts Payable (Vendor: ABC) Amount: -$5,000 (credit)
+  Line 1: Account 1500 - Inventory           Amount: +$5,000  (debit)
+  Line 2: Account 2100 - Accounts Payable    Amount: -$5,000 (credit)
 
 Result:
   - Inventory account increases by $5,000
   - A/P account increases by $5,000 (credit = negative amount)
-  - Auxiliary ledger tracks $5,000 owed to Vendor ABC specifically
 ```
 
 ### Scenario 3: Month-End Closing
@@ -929,9 +877,6 @@ After Closing:
 | Period                     | 会计期间          | Accounting period (monthly)                                                            |
 | Ledger                     | 总账              | General ledger - balance records for all accounts (both parent and detail)             |
 | Ledger Entry               | 账簿分录          | Detailed transaction record created when journal is posted (one per journal line)      |
-| Subsidiary Ledger          | 辅助核算账/辅助账 | Multi-dimensional sub-ledger tracking (customer, vendor, project, etc.)                |
-| Auxiliary Category         | 辅助核算项        | Dimension type for subsidiary tracking (e.g., "Customer", "Vendor")                    |
-| Auxiliary Account          | 辅助核算值        | Specific value within an auxiliary category (e.g., "ABC Corp.", "Project X")           |
 | Review                     | 复核              | First-level approval of journal by reviewer                                            |
 | Audit                      | 审核              | Second-level approval of journal by auditor                                            |
 | Post                       | 登账/过账         | Final commit of journal to ledgers (makes it affect balances)                          |
