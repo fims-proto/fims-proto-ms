@@ -6,8 +6,9 @@ import (
 )
 
 type JournalLineCmd struct {
-	Id            uuid.UUID
-	Text          string
-	AccountNumber string
-	Amount        decimal.Decimal
+	Id                 uuid.UUID
+	Text               string
+	AccountNumber      string
+	Amount             decimal.Decimal
+	DimensionOptionIds []uuid.UUID
 }

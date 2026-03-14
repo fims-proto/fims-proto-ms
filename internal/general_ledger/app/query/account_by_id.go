@@ -9,21 +9,28 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 
 	"github.com/google/uuid"
 )
 
 type AccountByIdHandler struct {
-	readModel GeneralLedgerReadModel
+	readModel        GeneralLedgerReadModel
+	dimensionService service.DimensionService
 }
 
-func NewAccountByIdHandler(readModel GeneralLedgerReadModel) AccountByIdHandler {
+func NewAccountByIdHandler(readModel GeneralLedgerReadModel, dimensionService service.DimensionService) AccountByIdHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 
+	if dimensionService == nil {
+		panic("nil dimension service")
+	}
+
 	return AccountByIdHandler{
-		readModel: readModel,
+		readModel:        readModel,
+		dimensionService: dimensionService,
 	}
 }
 
@@ -41,5 +48,10 @@ func (h AccountByIdHandler) Handle(ctx context.Context, accountId uuid.UUID) (Ac
 		return Account{}, commonErrors.ErrRecordNotFound()
 	}
 
-	return accounts.Content()[0], nil
+	account, err := enrichAccountDimensionCategories(ctx, h.dimensionService, accounts.Content()[0])
+	if err != nil {
+		return Account{}, fmt.Errorf("failed to enrich dimension categories: %w", err)
+	}
+
+	return account, nil
 }

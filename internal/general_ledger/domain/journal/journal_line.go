@@ -9,11 +9,12 @@ import (
 )
 
 type JournalLine struct {
-	id        uuid.UUID
-	accountId uuid.UUID
-	account   *account.Account
-	text      string
-	amount    decimal.Decimal
+	id                 uuid.UUID
+	accountId          uuid.UUID
+	account            *account.Account
+	text               string
+	amount             decimal.Decimal
+	dimensionOptionIds []uuid.UUID
 }
 
 func NewJournalLine(
@@ -21,6 +22,7 @@ func NewJournalLine(
 	account *account.Account,
 	text string,
 	amount decimal.Decimal,
+	dimensionOptionIds []uuid.UUID,
 ) (*JournalLine, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewSlugError("journalLine-emptyId")
@@ -43,11 +45,12 @@ func NewJournalLine(
 	}
 
 	return &JournalLine{
-		id:        id,
-		accountId: account.Id(),
-		account:   account,
-		text:      text,
-		amount:    amount,
+		id:                 id,
+		accountId:          account.Id(),
+		account:            account,
+		text:               text,
+		amount:             amount,
+		dimensionOptionIds: dimensionOptionIds,
 	}, nil
 }
 
@@ -69,4 +72,8 @@ func (i JournalLine) Text() string {
 
 func (i JournalLine) Amount() decimal.Decimal {
 	return i.amount
+}
+
+func (i JournalLine) DimensionOptionIds() []uuid.UUID {
+	return i.dimensionOptionIds
 }

@@ -49,7 +49,7 @@ func (h Handler) ReadAccountClasses(c *gin.Context) {
 //	@Accept			application/json
 //	@Produce		application/json
 //	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		200		{array}		AccountResponse
+//	@Success		200		{array}		AccountSlimResponse
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/accounts [get]
 func (h Handler) ReadAccounts(c *gin.Context) {
@@ -59,7 +59,7 @@ func (h Handler) ReadAccounts(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, converter.DTOsToVOs(accounts, accountDTOToVO))
+	c.JSON(http.StatusOK, converter.DTOsToVOs(accounts, accountDTOToSlimVO))
 }
 
 // SearchAccounts godoc
@@ -74,7 +74,7 @@ func (h Handler) ReadAccounts(c *gin.Context) {
 //	@Param			$size	query		int		false	"page size"				default(40)
 //	@Param			$sort	query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
 //	@Param			$filter	query		string	false	"filter on field(s)"	example(title eq 'something' and amount lt 10)
-//	@Success		200		{object}	data.PageResponse[AccountResponse]
+//	@Success		200		{object}	data.PageResponse[AccountSlimResponse]
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/search-accounts [get]
 func (h Handler) SearchAccounts(c *gin.Context) {
@@ -83,7 +83,7 @@ func (h Handler) SearchAccounts(c *gin.Context) {
 		func(pageRequest data.PageRequest) (data.Page[query.Account], error) {
 			return h.app.Queries.PagingAccounts.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
-		accountDTOToVO,
+		accountDTOToSlimVO,
 	)
 }
 
@@ -96,7 +96,7 @@ func (h Handler) SearchAccounts(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			sobId		path		string	true	"Sob ID"
 //	@Param			accountId	path		string	true	"Account ID"
-//	@Success		200			{object}	AccountResponse
+//	@Success		200			{object}	AccountDetailResponse
 //	@Failure		404
 //	@Failure		500	{object}	Error
 //	@Router			/sob/{sobId}/account/{accountId} [get]
@@ -110,7 +110,7 @@ func (h Handler) ReadAccountById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, accountDTOToVO(v))
+	c.JSON(http.StatusOK, accountDTOToDetailVO(v))
 }
 
 // CreateAccount godoc
@@ -122,7 +122,7 @@ func (h Handler) ReadAccountById(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			sobId					path		string					true	"Sob ID"
 //	@Param			CreateAccountRequest	body		CreateAccountRequest	true	"Create account request"
-//	@Success		201						{object}	AccountResponse
+//	@Success		201						{object}	AccountDetailResponse
 //	@Failure		500						{object}	Error
 //	@Router			/sob/{sobId}/accounts [post]
 func (h Handler) CreateAccount(c *gin.Context) {
@@ -150,6 +150,7 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		Class:                 classReq,
 		Group:                 group,
 		SuperiorAccountNumber: req.SuperiorAccountNumber,
+		DimensionCategoryIds:  req.DimensionCategoryIds,
 	}
 
 	if err := h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
@@ -161,7 +162,7 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusCreated, accountDTOToVO(createdAccount))
+	c.JSON(http.StatusCreated, accountDTOToDetailVO(createdAccount))
 }
 
 // UpdateAccount godoc
@@ -189,12 +190,13 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 		return
 	}
 	cmd := command.UpdateAccountCmd{
-		AccountId:        uuid.MustParse(c.Param("accountId")),
-		SobId:            uuid.MustParse(c.Param("sobId")),
-		Title:            req.Title,
-		LevelNumber:      req.LevelNumber,
-		BalanceDirection: req.BalanceDirection,
-		Group:            group,
+		AccountId:            uuid.MustParse(c.Param("accountId")),
+		SobId:                uuid.MustParse(c.Param("sobId")),
+		Title:                req.Title,
+		LevelNumber:          req.LevelNumber,
+		BalanceDirection:     req.BalanceDirection,
+		Group:                group,
+		DimensionCategoryIds: req.DimensionCategoryIds,
 	}
 	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)

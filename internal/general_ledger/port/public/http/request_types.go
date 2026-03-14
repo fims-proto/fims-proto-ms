@@ -9,19 +9,21 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Title                 string `json:"title"`
-	LevelNumber           int    `json:"levelNumber"`
-	SuperiorAccountNumber string `json:"superiorAccountNumber,omitempty"`
-	BalanceDirection      string `json:"balanceDirection"`
-	Class                 string `json:"class,omitempty"`
-	Group                 string `json:"group,omitempty"`
+	Title                 string      `json:"title"`
+	LevelNumber           int         `json:"levelNumber"`
+	SuperiorAccountNumber string      `json:"superiorAccountNumber,omitempty"`
+	BalanceDirection      string      `json:"balanceDirection"`
+	Class                 string      `json:"class,omitempty"`
+	Group                 string      `json:"group,omitempty"`
+	DimensionCategoryIds  []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
 }
 
 type UpdateAccountRequest struct {
-	Title            string `json:"title,omitempty"`
-	LevelNumber      int    `json:"levelNumber,omitempty"`
-	BalanceDirection string `json:"balanceDirection,omitempty"`
-	Group            string `json:"group"`
+	Title                string      `json:"title,omitempty"`
+	LevelNumber          int         `json:"levelNumber,omitempty"`
+	BalanceDirection     string      `json:"balanceDirection,omitempty"`
+	Group                string      `json:"group"`
+	DimensionCategoryIds []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
 }
 
 type CreateJournalRequest struct {
@@ -29,15 +31,16 @@ type CreateJournalRequest struct {
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            string                           `json:"creator"`
 	JournalType        string                           `json:"journalType"`
-	TransactionDate    transaction_date.TransactionDate `json:"transactionDate"`
+	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	JournalLines       []JournalLineRequest             `json:"journalLines"`
 }
 
 type JournalLineRequest struct {
-	Id            uuid.UUID       `json:"id"`
-	AccountNumber string          `json:"accountNumber"`
-	Text          string          `json:"text"`
-	Amount        decimal.Decimal `json:"amount"`
+	Id                 uuid.UUID       `json:"id"`
+	AccountNumber      string          `json:"accountNumber"`
+	Text               string          `json:"text"`
+	Amount             decimal.Decimal `json:"amount"`
+	DimensionOptionIds []uuid.UUID     `json:"dimensionOptionIds,omitempty"`
 }
 
 type AuditJournalRequest struct {
@@ -54,7 +57,7 @@ type PostJournalRequest struct {
 
 type UpdateJournalRequest struct {
 	HeaderText      string                           `json:"headerText"`
-	TransactionDate transaction_date.TransactionDate `json:"transactionDate"`
+	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	JournalLines    []JournalLineRequest             `json:"journalLines"`
 	Updater         uuid.UUID                        `json:"updater"`
 }
@@ -72,10 +75,11 @@ type InitializeLedgersBalanceItemRequest struct {
 
 func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
 	return command.JournalLineCmd{
-		Id:            r.Id,
-		Text:          r.Text,
-		AccountNumber: r.AccountNumber,
-		Amount:        r.Amount,
+		Id:                 r.Id,
+		Text:               r.Text,
+		AccountNumber:      r.AccountNumber,
+		Amount:             r.Amount,
+		DimensionOptionIds: r.DimensionOptionIds,
 	}
 }
 

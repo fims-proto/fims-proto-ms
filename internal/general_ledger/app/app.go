@@ -8,17 +8,18 @@ import (
 )
 
 type Queries struct {
-	AllAccounts           query.AllAccountsHandler
-	PagingAccounts        query.PagingAccountsHandler
-	AccountById           query.AccountByIdHandler
-	CurrentPeriod         query.CurrentPeriodHandler
-	AllPeriods            query.AllPeriodsHandler
-	FirstPeriodLedgers    query.FirstPeriodLedgersHandler
-	PagingLedgersByPeriod query.LedgersByPeriodRangeHandler
-	LedgerSummary         query.LedgerSummaryHandler
-	PagingLedgerEntries   query.PagingLedgerEntriesHandler
-	JournalById           query.JournalByIdHandler
-	PagingJournals        query.PagingJournalsHandler
+	AllAccounts            query.AllAccountsHandler
+	PagingAccounts         query.PagingAccountsHandler
+	AccountById            query.AccountByIdHandler
+	CurrentPeriod          query.CurrentPeriodHandler
+	AllPeriods             query.AllPeriodsHandler
+	FirstPeriodLedgers     query.FirstPeriodLedgersHandler
+	PagingLedgersByPeriod  query.LedgersByPeriodRangeHandler
+	LedgerSummary          query.LedgerSummaryHandler
+	LedgerDimensionSummary query.LedgerDimensionSummaryHandler
+	PagingLedgerEntries    query.PagingLedgerEntriesHandler
+	JournalById            query.JournalByIdHandler
+	PagingJournals         query.PagingJournalsHandler
 }
 
 type Commands struct {
@@ -56,19 +57,21 @@ func (a *Application) Inject(
 	sobService service.SobService,
 	numberingService service.NumberingService,
 	userService service.UserService,
+	dimensionService service.DimensionService,
 ) {
 	a.Queries = Queries{
-		AllAccounts:           query.NewAllAccountsHandler(readModel),
-		PagingAccounts:        query.NewPagingAccountsHandler(readModel),
-		AccountById:           query.NewAccountByIdHandler(readModel),
-		CurrentPeriod:         query.NewCurrentPeriodHandler(readModel),
-		AllPeriods:            query.NewAllPeriodsHandler(readModel),
-		FirstPeriodLedgers:    query.NewFirstPeriodLedgersHandler(readModel),
-		PagingLedgersByPeriod: query.NewLedgersByPeriodRangeHandler(readModel),
-		LedgerSummary:         query.NewLedgerSummaryHandler(readModel),
-		PagingLedgerEntries:   query.NewPagingLedgerEntriesHandler(readModel),
-		JournalById:           query.NewJournalByIdHandler(readModel, userService),
-		PagingJournals:        query.NewPagingJournalsHandler(readModel, userService),
+		AllAccounts:            query.NewAllAccountsHandler(readModel),
+		PagingAccounts:         query.NewPagingAccountsHandler(readModel),
+		AccountById:            query.NewAccountByIdHandler(readModel, dimensionService),
+		CurrentPeriod:          query.NewCurrentPeriodHandler(readModel),
+		AllPeriods:             query.NewAllPeriodsHandler(readModel),
+		FirstPeriodLedgers:     query.NewFirstPeriodLedgersHandler(readModel),
+		PagingLedgersByPeriod:  query.NewLedgersByPeriodRangeHandler(readModel),
+		LedgerSummary:          query.NewLedgerSummaryHandler(readModel),
+		LedgerDimensionSummary: query.NewLedgerDimensionSummaryHandler(readModel, dimensionService),
+		PagingLedgerEntries:    query.NewPagingLedgerEntriesHandler(readModel),
+		JournalById:            query.NewJournalByIdHandler(readModel, userService, dimensionService),
+		PagingJournals:         query.NewPagingJournalsHandler(readModel, userService),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
@@ -79,12 +82,12 @@ func (a *Application) Inject(
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
 
-		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService),
+		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService, dimensionService),
 		AuditJournal:        command.NewAuditJournalHandler(repo),
 		CancelAuditJournal:  command.NewCancelAuditJournalHandler(repo),
 		ReviewJournal:       command.NewReviewJournalHandler(repo),
 		CancelReviewJournal: command.NewCancelReviewJournalHandler(repo),
-		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService),
+		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService, dimensionService),
 		PostJournal:         command.NewPostJournalHandler(repo),
 
 		Migrate: command.NewMigrationHandler(repo),

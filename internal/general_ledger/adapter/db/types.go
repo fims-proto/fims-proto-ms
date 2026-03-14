@@ -12,7 +12,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github.com/google/uuid"
@@ -33,8 +32,16 @@ type accountPO struct {
 	Group             int
 	BalanceDirection  string
 
+	DimensionCategories []accountDimensionCategoryPO `gorm:"foreignKey:AccountId"`
+
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
+}
+
+// accountDimensionCategoryPO is the join table linking accounts to their allowed dimension categories.
+type accountDimensionCategoryPO struct {
+	AccountId           uuid.UUID `gorm:"type:uuid;primaryKey"`
+	DimensionCategoryId uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 type periodPO struct {
@@ -62,24 +69,6 @@ type ledgerPO struct {
 
 	Account accountPO `gorm:"foreignKey:AccountId"`
 	Period  periodPO  `gorm:"foreignKey:PeriodId"`
-
-	CreatedAt time.Time `gorm:"<-:create"`
-	UpdatedAt time.Time
-}
-
-type ledgerEntryPO struct {
-	Id              uuid.UUID       `gorm:"type:uuid;primaryKey"`
-	SobId           uuid.UUID       `gorm:"type:uuid"`
-	PeriodId        uuid.UUID       `gorm:"type:uuid"`
-	JournalId       uuid.UUID       `gorm:"type:uuid;column:journal_id"`
-	JournalLineId   uuid.UUID       `gorm:"type:uuid;column:journal_line_id"`
-	AccountId       uuid.UUID       `gorm:"type:uuid"`
-	TransactionDate time.Time       `gorm:"type:date"`
-	Amount          decimal.Decimal `gorm:"type:numeric"`
-
-	Journal     journalPO     `gorm:"foreignKey:JournalId"`
-	JournalLine journalLinePO `gorm:"foreignKey:JournalLineId"`
-	Period      periodPO      `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -117,10 +106,18 @@ type journalLinePO struct {
 	Text      string
 	Amount    decimal.Decimal `gorm:"type:numeric"`
 
-	Account accountPO `gorm:"foreignKey:AccountId"`
+	Journal          journalPO                      `gorm:"foreignKey:JournalId"`
+	Account          accountPO                      `gorm:"foreignKey:AccountId"`
+	DimensionOptions []journalLineDimensionOptionPO `gorm:"foreignKey:JournalLineId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
+}
+
+// journalLineDimensionOptionPO is the join table linking journal lines to their dimension options.
+type journalLineDimensionOptionPO struct {
+	JournalLineId     uuid.UUID `gorm:"type:uuid;primaryKey"`
+	DimensionOptionId uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
 // table names
@@ -145,8 +142,12 @@ func (j journalLinePO) TableName() string {
 	return "a_journal_lines"
 }
 
-func (l ledgerEntryPO) TableName() string {
-	return "a_ledger_entries"
+func (a accountDimensionCategoryPO) TableName() string {
+	return "a_account_dimension_categories"
+}
+
+func (j journalLineDimensionOptionPO) TableName() string {
+	return "a_journal_line_dimension_options"
 }
 
 // schemas
@@ -195,17 +196,10 @@ func (j journalLinePO) ResolveAssociation(entity string) (string, error) {
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
 	}
-	return "", fmt.Errorf("journalLinePO doesn't have association named %s", entity)
-}
-
-func (l ledgerEntryPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return l.TableName(), nil
-	}
 	if strings.EqualFold(entity, "journal") {
 		return "Journal", nil
 	}
-	return "", fmt.Errorf("ledgerEntryPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("journalLinePO doesn't have association named %s", entity)
 }
 
 // mappers
@@ -216,18 +210,27 @@ func accountBOToPO(bo *account.Account) accountPO {
 		panic(fmt.Errorf("failde to convert []int to Int4Array: %w", err))
 	}
 
+	dimCategories := make([]accountDimensionCategoryPO, 0, len(bo.DimensionCategoryIds()))
+	for _, catId := range bo.DimensionCategoryIds() {
+		dimCategories = append(dimCategories, accountDimensionCategoryPO{
+			AccountId:           bo.Id(),
+			DimensionCategoryId: catId,
+		})
+	}
+
 	return accountPO{
-		Id:                bo.Id(),
-		SobId:             bo.SobId(),
-		SuperiorAccountId: converter.UUIDToPtr(bo.SuperiorAccountId()),
-		Title:             bo.Title(),
-		AccountNumber:     bo.AccountNumber(),
-		NumberHierarchy:   int4array,
-		Level:             bo.Level(),
-		IsLeaf:            bo.IsLeaf(),
-		Class:             int(bo.Class()),
-		Group:             int(bo.Group()),
-		BalanceDirection:  bo.BalanceDirection().String(),
+		Id:                  bo.Id(),
+		SobId:               bo.SobId(),
+		SuperiorAccountId:   converter.UUIDToPtr(bo.SuperiorAccountId()),
+		Title:               bo.Title(),
+		AccountNumber:       bo.AccountNumber(),
+		NumberHierarchy:     int4array,
+		Level:               bo.Level(),
+		IsLeaf:              bo.IsLeaf(),
+		Class:               int(bo.Class()),
+		Group:               int(bo.Group()),
+		BalanceDirection:    bo.BalanceDirection().String(),
+		DimensionCategories: dimCategories,
 	}
 }
 
@@ -235,6 +238,11 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
 		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
+	}
+
+	dimCategoryIds := make([]uuid.UUID, 0, len(po.DimensionCategories))
+	for _, dc := range po.DimensionCategories {
+		dimCategoryIds = append(dimCategoryIds, dc.DimensionCategoryId)
 	}
 
 	return account.NewByAllFields(
@@ -250,6 +258,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		po.Class,
 		po.Group,
 		po.BalanceDirection,
+		dimCategoryIds,
 	)
 }
 
@@ -257,6 +266,11 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 	var numberHierarchy []int
 	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
 		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
+	}
+
+	dimCategoryIds := make([]uuid.UUID, 0, len(po.DimensionCategories))
+	for _, dc := range po.DimensionCategories {
+		dimCategoryIds = append(dimCategoryIds, dc.DimensionCategoryId)
 	}
 
 	return account.NewByAllFields(
@@ -272,6 +286,7 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 		po.Class,
 		po.Group,
 		po.BalanceDirection,
+		dimCategoryIds,
 	)
 }
 
@@ -281,20 +296,26 @@ func accountPOToDTO(po accountPO) query.Account {
 		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
 	}
 
+	dimCategoryIds := make([]uuid.UUID, 0, len(po.DimensionCategories))
+	for _, dc := range po.DimensionCategories {
+		dimCategoryIds = append(dimCategoryIds, dc.DimensionCategoryId)
+	}
+
 	return query.Account{
-		SobId:             po.SobId,
-		Id:                po.Id,
-		SuperiorAccountId: po.SuperiorAccountId,
-		Title:             po.Title,
-		AccountNumber:     po.AccountNumber,
-		NumberHierarchy:   numberHierarchy,
-		Level:             po.Level,
-		IsLeaf:            po.IsLeaf,
-		Class:             po.Class,
-		Group:             po.Group,
-		BalanceDirection:  po.BalanceDirection,
-		CreatedAt:         po.CreatedAt,
-		UpdatedAt:         po.UpdatedAt,
+		SobId:                po.SobId,
+		Id:                   po.Id,
+		SuperiorAccountId:    po.SuperiorAccountId,
+		Title:                po.Title,
+		AccountNumber:        po.AccountNumber,
+		NumberHierarchy:      numberHierarchy,
+		Level:                po.Level,
+		IsLeaf:               po.IsLeaf,
+		Class:                po.Class,
+		Group:                po.Group,
+		BalanceDirection:     po.BalanceDirection,
+		DimensionCategoryIds: dimCategoryIds,
+		CreatedAt:            po.CreatedAt,
+		UpdatedAt:            po.UpdatedAt,
 	}
 }
 
@@ -493,12 +514,21 @@ func journalPOToDTO(po journalPO) query.Journal {
 }
 
 func journalLineBOToPO(bo journal.JournalLine, journalId uuid.UUID) journalLinePO {
+	dimOptions := make([]journalLineDimensionOptionPO, 0, len(bo.DimensionOptionIds()))
+	for _, optId := range bo.DimensionOptionIds() {
+		dimOptions = append(dimOptions, journalLineDimensionOptionPO{
+			JournalLineId:     bo.Id(),
+			DimensionOptionId: optId,
+		})
+	}
+
 	return journalLinePO{
-		JournalId: journalId,
-		Id:        bo.Id(),
-		AccountId: bo.AccountId(),
-		Text:      bo.Text(),
-		Amount:    bo.Amount(),
+		JournalId:        journalId,
+		Id:               bo.Id(),
+		AccountId:        bo.AccountId(),
+		Text:             bo.Text(),
+		Amount:           bo.Amount(),
+		DimensionOptions: dimOptions,
 	}
 }
 
@@ -508,63 +538,49 @@ func journalLinePOToBO(po journalLinePO) (*journal.JournalLine, error) {
 		return nil, err
 	}
 
+	dimOptionIds := make([]uuid.UUID, 0, len(po.DimensionOptions))
+	for _, d := range po.DimensionOptions {
+		dimOptionIds = append(dimOptionIds, d.DimensionOptionId)
+	}
+
 	return journal.NewJournalLine(
 		po.Id,
 		accountBO,
 		po.Text,
 		po.Amount,
+		dimOptionIds,
 	)
 }
 
 func journalLinePOToDTO(po journalLinePO) query.JournalLine {
+	dimOptionIds := make([]uuid.UUID, 0, len(po.DimensionOptions))
+	for _, d := range po.DimensionOptions {
+		dimOptionIds = append(dimOptionIds, d.DimensionOptionId)
+	}
+
 	return query.JournalLine{
-		Id:        po.Id,
-		Account:   accountPOToDTO(po.Account),
-		Text:      po.Text,
-		Amount:    po.Amount,
-		CreatedAt: po.CreatedAt,
-		UpdatedAt: po.UpdatedAt,
+		Id:                 po.Id,
+		Account:            accountPOToDTO(po.Account),
+		Text:               po.Text,
+		Amount:             po.Amount,
+		DimensionOptionIds: dimOptionIds,
+		CreatedAt:          po.CreatedAt,
+		UpdatedAt:          po.UpdatedAt,
 	}
 }
 
-func ledgerEntryBOToPO(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
-	// Convert TransactionDate to time.Time for PostgreSQL DATE type
-	transactionDate := time.Date(
-		bo.TransactionDate().Year,
-		time.Month(bo.TransactionDate().Month),
-		bo.TransactionDate().Day,
-		0, 0, 0, 0, time.UTC,
-	)
-
-	return ledgerEntryPO{
-		Id:              bo.Id(),
-		SobId:           bo.SobId(),
-		PeriodId:        bo.PeriodId(),
-		JournalId:       bo.JournalId(),
-		JournalLineId:   bo.JournalLineId(),
-		AccountId:       bo.AccountId(),
-		TransactionDate: transactionDate,
-		Amount:          bo.Amount(),
-	}
-}
-
-func ledgerEntryBOToPOForCreate(bo *ledger_entry.LedgerEntry) ledgerEntryPO {
-	return ledgerEntryBOToPO(bo)
-}
-
-func ledgerEntryPOToDTO(po ledgerEntryPO) query.LedgerEntry {
-	// Convert time.Time DATE to TransactionDate
+func journalLinePOToLedgerEntryDTO(po journalLinePO) query.LedgerEntry {
 	transactionDate := transaction_date.TransactionDate{
-		Year:  po.TransactionDate.Year(),
-		Month: int(po.TransactionDate.Month()),
-		Day:   po.TransactionDate.Day(),
+		Year:  po.Journal.TransactionDate.Year(),
+		Month: int(po.Journal.TransactionDate.Month()),
+		Day:   po.Journal.TransactionDate.Day(),
 	}
 
 	return query.LedgerEntry{
 		JournalId:       po.JournalId,
 		JournalNumber:   po.Journal.DocumentNumber,
 		TransactionDate: transactionDate,
-		Text:            po.Journal.HeaderText,
+		Text:            po.Text,
 		Amount:          po.Amount,
 		CreatedAt:       po.CreatedAt,
 		UpdatedAt:       po.UpdatedAt,

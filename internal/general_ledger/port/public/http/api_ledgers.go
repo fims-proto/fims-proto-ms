@@ -160,3 +160,36 @@ func (h Handler) ReadLedgerEntries(c *gin.Context) {
 		ledgerEntryDTOToVO,
 	)
 }
+
+// ReadLedgerDimensionSummary godoc
+//
+//	@Text			Get ledger amounts aggregated by dimension option
+//	@Description	Get total amounts from journal lines for a specific account and dimension category across a period range, grouped by dimension option
+//	@Tags			ledgers
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId				path		string	true	"Sob ID"
+//	@Param			accountId			path		string	true	"Account ID"
+//	@Param			dimensionCategoryId	path		string	true	"Dimension Category ID"
+//	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
+//	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
+//	@Success		200					{array}		LedgerDimensionSummaryItemResponse
+//	@Failure		400					{object}	Error
+//	@Failure		500					{object}	Error
+//	@Router			/sob/{sobId}/ledgers/{accountId}/dimension/{dimensionCategoryId} [get]
+func (h Handler) ReadLedgerDimensionSummary(c *gin.Context) {
+	items, err := h.app.Queries.LedgerDimensionSummary.Handle(
+		c,
+		uuid.MustParse(c.Param("sobId")),
+		uuid.MustParse(c.Param("accountId")),
+		uuid.MustParse(c.Param("dimensionCategoryId")),
+		c.Query("fromPeriod"),
+		c.Query("toPeriod"),
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, converter.DTOsToVOs(items, ledgerDimensionSummaryItemToVO))
+}

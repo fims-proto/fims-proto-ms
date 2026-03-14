@@ -15,7 +15,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github.com/google/uuid"
@@ -42,11 +41,12 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 
 	return db.AutoMigrate(
 		&accountPO{},
+		&accountDimensionCategoryPO{},
 		&periodPO{},
-		&ledgerEntryPO{},
 		&ledgerPO{},
 		&journalPO{},
 		&journalLinePO{},
+		&journalLineDimensionOptionPO{},
 	)
 }
 
@@ -87,6 +87,7 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(
 
 	po := accountPO{Id: accountId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
+		Preload("DimensionCategories").
 		First(&po).Error; err != nil {
 		return err
 	}
@@ -101,9 +102,24 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(
 		return fmt.Errorf("failed to update account: %w", err)
 	}
 
-	po = accountBOToPO(updatedBO)
+	updatedPO := accountBOToPO(updatedBO)
 
-	return db.Save(&po).Error
+	if err = db.Save(&updatedPO).Error; err != nil {
+		return err
+	}
+
+	// Replace dimension category associations: delete old rows, insert new ones.
+	if err = db.Where("account_id = ?", accountId).Delete(&accountDimensionCategoryPO{}).Error; err != nil {
+		return fmt.Errorf("failed to clear account dimension categories: %w", err)
+	}
+
+	if len(updatedPO.DimensionCategories) > 0 {
+		if err = db.Create(&updatedPO.DimensionCategories).Error; err != nil {
+			return fmt.Errorf("failed to save account dimension categories: %w", err)
+		}
+	}
+
+	return nil
 }
 
 func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error) {
@@ -140,6 +156,7 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Conte
 
 	var pos []accountPO
 	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).
+		Preload("DimensionCategories").
 		Find(&pos).Error; err != nil {
 		return nil, err
 	}
@@ -376,12 +393,6 @@ func (r GeneralLedgerPostgresRepository) ReadFirstPeriod(ctx context.Context, so
 	return nil, err
 }
 
-func (r GeneralLedgerPostgresRepository) CreateLedgerEntries(ctx context.Context, entries []*ledger_entry.LedgerEntry) error {
-	db := r.dataSource.GetConnection(ctx)
-
-	return db.CreateInBatches(new(converter.BOsToPOs(entries, ledgerEntryBOToPOForCreate)), 100).Error
-}
-
 func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -477,6 +488,7 @@ func (r GeneralLedgerPostgresRepository) UpdateJournalHeader(
 	po := journalPO{Id: journalId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Preload("JournalLines.Account").
+		Preload("JournalLines.DimensionOptions").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
@@ -508,6 +520,7 @@ func (r GeneralLedgerPostgresRepository) UpdateEntireJournal(
 	po := journalPO{Id: journalId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
 		Preload("JournalLines.Account").
+		Preload("JournalLines.DimensionOptions").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
@@ -525,7 +538,16 @@ func (r GeneralLedgerPostgresRepository) UpdateEntireJournal(
 
 	po = journalBOToPO(*updatedBO)
 
-	// remove existing journal lines
+	// remove existing journal lines and their dimension option associations
+	var existingLineIds []uuid.UUID
+	if err = db.Model(&journalLinePO{}).Select("id").Where("journal_id = ?", po.Id).Find(&existingLineIds).Error; err != nil {
+		return fmt.Errorf("failed to query journal line ids: %w", err)
+	}
+	if len(existingLineIds) > 0 {
+		if err = db.Where("journal_line_id IN ?", existingLineIds).Delete(&journalLineDimensionOptionPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete journal line dimension options: %w", err)
+		}
+	}
 	if err = db.Where("journal_id = ?", po.Id).Delete(&journalLinePO{}).Error; err != nil {
 		return fmt.Errorf("failed to delete journal lines: %w", err)
 	}

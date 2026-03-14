@@ -25,6 +25,7 @@ type CreateAccountCmd struct {
 	BalanceDirection      string
 	Class                 int
 	Group                 int
+	DimensionCategoryIds  []uuid.UUID
 }
 
 type CreateAccountHandler struct {
@@ -59,7 +60,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		return fmt.Errorf("failed to read sob: %w", err)
 	}
 
-	if err := class.Validate(accountClass, accountGroup); err != nil {
+	if err = class.Validate(accountClass, accountGroup); err != nil {
 		return fmt.Errorf("invalid class or group: %w", err)
 	}
 
@@ -98,6 +99,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		cmd.Class,
 		cmd.Group,
 		cmd.BalanceDirection,
+		cmd.DimensionCategoryIds,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create new account: %w", err)

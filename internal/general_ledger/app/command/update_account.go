@@ -12,12 +12,13 @@ import (
 )
 
 type UpdateAccountCmd struct {
-	AccountId        uuid.UUID
-	SobId            uuid.UUID
-	Title            string
-	LevelNumber      int
-	BalanceDirection string
-	Group            int
+	AccountId            uuid.UUID
+	SobId                uuid.UUID
+	Title                string
+	LevelNumber          int
+	BalanceDirection     string
+	Group                int
+	DimensionCategoryIds []uuid.UUID
 }
 
 type UpdateAccountHandler struct {
@@ -75,6 +76,12 @@ func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd) 
 			if err := a.UpdateGroup(cmd.Group); err != nil {
 				return nil, fmt.Errorf("failed to update group: %w", err)
 			}
+		}
+
+		// DimensionCategoryIds is always applied (nil means "clear all", empty slice also clears).
+		// Callers should only set this field when they intend to update dimension bindings.
+		if cmd.DimensionCategoryIds != nil {
+			a.UpdateDimensionCategories(cmd.DimensionCategoryIds)
 		}
 
 		return a, nil

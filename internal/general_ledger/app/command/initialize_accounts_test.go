@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
-
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -310,10 +308,6 @@ func (m mockRepo) ExistsProfitAndLossLedgersHavingBalanceInPeriod(context.Contex
 }
 
 func (m mockRepo) CreateJournal(context.Context, *journal.Journal) error {
-	panic("implement me")
-}
-
-func (m mockRepo) CreateLedgerEntries(context.Context, []*ledger_entry.LedgerEntry) error {
 	panic("implement me")
 }
 

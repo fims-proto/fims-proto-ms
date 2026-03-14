@@ -371,12 +371,14 @@ func TestSection_reorderItemsBySequence_DebugNewItemSequences(t *testing.T) {
 			positionMap[*desired.ItemId] = i + 1
 			t.Logf("positionMap[%s (%s)] = %d", desired.ItemId,
 				func() string {
-					if *desired.ItemId == item1Id {
+					switch *desired.ItemId {
+					case item1Id:
 						return "Item 1"
-					} else if *desired.ItemId == item2Id {
+					case item2Id:
 						return "Item 2"
+					default:
+						return "Unknown"
 					}
-					return "Unknown"
 				}(), i+1)
 		}
 	}

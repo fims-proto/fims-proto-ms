@@ -1,5 +1,35 @@
 basePath: /fims/api/v1
 definitions:
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.AccountSlimResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.CategoryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse:
     properties:
       content:
@@ -20,6 +50,21 @@ definitions:
       content:
         items:
           $ref: '#/definitions/http.LedgerEntryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.OptionResponse'
         type: array
       numberOfElements:
         type: integer
@@ -60,30 +105,6 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
-  github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate:
-    properties:
-      day:
-        type: integer
-      month:
-        type: integer
-      year:
-        type: integer
-    type: object
   http.AccountClass:
     properties:
       groups:
@@ -93,9 +114,111 @@ definitions:
       id:
         type: string
     type: object
+  http.AccountDetailResponse:
+    properties:
+      accountNumber:
+        type: string
+      balanceDirection:
+        type: string
+      class:
+        type: string
+      createdAt:
+        type: string
+      dimensionCategories:
+        items:
+          $ref: '#/definitions/http.DimensionCategoryResponse'
+        type: array
+      group:
+        type: string
+      id:
+        type: string
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      numberHierarchy:
+        items:
+          type: integer
+        type: array
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.AccountResponse:
+    properties:
+      accountNumber:
+        type: string
+      balanceDirection:
+        type: string
+      class:
+        type: integer
+      group:
+        type: integer
+      id:
+        type: string
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+    type: object
+  http.AccountSlimResponse:
+    properties:
+      accountNumber:
+        type: string
+      balanceDirection:
+        type: string
+      class:
+        type: string
+      createdAt:
+        type: string
+      group:
+        type: string
+      id:
+        type: string
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      numberHierarchy:
+        items:
+          type: integer
+        type: array
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   http.AuditJournalRequest:
     properties:
       auditor:
+        type: string
+    type: object
+  http.CategoryResponse:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      sobId:
+        type: string
+      updatedAt:
         type: string
     type: object
   http.CreateAccountRequest:
@@ -104,6 +227,10 @@ definitions:
         type: string
       class:
         type: string
+      dimensionCategoryIds:
+        items:
+          type: string
+        type: array
       group:
         type: string
       levelNumber:
@@ -112,6 +239,13 @@ definitions:
         type: string
       title:
         type: string
+    type: object
+  http.CreateCategoryRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   http.CreateJournalRequest:
     properties:
@@ -128,7 +262,14 @@ definitions:
       journalType:
         type: string
       transactionDate:
-        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
+        type: string
+    type: object
+  http.CreateOptionRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   http.CreateSobRequest:
     properties:
@@ -147,10 +288,26 @@ definitions:
       startingPeriodYear:
         type: integer
     type: object
+  http.DimensionCategoryResponse:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.DimensionOptionResponse:
+    properties:
+      category:
+        $ref: '#/definitions/http.DimensionCategoryResponse'
+      id:
+        type: string
+      name:
+        type: string
+    type: object
   http.FormulaResponse:
     properties:
       account:
-        $ref: '#/definitions/internal_report_port_public_http.AccountResponse'
+        $ref: '#/definitions/http.AccountResponse'
       amounts:
         items:
           type: number
@@ -228,6 +385,10 @@ definitions:
         type: string
       amount:
         type: number
+      dimensionOptionIds:
+        items:
+          type: string
+        type: array
       id:
         type: string
       text:
@@ -236,11 +397,15 @@ definitions:
   http.JournalLineResponse:
     properties:
       account:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+        $ref: '#/definitions/http.AccountDetailResponse'
       amount:
         type: number
       createdAt:
         type: string
+      dimensionOptions:
+        items:
+          $ref: '#/definitions/http.DimensionOptionResponse'
+        type: array
       id:
         type: string
       text:
@@ -290,6 +455,13 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  http.LedgerDimensionSummaryItemResponse:
+    properties:
+      dimensionOption:
+        $ref: '#/definitions/http.DimensionOptionResponse'
+      totalAmount:
+        type: number
     type: object
   http.LedgerEntryResponse:
     properties:
@@ -353,6 +525,19 @@ definitions:
         type: number
       periodDebit:
         type: number
+    type: object
+  http.OptionResponse:
+    properties:
+      categoryId:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
     type: object
   http.PeriodAndLedgersResponse:
     properties:
@@ -446,6 +631,10 @@ definitions:
     properties:
       balanceDirection:
         type: string
+      dimensionCategoryIds:
+        items:
+          type: string
+        type: array
       group:
         type: string
       levelNumber:
@@ -453,7 +642,32 @@ definitions:
       title:
         type: string
     type: object
+  http.UpdateCategoryRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
   http.UpdateJournalRequest:
+    properties:
+      headerText:
+        type: string
+      journalLines:
+        items:
+          $ref: '#/definitions/http.JournalLineRequest'
+        type: array
+      transactionDate:
+        type: string
+      updater:
+        type: string
+    type: object
+  http.UpdateOptionRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   http.UpdateReportFormulaRequest:
     properties:
@@ -547,37 +761,6 @@ definitions:
       traits:
         type: string
     type: object
-  internal_general_ledger_port_public_http.AccountResponse:
-    properties:
-      accountNumber:
-        type: string
-      balanceDirection:
-        type: string
-      class:
-        type: string
-      createdAt:
-        type: string
-      group:
-        type: string
-      id:
-        type: string
-      isLeaf:
-        type: boolean
-      level:
-        type: integer
-      numberHierarchy:
-        items:
-          type: integer
-        type: array
-      sobId:
-        type: string
-      superiorAccountId:
-        type: string
-      title:
-        type: string
-      updatedAt:
-        type: string
-    type: object
   internal_general_ledger_port_public_http.Error:
     properties:
       message:
@@ -609,29 +792,6 @@ definitions:
       id:
         type: string
       traits: {}
-    type: object
-  internal_report_port_public_http.AccountResponse:
-    properties:
-      accountNumber:
-        type: string
-      balanceDirection:
-        type: string
-      class:
-        type: integer
-      group:
-        type: integer
-      id:
-        type: string
-      isLeaf:
-        type: boolean
-      level:
-        type: integer
-      sobId:
-        type: string
-      superiorAccountId:
-        type: string
-      title:
-        type: string
     type: object
   internal_report_port_public_http.Error:
     properties:
@@ -725,7 +885,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+            $ref: '#/definitions/http.AccountDetailResponse'
         "404":
           description: Not Found
         "500":
@@ -784,7 +944,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+              $ref: '#/definitions/http.AccountSlimResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -814,13 +974,211 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+            $ref: '#/definitions/http.AccountDetailResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - accounts
+  /sob/{sobId}/dimension/categories:
+    get:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse'
+      summary: Search dimension categories
+      tags:
+      - dimension
+    post:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Create category request
+        in: body
+        name: CreateCategoryRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateCategoryRequest'
+      responses:
+        "201":
+          description: Created
+      summary: Create a dimension category
+      tags:
+      - dimension
+  /sob/{sobId}/dimension/category/{categoryId}:
+    delete:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a dimension category
+      tags:
+      - dimension
+    get:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.CategoryResponse'
+        "404":
+          description: Not Found
+      summary: Get a dimension category by ID
+      tags:
+      - dimension
+    patch:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      - description: Update category request
+        in: body
+        name: UpdateCategoryRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCategoryRequest'
+      responses:
+        "200":
+          description: OK
+      summary: Update a dimension category
+      tags:
+      - dimension
+  /sob/{sobId}/dimension/category/{categoryId}/option/{optionId}:
+    delete:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a dimension option
+      tags:
+      - dimension
+    patch:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      - description: Update option request
+        in: body
+        name: UpdateOptionRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateOptionRequest'
+      responses:
+        "200":
+          description: OK
+      summary: Update a dimension option
+      tags:
+      - dimension
+  /sob/{sobId}/dimension/category/{categoryId}/options:
+    get:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse'
+      summary: Search dimension options within a category
+      tags:
+      - dimension
+    post:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      - description: Create option request
+        in: body
+        name: CreateOptionRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.CreateOptionRequest'
+      responses:
+        "201":
+          description: Created
+      summary: Create a dimension option within a category
+      tags:
+      - dimension
   /sob/{sobId}/first-period/ledgers:
     get:
       consumes:
@@ -1323,6 +1681,57 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
+  /sob/{sobId}/ledgers/{accountId}/dimension/{dimensionCategoryId}:
+    get:
+      consumes:
+      - application/json
+      description: Get total amounts from journal lines for a specific account and
+        dimension category across a period range, grouped by dimension option
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      - description: Dimension Category ID
+        in: path
+        name: dimensionCategoryId
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.LedgerDimensionSummaryItemResponse'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
   /sob/{sobId}/ledgers/initialize:
     post:
       consumes:
@@ -1642,7 +2051,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse'
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse'
         "500":
           description: Internal Server Error
           schema:

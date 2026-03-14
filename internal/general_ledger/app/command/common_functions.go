@@ -19,10 +19,12 @@ import (
 	"github.com/google/uuid"
 )
 
-// prepareJournalLines prepares journal line domain objects and performs necessary checks
+// prepareJournalLines prepares journal line domain objects, validates dimension options,
+// and performs necessary checks.
 func prepareJournalLines(
 	ctx context.Context,
 	repo domain.Repository,
+	dimensionService service.DimensionService,
 	sobId uuid.UUID,
 	commands []JournalLineCmd,
 ) ([]*journal.JournalLine, error) {
@@ -50,16 +52,25 @@ func prepareJournalLines(
 		if itemId == uuid.Nil {
 			itemId = uuid.New()
 		}
+
 		a := accountsMap[item.AccountNumber]
+
+		// Validate dimension options for this journal line against the account's required categories.
+		if err = dimensionService.ValidateOptions(ctx, a.DimensionCategoryIds(), item.DimensionOptionIds); err != nil {
+			return nil, err
+		}
+
 		journalLine, err := journal.NewJournalLine(
 			itemId,
 			a,
 			item.Text,
 			item.Amount,
+			item.DimensionOptionIds,
 		)
 		if err != nil {
 			return nil, err
 		}
+
 		journalLines = append(journalLines, journalLine)
 	}
 

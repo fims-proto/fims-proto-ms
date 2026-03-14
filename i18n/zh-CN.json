@@ -77,5 +77,13 @@
     "report-validation-missingSectionType": "报表缺少必需的段落类型: {{.A}}",
     "report-validation-missingItemType": "报表缺少必需的项目类型: {{.A}}",
     "report-balanceSheet-imbalance": "{{.A}} 不平衡: 资产={{.B}}，负债+权益={{.C}}，差额={{.D}}",
-    "report-incomeStatement-profitMismatch": "利润表计算不一致: {{.A}}"
+    "report-incomeStatement-profitMismatch": "利润表计算不一致: {{.A}}",
+    "dimension-deleteCategory-hasUsedOptions": "维度分类下有已使用的选项，无法删除",
+    "dimension-deleteOption-isUsed": "维度选项已被引用，无法删除",
+    "dimension-category-nameTooLong": "维度分类名称不能超过50个字符",
+    "dimension-option-nameTooLong": "维度选项名称不能超过50个字符",
+    "journalLine-invalidDimensionOption": "凭证行维度选项无效",
+    "journalLine-duplicateDimensionCategory": "凭证行中同一维度分类只能选择一个选项",
+    "journalLine-disallowedDimensionCategory": "该科目不允许使用此维度分类",
+    "journalLine-missingRequiredDimensionCategory": "科目要求提供维度分类，凭证行未提供"
 }

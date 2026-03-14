@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
-
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
@@ -49,7 +47,7 @@ func (h PostJournalHandler) Handle(ctx context.Context, cmd PostJournalCmd) erro
 	})
 }
 
-// postJournal updates journal, creates ledger entries, and triggers ledgers posting
+// postJournal updates journal and triggers ledgers posting
 func (h PostJournalHandler) postJournal(ctx context.Context, cmd PostJournalCmd) error {
 	return h.repo.UpdateJournalHeader(
 		ctx,
@@ -57,10 +55,6 @@ func (h PostJournalHandler) postJournal(ctx context.Context, cmd PostJournalCmd)
 		func(j *journal.Journal) (*journal.Journal, error) {
 			if err := j.Post(cmd.Poster); err != nil {
 				return nil, err
-			}
-
-			if err := h.insertLedgerEntries(j, ctx); err != nil {
-				return nil, fmt.Errorf("failed to insert ledger entries: %w", err)
 			}
 
 			var records []postLedgersRecordCmd
@@ -81,31 +75,6 @@ func (h PostJournalHandler) postJournal(ctx context.Context, cmd PostJournalCmd)
 			return j, nil
 		},
 	)
-}
-
-func (h PostJournalHandler) insertLedgerEntries(j *journal.Journal, ctx context.Context) error {
-	var ledgerEntries []*ledger_entry.LedgerEntry
-	for _, item := range j.JournalLines() {
-		entry, err := ledger_entry.New(
-			uuid.New(),
-			j.SobId(),
-			j.PeriodId(),
-			j.Id(),
-			item.Id(),
-			item.AccountId(),
-			j.TransactionDate(),
-			item.Amount(),
-		)
-		if err != nil {
-			return fmt.Errorf("failed to create ledger entry for journal line %s: %w", item.Id(), err)
-		}
-		ledgerEntries = append(ledgerEntries, entry)
-	}
-
-	if err := h.repo.CreateLedgerEntries(ctx, ledgerEntries); err != nil {
-		return fmt.Errorf("failed to create ledger entries: %w", err)
-	}
-	return nil
 }
 
 func (h PostJournalHandler) postLedgers(ctx context.Context, cmd postLedgersCmd) error {

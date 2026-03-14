@@ -24,7 +24,23 @@ type AccountClass struct {
 	Groups []string `json:"groups"`
 }
 
-type AccountResponse struct {
+// DimensionCategoryResponse is embedded in AccountDetailResponse and DimensionOptionResponse.
+type DimensionCategoryResponse struct {
+	Id   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
+}
+
+// DimensionOptionResponse is embedded in JournalLineResponse.
+// Category is nested to give the full context without an extra round-trip.
+type DimensionOptionResponse struct {
+	Id       uuid.UUID                 `json:"id"`
+	Name     string                    `json:"name"`
+	Category DimensionCategoryResponse `json:"category"`
+}
+
+// AccountSlimResponse is used by list endpoints (GET /accounts, GET /search-accounts).
+// It only contains fields from the account table itself — no cross-table dimension data.
+type AccountSlimResponse struct {
 	Id                uuid.UUID  `json:"id,omitempty"`
 	SobId             uuid.UUID  `json:"sobId,omitempty"`
 	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
@@ -38,6 +54,25 @@ type AccountResponse struct {
 	BalanceDirection  string     `json:"balanceDirection,omitempty"`
 	CreatedAt         time.Time  `json:"createdAt"`
 	UpdatedAt         time.Time  `json:"updatedAt"`
+}
+
+// AccountDetailResponse is used by detail and create endpoints (GET /account/{id}, POST /accounts).
+// It includes full dimension category objects.
+type AccountDetailResponse struct {
+	Id                  uuid.UUID                   `json:"id,omitempty"`
+	SobId               uuid.UUID                   `json:"sobId,omitempty"`
+	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
+	Title               string                      `json:"title,omitempty"`
+	AccountNumber       string                      `json:"accountNumber,omitempty"`
+	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
+	Level               int                         `json:"level"`
+	IsLeaf              bool                        `json:"isLeaf"`
+	Class               string                      `json:"class"`
+	Group               string                      `json:"group"`
+	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
+	DimensionCategories []DimensionCategoryResponse `json:"dimensionCategories"`
+	CreatedAt           time.Time                   `json:"createdAt"`
+	UpdatedAt           time.Time                   `json:"updatedAt"`
 }
 
 type PeriodResponse struct {
@@ -83,12 +118,13 @@ type PeriodAndLedgersResponse struct {
 }
 
 type JournalLineResponse struct {
-	Id        uuid.UUID       `json:"id,omitempty"`
-	Account   AccountResponse `json:"account"`
-	Text      string          `json:"text,omitempty"`
-	Amount    decimal.Decimal `json:"amount"`
-	CreatedAt time.Time       `json:"createdAt"`
-	UpdatedAt time.Time       `json:"updatedAt"`
+	Id               uuid.UUID                 `json:"id,omitempty"`
+	Account          AccountDetailResponse     `json:"account"`
+	Text             string                    `json:"text,omitempty"`
+	Amount           decimal.Decimal           `json:"amount"`
+	DimensionOptions []DimensionOptionResponse `json:"dimensionOptions,omitempty"`
+	CreatedAt        time.Time                 `json:"createdAt"`
+	UpdatedAt        time.Time                 `json:"updatedAt"`
 }
 
 type JournalResponse struct {
@@ -128,10 +164,15 @@ type LedgerEntryResponse struct {
 	UpdatedAt       time.Time                        `json:"updatedAt"`
 }
 
+type LedgerDimensionSummaryItemResponse struct {
+	DimensionOption DimensionOptionResponse `json:"dimensionOption"`
+	TotalAmount     decimal.Decimal         `json:"totalAmount"`
+}
+
 // mapper
 
-func accountDTOToVO(dto query.Account) AccountResponse {
-	return AccountResponse{
+func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {
+	return AccountSlimResponse{
 		Id:                dto.Id,
 		SobId:             dto.SobId,
 		SuperiorAccountId: dto.SuperiorAccountId,
@@ -145,6 +186,30 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		BalanceDirection:  dto.BalanceDirection,
 		CreatedAt:         dto.CreatedAt,
 		UpdatedAt:         dto.UpdatedAt,
+	}
+}
+
+func accountDTOToDetailVO(dto query.Account) AccountDetailResponse {
+	categories := make([]DimensionCategoryResponse, 0, len(dto.DimensionCategories))
+	for _, cat := range dto.DimensionCategories {
+		categories = append(categories, DimensionCategoryResponse{Id: cat.Id, Name: cat.Name})
+	}
+
+	return AccountDetailResponse{
+		Id:                  dto.Id,
+		SobId:               dto.SobId,
+		SuperiorAccountId:   dto.SuperiorAccountId,
+		Title:               dto.Title,
+		AccountNumber:       dto.AccountNumber,
+		NumberHierarchy:     dto.NumberHierarchy,
+		Level:               dto.Level,
+		IsLeaf:              dto.IsLeaf,
+		Class:               strconv.Itoa(dto.Class),
+		Group:               strconv.Itoa(dto.Group),
+		BalanceDirection:    dto.BalanceDirection,
+		DimensionCategories: categories,
+		CreatedAt:           dto.CreatedAt,
+		UpdatedAt:           dto.UpdatedAt,
 	}
 }
 
@@ -176,13 +241,26 @@ func ledgerSummaryToVO(dto query.LedgerSummary) LedgerSummaryResponse {
 }
 
 func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
+	options := make([]DimensionOptionResponse, 0, len(dto.DimensionOptions))
+	for _, opt := range dto.DimensionOptions {
+		options = append(options, DimensionOptionResponse{
+			Id:   opt.Id,
+			Name: opt.Name,
+			Category: DimensionCategoryResponse{
+				Id:   opt.Category.Id,
+				Name: opt.Category.Name,
+			},
+		})
+	}
+
 	return JournalLineResponse{
-		Id:        dto.Id,
-		Account:   accountDTOToVO(dto.Account),
-		Text:      dto.Text,
-		Amount:    dto.Amount,
-		CreatedAt: dto.CreatedAt,
-		UpdatedAt: dto.UpdatedAt,
+		Id:               dto.Id,
+		Account:          accountDTOToDetailVO(dto.Account),
+		Text:             dto.Text,
+		Amount:           dto.Amount,
+		DimensionOptions: options,
+		CreatedAt:        dto.CreatedAt,
+		UpdatedAt:        dto.UpdatedAt,
 	}
 }
 
@@ -229,5 +307,15 @@ func ledgerEntryDTOToVO(dto query.LedgerEntry) LedgerEntryResponse {
 		Amount:          dto.Amount,
 		CreatedAt:       dto.CreatedAt,
 		UpdatedAt:       dto.UpdatedAt,
+	}
+}
+
+func ledgerDimensionSummaryItemToVO(dto query.LedgerDimensionSummaryItem) LedgerDimensionSummaryItemResponse {
+	return LedgerDimensionSummaryItemResponse{
+		DimensionOption: DimensionOptionResponse{
+			Id:   dto.DimensionOptionId,
+			Name: dto.DimensionOptionName,
+		},
+		TotalAmount: dto.TotalAmount,
 	}
 }

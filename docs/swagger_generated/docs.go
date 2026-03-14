@@ -85,7 +85,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                            "$ref": "#/definitions/http.AccountDetailResponse"
                         }
                     },
                     "404": {
@@ -175,7 +175,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                                "$ref": "#/definitions/http.AccountSlimResponse"
                             }
                         }
                     },
@@ -220,7 +220,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                            "$ref": "#/definitions/http.AccountDetailResponse"
                         }
                     },
                     "500": {
@@ -228,6 +228,305 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/dimension/categories": {
+            "get": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Search dimension categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Create a dimension category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create category request",
+                        "name": "CreateCategoryRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/dimension/category/{categoryId}": {
+            "get": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Get a dimension category by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.CategoryResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Delete a dimension category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Update a dimension category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update category request",
+                        "name": "UpdateCategoryRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/dimension/category/{categoryId}/option/{optionId}": {
+            "delete": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Delete a dimension option",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Update a dimension option",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update option request",
+                        "name": "UpdateOptionRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateOptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/dimension/category/{categoryId}/options": {
+            "get": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Search dimension options within a category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Create a dimension option within a category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Create option request",
+                        "name": "CreateOptionRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.CreateOptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
                     }
                 }
             }
@@ -1029,6 +1328,80 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/ledgers/{accountId}/dimension/{dimensionCategoryId}": {
+            "get": {
+                "description": "Get total amounts from journal lines for a specific account and dimension category across a period range, grouped by dimension option",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dimension Category ID",
+                        "name": "dimensionCategoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From period (YYYY-MM)",
+                        "name": "fromPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To period (YYYY-MM)",
+                        "name": "toPeriod",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.LedgerDimensionSummaryItemResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/period/{periodId}/close": {
             "post": {
                 "description": "Close period",
@@ -1458,7 +1831,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse"
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse"
                         }
                     },
                     "500": {
@@ -1717,6 +2090,52 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.AccountSlimResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.CategoryResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse": {
             "type": "object",
             "properties": {
@@ -1747,6 +2166,29 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.LedgerEntryResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.OptionResponse"
                     }
                 },
                 "numberOfElements": {
@@ -1809,43 +2251,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate": {
-            "type": "object",
-            "properties": {
-                "day": {
-                    "type": "integer"
-                },
-                "month": {
-                    "type": "integer"
-                },
-                "year": {
-                    "type": "integer"
-                }
-            }
-        },
         "http.AccountClass": {
             "type": "object",
             "properties": {
@@ -1860,10 +2265,165 @@ const docTemplate = `{
                 }
             }
         },
+        "http.AccountDetailResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dimensionCategories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.DimensionCategoryResponse"
+                    }
+                },
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "numberHierarchy": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "integer"
+                },
+                "group": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AccountSlimResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "numberHierarchy": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "http.AuditJournalRequest": {
             "type": "object",
             "properties": {
                 "auditor": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CategoryResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -1877,6 +2437,12 @@ const docTemplate = `{
                 "class": {
                     "type": "string"
                 },
+                "dimensionCategoryIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "group": {
                     "type": "string"
                 },
@@ -1887,6 +2453,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -1913,7 +2490,18 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "transactionDate": {
-                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateOptionRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -1943,11 +2531,36 @@ const docTemplate = `{
                 }
             }
         },
+        "http.DimensionCategoryResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.DimensionOptionResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/http.DimensionCategoryResponse"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "http.FormulaResponse": {
             "type": "object",
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/internal_report_port_public_http.AccountResponse"
+                    "$ref": "#/definitions/http.AccountResponse"
                 },
                 "amounts": {
                     "type": "array",
@@ -2067,6 +2680,12 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
+                "dimensionOptionIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2079,13 +2698,19 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "account": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                    "$ref": "#/definitions/http.AccountDetailResponse"
                 },
                 "amount": {
                     "type": "number"
                 },
                 "createdAt": {
                     "type": "string"
+                },
+                "dimensionOptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.DimensionOptionResponse"
+                    }
                 },
                 "id": {
                     "type": "string"
@@ -2160,6 +2785,17 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "http.LedgerDimensionSummaryItemResponse": {
+            "type": "object",
+            "properties": {
+                "dimensionOption": {
+                    "$ref": "#/definitions/http.DimensionOptionResponse"
+                },
+                "totalAmount": {
+                    "type": "number"
                 }
             }
         },
@@ -2256,6 +2892,26 @@ const docTemplate = `{
                 },
                 "periodDebit": {
                     "type": "number"
+                }
+            }
+        },
+        "http.OptionResponse": {
+            "type": "object",
+            "properties": {
+                "categoryId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -2400,6 +3056,12 @@ const docTemplate = `{
                 "balanceDirection": {
                     "type": "string"
                 },
+                "dimensionCategoryIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "group": {
                     "type": "string"
                 },
@@ -2411,8 +3073,47 @@ const docTemplate = `{
                 }
             }
         },
+        "http.UpdateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "http.UpdateJournalRequest": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "headerText": {
+                    "type": "string"
+                },
+                "journalLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.JournalLineRequest"
+                    }
+                },
+                "transactionDate": {
+                    "type": "string"
+                },
+                "updater": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateOptionRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
         },
         "http.UpdateReportFormulaRequest": {
             "type": "object",
@@ -2548,53 +3249,6 @@ const docTemplate = `{
                 }
             }
         },
-        "internal_general_ledger_port_public_http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "class": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "group": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isLeaf": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "numberHierarchy": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
         "internal_general_ledger_port_public_http.Error": {
             "type": "object",
             "properties": {
@@ -2642,41 +3296,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "traits": {}
-            }
-        },
-        "internal_report_port_public_http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "class": {
-                    "type": "integer"
-                },
-                "group": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isLeaf": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
             }
         },
         "internal_report_port_public_http.Error": {

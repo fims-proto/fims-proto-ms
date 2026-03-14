@@ -11,20 +11,34 @@ import (
 	"github.com/google/uuid"
 )
 
+type DimensionCategory struct {
+	Id   uuid.UUID
+	Name string
+}
+
+type DimensionOption struct {
+	Id         uuid.UUID
+	Name       string
+	CategoryId uuid.UUID
+	Category   DimensionCategory
+}
+
 type Account struct {
-	Id                uuid.UUID
-	SobId             uuid.UUID
-	SuperiorAccountId *uuid.UUID
-	Title             string
-	AccountNumber     string
-	NumberHierarchy   []int
-	Level             int
-	IsLeaf            bool
-	Class             int
-	Group             int
-	BalanceDirection  string
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	Id                   uuid.UUID
+	SobId                uuid.UUID
+	SuperiorAccountId    *uuid.UUID
+	Title                string
+	AccountNumber        string
+	NumberHierarchy      []int
+	Level                int
+	IsLeaf               bool
+	Class                int
+	Group                int
+	BalanceDirection     string
+	DimensionCategoryIds []uuid.UUID         // internal: used by enricher, not exposed in HTTP response
+	DimensionCategories  []DimensionCategory // populated by enricher on detail queries only
+	CreatedAt            time.Time
+	UpdatedAt            time.Time
 }
 
 type Period struct {
@@ -54,12 +68,14 @@ type Ledger struct {
 }
 
 type JournalLine struct {
-	Id        uuid.UUID
-	Account   Account
-	Text      string
-	Amount    decimal.Decimal
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Id                 uuid.UUID
+	Account            Account
+	Text               string
+	Amount             decimal.Decimal
+	DimensionOptionIds []uuid.UUID       // internal: used by enricher, not exposed in HTTP response
+	DimensionOptions   []DimensionOption // populated by enricher on detail queries only
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
 type Journal struct {
@@ -97,4 +113,10 @@ type LedgerEntry struct {
 	Amount          decimal.Decimal
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+}
+
+type LedgerDimensionSummaryItem struct {
+	DimensionOptionId   uuid.UUID
+	DimensionOptionName string
+	TotalAmount         decimal.Decimal
 }

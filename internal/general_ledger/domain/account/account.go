@@ -14,18 +14,19 @@ import (
 )
 
 type Account struct {
-	id                uuid.UUID
-	sobId             uuid.UUID
-	superiorAccountId uuid.UUID
-	superiorAccount   *Account
-	title             string
-	accountNumber     string
-	numberHierarchy   []int
-	level             int
-	isLeaf            bool
-	class             class.Class
-	group             class.Group
-	balanceDirection  balance_direction.BalanceDirection
+	id                   uuid.UUID
+	sobId                uuid.UUID
+	superiorAccountId    uuid.UUID
+	superiorAccount      *Account
+	title                string
+	accountNumber        string
+	numberHierarchy      []int
+	level                int
+	isLeaf               bool
+	class                class.Class
+	group                class.Group
+	balanceDirection     balance_direction.BalanceDirection
+	dimensionCategoryIds []uuid.UUID
 }
 
 // New takes all fields except:
@@ -43,13 +44,14 @@ func New(
 	classId int,
 	groupId int,
 	balanceDirection string,
+	dimensionCategoryIds []uuid.UUID,
 ) (*Account, error) {
 	accountNumber, err := composeAccountNumber(numberHierarchy, codeLengths)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection)
+	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection, dimensionCategoryIds)
 }
 
 // NewByAllFields takes all attributes of Account, and doesn't validate accountNumber field
@@ -67,6 +69,7 @@ func NewByAllFields(
 	classId int,
 	groupId int,
 	balanceDirection string,
+	dimensionCategoryIds []uuid.UUID,
 ) (*Account, error) {
 	if id == uuid.Nil {
 		return nil, errors.New("nil account id")
@@ -112,18 +115,19 @@ func NewByAllFields(
 	}
 
 	return &Account{
-		id:                id,
-		sobId:             sobId,
-		superiorAccountId: superiorAccountId,
-		superiorAccount:   superiorAccount,
-		title:             title,
-		accountNumber:     accountNumber,
-		numberHierarchy:   numberHierarchy,
-		level:             level,
-		isLeaf:            isLeaf,
-		class:             c,
-		group:             g,
-		balanceDirection:  bd,
+		id:                   id,
+		sobId:                sobId,
+		superiorAccountId:    superiorAccountId,
+		superiorAccount:      superiorAccount,
+		title:                title,
+		accountNumber:        accountNumber,
+		numberHierarchy:      numberHierarchy,
+		level:                level,
+		isLeaf:               isLeaf,
+		class:                c,
+		group:                g,
+		balanceDirection:     bd,
+		dimensionCategoryIds: dimensionCategoryIds,
 	}, nil
 }
 
@@ -197,4 +201,8 @@ func (a *Account) Group() class.Group {
 
 func (a *Account) BalanceDirection() balance_direction.BalanceDirection {
 	return a.balanceDirection
+}
+
+func (a *Account) DimensionCategoryIds() []uuid.UUID {
+	return a.dimensionCategoryIds
 }
