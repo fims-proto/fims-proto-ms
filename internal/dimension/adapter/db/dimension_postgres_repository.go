@@ -103,8 +103,8 @@ func (r DimensionPostgresRepository) ExistsCategoryUsedByJournalLine(ctx context
 
 	var count int64
 	err := db.Model(&dimensionOptionPO{}).
-		Joins("JOIN a_journal_line_dimension_options jldo ON jldo.dimension_option_id = a_dimension_options.id").
-		Where("a_dimension_options.category_id = ?", categoryId).
+		Joins("JOIN journal_line_dimension_options jldo ON jldo.dimension_option_id = dimension_options.id").
+		Where("dimension_options.category_id = ?", categoryId).
 		Count(&count).Error
 	if err != nil {
 		return false, fmt.Errorf("failed to check category usage: %w", err)
@@ -193,7 +193,7 @@ func (r DimensionPostgresRepository) ExistsOptionUsedByJournalLine(ctx context.C
 	db := r.dataSource.GetConnection(ctx)
 
 	var count int64
-	err := db.Table("a_journal_line_dimension_options").
+	err := db.Table("journal_line_dimension_options").
 		Where("dimension_option_id = ?", optionId).
 		Count(&count).Error
 	if err != nil {

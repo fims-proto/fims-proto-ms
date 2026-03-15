@@ -173,23 +173,24 @@ func (h Handler) ReadLedgerEntries(c *gin.Context) {
 //	@Param			dimensionCategoryId	path		string	true	"Dimension Category ID"
 //	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
 //	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
-//	@Success		200					{array}		LedgerDimensionSummaryItemResponse
+//	@Success		200					{object}	data.PageResponse[LedgerDimensionSummaryItemResponse]
 //	@Failure		400					{object}	Error
 //	@Failure		500					{object}	Error
 //	@Router			/sob/{sobId}/ledgers/{accountId}/dimension/{dimensionCategoryId} [get]
 func (h Handler) ReadLedgerDimensionSummary(c *gin.Context) {
-	items, err := h.app.Queries.LedgerDimensionSummary.Handle(
+	data.PagingResponseProcessor(
 		c,
-		uuid.MustParse(c.Param("sobId")),
-		uuid.MustParse(c.Param("accountId")),
-		uuid.MustParse(c.Param("dimensionCategoryId")),
-		c.Query("fromPeriod"),
-		c.Query("toPeriod"),
+		func(pageRequest data.PageRequest) (data.Page[query.LedgerDimensionSummaryItem], error) {
+			return h.app.Queries.LedgerDimensionSummary.Handle(
+				c,
+				uuid.MustParse(c.Param("sobId")),
+				uuid.MustParse(c.Param("accountId")),
+				uuid.MustParse(c.Param("dimensionCategoryId")),
+				c.Query("fromPeriod"),
+				c.Query("toPeriod"),
+				pageRequest,
+			)
+		},
+		ledgerDimensionSummaryItemToVO,
 	)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, converter.DTOsToVOs(items, ledgerDimensionSummaryItemToVO))
 }

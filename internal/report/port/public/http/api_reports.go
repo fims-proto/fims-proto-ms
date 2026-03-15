@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// ReadAllReports godoc
+// SearchReports godoc
 //
 //	@Text			List all reports by sob
 //	@Description	List all reports by sob with pagination
@@ -26,7 +26,7 @@ import (
 //	@Success		200		{object}	data.PageResponse[ReportResponse]
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/reports [get]
-func (h Handler) ReadAllReports(c *gin.Context) {
+func (h Handler) SearchReports(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.Report], error) {

@@ -120,55 +120,25 @@ type journalLineDimensionOptionPO struct {
 	DimensionOptionId uuid.UUID `gorm:"type:uuid;primaryKey"`
 }
 
-// table names
-
-func (a accountPO) TableName() string {
-	return "a_accounts"
-}
-
-func (p periodPO) TableName() string {
-	return "a_periods"
-}
-
-func (l ledgerPO) TableName() string {
-	return "a_ledgers"
-}
-
-func (j journalPO) TableName() string {
-	return "a_journals"
-}
-
-func (j journalLinePO) TableName() string {
-	return "a_journal_lines"
-}
-
-func (a accountDimensionCategoryPO) TableName() string {
-	return "a_account_dimension_categories"
-}
-
-func (j journalLineDimensionOptionPO) TableName() string {
-	return "a_journal_line_dimension_options"
-}
-
 // schemas
 
 func (a accountPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return a.TableName(), nil
+		return "accounts", nil
 	}
 	return "", fmt.Errorf("accountPO doesn't have association named %s", entity)
 }
 
 func (p periodPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return p.TableName(), nil
+		return "periods", nil
 	}
 	return "", fmt.Errorf("periodPO doesn't have association named %s", entity)
 }
 
 func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return l.TableName(), nil
+		return "ledgers", nil
 	}
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
@@ -178,7 +148,7 @@ func (l ledgerPO) ResolveAssociation(entity string) (string, error) {
 
 func (j journalPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return j.TableName(), nil
+		return "journals", nil
 	}
 	if strings.EqualFold(entity, "journalLines") {
 		return "JournalLines", nil
@@ -191,7 +161,7 @@ func (j journalPO) ResolveAssociation(entity string) (string, error) {
 
 func (j journalLinePO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return j.TableName(), nil
+		return "journal_lines", nil
 	}
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil
@@ -566,23 +536,5 @@ func journalLinePOToDTO(po journalLinePO) query.JournalLine {
 		DimensionOptionIds: dimOptionIds,
 		CreatedAt:          po.CreatedAt,
 		UpdatedAt:          po.UpdatedAt,
-	}
-}
-
-func journalLinePOToLedgerEntryDTO(po journalLinePO) query.LedgerEntry {
-	transactionDate := transaction_date.TransactionDate{
-		Year:  po.Journal.TransactionDate.Year(),
-		Month: int(po.Journal.TransactionDate.Month()),
-		Day:   po.Journal.TransactionDate.Day(),
-	}
-
-	return query.LedgerEntry{
-		JournalId:       po.JournalId,
-		JournalNumber:   po.Journal.DocumentNumber,
-		TransactionDate: transactionDate,
-		Text:            po.Text,
-		Amount:          po.Amount,
-		CreatedAt:       po.CreatedAt,
-		UpdatedAt:       po.UpdatedAt,
 	}
 }

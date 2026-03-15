@@ -18,7 +18,7 @@ func NewHandler(app *app.Application) Handler {
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/reports", h.ReadAllReports)
+	r.GET("/sob/:sobId/reports", h.SearchReports)
 	r.GET("/sob/:sobId/report/:reportId", h.ReadReportById)
 	r.POST("/sob/:sobId/report/:reportId/generate", h.GenerateReport)
 	r.POST("/sob/:sobId/report/:reportId/regenerate", h.RegenerateReport)

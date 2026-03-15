@@ -17,9 +17,8 @@ type GeneralLedgerReadModel interface {
 	LedgersByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
 	AllLedgersByPeriodRange(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
 	LedgerEntriesByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerEntry], error)
-	LedgerDimensionSummary(ctx context.Context, sobId, accountId, dimensionCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]LedgerDimensionSummaryItem, error)
+	LedgerDimensionSummary(ctx context.Context, sobId, accountId, dimensionCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerDimensionSummaryItem], error)
 
-	CurrentPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	FirstPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error
 

@@ -5,18 +5,19 @@ meta {
 }
 
 get {
-  url: {{base_path}}/sob/{{sob}}/period/{{current_period}}/ledgers?$size=999
+  url: {{base_path}}/sob/{{sob}}/ledgers?fromPeriod={{current_period}}&toPeriod={{current_period}}
   body: none
   auth: none
 }
 
 params:query {
-  $size: 999
+  fromPeriod: {{current_period}}
+  toPeriod: {{current_period}}
 }
 
 tests {
   test("Ledgers exists (count more than 0)", function () {
-      expect(res.getBody().content.length).to.gt(0);
+      expect(res.getBody().length).to.gt(0);
   });
   
   test("Ledgers have right balance", function () {
@@ -154,11 +155,11 @@ tests {
               "expectedAmount": "0"
           }
       }
-
-      const ls = res.getBody().content;
-
+  
+      const ls = res.getBody();
+  
       for (let i = 0; i < ls.length; i++) {
-          const accountNumber = ls[i].account.accountNumber;
+          const accountNumber = ls[i].accountNumber;
           if (tobeTested.hasOwnProperty(accountNumber)) {
               tobeTested[accountNumber].tested = true;
               tobeTested[accountNumber].debit = ls[i].periodDebit;
@@ -166,7 +167,7 @@ tests {
               tobeTested[accountNumber].amount = ls[i].endingAmount;
           }
       }
-
+  
       for (let key in tobeTested) {
           expect(tobeTested[key].tested, `${key} not tested`).to.be.true;
           expect(tobeTested[key].expectedDebit, `${key} wrong period debit`).to.be.eq(tobeTested[key].debit);

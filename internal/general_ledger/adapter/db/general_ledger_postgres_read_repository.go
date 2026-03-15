@@ -66,18 +66,6 @@ func (r GeneralLedgerPostgresReadRepository) SearchJournals(
 	return data.SearchEntities(ctx, pageRequest, journalPO{}, journalPOToDTO, r.dataSource.GetConnection(ctx).Preload("JournalLines.Account").InnerJoins("Period"))
 }
 
-func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
-	db := r.dataSource.GetConnection(ctx)
-
-	var po periodPO
-	if err := db.Where(periodPO{SobId: sobId, IsCurrent: true}).
-		First(&po).Error; err != nil {
-		return query.Period{}, err
-	}
-
-	return periodPOToDTO(po), nil
-}
-
 func (r GeneralLedgerPostgresReadRepository) FirstPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -128,8 +116,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 	q := db.Model(&ledgerPO{SobId: sobId, AccountId: accountId}).
 		InnerJoins("Account").
 		InnerJoins("Period").
-		Where("a_ledgers.sob_id = ?", sobId).
-		Where("a_ledgers.account_id = ?", accountId).
+		Where("ledgers.sob_id = ?", sobId).
+		Where("ledgers.account_id = ?", accountId).
 		Where(
 			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
 				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
@@ -163,7 +151,7 @@ func (r GeneralLedgerPostgresReadRepository) AllLedgersByPeriodRange(
 	q := db.Model(&ledgerPO{}).
 		InnerJoins("Account").
 		InnerJoins("Period").
-		Where("a_ledgers.sob_id = ?", sobId).
+		Where("ledgers.sob_id = ?", sobId).
 		Where(
 			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
 				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
@@ -211,6 +199,17 @@ func (r GeneralLedgerPostgresReadRepository) CheckPeriodContinuity(
 	return nil
 }
 
+type journalLineRow struct {
+	Id              uuid.UUID       `gorm:"column:id"`
+	JournalId       uuid.UUID       `gorm:"column:journal_id"`
+	Text            string          `gorm:"column:text"`
+	Amount          decimal.Decimal `gorm:"column:amount"`
+	CreatedAt       time.Time       `gorm:"column:created_at"`
+	UpdatedAt       time.Time       `gorm:"column:updated_at"`
+	DocumentNumber  string          `gorm:"column:document_number"`
+	TransactionDate time.Time       `gorm:"column:transaction_date"`
+}
+
 // LedgerEntriesByPeriodRange queries journal lines for a specific account within a fiscal year/period number range.
 // Only journal lines from posted journals are included, matching the behaviour of the former ledger entry table.
 // Filters are applied at SQL level for performance and supports pagination.
@@ -222,33 +221,22 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 ) (data.Page[query.LedgerEntry], error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	type journalLineRow struct {
-		Id              uuid.UUID       `gorm:"column:id"`
-		JournalId       uuid.UUID       `gorm:"column:journal_id"`
-		Text            string          `gorm:"column:text"`
-		Amount          decimal.Decimal `gorm:"column:amount"`
-		CreatedAt       time.Time       `gorm:"column:created_at"`
-		UpdatedAt       time.Time       `gorm:"column:updated_at"`
-		DocumentNumber  string          `gorm:"column:document_number"`
-		TransactionDate time.Time       `gorm:"column:transaction_date"`
-	}
-
-	baseQ := db.Table("a_journal_lines").
-		Select("a_journal_lines.id, a_journal_lines.journal_id, a_journal_lines.text, a_journal_lines.amount, "+
-			"a_journal_lines.created_at, a_journal_lines.updated_at, "+
-			"a_journals.document_number, a_journals.transaction_date").
-		Joins("INNER JOIN a_journals ON a_journal_lines.journal_id = a_journals.id").
-		Joins("INNER JOIN a_periods ON a_journals.period_id = a_periods.id").
-		Where("a_journals.sob_id = ?", sobId).
-		Where("a_journal_lines.account_id = ?", accountId).
-		Where("a_journals.is_posted = ?", true).
+	baseQ := db.Table("journal_lines").
+		Select("journal_lines.id, journal_lines.journal_id, journal_lines.text, journal_lines.amount, "+
+			"journal_lines.created_at, journal_lines.updated_at, "+
+			"journals.document_number, journals.transaction_date").
+		Joins("INNER JOIN journals ON journal_lines.journal_id = journals.id").
+		Joins("INNER JOIN periods ON journals.period_id = periods.id").
+		Where("journals.sob_id = ?", sobId).
+		Where("journal_lines.account_id = ?", accountId).
+		Where("journals.is_posted = ?", true).
 		Where(
-			"(a_periods.fiscal_year > ? OR (a_periods.fiscal_year = ? AND a_periods.period_number >= ?)) AND "+
-				"(a_periods.fiscal_year < ? OR (a_periods.fiscal_year = ? AND a_periods.period_number <= ?))",
+			"(periods.fiscal_year > ? OR (periods.fiscal_year = ? AND periods.period_number >= ?)) AND "+
+				"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number <= ?))",
 			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
 			toFiscalYear, toFiscalYear, toPeriodNumber,
 		).
-		Order("a_journal_lines.created_at asc")
+		Order("journal_lines.created_at asc")
 
 	var count int64
 	if err := baseQ.Session(&gorm.Session{}).Count(&count).Error; err != nil {
@@ -284,8 +272,9 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 }
 
 type ledgerDimensionSummaryRow struct {
-	DimensionOptionId uuid.UUID       `gorm:"column:dimension_option_id"`
-	TotalAmount       decimal.Decimal `gorm:"column:total_amount"`
+	DimensionOptionId   uuid.UUID       `gorm:"column:dimension_option_id"`
+	DimensionOptionName string          `gorm:"column:dimension_option_name"`
+	TotalAmount         decimal.Decimal `gorm:"column:total_amount"`
 }
 
 // LedgerDimensionSummary aggregates journal line amounts grouped by dimension option
@@ -294,38 +283,48 @@ func (r GeneralLedgerPostgresReadRepository) LedgerDimensionSummary(
 	ctx context.Context,
 	sobId, accountId, dimensionCategoryId uuid.UUID,
 	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
-) ([]query.LedgerDimensionSummaryItem, error) {
+	pageRequest data.PageRequest,
+) (data.Page[query.LedgerDimensionSummaryItem], error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	var rows []ledgerDimensionSummaryRow
-	err := db.Model(&journalLinePO{}).
-		Select("a_journal_line_dimension_options.dimension_option_id, SUM(a_journal_lines.amount) AS total_amount").
-		Joins("INNER JOIN a_journals ON a_journal_lines.journal_id = a_journals.id").
-		Joins("INNER JOIN a_periods ON a_journals.period_id = a_periods.id").
-		Joins("INNER JOIN a_journal_line_dimension_options ON a_journal_line_dimension_options.journal_line_id = a_journal_lines.id").
-		Joins("INNER JOIN a_dimension_options ON a_dimension_options.id = a_journal_line_dimension_options.dimension_option_id").
-		Where("a_journals.sob_id = ?", sobId).
-		Where("a_journal_lines.account_id = ?", accountId).
-		Where("a_dimension_options.category_id = ?", dimensionCategoryId).
+	baseQ := db.Model(&journalLinePO{}).
+		Select("journal_line_dimension_options.dimension_option_id, dimension_options.name AS dimension_option_name, SUM(journal_lines.amount) AS total_amount").
+		Joins("INNER JOIN journals ON journal_lines.journal_id = journals.id").
+		Joins("INNER JOIN periods ON journals.period_id = periods.id").
+		Joins("INNER JOIN journal_line_dimension_options ON journal_line_dimension_options.journal_line_id = journal_lines.id").
+		Joins("INNER JOIN dimension_options ON dimension_options.id = journal_line_dimension_options.dimension_option_id").
+		Where("journals.sob_id = ?", sobId).
+		Where("journal_lines.account_id = ?", accountId).
+		Where("dimension_options.category_id = ?", dimensionCategoryId).
 		Where(
-			"(a_periods.fiscal_year > ? OR (a_periods.fiscal_year = ? AND a_periods.period_number >= ?)) AND "+
-				"(a_periods.fiscal_year < ? OR (a_periods.fiscal_year = ? AND a_periods.period_number <= ?))",
+			"(periods.fiscal_year > ? OR (periods.fiscal_year = ? AND periods.period_number >= ?)) AND "+
+				"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number <= ?))",
 			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
 			toFiscalYear, toFiscalYear, toPeriodNumber,
 		).
-		Group("a_journal_line_dimension_options.dimension_option_id").
-		Scan(&rows).Error
-	if err != nil {
+		Group("journal_line_dimension_options.dimension_option_id, dimension_options.name").
+		Order("dimension_options.name ASC")
+
+	var count int64
+	if err := baseQ.Session(&gorm.Session{}).Count(&count).Error; err != nil {
 		return nil, err
 	}
 
-	result := make([]query.LedgerDimensionSummaryItem, 0, len(rows))
+	var rows []ledgerDimensionSummaryRow
+	if err := baseQ.Session(&gorm.Session{}).
+		Scopes(pageable.Paging(pageRequest)).
+		Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	dtos := make([]query.LedgerDimensionSummaryItem, 0, len(rows))
 	for _, row := range rows {
-		result = append(result, query.LedgerDimensionSummaryItem{
-			DimensionOptionId: row.DimensionOptionId,
-			TotalAmount:       row.TotalAmount,
+		dtos = append(dtos, query.LedgerDimensionSummaryItem{
+			DimensionOptionId:   row.DimensionOptionId,
+			DimensionOptionName: row.DimensionOptionName,
+			TotalAmount:         row.TotalAmount,
 		})
 	}
 
-	return result, nil
+	return data.NewPage(dtos, pageRequest, int(count))
 }

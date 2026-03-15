@@ -42,20 +42,6 @@ type periodPO struct {
 	PeriodNumber int
 }
 
-// table name
-
-func (l ledgerPO) TableName() string {
-	return "a_ledgers"
-}
-
-func (a accountPO) TableName() string {
-	return "a_accounts"
-}
-
-func (a periodPO) TableName() string {
-	return "a_periods"
-}
-
 // mappers
 
 func ledgerPOToBO(po ledgerPO) (*general_ledger.Ledger, error) {

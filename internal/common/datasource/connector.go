@@ -2,6 +2,7 @@ package datasource
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/common/config"
@@ -36,7 +37,7 @@ func (d Connector) get(dsn string) (*gorm.DB, error) {
 	}
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: "a_",
+			NameReplacer: strings.NewReplacer("PO", ""),
 		},
 		Logger: logger.Default.LogMode(logLevel),
 	})

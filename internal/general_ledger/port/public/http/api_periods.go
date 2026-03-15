@@ -32,30 +32,6 @@ func (h Handler) ReadPeriods(c *gin.Context) {
 	c.JSON(http.StatusOK, converter.DTOsToVOs(periods, periodDTOToVO))
 }
 
-// ReadSobCurrentPeriod godoc
-//
-//	@Text			Current period
-//	@Description	Current period
-//	@Tags			periods
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		200		{object}	PeriodResponse
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/periods/current [get]
-func (h Handler) ReadSobCurrentPeriod(c *gin.Context) {
-	periodDTO, err := h.app.Queries.CurrentPeriod.Handle(c, uuid.MustParse(c.Param("sobId")))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	if periodDTO.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-	c.JSON(http.StatusOK, periodDTOToVO(periodDTO))
-}
-
 // ClosePeriod godoc
 //
 //	@Text			Close period

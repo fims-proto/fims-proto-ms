@@ -9,9 +9,7 @@ import (
 
 type Queries struct {
 	AllAccounts            query.AllAccountsHandler
-	PagingAccounts         query.PagingAccountsHandler
 	AccountById            query.AccountByIdHandler
-	CurrentPeriod          query.CurrentPeriodHandler
 	AllPeriods             query.AllPeriodsHandler
 	FirstPeriodLedgers     query.FirstPeriodLedgersHandler
 	PagingLedgersByPeriod  query.LedgersByPeriodRangeHandler
@@ -61,14 +59,12 @@ func (a *Application) Inject(
 ) {
 	a.Queries = Queries{
 		AllAccounts:            query.NewAllAccountsHandler(readModel),
-		PagingAccounts:         query.NewPagingAccountsHandler(readModel),
 		AccountById:            query.NewAccountByIdHandler(readModel, dimensionService),
-		CurrentPeriod:          query.NewCurrentPeriodHandler(readModel),
 		AllPeriods:             query.NewAllPeriodsHandler(readModel),
 		FirstPeriodLedgers:     query.NewFirstPeriodLedgersHandler(readModel),
 		PagingLedgersByPeriod:  query.NewLedgersByPeriodRangeHandler(readModel),
 		LedgerSummary:          query.NewLedgerSummaryHandler(readModel),
-		LedgerDimensionSummary: query.NewLedgerDimensionSummaryHandler(readModel, dimensionService),
+		LedgerDimensionSummary: query.NewLedgerDimensionSummaryHandler(readModel),
 		PagingLedgerEntries:    query.NewPagingLedgerEntriesHandler(readModel),
 		JournalById:            query.NewJournalByIdHandler(readModel, userService, dimensionService),
 		PagingJournals:         query.NewPagingJournalsHandler(readModel, userService),

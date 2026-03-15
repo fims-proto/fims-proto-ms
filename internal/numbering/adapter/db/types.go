@@ -34,16 +34,6 @@ type identifierPO struct {
 	CreatedAt                 time.Time `gorm:"<-:create"`
 }
 
-// table names
-
-func (c identifierConfigurationPO) TableName() string {
-	return "a_identifier_configurations"
-}
-
-func (i identifierPO) TableName() string {
-	return "a_identifiers"
-}
-
 // mappers
 
 func propertyMatcherBOToPO(bos []identifier_configuration.PropertyMatcher) []propertyMatcher {

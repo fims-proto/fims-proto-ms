@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// ReadAllJournals godoc
+// SearchJournals godoc
 //
 //	@Text			List all journals by sob
 //	@Description	List all journals by sob with pagination
@@ -26,7 +26,7 @@ import (
 //	@Success		200		{object}	data.PageResponse[JournalResponse]
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/journals [get]
-func (h Handler) ReadAllJournals(c *gin.Context) {
+func (h Handler) SearchJournals(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.Journal], error) {

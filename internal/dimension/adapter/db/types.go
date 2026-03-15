@@ -32,21 +32,11 @@ type dimensionOptionPO struct {
 	UpdatedAt time.Time
 }
 
-// table names
-
-func (dimensionCategoryPO) TableName() string {
-	return "a_dimension_categories"
-}
-
-func (dimensionOptionPO) TableName() string {
-	return "a_dimension_options"
-}
-
 // schemas — ResolveAssociation is required by the data.SearchEntities infrastructure
 
 func (p dimensionCategoryPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return p.TableName(), nil
+		return "dimension_categories", nil
 	}
 
 	return "", fmt.Errorf("dimensionCategoryPO doesn't have association named %s", entity)
@@ -54,7 +44,7 @@ func (p dimensionCategoryPO) ResolveAssociation(entity string) (string, error) {
 
 func (p dimensionOptionPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return p.TableName(), nil
+		return "dimension_options", nil
 	}
 
 	if strings.EqualFold(entity, "category") {

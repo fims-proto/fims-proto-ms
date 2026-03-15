@@ -19,12 +19,6 @@ type userPO struct {
 	UpdatedAt time.Time
 }
 
-// table names
-
-func (u userPO) TableName() string {
-	return "a_users"
-}
-
 // mappers
 
 func userBOToPO(bo user.User) userPO {

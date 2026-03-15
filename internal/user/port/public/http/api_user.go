@@ -4,23 +4,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github/fims-proto/fims-proto-ms/internal/user/app"
 	"github/fims-proto/fims-proto-ms/internal/user/app/command"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
-
-type Handler struct {
-	app *app.Application
-}
-
-func NewHandler(app *app.Application) Handler {
-	if app == nil {
-		panic("nil application")
-	}
-	return Handler{app: app}
-}
 
 // ReadUserById godoc
 //
@@ -80,9 +68,4 @@ func (h Handler) UpdateUser(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/user/:userId", h.ReadUserById)
-	r.PATCH("/user/:userId", h.UpdateUser)
 }

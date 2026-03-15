@@ -38,7 +38,7 @@ type DimensionOptionResponse struct {
 	Category DimensionCategoryResponse `json:"category"`
 }
 
-// AccountSlimResponse is used by list endpoints (GET /accounts, GET /search-accounts).
+// AccountSlimResponse is used by list endpoints (GET /accounts).
 // It only contains fields from the account table itself — no cross-table dimension data.
 type AccountSlimResponse struct {
 	Id                uuid.UUID  `json:"id,omitempty"`

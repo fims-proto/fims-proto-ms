@@ -82,29 +82,11 @@ type formulaPO struct {
 	UpdatedAt time.Time
 }
 
-// table names
-
-func (r reportPO) TableName() string {
-	return "a_reports"
-}
-
-func (s sectionPO) TableName() string {
-	return "a_sections"
-}
-
-func (i itemPO) TableName() string {
-	return "a_items"
-}
-
-func (f formulaPO) TableName() string {
-	return "a_formulas"
-}
-
 // schema
 
 func (r reportPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return r.TableName(), nil
+		return "reports", nil
 	}
 	if strings.EqualFold(entity, "sections") {
 		return "Sections", nil
@@ -117,7 +99,7 @@ func (r reportPO) ResolveAssociation(entity string) (string, error) {
 
 func (s sectionPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return s.TableName(), nil
+		return "sections", nil
 	}
 	if strings.EqualFold(entity, "sections") {
 		return "Sections", nil
@@ -130,7 +112,7 @@ func (s sectionPO) ResolveAssociation(entity string) (string, error) {
 
 func (i itemPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return i.TableName(), nil
+		return "items", nil
 	}
 	if strings.EqualFold(entity, "formulas") {
 		return "Formulas", nil
@@ -140,7 +122,7 @@ func (i itemPO) ResolveAssociation(entity string) (string, error) {
 
 func (f formulaPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return f.TableName(), nil
+		return "formulas", nil
 	}
 	if strings.EqualFold(entity, "account") {
 		return "Account", nil

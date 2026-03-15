@@ -185,12 +185,12 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Conte
 func (r GeneralLedgerPostgresRepository) ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error) {
 	rawSql := `WITH RECURSIVE res AS (
 		   SELECT *
-		   FROM a_accounts
+		   FROM accounts
 		   WHERE id = ?
 		   UNION
-		   SELECT a_accounts.*
+		   SELECT accounts.*
 		   FROM res
-		   JOIN a_accounts ON a_accounts.id = res.superior_account_id
+		   JOIN accounts ON accounts.id = res.superior_account_id
 		)
 		SELECT *
 		FROM res
