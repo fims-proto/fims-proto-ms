@@ -133,6 +133,8 @@ type JournalResponse struct {
 	Period             PeriodResponse                   `json:"period"`
 	HeaderText         string                           `json:"headerText,omitempty"`
 	DocumentNumber     string                           `json:"documentNumber,omitempty"`
+	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            *UserResponse                    `json:"creator"`
 	Auditor            *UserResponse                    `json:"auditor"`
@@ -280,6 +282,8 @@ func journalDTOToVO(dto query.Journal) JournalResponse {
 		Period:             periodDTOToVO(dto.Period),
 		HeaderText:         dto.HeaderText,
 		DocumentNumber:     dto.DocumentNumber,
+		JournalType:        dto.JournalType,
+		ReferenceJournalId: dto.ReferenceJournalId,
 		AttachmentQuantity: dto.AttachmentQuantity,
 		Amount:             dto.Amount,
 		Creator:            userOrNil(dto.Creator),

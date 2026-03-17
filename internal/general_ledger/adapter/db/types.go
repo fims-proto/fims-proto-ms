@@ -79,7 +79,9 @@ type journalPO struct {
 	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
 	PeriodId           uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
 	HeaderText         string
-	DocumentNumber     string `gorm:"uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
+	DocumentNumber     string     `gorm:"uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
+	JournalType        string     `gorm:"default:GENERAL"`
+	ReferenceJournalId *uuid.UUID `gorm:"type:uuid"`
 	AttachmentQuantity int
 	Amount             decimal.Decimal `gorm:"type:numeric"`
 	Creator            uuid.UUID       `gorm:"type:uuid"`
@@ -387,6 +389,8 @@ func journalBOToPO(bo journal.Journal) journalPO {
 		PeriodId:           bo.PeriodId(),
 		HeaderText:         bo.HeaderText(),
 		DocumentNumber:     bo.DocumentNumber(),
+		JournalType:        string(bo.JournalType()),
+		ReferenceJournalId: converter.UUIDToPtr(bo.ReferenceJournalId()),
 		AttachmentQuantity: bo.AttachmentQuantity(),
 		Amount:             bo.Amount(),
 		Creator:            bo.Creator(),
@@ -419,12 +423,20 @@ func journalPOToBO(po journalPO) (*journal.Journal, error) {
 		Day:   po.TransactionDate.Day(),
 	}
 
+	// Handle legacy rows where JournalType may be empty
+	journalType := journal.JournalType(po.JournalType)
+	if journalType == "" {
+		journalType = journal.TypeGeneral
+	}
+
 	return journal.New(
 		po.Id,
 		po.SobId,
 		periodBO,
 		po.HeaderText,
 		po.DocumentNumber,
+		journalType,
+		converter.UUIDFromPtr(po.ReferenceJournalId),
 		po.AttachmentQuantity,
 		po.Creator,
 		po.Reviewer,
@@ -463,6 +475,8 @@ func journalPOToDTO(po journalPO) query.Journal {
 		Period:             periodDTO,
 		HeaderText:         po.HeaderText,
 		DocumentNumber:     po.DocumentNumber,
+		JournalType:        po.JournalType,
+		ReferenceJournalId: po.ReferenceJournalId,
 		AttachmentQuantity: po.AttachmentQuantity,
 		Amount:             po.Amount,
 		Creator:            userOrNil(po.Creator),

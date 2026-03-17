@@ -478,6 +478,18 @@ func (r GeneralLedgerPostgresRepository) CreateJournal(ctx context.Context, j *j
 	return db.Create(new(journalBOToPO(*j))).Error
 }
 
+func (r GeneralLedgerPostgresRepository) ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&journalPO{}).
+		Where("id = ? AND sob_id = ?", journalId, sobId).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
 func (r GeneralLedgerPostgresRepository) UpdateJournalHeader(
 	ctx context.Context,
 	journalId uuid.UUID,

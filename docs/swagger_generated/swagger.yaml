@@ -259,6 +259,15 @@ definitions:
         items:
           $ref: '#/definitions/http.JournalLineRequest'
         type: array
+      journalType:
+        enum:
+        - GENERAL
+        - ADJUSTING
+        - REVERSING
+        - CLOSING
+        type: string
+      referenceJournalId:
+        type: string
       transactionDate:
         type: string
     type: object
@@ -439,10 +448,19 @@ definitions:
         items:
           $ref: '#/definitions/http.JournalLineResponse'
         type: array
+      journalType:
+        enum:
+        - GENERAL
+        - ADJUSTING
+        - REVERSING
+        - CLOSING
+        type: string
       period:
         $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
       poster:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      referenceJournalId:
+        type: string
       reviewer:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       sobId:

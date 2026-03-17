@@ -2381,6 +2381,18 @@ const docTemplate = `{
                         "$ref": "#/definitions/http.JournalLineRequest"
                     }
                 },
+                "journalType": {
+                    "type": "string",
+                    "enum": [
+                        "GENERAL",
+                        "ADJUSTING",
+                        "REVERSING",
+                        "CLOSING"
+                    ]
+                },
+                "referenceJournalId": {
+                    "type": "string"
+                },
                 "transactionDate": {
                     "type": "string"
                 }
@@ -2657,11 +2669,23 @@ const docTemplate = `{
                         "$ref": "#/definitions/http.JournalLineResponse"
                     }
                 },
+                "journalType": {
+                    "type": "string",
+                    "enum": [
+                        "GENERAL",
+                        "ADJUSTING",
+                        "REVERSING",
+                        "CLOSING"
+                    ]
+                },
                 "period": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                 },
                 "poster": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "referenceJournalId": {
+                    "type": "string"
                 },
                 "reviewer": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"

@@ -16,6 +16,8 @@ type Journal struct {
 	period             *period.Period
 	headerText         string
 	documentNumber     string
+	journalType        JournalType
+	referenceJournalId uuid.UUID
 	attachmentQuantity int
 	amount             decimal.Decimal
 	creator            uuid.UUID
@@ -35,6 +37,8 @@ func New(
 	period *period.Period,
 	headerText string,
 	documentNumber string,
+	journalType JournalType,
+	referenceJournalId uuid.UUID,
 	attachmentQuantity int,
 	creator uuid.UUID,
 	reviewer uuid.UUID,
@@ -98,6 +102,18 @@ func New(
 		return nil, errors.NewSlugError("journal-zeroTransactionDate")
 	}
 
+	if !journalType.IsValid() {
+		return nil, errors.NewSlugError("journal-invalidJournalType")
+	}
+
+	if journalType.RequiresReferenceJournal() && referenceJournalId == uuid.Nil {
+		return nil, errors.NewSlugError("journal-missingReferenceJournalId")
+	}
+
+	if !journalType.RequiresReferenceJournal() && referenceJournalId != uuid.Nil {
+		return nil, errors.NewSlugError("journal-unexpectedReferenceJournalId")
+	}
+
 	totalVal, err := sumJournalLines(journalLines)
 	if err != nil {
 		return nil, err
@@ -110,6 +126,8 @@ func New(
 		period:             period,
 		headerText:         headerText,
 		documentNumber:     documentNumber,
+		journalType:        journalType,
+		referenceJournalId: referenceJournalId,
 		attachmentQuantity: attachmentQuantity,
 		amount:             totalVal,
 		creator:            creator,
@@ -146,6 +164,14 @@ func (j *Journal) HeaderText() string {
 
 func (j *Journal) DocumentNumber() string {
 	return j.documentNumber
+}
+
+func (j *Journal) JournalType() JournalType {
+	return j.journalType
+}
+
+func (j *Journal) ReferenceJournalId() uuid.UUID {
+	return j.referenceJournalId
 }
 
 func (j *Journal) AttachmentQuantity() int {

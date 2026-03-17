@@ -84,5 +84,9 @@
     "journalLine-invalidDimensionOption": "凭证行维度选项无效",
     "journalLine-duplicateDimensionCategory": "凭证行中同一维度分类只能选择一个选项",
     "journalLine-disallowedDimensionCategory": "该科目不允许使用此维度分类",
-    "journalLine-missingRequiredDimensionCategory": "科目要求提供维度分类，凭证行未提供"
+    "journalLine-missingRequiredDimensionCategory": "科目要求提供维度分类，凭证行未提供",
+    "journal-invalidJournalType": "分录类型无效",
+    "journal-missingReferenceJournalId": "调整分录或冲销分录必须关联原始分录",
+    "journal-unexpectedReferenceJournalId": "普通分录或结账分录不能关联原始分录",
+    "journal-referenceJournalNotFound": "关联的原始分录不存在"
 }

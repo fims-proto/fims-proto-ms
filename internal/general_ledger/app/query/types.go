@@ -84,6 +84,8 @@ type Journal struct {
 	Period             Period
 	HeaderText         string
 	DocumentNumber     string
+	JournalType        string
+	ReferenceJournalId *uuid.UUID
 	AttachmentQuantity int
 	Amount             decimal.Decimal
 	Creator            *User

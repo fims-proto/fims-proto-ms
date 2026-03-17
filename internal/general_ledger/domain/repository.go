@@ -53,6 +53,7 @@ type Repository interface {
 	ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 
 	CreateJournal(ctx context.Context, j *journal.Journal) error
+	ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error)
 	// UpdateJournalHeader updates only the journal header row (status flags, reviewer, auditor, poster, etc).
 	// Journal lines are loaded for the callback to read but are NOT deleted or re-saved.
 	UpdateJournalHeader(

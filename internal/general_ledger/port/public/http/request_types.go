@@ -28,6 +28,8 @@ type UpdateAccountRequest struct {
 
 type CreateJournalRequest struct {
 	HeaderText         string                           `json:"headerText"`
+	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            string                           `json:"creator"`
 	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
@@ -87,10 +89,23 @@ func (r CreateJournalRequest) mapToCommand(sobId uuid.UUID) command.CreateJourna
 	for _, item := range r.JournalLines {
 		itemCmd = append(itemCmd, item.mapToCommand())
 	}
+
+	journalType := r.JournalType
+	if journalType == "" {
+		journalType = "GENERAL"
+	}
+
+	var referenceJournalId uuid.UUID
+	if r.ReferenceJournalId != nil {
+		referenceJournalId = *r.ReferenceJournalId
+	}
+
 	return command.CreateJournalCmd{
 		JournalId:          uuid.New(),
 		SobId:              sobId,
 		HeaderText:         r.HeaderText,
+		JournalType:        journalType,
+		ReferenceJournalId: referenceJournalId,
 		AttachmentQuantity: r.AttachmentQuantity,
 		JournalLines:       itemCmd,
 		Creator:            uuid.MustParse(r.Creator),

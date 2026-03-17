@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
@@ -18,6 +19,8 @@ type CreateJournalCmd struct {
 	JournalId          uuid.UUID
 	SobId              uuid.UUID
 	HeaderText         string
+	JournalType        string
+	ReferenceJournalId uuid.UUID
 	AttachmentQuantity int
 	JournalLines       []JournalLineCmd
 	Creator            uuid.UUID
@@ -62,6 +65,19 @@ func (h CreateJournalHandler) Handle(ctx context.Context, cmd CreateJournalCmd) 
 }
 
 func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJournalCmd, p *period.Period) error {
+	journalType := journal.JournalType(cmd.JournalType)
+
+	// Verify reference journal exists in the same SoB when required
+	if journalType.RequiresReferenceJournal() {
+		exists, err := h.repo.ExistsJournalById(ctx, cmd.SobId, cmd.ReferenceJournalId)
+		if err != nil {
+			return fmt.Errorf("failed to check reference journal: %w", err)
+		}
+		if !exists {
+			return errors.NewSlugError("journal-referenceJournalNotFound")
+		}
+	}
+
 	// prepare journal lines
 	journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, cmd.SobId, cmd.JournalLines)
 	if err != nil {
@@ -80,6 +96,8 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 		p,
 		cmd.HeaderText,
 		identifier,
+		journalType,
+		cmd.ReferenceJournalId,
 		cmd.AttachmentQuantity,
 		cmd.Creator,
 		uuid.Nil,

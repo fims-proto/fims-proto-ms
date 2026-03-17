@@ -323,6 +323,10 @@ func (m mockRepo) ExistsJournalsNotPostedInPeriod(context.Context, uuid.UUID, uu
 	panic("implement me")
 }
 
+func (m mockRepo) ExistsJournalById(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
 func (m mockRepo) ReadAccountsWithSuperiorsByIds(context.Context, uuid.UUID, []uuid.UUID) ([]*account.Account, error) {
 	panic("implement me")
 }
