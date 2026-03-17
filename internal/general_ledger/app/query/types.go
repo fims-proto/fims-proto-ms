@@ -82,7 +82,6 @@ type Journal struct {
 	SobId              uuid.UUID
 	Id                 uuid.UUID
 	Period             Period
-	JournalType        string
 	HeaderText         string
 	DocumentNumber     string
 	AttachmentQuantity int

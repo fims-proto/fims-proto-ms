@@ -1381,10 +1381,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerDimensionSummaryItemResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse"
                         }
                     },
                     "400": {
@@ -1472,43 +1469,6 @@ const docTemplate = `{
                             "items": {
                                 "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                             }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/periods/current": {
-            "get": {
-                "description": "Current period",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "periods"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                         }
                     },
                     "500": {
@@ -1778,71 +1738,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/search-accounts": {
-            "get": {
-                "description": "Search accounts with filters",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/sobs": {
             "get": {
                 "description": "List all sobs",
@@ -2090,29 +1985,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AccountSlimResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
         "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse": {
             "type": "object",
             "properties": {
@@ -2143,6 +2015,29 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.JournalResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerDimensionSummaryItemResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2486,9 +2381,6 @@ const docTemplate = `{
                         "$ref": "#/definitions/http.JournalLineRequest"
                     }
                 },
-                "journalType": {
-                    "type": "string"
-                },
                 "transactionDate": {
                     "type": "string"
                 }
@@ -2764,9 +2656,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/http.JournalLineResponse"
                     }
-                },
-                "journalType": {
-                    "type": "string"
                 },
                 "period": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"

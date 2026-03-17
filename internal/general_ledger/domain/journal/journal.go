@@ -2,7 +2,6 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal/journal_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
@@ -15,7 +14,6 @@ type Journal struct {
 	sobId              uuid.UUID
 	periodId           uuid.UUID
 	period             *period.Period
-	journalType        journal_type.JournalType
 	headerText         string
 	documentNumber     string
 	attachmentQuantity int
@@ -35,7 +33,6 @@ func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	period *period.Period,
-	journalType string,
 	headerText string,
 	documentNumber string,
 	attachmentQuantity int,
@@ -67,11 +64,6 @@ func New(
 
 	if headerText == "" {
 		return nil, errors.NewSlugError("journal-emptyHeaderText")
-	}
-
-	jt, err := journal_type.FromString(journalType)
-	if err != nil {
-		return nil, err
 	}
 
 	if documentNumber == "" {
@@ -117,7 +109,6 @@ func New(
 		periodId:           period.Id(),
 		period:             period,
 		headerText:         headerText,
-		journalType:        jt,
 		documentNumber:     documentNumber,
 		attachmentQuantity: attachmentQuantity,
 		amount:             totalVal,
@@ -151,10 +142,6 @@ func (j *Journal) Period() *period.Period {
 
 func (j *Journal) HeaderText() string {
 	return j.headerText
-}
-
-func (j *Journal) JournalType() journal_type.JournalType {
-	return j.journalType
 }
 
 func (j *Journal) DocumentNumber() string {

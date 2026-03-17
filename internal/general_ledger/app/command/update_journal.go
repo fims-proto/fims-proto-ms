@@ -81,7 +81,7 @@ func (h UpdateJournalHandler) updateJournal(ctx context.Context, cmd UpdateJourn
 
 				if p.Id() != j.PeriodId() {
 					// different period, need to regenerate journal id
-					identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), j.JournalType().String())
+					identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id())
 					if err != nil {
 						return nil, fmt.Errorf("failed to re-generate journal number: %w", err)
 					}

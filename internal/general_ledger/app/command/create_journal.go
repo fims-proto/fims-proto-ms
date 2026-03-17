@@ -18,7 +18,6 @@ type CreateJournalCmd struct {
 	JournalId          uuid.UUID
 	SobId              uuid.UUID
 	HeaderText         string
-	JournalType        string
 	AttachmentQuantity int
 	JournalLines       []JournalLineCmd
 	Creator            uuid.UUID
@@ -70,7 +69,7 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 	}
 
 	// get document number
-	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), cmd.JournalType)
+	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id())
 	if err != nil {
 		return fmt.Errorf("failed to generate next number: %w", err)
 	}
@@ -79,7 +78,6 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 		cmd.JournalId,
 		cmd.SobId,
 		p,
-		cmd.JournalType,
 		cmd.HeaderText,
 		identifier,
 		cmd.AttachmentQuantity,

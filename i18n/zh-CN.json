@@ -17,7 +17,6 @@
     "journal-zeroTransactionDate": "分录交易日期不能为空",
     "journal-emptyJournalLines": "分录行项目不能为空",
     "journal-notBalanced": "分录借贷不平衡",
-    "journal-unknownJournalType": "分录类型 {{.A}} 不存在",
     "journal-periodClosed": "账期已关闭",
     "journal-update-notCreator": "只能由创建者更新分录",
     "journal-update-audited": "分录已被审核，不能更新",

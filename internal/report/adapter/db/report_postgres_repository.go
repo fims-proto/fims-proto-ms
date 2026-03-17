@@ -83,34 +83,34 @@ func (r ReportPostgresRepository) UpdateReport(
 
 	// Step 1: Find all section IDs for this report
 	var sectionIds []uuid.UUID
-	if err := db.Model(&sectionPO{}).Where("report_id = ?", reportId).Pluck("id", &sectionIds).Error; err != nil {
+	if err = db.Model(&sectionPO{}).Where("report_id = ?", reportId).Pluck("id", &sectionIds).Error; err != nil {
 		return fmt.Errorf("failed to find section ids: %w", err)
 	}
 
 	// Step 2: Find all item IDs for these sections
 	var itemIds []uuid.UUID
 	if len(sectionIds) > 0 {
-		if err := db.Model(&itemPO{}).Where("section_id IN ?", sectionIds).Pluck("id", &itemIds).Error; err != nil {
+		if err = db.Model(&itemPO{}).Where("section_id IN ?", sectionIds).Pluck("id", &itemIds).Error; err != nil {
 			return fmt.Errorf("failed to find item ids: %w", err)
 		}
 	}
 
 	// Step 3: Delete formulas associated with these items
 	if len(itemIds) > 0 {
-		if err := db.Where("item_id IN ?", itemIds).Delete(&formulaPO{}).Error; err != nil {
+		if err = db.Where("item_id IN ?", itemIds).Delete(&formulaPO{}).Error; err != nil {
 			return fmt.Errorf("failed to delete formulas: %w", err)
 		}
 	}
 
 	// Step 4: Delete items associated with these sections
 	if len(sectionIds) > 0 {
-		if err := db.Where("section_id IN ?", sectionIds).Delete(&itemPO{}).Error; err != nil {
+		if err = db.Where("section_id IN ?", sectionIds).Delete(&itemPO{}).Error; err != nil {
 			return fmt.Errorf("failed to delete items: %w", err)
 		}
 	}
 
 	// Step 5: Delete all sections for this report
-	if err := db.Where("report_id = ?", reportId).Delete(&sectionPO{}).Error; err != nil {
+	if err = db.Where("report_id = ?", reportId).Delete(&sectionPO{}).Error; err != nil {
 		return fmt.Errorf("failed to delete sections: %w", err)
 	}
 
@@ -124,7 +124,7 @@ func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId u
 
 	po := reportPO{Id: reportId}
 	if err := db.Preload("Sections.Items.Formulas.Account").
-		InnerJoins("Period").
+		Joins("Period").
 		First(&po).Error; err != nil {
 		return nil, err
 	}

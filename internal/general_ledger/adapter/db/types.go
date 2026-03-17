@@ -78,7 +78,6 @@ type journalPO struct {
 	Id                 uuid.UUID `gorm:"type:uuid;primaryKey"`
 	SobId              uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
 	PeriodId           uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
-	JournalType        string
 	HeaderText         string
 	DocumentNumber     string `gorm:"uniqueIndex:UQ_Journals_SobId_PeriodId_DocumentNumber"`
 	AttachmentQuantity int
@@ -386,7 +385,6 @@ func journalBOToPO(bo journal.Journal) journalPO {
 		SobId:              bo.SobId(),
 		Id:                 bo.Id(),
 		PeriodId:           bo.PeriodId(),
-		JournalType:        bo.JournalType().String(),
 		HeaderText:         bo.HeaderText(),
 		DocumentNumber:     bo.DocumentNumber(),
 		AttachmentQuantity: bo.AttachmentQuantity(),
@@ -425,7 +423,6 @@ func journalPOToBO(po journalPO) (*journal.Journal, error) {
 		po.Id,
 		po.SobId,
 		periodBO,
-		po.JournalType,
 		po.HeaderText,
 		po.DocumentNumber,
 		po.AttachmentQuantity,
@@ -464,7 +461,6 @@ func journalPOToDTO(po journalPO) query.Journal {
 		SobId:              po.SobId,
 		Id:                 po.Id,
 		Period:             periodDTO,
-		JournalType:        po.JournalType,
 		HeaderText:         po.HeaderText,
 		DocumentNumber:     po.DocumentNumber,
 		AttachmentQuantity: po.AttachmentQuantity,

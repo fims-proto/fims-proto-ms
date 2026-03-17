@@ -30,7 +30,6 @@ type CreateJournalRequest struct {
 	HeaderText         string                           `json:"headerText"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            string                           `json:"creator"`
-	JournalType        string                           `json:"journalType"`
 	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	JournalLines       []JournalLineRequest             `json:"journalLines"`
 }
@@ -92,7 +91,6 @@ func (r CreateJournalRequest) mapToCommand(sobId uuid.UUID) command.CreateJourna
 		JournalId:          uuid.New(),
 		SobId:              sobId,
 		HeaderText:         r.HeaderText,
-		JournalType:        r.JournalType,
 		AttachmentQuantity: r.AttachmentQuantity,
 		JournalLines:       itemCmd,
 		Creator:            uuid.MustParse(r.Creator),

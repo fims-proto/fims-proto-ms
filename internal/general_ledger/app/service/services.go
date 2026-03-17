@@ -16,7 +16,7 @@ type SobService interface {
 }
 
 type NumberingService interface {
-	GenerateIdentifier(ctx context.Context, periodId uuid.UUID, journalType string) (string, error)
+	GenerateIdentifier(ctx context.Context, periodId uuid.UUID) (string, error)
 	CreateIdentifierConfigurationForJournal(ctx context.Context, periodId uuid.UUID) error
 }
 

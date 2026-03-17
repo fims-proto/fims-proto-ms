@@ -1,20 +1,5 @@
 basePath: /fims/api/v1
 definitions:
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.AccountSlimResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
   github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse:
     properties:
       content:
@@ -35,6 +20,21 @@ definitions:
       content:
         items:
           $ref: '#/definitions/http.JournalResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.LedgerDimensionSummaryItemResponse'
         type: array
       numberOfElements:
         type: integer
@@ -259,8 +259,6 @@ definitions:
         items:
           $ref: '#/definitions/http.JournalLineRequest'
         type: array
-      journalType:
-        type: string
       transactionDate:
         type: string
     type: object
@@ -441,8 +439,6 @@ definitions:
         items:
           $ref: '#/definitions/http.JournalLineResponse'
         type: array
-      journalType:
-        type: string
       period:
         $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
       poster:
@@ -1719,9 +1715,7 @@ paths:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.LedgerDimensionSummaryItemResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse'
         "400":
           description: Bad Request
           schema:
@@ -1811,30 +1805,6 @@ paths:
             items:
               $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
             type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - periods
-  /sob/{sobId}/periods/current:
-    get:
-      consumes:
-      - application/json
-      description: Current period
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -2014,50 +1984,6 @@ paths:
             $ref: '#/definitions/internal_report_port_public_http.Error'
       tags:
       - reports
-  /sob/{sobId}/search-accounts:
-    get:
-      consumes:
-      - application/json
-      description: Search accounts with filters
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AccountSlimResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - accounts
   /sobs:
     get:
       consumes:
