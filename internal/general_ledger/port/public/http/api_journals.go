@@ -23,7 +23,7 @@ import (
 //	@Param			$size	query		int		false	"page size"			default(40)
 //	@Param			$sort	query		string	false	"sort on field(s)"	example(updatedAt desc,createdAt)
 //	@Param			$filter	query		string	false	"filter on field(s)"
-//	@Success		200		{object}	data.PageResponse[JournalResponse]
+//	@Success		200		{object}	data.PageResponse[JournalSlimResponse]
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/journals [get]
 func (h Handler) SearchJournals(c *gin.Context) {
@@ -32,7 +32,7 @@ func (h Handler) SearchJournals(c *gin.Context) {
 		func(pageRequest data.PageRequest) (data.Page[query.Journal], error) {
 			return h.app.Queries.PagingJournals.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
-		journalDTOToVO,
+		journalDTOToSlimVO,
 	)
 }
 
@@ -45,7 +45,7 @@ func (h Handler) SearchJournals(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			sobId		path		string	true	"Sob ID"
 //	@Param			journalId	path		string	true	"Journal ID"
-//	@Success		200			{object}	JournalResponse
+//	@Success		200			{object}	JournalDetailResponse
 //	@Failure		404
 //	@Failure		500	{object}	Error
 //	@Router			/sob/{sobId}/journal/{journalId} [get]
@@ -59,7 +59,7 @@ func (h Handler) ReadJournalById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, journalDTOToVO(j))
+	c.JSON(http.StatusOK, journalDTOToDetailVO(j))
 }
 
 // CreateJournal godoc
@@ -71,7 +71,7 @@ func (h Handler) ReadJournalById(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			sobId					path		string					true	"Sob ID"
 //	@Param			CreateJournalRequest	body		CreateJournalRequest	true	"Create journal request"
-//	@Success		201						{object}	JournalResponse
+//	@Success		201						{object}	JournalDetailResponse
 //	@Failure		400						{object}	Error
 //	@Failure		500						{object}	Error
 //	@Router			/sob/{sobId}/journals [post]
@@ -91,7 +91,7 @@ func (h Handler) CreateJournal(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusCreated, journalDTOToVO(createdJournal))
+	c.JSON(http.StatusCreated, journalDTOToDetailVO(createdJournal))
 }
 
 // UpdateJournal godoc

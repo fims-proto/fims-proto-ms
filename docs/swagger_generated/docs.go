@@ -600,7 +600,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.JournalResponse"
+                            "$ref": "#/definitions/http.JournalDetailResponse"
                         }
                     },
                     "404": {
@@ -995,7 +995,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse"
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalSlimResponse"
                         }
                     },
                     "500": {
@@ -1039,7 +1039,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.JournalResponse"
+                            "$ref": "#/definitions/http.JournalDetailResponse"
                         }
                     },
                     "400": {
@@ -2008,13 +2008,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalSlimResponse": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.JournalResponse"
+                        "$ref": "#/definitions/http.JournalSlimResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2575,6 +2575,80 @@ const docTemplate = `{
                 }
             }
         },
+        "http.JournalDetailResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "attachmentQuantity": {
+                    "type": "integer"
+                },
+                "auditor": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAudited": {
+                    "type": "boolean"
+                },
+                "isPosted": {
+                    "type": "boolean"
+                },
+                "isReviewed": {
+                    "type": "boolean"
+                },
+                "journalLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.JournalLineResponse"
+                    }
+                },
+                "journalType": {
+                    "type": "string",
+                    "enum": [
+                        "GENERAL",
+                        "ADJUSTING",
+                        "REVERSING",
+                        "CLOSING"
+                    ]
+                },
+                "period": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                },
+                "poster": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "referenceJournalId": {
+                    "type": "string"
+                },
+                "reviewer": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "transactionDate": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "http.JournalLineRequest": {
             "type": "object",
             "properties": {
@@ -2627,7 +2701,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.JournalResponse": {
+        "http.JournalSlimResponse": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -2662,12 +2736,6 @@ const docTemplate = `{
                 },
                 "isReviewed": {
                     "type": "boolean"
-                },
-                "journalLines": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.JournalLineResponse"
-                    }
                 },
                 "journalType": {
                     "type": "string",

@@ -63,7 +63,7 @@ func (r GeneralLedgerPostgresReadRepository) SearchJournals(
 	pageRequest data.PageRequest,
 ) (data.Page[query.Journal], error) {
 	addSobFilter(sobId, pageRequest)
-	return data.SearchEntities(ctx, pageRequest, journalPO{}, journalPOToDTO, r.dataSource.GetConnection(ctx).Preload("JournalLines.Account").InnerJoins("Period"))
+	return data.SearchEntities(ctx, pageRequest, journalPO{}, journalPOToDTO, r.dataSource.GetConnection(ctx).InnerJoins("Period"))
 }
 
 func (r GeneralLedgerPostgresReadRepository) FirstPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {

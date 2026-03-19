@@ -127,7 +127,33 @@ type JournalLineResponse struct {
 	UpdatedAt        time.Time                 `json:"updatedAt"`
 }
 
-type JournalResponse struct {
+// JournalSlimResponse is used by list endpoints (GET /journals).
+// It only contains journal header fields — no journal lines.
+type JournalSlimResponse struct {
+	Id                 uuid.UUID                        `json:"id,omitempty"`
+	SobId              uuid.UUID                        `json:"sobId,omitempty"`
+	Period             PeriodResponse                   `json:"period"`
+	HeaderText         string                           `json:"headerText,omitempty"`
+	DocumentNumber     string                           `json:"documentNumber,omitempty"`
+	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
+	AttachmentQuantity int                              `json:"attachmentQuantity"`
+	Creator            *UserResponse                    `json:"creator"`
+	Auditor            *UserResponse                    `json:"auditor"`
+	Reviewer           *UserResponse                    `json:"reviewer"`
+	Poster             *UserResponse                    `json:"poster"`
+	Amount             decimal.Decimal                  `json:"amount"`
+	IsAudited          bool                             `json:"isAudited"`
+	IsPosted           bool                             `json:"isPosted"`
+	IsReviewed         bool                             `json:"isReviewed"`
+	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
+	CreatedAt          time.Time                        `json:"createdAt"`
+	UpdatedAt          time.Time                        `json:"updatedAt"`
+}
+
+// JournalDetailResponse is used by detail and create endpoints (GET /journal/{id}, POST /journals).
+// It includes full journal lines with account details and dimension options.
+type JournalDetailResponse struct {
 	Id                 uuid.UUID                        `json:"id,omitempty"`
 	SobId              uuid.UUID                        `json:"sobId,omitempty"`
 	Period             PeriodResponse                   `json:"period"`
@@ -265,18 +291,18 @@ func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
 	}
 }
 
-func journalDTOToVO(dto query.Journal) JournalResponse {
-	userOrNil := func(u *query.User) *UserResponse {
-		if u != nil {
-			return &UserResponse{
-				Id:     u.Id,
-				Traits: u.Traits,
-			}
+func journalUserOrNil(u *query.User) *UserResponse {
+	if u != nil {
+		return &UserResponse{
+			Id:     u.Id,
+			Traits: u.Traits,
 		}
-		return nil
 	}
+	return nil
+}
 
-	return JournalResponse{
+func journalDTOToSlimVO(dto query.Journal) JournalSlimResponse {
+	return JournalSlimResponse{
 		SobId:              dto.SobId,
 		Id:                 dto.Id,
 		Period:             periodDTOToVO(dto.Period),
@@ -286,10 +312,34 @@ func journalDTOToVO(dto query.Journal) JournalResponse {
 		ReferenceJournalId: dto.ReferenceJournalId,
 		AttachmentQuantity: dto.AttachmentQuantity,
 		Amount:             dto.Amount,
-		Creator:            userOrNil(dto.Creator),
-		Reviewer:           userOrNil(dto.Reviewer),
-		Auditor:            userOrNil(dto.Auditor),
-		Poster:             userOrNil(dto.Poster),
+		Creator:            journalUserOrNil(dto.Creator),
+		Reviewer:           journalUserOrNil(dto.Reviewer),
+		Auditor:            journalUserOrNil(dto.Auditor),
+		Poster:             journalUserOrNil(dto.Poster),
+		IsReviewed:         dto.IsReviewed,
+		IsAudited:          dto.IsAudited,
+		IsPosted:           dto.IsPosted,
+		TransactionDate:    dto.TransactionDate,
+		CreatedAt:          dto.CreatedAt,
+		UpdatedAt:          dto.UpdatedAt,
+	}
+}
+
+func journalDTOToDetailVO(dto query.Journal) JournalDetailResponse {
+	return JournalDetailResponse{
+		SobId:              dto.SobId,
+		Id:                 dto.Id,
+		Period:             periodDTOToVO(dto.Period),
+		HeaderText:         dto.HeaderText,
+		DocumentNumber:     dto.DocumentNumber,
+		JournalType:        dto.JournalType,
+		ReferenceJournalId: dto.ReferenceJournalId,
+		AttachmentQuantity: dto.AttachmentQuantity,
+		Amount:             dto.Amount,
+		Creator:            journalUserOrNil(dto.Creator),
+		Reviewer:           journalUserOrNil(dto.Reviewer),
+		Auditor:            journalUserOrNil(dto.Auditor),
+		Poster:             journalUserOrNil(dto.Poster),
 		IsReviewed:         dto.IsReviewed,
 		IsAudited:          dto.IsAudited,
 		IsPosted:           dto.IsPosted,
