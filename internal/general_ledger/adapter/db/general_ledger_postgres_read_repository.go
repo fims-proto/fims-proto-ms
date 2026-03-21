@@ -13,6 +13,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github.com/google/uuid"
@@ -327,4 +328,22 @@ func (r GeneralLedgerPostgresReadRepository) LedgerDimensionSummary(
 	}
 
 	return data.NewPage(dtos, pageRequest, int(count))
+}
+
+func (r GeneralLedgerPostgresReadRepository) ProfitAndLossLedgersHavingBalanceInPeriod(
+	ctx context.Context,
+	sobId, periodId uuid.UUID,
+) ([]query.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []ledgerPO
+	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		Where("ending_amount <> 0").
+		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses)})).
+		Find(&pos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return converter.POsToDTOs(pos, ledgerPOToDTO), nil
 }

@@ -23,4 +23,6 @@ type GeneralLedgerReadModel interface {
 	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error
 
 	JournalById(ctx context.Context, journalId uuid.UUID) (Journal, error)
+
+	ProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]Ledger, error)
 }

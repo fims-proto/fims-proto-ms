@@ -196,6 +196,46 @@ type LedgerDimensionSummaryItemResponse struct {
 	TotalAmount     decimal.Decimal         `json:"totalAmount"`
 }
 
+type PreCloseCheckJournalResponse struct {
+	Id              uuid.UUID                        `json:"id"`
+	DocumentNumber  string                           `json:"documentNumber"`
+	HeaderText      string                           `json:"headerText,omitempty"`
+	Amount          decimal.Decimal                  `json:"amount"`
+	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
+	IsReviewed      bool                             `json:"isReviewed"`
+	IsAudited       bool                             `json:"isAudited"`
+}
+
+type PreCloseCheckPnLAccountResponse struct {
+	AccountNumber string          `json:"accountNumber"`
+	AccountTitle  string          `json:"accountTitle"`
+	EndingAmount  decimal.Decimal `json:"endingAmount"`
+}
+
+type PreCloseCheckUnpostedJournalsResponse struct {
+	Passed   bool                           `json:"passed"`
+	Count    int                            `json:"count"`
+	Journals []PreCloseCheckJournalResponse `json:"journals"`
+}
+
+type PreCloseCheckPnLBalanceResponse struct {
+	Passed   bool                              `json:"passed"`
+	Accounts []PreCloseCheckPnLAccountResponse `json:"accounts"`
+}
+
+type PreCloseCheckTrialBalanceResponse struct {
+	Passed        bool            `json:"passed"`
+	OpeningAmount decimal.Decimal `json:"openingAmount"`
+	PeriodAmount  decimal.Decimal `json:"periodAmount"`
+	EndingAmount  decimal.Decimal `json:"endingAmount"`
+}
+
+type PreCloseCheckResponse struct {
+	UnpostedJournals     PreCloseCheckUnpostedJournalsResponse `json:"unpostedJournals"`
+	ProfitAndLossBalance PreCloseCheckPnLBalanceResponse       `json:"profitAndLossBalance"`
+	TrialBalance         PreCloseCheckTrialBalanceResponse     `json:"trialBalance"`
+}
+
 // mapper
 
 func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {
@@ -369,5 +409,47 @@ func ledgerDimensionSummaryItemToVO(dto query.LedgerDimensionSummaryItem) Ledger
 			Name: dto.DimensionOptionName,
 		},
 		TotalAmount: dto.TotalAmount,
+	}
+}
+
+func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
+	journals := make([]PreCloseCheckJournalResponse, 0, len(dto.UnpostedJournals.Journals))
+	for _, j := range dto.UnpostedJournals.Journals {
+		journals = append(journals, PreCloseCheckJournalResponse{
+			Id:              j.Id,
+			DocumentNumber:  j.DocumentNumber,
+			HeaderText:      j.HeaderText,
+			Amount:          j.Amount,
+			TransactionDate: j.TransactionDate,
+			IsReviewed:      j.IsReviewed,
+			IsAudited:       j.IsAudited,
+		})
+	}
+
+	accounts := make([]PreCloseCheckPnLAccountResponse, 0, len(dto.ProfitAndLossBalance.Accounts))
+	for _, a := range dto.ProfitAndLossBalance.Accounts {
+		accounts = append(accounts, PreCloseCheckPnLAccountResponse{
+			AccountNumber: a.AccountNumber,
+			AccountTitle:  a.AccountTitle,
+			EndingAmount:  a.EndingAmount,
+		})
+	}
+
+	return PreCloseCheckResponse{
+		UnpostedJournals: PreCloseCheckUnpostedJournalsResponse{
+			Passed:   dto.UnpostedJournals.Passed,
+			Count:    dto.UnpostedJournals.Count,
+			Journals: journals,
+		},
+		ProfitAndLossBalance: PreCloseCheckPnLBalanceResponse{
+			Passed:   dto.ProfitAndLossBalance.Passed,
+			Accounts: accounts,
+		},
+		TrialBalance: PreCloseCheckTrialBalanceResponse{
+			Passed:        dto.TrialBalance.Passed,
+			OpeningAmount: dto.TrialBalance.OpeningAmount,
+			PeriodAmount:  dto.TrialBalance.PeriodAmount,
+			EndingAmount:  dto.TrialBalance.EndingAmount,
+		},
 	}
 }

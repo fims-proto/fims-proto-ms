@@ -121,3 +121,43 @@ type LedgerDimensionSummaryItem struct {
 	DimensionOptionName string
 	TotalAmount         decimal.Decimal
 }
+
+type PreCloseCheckJournal struct {
+	Id              uuid.UUID
+	DocumentNumber  string
+	HeaderText      string
+	Amount          decimal.Decimal
+	TransactionDate transaction_date.TransactionDate
+	IsReviewed      bool
+	IsAudited       bool
+}
+
+type PreCloseCheckUnpostedJournals struct {
+	Passed   bool
+	Count    int
+	Journals []PreCloseCheckJournal
+}
+
+type PreCloseCheckPnLAccount struct {
+	AccountNumber string
+	AccountTitle  string
+	EndingAmount  decimal.Decimal
+}
+
+type PreCloseCheckPnLBalance struct {
+	Passed   bool
+	Accounts []PreCloseCheckPnLAccount
+}
+
+type PreCloseCheckTrialBalance struct {
+	Passed        bool
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	EndingAmount  decimal.Decimal
+}
+
+type PreCloseCheck struct {
+	UnpostedJournals     PreCloseCheckUnpostedJournals
+	ProfitAndLossBalance PreCloseCheckPnLBalance
+	TrialBalance         PreCloseCheckTrialBalance
+}

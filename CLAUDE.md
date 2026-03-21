@@ -140,6 +140,15 @@ repo.UpdateJournal(ctx, journalId, func(j *journal.Journal) (*journal.Journal, e
 
 Never mutate domain objects directly - always use their methods (e.g., `j.Post()`, `j.Audit()`, `j.Review()`).
 
+### Read Model vs Repository
+
+**Rule**: Where a read method lives depends on what it serves — not just whether it reads data.
+
+- **`GeneralLedgerReadModel`** — all read methods that serve **query handlers** (GET endpoints). These return query DTOs and live in `internal/general_ledger/app/query/read_model.go`.
+- **`domain.Repository`** — read methods that exist solely to **support write commands**. For example, `ExistsJournalsNotPostedInPeriod` is used by `ClosePeriodHandler` to gate a write operation. These return domain objects.
+
+When adding a new read-only query, always add it to `GeneralLedgerReadModel`. Only add to `domain.Repository` if the read is needed inside a command handler.
+
 ### Error Handling with i18n
 
 Use slug-based errors for business logic:

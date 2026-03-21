@@ -31,6 +31,7 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/ledgers/:accountId/dimension/:dimensionCategoryId", h.ReadLedgerDimensionSummary)
 	r.GET("/sob/:sobId/periods", h.ReadPeriods)
 	r.GET("/sob/:sobId/ledgers", h.ReadLedgersByPeriodRange)
+	r.GET("/sob/:sobId/period/:periodId/pre-close-check", h.PreCloseCheck)
 	r.POST("/sob/:sobId/period/:periodId/close", h.ClosePeriod)
 
 	r.GET("/sob/:sobId/journals", h.SearchJournals)

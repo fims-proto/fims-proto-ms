@@ -18,6 +18,7 @@ type Queries struct {
 	PagingLedgerEntries    query.PagingLedgerEntriesHandler
 	JournalById            query.JournalByIdHandler
 	PagingJournals         query.PagingJournalsHandler
+	PeriodPreCloseCheck    query.PeriodPreCloseCheckHandler
 }
 
 type Commands struct {
@@ -68,6 +69,7 @@ func (a *Application) Inject(
 		PagingLedgerEntries:    query.NewPagingLedgerEntriesHandler(readModel),
 		JournalById:            query.NewJournalByIdHandler(readModel, userService, dimensionService),
 		PagingJournals:         query.NewPagingJournalsHandler(readModel, userService),
+		PeriodPreCloseCheck:    query.NewPeriodPreCloseCheckHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),

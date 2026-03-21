@@ -613,6 +613,72 @@ definitions:
       poster:
         type: string
     type: object
+  http.PreCloseCheckJournalResponse:
+    properties:
+      amount:
+        type: number
+      documentNumber:
+        type: string
+      headerText:
+        type: string
+      id:
+        type: string
+      isAudited:
+        type: boolean
+      isReviewed:
+        type: boolean
+      transactionDate:
+        type: string
+    type: object
+  http.PreCloseCheckPnLAccountResponse:
+    properties:
+      accountNumber:
+        type: string
+      accountTitle:
+        type: string
+      endingAmount:
+        type: number
+    type: object
+  http.PreCloseCheckPnLBalanceResponse:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/http.PreCloseCheckPnLAccountResponse'
+        type: array
+      passed:
+        type: boolean
+    type: object
+  http.PreCloseCheckResponse:
+    properties:
+      profitAndLossBalance:
+        $ref: '#/definitions/http.PreCloseCheckPnLBalanceResponse'
+      trialBalance:
+        $ref: '#/definitions/http.PreCloseCheckTrialBalanceResponse'
+      unpostedJournals:
+        $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
+    type: object
+  http.PreCloseCheckTrialBalanceResponse:
+    properties:
+      endingAmount:
+        type: number
+      openingAmount:
+        type: number
+      passed:
+        type: boolean
+      periodAmount:
+        type: number
+    type: object
+  http.PreCloseCheckUnpostedJournalsResponse:
+    properties:
+      count:
+        type: integer
+      journals:
+        items:
+          $ref: '#/definitions/http.PreCloseCheckJournalResponse'
+        type: array
+      passed:
+        type: boolean
+    type: object
   http.ReportResponse:
     properties:
       amountTypes:
@@ -1843,6 +1909,36 @@ paths:
       responses:
         "204":
           description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - periods
+  /sob/{sobId}/period/{periodId}/pre-close-check:
+    get:
+      consumes:
+      - application/json
+      description: Validate period against closing conditions and return detailed
+        results for each check
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PreCloseCheckResponse'
         "500":
           description: Internal Server Error
           schema:

@@ -54,3 +54,28 @@ func (h Handler) ClosePeriod(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// PreCloseCheck godoc
+//
+//	@Text			Validate period against closing conditions
+//	@Description	Validate period against closing conditions and return detailed results for each check
+//	@Tags			periods
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId		path		string	true	"Sob ID"
+//	@Param			periodId	path		string	true	"Period ID"
+//	@Success		200			{object}	PreCloseCheckResponse
+//	@Failure		500			{object}	Error
+//	@Router			/sob/{sobId}/period/{periodId}/pre-close-check [get]
+func (h Handler) PreCloseCheck(c *gin.Context) {
+	result, err := h.app.Queries.PeriodPreCloseCheck.Handle(
+		c,
+		uuid.MustParse(c.Param("sobId")),
+		uuid.MustParse(c.Param("periodId")),
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, preCloseCheckDTOToVO(result))
+}

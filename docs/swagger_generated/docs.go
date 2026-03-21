@@ -1440,6 +1440,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/period/{periodId}/pre-close-check": {
+            "get": {
+                "description": "Validate period against closing conditions and return detailed results for each check",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "periods"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period ID",
+                        "name": "periodId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PreCloseCheckResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/periods": {
             "get": {
                 "description": "List all periods",
@@ -2915,6 +2959,108 @@ const docTemplate = `{
             "properties": {
                 "poster": {
                     "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckJournalResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAudited": {
+                    "type": "boolean"
+                },
+                "isReviewed": {
+                    "type": "boolean"
+                },
+                "transactionDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckPnLAccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountNumber": {
+                    "type": "string"
+                },
+                "accountTitle": {
+                    "type": "string"
+                },
+                "endingAmount": {
+                    "type": "number"
+                }
+            }
+        },
+        "http.PreCloseCheckPnLBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.PreCloseCheckPnLAccountResponse"
+                    }
+                },
+                "passed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "http.PreCloseCheckResponse": {
+            "type": "object",
+            "properties": {
+                "profitAndLossBalance": {
+                    "$ref": "#/definitions/http.PreCloseCheckPnLBalanceResponse"
+                },
+                "trialBalance": {
+                    "$ref": "#/definitions/http.PreCloseCheckTrialBalanceResponse"
+                },
+                "unpostedJournals": {
+                    "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
+                }
+            }
+        },
+        "http.PreCloseCheckTrialBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "endingAmount": {
+                    "type": "number"
+                },
+                "openingAmount": {
+                    "type": "number"
+                },
+                "passed": {
+                    "type": "boolean"
+                },
+                "periodAmount": {
+                    "type": "number"
+                }
+            }
+        },
+        "http.PreCloseCheckUnpostedJournalsResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "journals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.PreCloseCheckJournalResponse"
+                    }
+                },
+                "passed": {
+                    "type": "boolean"
                 }
             }
         },
