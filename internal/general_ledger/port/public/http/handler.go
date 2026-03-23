@@ -23,6 +23,7 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/account/:accountId", h.ReadAccountById)
 	r.POST("/sob/:sobId/accounts", h.CreateAccount)
 	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)
+	r.DELETE("/sob/:sobId/account/:accountId", h.DeleteAccount)
 
 	r.GET("/sob/:sobId/first-period/ledgers", h.ReadFirstPeriodLedgers)
 	r.POST("/sob/:sobId/ledgers/initialize", h.InitializeLedgers)

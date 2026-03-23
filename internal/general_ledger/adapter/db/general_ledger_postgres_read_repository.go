@@ -339,7 +339,7 @@ func (r GeneralLedgerPostgresReadRepository) ProfitAndLossLedgersHavingBalanceIn
 	var pos []ledgerPO
 	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
 		Where("ending_amount <> 0").
-		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses)})).
+		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses), IsLeaf: true})).
 		Find(&pos).Error
 	if err != nil {
 		return nil, err

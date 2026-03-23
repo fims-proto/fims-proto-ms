@@ -990,6 +990,28 @@ paths:
       tags:
       - accounts
   /sob/{sobId}/account/{accountId}:
+    delete:
+      description: Delete account
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - accounts
     get:
       consumes:
       - application/json

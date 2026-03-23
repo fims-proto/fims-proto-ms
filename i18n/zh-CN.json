@@ -88,5 +88,8 @@
     "journal-invalidJournalType": "分录类型无效",
     "journal-missingReferenceJournalId": "调整分录或冲销分录必须关联原始分录",
     "journal-unexpectedReferenceJournalId": "普通分录或结账分录不能关联原始分录",
-    "journal-referenceJournalNotFound": "关联的原始分录不存在"
+    "journal-referenceJournalNotFound": "关联的原始分录不存在",
+    "account-delete-hasChildren": "科目下存在子科目，无法删除",
+    "account-delete-usedByJournalLine": "科目已被凭证行引用，无法删除",
+    "account-delete-hasOpeningBalance": "科目存在期初余额，无法删除"
 }

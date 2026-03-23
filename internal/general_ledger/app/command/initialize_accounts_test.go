@@ -343,7 +343,27 @@ func (m mockRepo) CreateAccount(context.Context, *account.Account) error {
 	panic("implement me")
 }
 
+func (m mockRepo) DeleteAccount(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
 func (m mockRepo) ReadAccountByNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAccountById(context.Context, uuid.UUID) (*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsChildAccountsByAccountId(context.Context, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsJournalLinesByAccountId(context.Context, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsLedgerWithOpeningBalanceByAccountId(context.Context, uuid.UUID) (bool, error) {
 	panic("implement me")
 }
 

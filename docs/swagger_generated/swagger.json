@@ -93,6 +93,39 @@
                     }
                 }
             },
+            "delete": {
+                "description": "Delete account",
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            },
             "patch": {
                 "description": "Update account",
                 "consumes": [

@@ -578,3 +578,60 @@ func (r GeneralLedgerPostgresRepository) ExistsJournalsNotPostedInPeriod(ctx con
 
 	return count > 0, err
 }
+
+func (r GeneralLedgerPostgresRepository) ReadAccountById(ctx context.Context, accountId uuid.UUID) (*account.Account, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po accountPO
+	if err := db.Preload("DimensionCategories").First(&po, "id = ?", accountId).Error; err != nil {
+		return nil, err
+	}
+
+	return accountPOToBO(po)
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsChildAccountsByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&accountPO{}).
+		Where("superior_account_id = ?", accountId).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsJournalLinesByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&journalLinePO{}).
+		Where("account_id = ?", accountId).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsLedgerWithOpeningBalanceByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&ledgerPO{}).
+		Where("account_id = ? AND opening_amount <> 0", accountId).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
+func (r GeneralLedgerPostgresRepository) DeleteAccount(ctx context.Context, accountId uuid.UUID) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	if err := db.Where("account_id = ?", accountId).Delete(&accountDimensionCategoryPO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete account dimension categories: %w", err)
+	}
+
+	return db.Where("id = ?", accountId).Delete(&accountPO{}).Error
+}

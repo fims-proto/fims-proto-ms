@@ -27,6 +27,7 @@ type Commands struct {
 
 	CreateAccount command.CreateAccountHandler
 	UpdateAccount command.UpdateAccountHandler
+	DeleteAccount command.DeleteAccountHandler
 
 	ClosePeriod command.ClosePeriodHandler
 
@@ -77,6 +78,7 @@ func (a *Application) Inject(
 
 		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
+		DeleteAccount: command.NewDeleteAccountHandler(repo),
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
 

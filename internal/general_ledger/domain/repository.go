@@ -24,7 +24,9 @@ type Repository interface {
 		accountId uuid.UUID,
 		updateFn func(a *account.Account) (*account.Account, error),
 	) error
+	DeleteAccount(ctx context.Context, accountId uuid.UUID) error
 	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)
+	ReadAccountById(ctx context.Context, accountId uuid.UUID) (*account.Account, error)
 	ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error)
 	ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error)
 	ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error)
@@ -54,6 +56,9 @@ type Repository interface {
 
 	CreateJournal(ctx context.Context, j *journal.Journal) error
 	ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error)
+	ExistsJournalLinesByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error)
+	ExistsChildAccountsByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error)
+	ExistsLedgerWithOpeningBalanceByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error)
 	// UpdateJournalHeader updates only the journal header row (status flags, reviewer, auditor, poster, etc).
 	// Journal lines are loaded for the callback to read but are NOT deleted or re-saved.
 	UpdateJournalHeader(

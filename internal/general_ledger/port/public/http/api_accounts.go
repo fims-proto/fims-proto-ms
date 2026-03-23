@@ -177,3 +177,25 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// DeleteAccount godoc
+//
+//	@Text			Delete account
+//	@Description	Delete account
+//	@Tags			accounts
+//	@Param			sobId		path	string	true	"Sob ID"
+//	@Param			accountId	path	string	true	"Account ID"
+//	@Success		204
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/account/{accountId} [delete]
+func (h Handler) DeleteAccount(c *gin.Context) {
+	cmd := command.DeleteAccountCmd{
+		AccountId: uuid.MustParse(c.Param("accountId")),
+		SobId:     uuid.MustParse(c.Param("sobId")),
+	}
+	if err := h.app.Commands.DeleteAccount.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
