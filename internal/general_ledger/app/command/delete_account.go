@@ -59,6 +59,10 @@ func (h DeleteAccountHandler) Handle(ctx context.Context, cmd DeleteAccountCmd) 
 			return commonErrors.NewSlugError("account-delete-hasOpeningBalance")
 		}
 
+		if err := h.repo.DeleteLedgersByAccountId(txCtx, cmd.AccountId); err != nil {
+			return fmt.Errorf("failed to delete ledgers for account: %w", err)
+		}
+
 		if err := h.repo.DeleteAccount(txCtx, cmd.AccountId); err != nil {
 			return fmt.Errorf("failed to delete account: %w", err)
 		}

@@ -347,6 +347,10 @@ func (m mockRepo) DeleteAccount(context.Context, uuid.UUID) error {
 	panic("implement me")
 }
 
+func (m mockRepo) DeleteLedgersByAccountId(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
 func (m mockRepo) ReadAccountByNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
 	panic("implement me")
 }

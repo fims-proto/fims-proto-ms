@@ -44,6 +44,7 @@ type Repository interface {
 	ReadFirstPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
 
 	CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error
+	DeleteLedgersByAccountId(ctx context.Context, accountId uuid.UUID) error
 	UpdateLedgersByPeriodAndAccountIds(
 		ctx context.Context,
 		periodId uuid.UUID,

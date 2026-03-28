@@ -626,6 +626,11 @@ func (r GeneralLedgerPostgresRepository) ExistsLedgerWithOpeningBalanceByAccount
 	return count > 0, err
 }
 
+func (r GeneralLedgerPostgresRepository) DeleteLedgersByAccountId(ctx context.Context, accountId uuid.UUID) error {
+	db := r.dataSource.GetConnection(ctx)
+	return db.Where("account_id = ?", accountId).Delete(&ledgerPO{}).Error
+}
+
 func (r GeneralLedgerPostgresRepository) DeleteAccount(ctx context.Context, accountId uuid.UUID) error {
 	db := r.dataSource.GetConnection(ctx)
 
