@@ -77,7 +77,7 @@ func (a *Application) Inject(
 		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo),
 
 		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
-		UpdateAccount: command.NewUpdateAccountHandler(repo),
+		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 		DeleteAccount: command.NewDeleteAccountHandler(repo),
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),

@@ -121,3 +121,17 @@ func RawFromReadable(readable string, codeLengths []int) (string, error) {
 func LevelFromRaw(raw string) int {
 	return len(raw) / SegmentWidth
 }
+
+// AppendRawAccountNumber appends levelNumber as a new level segment to superiorRaw,
+// producing the child's raw account number.
+// Pass superiorRaw = "" for a root (level-1) account.
+func AppendRawAccountNumber(superiorRaw string, levelNumber int) (string, error) {
+	if superiorRaw == "" {
+		return PadRawAccountNumber([]int{levelNumber})
+	}
+	hierarchy, err := HierarchyFromRaw(superiorRaw)
+	if err != nil {
+		return "", fmt.Errorf("invalid superior raw account number: %w", err)
+	}
+	return PadRawAccountNumber(append(hierarchy, levelNumber))
+}

@@ -53,7 +53,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 	accountGroup := class.Group(cmd.Group)
 	superiorAccountId := uuid.Nil
 	level := 1
-	numberHierarchy := []int{cmd.LevelNumber}
+	superiorRaw := ""
 
 	sob, err := h.sobService.ReadById(ctx, cmd.SobId)
 	if err != nil {
@@ -84,11 +84,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 
 		superiorAccountId = superiorAccount.Id()
 		level = superiorAccount.Level() + 1
-		superiorHierarchy, err := account.HierarchyFromRaw(superiorAccount.RawAccountNumber())
-		if err != nil {
-			return fmt.Errorf("failed to extract hierarchy from raw account number: %w", err)
-		}
-		numberHierarchy = append(superiorHierarchy, cmd.LevelNumber)
+		superiorRaw = superiorAccount.RawAccountNumber()
 	}
 
 	// Validate: levelNumber string length must not exceed code length for this level
@@ -104,7 +100,8 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		cmd.SobId,
 		superiorAccountId,
 		cmd.Title,
-		numberHierarchy,
+		superiorRaw,
+		cmd.LevelNumber,
 		level,
 		true,
 		cmd.Class,

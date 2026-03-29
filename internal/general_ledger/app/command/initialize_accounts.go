@@ -121,11 +121,11 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 			if entry.level == i+1 {
 				var levelNumber int
 				var superiorAccountId uuid.UUID
-				var numberHierarchy []int
+				var superiorRaw string
 				if entry.level == 1 {
 					superiorAccountId = uuid.Nil
 					levelNumber, _ = strconv.Atoi(entry.number)
-					numberHierarchy = []int{levelNumber}
+					superiorRaw = ""
 				} else {
 					levelNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
 					superiorRawNumber := readableToRawMap[entry.superiorNumber]
@@ -134,11 +134,7 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 						return nil, fmt.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
 					}
 					superiorAccountId = superiorAccount.Id()
-					superiorHierarchy, err := account.HierarchyFromRaw(superiorAccount.RawAccountNumber())
-					if err != nil {
-						return nil, fmt.Errorf("failed to extract hierarchy from raw account number: %w", err)
-					}
-					numberHierarchy = append(superiorHierarchy, levelNumber)
+					superiorRaw = superiorAccount.RawAccountNumber()
 				}
 
 				// when an account is not superior for all other accounts, it's a leaf
@@ -149,7 +145,8 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					sobId,
 					superiorAccountId,
 					entry.title,
-					numberHierarchy,
+					superiorRaw,
+					levelNumber,
 					entry.level,
 					!found,
 					entry.class,

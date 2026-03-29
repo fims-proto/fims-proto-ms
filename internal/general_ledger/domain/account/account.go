@@ -26,15 +26,13 @@ type Account struct {
 	dimensionCategoryIds []uuid.UUID
 }
 
-// New takes all fields except:
-// - rawAccountNumber: it's derived from numberHierarchy via PadRawAccountNumber
-// - superiorAccount: this method cannot create an entity with such nested structure
 func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	superiorAccountId uuid.UUID,
 	title string,
-	numberHierarchy []int,
+	superiorRawNumber string,
+	levelNumber int,
 	level int,
 	isLeaf bool,
 	classId int,
@@ -42,7 +40,7 @@ func New(
 	balanceDirection string,
 	dimensionCategoryIds []uuid.UUID,
 ) (*Account, error) {
-	rawAccountNumber, err := PadRawAccountNumber(numberHierarchy)
+	rawAccountNumber, err := AppendRawAccountNumber(superiorRawNumber, levelNumber)
 	if err != nil {
 		return nil, err
 	}
@@ -64,7 +62,7 @@ func New(
 }
 
 // NewByAllFields takes all attributes of Account, and doesn't validate rawAccountNumber field
-// Typically used in persistence level
+// Only used in persistence level
 func NewByAllFields(
 	id uuid.UUID,
 	sobId uuid.UUID,
