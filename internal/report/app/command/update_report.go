@@ -5,6 +5,8 @@ import (
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	appService "github/fims-proto/fims-proto-ms/internal/report/app/service"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
@@ -56,9 +58,10 @@ type UpdateReportCmdFormula struct {
 type UpdateReportHandler struct {
 	repo                 domain.Repository
 	generalLedgerService service.GeneralLedgerService
+	sobService           appService.SobService
 }
 
-func NewUpdateReportHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService) UpdateReportHandler {
+func NewUpdateReportHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService, sobService appService.SobService) UpdateReportHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -67,9 +70,14 @@ func NewUpdateReportHandler(repo domain.Repository, generalLedgerService service
 		panic("nil general ledger service")
 	}
 
+	if sobService == nil {
+		panic("nil sob service")
+	}
+
 	return UpdateReportHandler{
 		repo:                 repo,
 		generalLedgerService: generalLedgerService,
+		sobService:           sobService,
 	}
 }
 
@@ -98,18 +106,42 @@ func (h UpdateReportHandler) Handle(ctx context.Context, cmd UpdateReportCmd) er
 }
 
 func (h UpdateReportHandler) resolveAccountIds(ctx context.Context, sobId uuid.UUID, cmd *UpdateReportCmd) error {
-	// Collect all account numbers that need resolution (recursively)
+	// Fetch SoB to get codeLengths for conversion
+	sob, err := h.sobService.ReadById(ctx, sobId)
+	if err != nil {
+		return fmt.Errorf("could not read sob: %w", err)
+	}
+
+	// Collect all human-readable account numbers and convert to raw format
 	accountNumbers := h.collectAccountNumbers(cmd.Sections)
 
-	// Batch resolve all account numbers
-	if len(accountNumbers) > 0 {
-		accountIds, err := h.generalLedgerService.ReadAccountIdsByNumbers(ctx, sobId, accountNumbers)
+	// Convert all to raw format
+	var rawAccountNumbers []string
+	humanReadableToRaw := make(map[string]string) // human-readable -> raw
+
+	for _, humanNum := range accountNumbers {
+		// Skip if already converted
+		if _, exists := humanReadableToRaw[humanNum]; exists {
+			continue
+		}
+		// Convert to raw format
+		rawNum, err := account.RawFromReadable(humanNum, sob.AccountsCodeLength)
 		if err != nil {
-			return fmt.Errorf("failed to read account ids by numbers: %w", err)
+			return fmt.Errorf("could not convert account number %s: %w", humanNum, err)
+		}
+		humanReadableToRaw[humanNum] = rawNum
+		rawAccountNumbers = append(rawAccountNumbers, rawNum)
+	}
+
+	// Batch resolve all raw account numbers
+	if len(rawAccountNumbers) > 0 {
+		accountIds, err := h.generalLedgerService.ReadAccountIdsByRawNumbers(ctx, sobId, rawAccountNumbers)
+		if err != nil {
+			return fmt.Errorf("failed to read account ids by raw numbers: %w", err)
 		}
 
 		// Update all formulas with resolved account IDs (recursively)
-		if err := h.updateFormulaAccountIds(cmd.Sections, accountIds); err != nil {
+		if err := h.updateFormulaAccountIds(cmd.Sections, accountIds, sob.AccountsCodeLength); err != nil {
 			return err
 		}
 	}
@@ -147,14 +179,22 @@ func (h UpdateReportHandler) collectAccountNumbersRecursive(sections []UpdateRep
 }
 
 // updateFormulaAccountIds recursively updates formula account IDs in all sections
-func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdSection, accountIds map[string]uuid.UUID) error {
+// accountIds map is keyed by raw account numbers
+func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdSection, accountIds map[string]uuid.UUID, codeLengths []int) error {
 	for i := range sections {
 		// Update items in this section
 		for j := range sections[i].Items {
 			item := &sections[i].Items[j]
 			for k := range item.Formulas {
 				formula := &item.Formulas[k]
-				accountId, ok := accountIds[formula.AccountNumber]
+
+				// Convert human-readable to raw for lookup
+				rawNum, err := account.RawFromReadable(formula.AccountNumber, codeLengths)
+				if err != nil {
+					return fmt.Errorf("could not convert account number %s: %w", formula.AccountNumber, err)
+				}
+
+				accountId, ok := accountIds[rawNum]
 				if !ok {
 					return errors.NewSlugError("account-notFound", map[string]interface{}{
 						"accountNumber": formula.AccountNumber,
@@ -165,7 +205,7 @@ func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdS
 		}
 		// Recursively update nested sections
 		if len(sections[i].Sections) > 0 {
-			if err := h.updateFormulaAccountIds(sections[i].Sections, accountIds); err != nil {
+			if err := h.updateFormulaAccountIds(sections[i].Sections, accountIds, codeLengths); err != nil {
 				return err
 			}
 		}

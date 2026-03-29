@@ -1,7 +1,7 @@
 meta {
   name: create journal
   type: http
-  seq: 10
+  seq: 22
 }
 
 post {
@@ -209,17 +209,17 @@ script:pre-request {
           ]
       }
   ]
-
+  
   let sampleJournals = bru.getVar("sample_journals")
-
+  
   if(!sampleJournals || sampleJournals.length == 0) {
       sampleJournals = testSamples
   }
-
+  
   let currentSampleJournal = sampleJournals.shift()
   bru.setVar("sample_journals", sampleJournals)
-
-
+  
+  
   // build current payload
   const payload = {
       "headerText": currentSampleJournal.summary,
@@ -228,13 +228,13 @@ script:pre-request {
       "creator": bru.getCollectionVar("user_1"),
       "transactionDate": currentSampleJournal.date
   }
-
+  
   currentSampleJournal.items.forEach(sampleItem => payload.journalLines.push({
       "text": currentSampleJournal.summary,
       "accountNumber": sampleItem.account,
       "amount": sampleItem.amount
   }))
-
+  
   bru.setVar("current_journal_payload", JSON.stringify(payload))
 }
 
@@ -245,18 +245,18 @@ tests {
   }
   journalIds.push(res.getBody().id)
   bru.setVar("journal_ids", journalIds)
-
+  
   // let jsonData = pm.response.json()
   // pm.collectionVariables.set("journal_1_item_1", jsonData.journalLines[0].id)
   // pm.collectionVariables.set("journal_1_item_2", jsonData.journalLines[1].id)
-
+  
   const sampleJournals = bru.getVar("sample_journals")
   if (sampleJournals && sampleJournals.length > 0){
       bru.setNextRequest("create journal")
   }
-
+  
   test("Create journal", function () {
       expect(res.getStatus()).to.equal(201)
   })
-
+  
 }

@@ -11,17 +11,23 @@ import (
 
 type JournalByIdHandler struct {
 	readModel        GeneralLedgerReadModel
+	sobService       service.SobService
 	userService      service.UserService
 	dimensionService service.DimensionService
 }
 
 func NewJournalByIdHandler(
 	readModel GeneralLedgerReadModel,
+	sobService service.SobService,
 	userService service.UserService,
 	dimensionService service.DimensionService,
 ) JournalByIdHandler {
 	if readModel == nil {
 		panic("nil read model")
+	}
+
+	if sobService == nil {
+		panic("nil sob service")
 	}
 
 	if userService == nil {
@@ -34,6 +40,7 @@ func NewJournalByIdHandler(
 
 	return JournalByIdHandler{
 		readModel:        readModel,
+		sobService:       sobService,
 		userService:      userService,
 		dimensionService: dimensionService,
 	}
@@ -63,6 +70,13 @@ func (h JournalByIdHandler) Handle(ctx context.Context, journalId uuid.UUID) (Jo
 			return Journal{}, fmt.Errorf("failed to enrich dimension categories in journal line account: %w", err)
 		}
 	}
+
+	sob, err := h.sobService.ReadById(ctx, journal.SobId)
+	if err != nil {
+		return Journal{}, fmt.Errorf("failed to read sob: %w", err)
+	}
+
+	journal = enrichJournalAccountNumbers(sob.AccountsCodeLength, []Journal{journal})[0]
 
 	return journal, nil
 }

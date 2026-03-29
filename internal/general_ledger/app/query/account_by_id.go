@@ -16,12 +16,17 @@ import (
 
 type AccountByIdHandler struct {
 	readModel        GeneralLedgerReadModel
+	sobService       service.SobService
 	dimensionService service.DimensionService
 }
 
-func NewAccountByIdHandler(readModel GeneralLedgerReadModel, dimensionService service.DimensionService) AccountByIdHandler {
+func NewAccountByIdHandler(readModel GeneralLedgerReadModel, sobService service.SobService, dimensionService service.DimensionService) AccountByIdHandler {
 	if readModel == nil {
 		panic("nil read model")
+	}
+
+	if sobService == nil {
+		panic("nil sob service")
 	}
 
 	if dimensionService == nil {
@@ -30,6 +35,7 @@ func NewAccountByIdHandler(readModel GeneralLedgerReadModel, dimensionService se
 
 	return AccountByIdHandler{
 		readModel:        readModel,
+		sobService:       sobService,
 		dimensionService: dimensionService,
 	}
 }
@@ -48,7 +54,16 @@ func (h AccountByIdHandler) Handle(ctx context.Context, accountId uuid.UUID) (Ac
 		return Account{}, commonErrors.ErrRecordNotFound()
 	}
 
-	account, err := enrichAccountDimensionCategories(ctx, h.dimensionService, accounts.Content()[0])
+	account := accounts.Content()[0]
+
+	sob, err := h.sobService.ReadById(ctx, account.SobId)
+	if err != nil {
+		return Account{}, fmt.Errorf("failed to read sob: %w", err)
+	}
+
+	account = enrichAccountNumber(sob.AccountsCodeLength, account)
+
+	account, err = enrichAccountDimensionCategories(ctx, h.dimensionService, account)
 	if err != nil {
 		return Account{}, fmt.Errorf("failed to enrich dimension categories: %w", err)
 	}

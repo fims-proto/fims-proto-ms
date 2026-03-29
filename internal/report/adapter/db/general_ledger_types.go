@@ -27,7 +27,7 @@ type accountPO struct {
 	SobId             uuid.UUID `gorm:"type:uuid"`
 	SuperiorAccountId uuid.UUID `gorm:"type:uuid"`
 	Title             string
-	AccountNumber     string
+	RawAccountNumber  string
 	Level             int
 	IsLeaf            bool
 	Class             int

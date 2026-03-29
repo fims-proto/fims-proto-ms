@@ -1,0 +1,34 @@
+meta {
+  name: create account 300102
+  type: http
+  seq: 15
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/accounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "balanceDirection": "credit",
+    "class": "3",
+    "group": "301",
+    "levelNumber": 2,
+    "superiorAccountNumber": "3001",
+    "title": "林朝伟"
+  }
+}
+
+tests {
+  test("Create account", function () {
+    expect(res.getStatus()).to.equal(201)
+    expect(res.body.accountNumber).to.equal('300102')
+  })
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

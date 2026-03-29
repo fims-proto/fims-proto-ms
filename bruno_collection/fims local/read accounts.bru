@@ -1,0 +1,16 @@
+meta {
+  name: read accounts
+  type: http
+  seq: 21
+}
+
+get {
+  url: {{base_path}}/sob/{{sob}}/accounts
+  body: none
+  auth: inherit
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

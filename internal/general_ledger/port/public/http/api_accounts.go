@@ -126,7 +126,7 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		DimensionCategoryIds:  req.DimensionCategoryIds,
 	}
 
-	if err := h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
+	if err = h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

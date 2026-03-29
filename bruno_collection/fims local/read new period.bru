@@ -1,7 +1,7 @@
 meta {
   name: read new period
   type: http
-  seq: 23
+  seq: 35
 }
 
 get {
@@ -14,7 +14,7 @@ tests {
   test("Read current period 200", function () {
       expect(res.getStatus()).to.equal(200);
   })
-
+  
   bru.setVar("current_period_id", res.body.id)
   bru.setVar("current_period", `${res.body.fiscalYear}-${res.body.periodNumber}..padEnd(2, '0')`)
 }

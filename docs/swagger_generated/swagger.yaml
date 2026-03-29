@@ -136,10 +136,6 @@ definitions:
         type: boolean
       level:
         type: integer
-      numberHierarchy:
-        items:
-          type: integer
-        type: array
       sobId:
         type: string
       superiorAccountId:
@@ -190,10 +186,6 @@ definitions:
         type: boolean
       level:
         type: integer
-      numberHierarchy:
-        items:
-          type: integer
-        type: array
       sobId:
         type: string
       superiorAccountId:

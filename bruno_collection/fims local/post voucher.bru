@@ -1,7 +1,7 @@
 meta {
   name: post journal
   type: http
-  seq: 20
+  seq: 32
 }
 
 post {
@@ -20,7 +20,7 @@ tests {
   test("Post journal", function () {
       expect(res.getStatus()).to.equal(204)
   })
-
+  
   const journalIds = bru.getVar("journal_ids")
   if (journalIds && bru.getVar("journal_index") < journalIds.length) {
       bru.setNextRequest("read journal")

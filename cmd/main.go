@@ -32,6 +32,7 @@ import (
 	numberingPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/http"
 	numberingIntraPort "github/fims-proto/fims-proto-ms/internal/numbering/port/private/intraprocess"
 	reportAdapter "github/fims-proto/fims-proto-ms/internal/report/adapter/db"
+	reportSobAdapter "github/fims-proto/fims-proto-ms/internal/report/adapter/sob"
 	reportApp "github/fims-proto/fims-proto-ms/internal/report/app"
 	reportPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/report/port/private/http"
 	reportIntraPort "github/fims-proto/fims-proto-ms/internal/report/port/private/intraprocess"
@@ -128,6 +129,7 @@ func main() {
 		reportRepository,
 		reportReadRepository,
 		generalLedgerServiceRepository,
+		reportSobAdapter.NewIntraProcessAdapter(sobInterface),
 	)
 
 	numberingApplication.Inject(

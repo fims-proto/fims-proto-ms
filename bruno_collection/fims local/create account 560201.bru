@@ -1,0 +1,34 @@
+meta {
+  name: create account 560201
+  type: http
+  seq: 16
+}
+
+post {
+  url: {{base_path}}/sob/{{sob}}/accounts
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "balanceDirection": "debit",
+    "class": "5",
+    "group": "503",
+    "levelNumber": 1,
+    "superiorAccountNumber": "5602",
+    "title": "办公费"
+  }
+}
+
+tests {
+  test("Create account", function () {
+    expect(res.getStatus()).to.equal(201)
+    expect(res.body.accountNumber).to.equal('560201')
+  })
+}
+
+settings {
+  encodeUrl: true
+  timeout: 0
+}

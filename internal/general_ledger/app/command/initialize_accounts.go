@@ -112,7 +112,10 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 	}
 	slices.Sort(superiorNumbers)
 
-	preparedAccounts := make(map[string]*account.Account)
+	// Map from readable account number to raw account number (for accounting for duplicate keys)
+	readableToRawMap := make(map[string]string)
+
+	preparedAccounts := make(map[string]*account.Account) // keyed by raw account number
 	for i := 0; i < len(codeLengthLimits); i++ {
 		for _, entry := range accountEntries {
 			if entry.level == i+1 {
@@ -125,12 +128,17 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					numberHierarchy = []int{levelNumber}
 				} else {
 					levelNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
-					superiorAccount, ok := preparedAccounts[entry.superiorNumber]
+					superiorRawNumber := readableToRawMap[entry.superiorNumber]
+					superiorAccount, ok := preparedAccounts[superiorRawNumber]
 					if !ok {
 						return nil, fmt.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
 					}
 					superiorAccountId = superiorAccount.Id()
-					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
+					superiorHierarchy, err := account.HierarchyFromRaw(superiorAccount.RawAccountNumber())
+					if err != nil {
+						return nil, fmt.Errorf("failed to extract hierarchy from raw account number: %w", err)
+					}
+					numberHierarchy = append(superiorHierarchy, levelNumber)
 				}
 
 				// when an account is not superior for all other accounts, it's a leaf
@@ -153,7 +161,9 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 				if err != nil {
 					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
 				}
-				preparedAccounts[entry.number] = domainAccount
+				rawNumber := domainAccount.RawAccountNumber()
+				preparedAccounts[rawNumber] = domainAccount
+				readableToRawMap[entry.number] = rawNumber
 			}
 		}
 	}

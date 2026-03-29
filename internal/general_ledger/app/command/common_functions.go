@@ -25,35 +25,47 @@ func prepareJournalLines(
 	ctx context.Context,
 	repo domain.Repository,
 	dimensionService service.DimensionService,
+	sobService service.SobService,
 	sobId uuid.UUID,
 	commands []JournalLineCmd,
 ) ([]*journal.JournalLine, error) {
-	var accountNumbers []string
+	// Fetch SoB for code lengths to convert readable account numbers to raw
+	sob, err := sobService.ReadById(ctx, sobId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read SoB: %w", err)
+	}
+
+	// Convert human-readable account numbers to raw format
+	var rawAccountNumbers []string
 	for _, item := range commands {
-		accountNumbers = append(accountNumbers, item.AccountNumber)
+		rawNumber, err := account.RawFromReadable(item.AccountNumber, sob.AccountsCodeLength)
+		if err != nil {
+			return nil, fmt.Errorf("invalid account number %s: %w", item.AccountNumber, err)
+		}
+		rawAccountNumbers = append(rawAccountNumbers, rawNumber)
 	}
 
 	// validate account numbers
-	accounts, err := repo.ReadAccountsByNumbers(ctx, sobId, accountNumbers)
+	accounts, err := repo.ReadAccountsByRawNumbers(ctx, sobId, rawAccountNumbers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read accounts: %w", err)
 	}
 
 	accountsMap := utils.SliceToMap(
 		accounts,
-		func(a *account.Account) string { return a.AccountNumber() },
+		func(a *account.Account) string { return a.RawAccountNumber() },
 		func(a *account.Account) *account.Account { return a },
 	)
 
 	// prepare journal lines
 	var journalLines []*journal.JournalLine
-	for _, item := range commands {
+	for i, item := range commands {
 		itemId := item.Id
 		if itemId == uuid.Nil {
 			itemId = uuid.New()
 		}
 
-		a := accountsMap[item.AccountNumber]
+		a := accountsMap[rawAccountNumbers[i]]
 
 		// Validate dimension options for this journal line against the account's required categories.
 		if err = dimensionService.ValidateOptions(ctx, a.DimensionCategoryIds(), item.DimensionOptionIds); err != nil {

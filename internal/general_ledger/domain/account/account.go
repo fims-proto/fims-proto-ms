@@ -3,8 +3,6 @@ package account
 import (
 	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"unicode/utf8"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
@@ -19,8 +17,7 @@ type Account struct {
 	superiorAccountId    uuid.UUID
 	superiorAccount      *Account
 	title                string
-	accountNumber        string
-	numberHierarchy      []int
+	rawAccountNumber     string
 	level                int
 	isLeaf               bool
 	class                class.Class
@@ -30,7 +27,7 @@ type Account struct {
 }
 
 // New takes all fields except:
-// - accountNumber: it's calculated from numberHierarchy
+// - rawAccountNumber: it's derived from numberHierarchy via PadRawAccountNumber
 // - superiorAccount: this method cannot create an entity with such nested structure
 func New(
 	id uuid.UUID,
@@ -46,15 +43,28 @@ func New(
 	balanceDirection string,
 	dimensionCategoryIds []uuid.UUID,
 ) (*Account, error) {
-	accountNumber, err := composeAccountNumber(numberHierarchy, codeLengths)
+	rawAccountNumber, err := PadRawAccountNumber(numberHierarchy)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection, dimensionCategoryIds)
+	return NewByAllFields(
+		id,
+		sobId,
+		superiorAccountId,
+		nil,
+		title,
+		rawAccountNumber,
+		level,
+		isLeaf,
+		classId,
+		groupId,
+		balanceDirection,
+		dimensionCategoryIds,
+	)
 }
 
-// NewByAllFields takes all attributes of Account, and doesn't validate accountNumber field
+// NewByAllFields takes all attributes of Account, and doesn't validate rawAccountNumber field
 // Typically used in persistence level
 func NewByAllFields(
 	id uuid.UUID,
@@ -62,8 +72,7 @@ func NewByAllFields(
 	superiorAccountId uuid.UUID,
 	superiorAccount *Account,
 	title string,
-	accountNumber string,
-	numberHierarchy []int,
+	rawAccountNumber string,
 	level int,
 	isLeaf bool,
 	classId int,
@@ -79,7 +88,7 @@ func NewByAllFields(
 		return nil, errors.New("nil sob")
 	}
 
-	if superiorAccountId == uuid.Nil && len(numberHierarchy) > 1 {
+	if superiorAccountId == uuid.Nil && level > 1 {
 		return nil, errors.New("nil superior account id")
 	}
 
@@ -91,16 +100,19 @@ func NewByAllFields(
 		return nil, errors.New("account title exceeds max length (50)")
 	}
 
-	if accountNumber == "" {
-		return nil, errors.New("empty account number")
+	if rawAccountNumber == "" {
+		return nil, errors.New("empty raw account number")
 	}
 
-	if level < 1 {
-		return nil, fmt.Errorf("level %d must >= 1", level)
+	// Validate rawAccountNumber format
+	if _, err := HierarchyFromRaw(rawAccountNumber); err != nil {
+		return nil, fmt.Errorf("invalid raw account number: %w", err)
 	}
 
-	if level != len(numberHierarchy) {
-		return nil, fmt.Errorf("level %d not match to number hierarchy %v", level, numberHierarchy)
+	// Verify level matches raw account number
+	derivedLevel := LevelFromRaw(rawAccountNumber)
+	if level != derivedLevel {
+		return nil, fmt.Errorf("level %d does not match raw account number level %d", level, derivedLevel)
 	}
 
 	c := class.Class(classId)
@@ -120,8 +132,7 @@ func NewByAllFields(
 		superiorAccountId:    superiorAccountId,
 		superiorAccount:      superiorAccount,
 		title:                title,
-		accountNumber:        accountNumber,
-		numberHierarchy:      numberHierarchy,
+		rawAccountNumber:     rawAccountNumber,
 		level:                level,
 		isLeaf:               isLeaf,
 		class:                c,
@@ -129,30 +140,6 @@ func NewByAllFields(
 		balanceDirection:     bd,
 		dimensionCategoryIds: dimensionCategoryIds,
 	}, nil
-}
-
-func composeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
-	if len(numberHierarchy) > len(codeLengths) {
-		return "", fmt.Errorf("account number hierarchy %d exceeds max depth %d", len(numberHierarchy), len(codeLengths))
-	}
-
-	for i := 0; i < len(numberHierarchy); i++ {
-		if numberHierarchy[i] < 1 {
-			return "", fmt.Errorf("account number %d at level %d cannot be smaller than 1", numberHierarchy[i], i)
-		}
-		if len(strconv.Itoa(numberHierarchy[i])) > codeLengths[i] {
-			return "", fmt.Errorf("account number %d at level %d exceeds max length (%d)", numberHierarchy[i], i, codeLengths[i])
-		}
-	}
-
-	var builder strings.Builder
-	for i, number := range numberHierarchy {
-		if _, err := fmt.Fprintf(&builder, "%0*d", codeLengths[i], number); err != nil {
-			return "", fmt.Errorf("failed to compose account number: %w", err)
-		}
-	}
-
-	return builder.String(), nil
 }
 
 func (a *Account) Id() uuid.UUID {
@@ -175,12 +162,8 @@ func (a *Account) Title() string {
 	return a.title
 }
 
-func (a *Account) AccountNumber() string {
-	return a.accountNumber
-}
-
-func (a *Account) NumberHierarchy() []int {
-	return a.numberHierarchy
+func (a *Account) RawAccountNumber() string {
+	return a.rawAccountNumber
 }
 
 func (a *Account) Level() int {

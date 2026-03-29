@@ -31,9 +31,10 @@ type CreateJournalHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
 	dimensionService service.DimensionService
+	sobService       service.SobService
 }
 
-func NewCreateJournalHandler(repo domain.Repository, numberingService service.NumberingService, dimensionService service.DimensionService) CreateJournalHandler {
+func NewCreateJournalHandler(repo domain.Repository, numberingService service.NumberingService, dimensionService service.DimensionService, sobService service.SobService) CreateJournalHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -46,10 +47,15 @@ func NewCreateJournalHandler(repo domain.Repository, numberingService service.Nu
 		panic("nil dimension service")
 	}
 
+	if sobService == nil {
+		panic("nil sob service")
+	}
+
 	return CreateJournalHandler{
 		repo:             repo,
 		numberingService: numberingService,
 		dimensionService: dimensionService,
+		sobService:       sobService,
 	}
 }
 
@@ -79,7 +85,7 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 	}
 
 	// prepare journal lines
-	journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, cmd.SobId, cmd.JournalLines)
+	journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, h.sobService, cmd.SobId, cmd.JournalLines)
 	if err != nil {
 		return fmt.Errorf("failed to prepare journal lines: %w", err)
 	}

@@ -13,12 +13,17 @@ import (
 
 type PagingJournalsHandler struct {
 	readModel   GeneralLedgerReadModel
+	sobService  service.SobService
 	userService service.UserService
 }
 
-func NewPagingJournalsHandler(readModel GeneralLedgerReadModel, userService service.UserService) PagingJournalsHandler {
+func NewPagingJournalsHandler(readModel GeneralLedgerReadModel, sobService service.SobService, userService service.UserService) PagingJournalsHandler {
 	if readModel == nil {
 		panic("nil read model")
+	}
+
+	if sobService == nil {
+		panic("nil sob service")
 	}
 
 	if userService == nil {
@@ -27,6 +32,7 @@ func NewPagingJournalsHandler(readModel GeneralLedgerReadModel, userService serv
 
 	return PagingJournalsHandler{
 		readModel:   readModel,
+		sobService:  sobService,
 		userService: userService,
 	}
 }
@@ -43,6 +49,13 @@ func (h PagingJournalsHandler) Handle(ctx context.Context, sobId uuid.UUID, page
 	if err != nil {
 		return nil, fmt.Errorf("failed to enrich user in journal: %w", err)
 	}
+
+	sob, err := h.sobService.ReadById(ctx, sobId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read sob: %w", err)
+	}
+
+	journals = enrichJournalAccountNumbers(sob.AccountsCodeLength, journals)
 
 	return data.NewPage(journals, pageRequest, entriesPage.NumberOfElements())
 }

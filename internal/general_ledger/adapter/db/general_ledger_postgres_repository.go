@@ -133,49 +133,49 @@ func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, so
 	return converter.POsToBOs(accountPOs, accountPOToBO)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error) {
+func (r GeneralLedgerPostgresRepository) ReadAccountByRawNumber(ctx context.Context, sobId uuid.UUID, rawNumber string) (*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
 
 	var po accountPO
-	if err := db.Where(accountPO{SobId: sobId, AccountNumber: accountNumber}).First(&po).Error; err != nil {
+	if err := db.Where(accountPO{SobId: sobId, RawAccountNumber: rawNumber}).First(&po).Error; err != nil {
 		return nil, err
 	}
 
 	return accountPOToBO(po)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error) {
+func (r GeneralLedgerPostgresRepository) ReadAccountsByRawNumbers(ctx context.Context, sobId uuid.UUID, rawNumbers []string) ([]*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	// unique account numbers
-	accountNumbers = utils.Unique(accountNumbers)
+	// unique raw numbers
+	rawNumbers = utils.Unique(rawNumbers)
 
-	if len(accountNumbers) == 0 {
+	if len(rawNumbers) == 0 {
 		return nil, nil
 	}
 
 	var pos []accountPO
-	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).
+	if err := db.Where("sob_id = ? AND raw_account_number IN ?", sobId, rawNumbers).
 		Preload("DimensionCategories").
 		Find(&pos).Error; err != nil {
 		return nil, err
 	}
 
-	if len(pos) != len(accountNumbers) {
-		return nil, fmt.Errorf("not all accounts found for sob %s and account numbers %v", sobId, accountNumbers)
+	if len(pos) != len(rawNumbers) {
+		return nil, fmt.Errorf("not all accounts found for sob %s and raw numbers %v", sobId, rawNumbers)
 	}
 
 	// check if all keys are found
-	for _, accountNumber := range accountNumbers {
+	for _, rawNumber := range rawNumbers {
 		found := false
 		for _, po := range pos {
-			if po.AccountNumber == accountNumber {
+			if po.RawAccountNumber == rawNumber {
 				found = true
 				break
 			}
 		}
 		if !found {
-			return nil, fmt.Errorf("account with number %s not found for sob %s", accountNumber, sobId)
+			return nil, fmt.Errorf("account with raw number %s not found for sob %s", rawNumber, sobId)
 		}
 	}
 
@@ -251,7 +251,7 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsWithSuperiorsByIds(
 			var ok bool
 			sa, ok = superiorAccountMap[*po.SuperiorAccountId]
 			if !ok {
-				return nil, fmt.Errorf("superior account not found for %s", po.AccountNumber)
+				return nil, fmt.Errorf("superior account not found for %s", po.RawAccountNumber)
 			}
 		}
 		a, err := accountPOToBOWithSuperior(po, sa)

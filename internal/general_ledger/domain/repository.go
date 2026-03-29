@@ -27,8 +27,8 @@ type Repository interface {
 	DeleteAccount(ctx context.Context, accountId uuid.UUID) error
 	ReadAllAccounts(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)
 	ReadAccountById(ctx context.Context, accountId uuid.UUID) (*account.Account, error)
-	ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error)
-	ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error)
+	ReadAccountByRawNumber(ctx context.Context, sobId uuid.UUID, rawNumber string) (*account.Account, error)
+	ReadAccountsByRawNumbers(ctx context.Context, sobId uuid.UUID, rawNumbers []string) ([]*account.Account, error)
 	ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error)
 	ReadAccountsWithSuperiorsByIds(ctx context.Context, sobId uuid.UUID, accountIds []uuid.UUID) ([]*account.Account, error)
 	ReadAllSubAccountsWithSuperiors(ctx context.Context, sobId uuid.UUID) ([]*account.Account, error)

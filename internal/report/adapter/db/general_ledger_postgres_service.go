@@ -76,24 +76,24 @@ func (s GeneralLedgerPostgresService) ReadFirstPeriodOfTheYear(
 	return periodPOToBO(po), nil
 }
 
-func (s GeneralLedgerPostgresService) ReadAccountIdsByNumbers(
+func (s GeneralLedgerPostgresService) ReadAccountIdsByRawNumbers(
 	ctx context.Context,
 	sobId uuid.UUID,
-	accountNumbers []string,
+	rawAccountNumbers []string,
 ) (map[string]uuid.UUID, error) {
 	db := s.dataSource.GetConnection(ctx)
 
 	// unique account numbers
-	accountNumbers = utils.Unique(accountNumbers)
+	rawAccountNumbers = utils.Unique(rawAccountNumbers)
 
 	var pos []accountPO
-	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).Find(&pos).Error; err != nil {
+	if err := db.Where("sob_id = ? AND raw_account_number IN ?", sobId, rawAccountNumbers).Find(&pos).Error; err != nil {
 		return nil, err
 	}
 
 	return utils.SliceToMap(
 		pos, func(po accountPO) string {
-			return po.AccountNumber
+			return po.RawAccountNumber
 		}, func(po accountPO) uuid.UUID {
 			return po.Id
 		},

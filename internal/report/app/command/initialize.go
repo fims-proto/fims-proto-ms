@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	appService "github/fims-proto/fims-proto-ms/internal/report/app/service"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
@@ -21,11 +23,13 @@ type InitializeCmd struct {
 type InitializeHandler struct {
 	repo                 domain.Repository
 	generalLedgerService service.GeneralLedgerService
+	sobService           appService.SobService
 
-	accounts map[string]uuid.UUID // key: accountNumber, value: accountId
+	accounts    map[string]uuid.UUID // key: rawAccountNumber, value: accountId
+	codeLengths []int
 }
 
-func NewInitializeHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService) InitializeHandler {
+func NewInitializeHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService, sobService appService.SobService) InitializeHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -34,9 +38,14 @@ func NewInitializeHandler(repo domain.Repository, generalLedgerService service.G
 		panic("nil general ledger service")
 	}
 
+	if sobService == nil {
+		panic("nil sob service")
+	}
+
 	return InitializeHandler{
 		repo:                 repo,
 		generalLedgerService: generalLedgerService,
+		sobService:           sobService,
 		accounts:             make(map[string]uuid.UUID),
 	}
 }
@@ -151,7 +160,13 @@ func (h *InitializeHandler) convertItem(cmd InitializeCmdItem, sequence int) (*r
 }
 
 func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence int) (*report.Formula, error) {
-	accountId, ok := h.accounts[cmd.AccountNumber]
+	// Convert human-readable account number to raw format for lookup
+	rawAccountNumber, err := account.RawFromReadable(cmd.AccountNumber, h.codeLengths)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert account number %s: %w", cmd.AccountNumber, err)
+	}
+
+	accountId, ok := h.accounts[rawAccountNumber]
 	if !ok {
 		return nil, fmt.Errorf("could not find account number %s", cmd.AccountNumber)
 	}
@@ -167,19 +182,42 @@ func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence in
 }
 
 func (h *InitializeHandler) prepareAccounts(ctx context.Context, sobId uuid.UUID, cmds ...InitializeCmdReport) error {
-	var accountNumbers []string
+	// Fetch SoB to get codeLengths for conversion
+	sob, err := h.sobService.ReadById(ctx, sobId)
+	if err != nil {
+		return fmt.Errorf("could not read sob: %w", err)
+	}
+	h.codeLengths = sob.AccountsCodeLength
+
+	// Collect all human-readable account numbers and convert to raw format
+	var rawAccountNumbers []string
+	humanReadableToRaw := make(map[string]string) // human-readable -> raw
 
 	for _, cmd := range cmds {
 		for _, section := range cmd.Sections {
-			accountNumbers = append(accountNumbers, collectAccountNumbersFromSection(section)...)
+			for _, humanNum := range collectAccountNumbersFromSection(section) {
+				// Skip if already converted
+				if _, exists := humanReadableToRaw[humanNum]; exists {
+					continue
+				}
+				// Convert to raw format
+				rawNum, err := account.RawFromReadable(humanNum, h.codeLengths)
+				if err != nil {
+					return fmt.Errorf("could not convert account number %s: %w", humanNum, err)
+				}
+				humanReadableToRaw[humanNum] = rawNum
+				rawAccountNumbers = append(rawAccountNumbers, rawNum)
+			}
 		}
 	}
 
-	accountIds, err := h.generalLedgerService.ReadAccountIdsByNumbers(ctx, sobId, accountNumbers)
+	// Query by raw account numbers
+	accountIds, err := h.generalLedgerService.ReadAccountIdsByRawNumbers(ctx, sobId, rawAccountNumbers)
 	if err != nil {
 		return err
 	}
 
+	// Store map keyed by raw account numbers
 	h.accounts = accountIds
 	return nil
 }

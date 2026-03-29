@@ -2270,12 +2270,6 @@ const docTemplate = `{
                 "level": {
                     "type": "integer"
                 },
-                "numberHierarchy": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
                 "sobId": {
                     "type": "string"
                 },
@@ -2351,12 +2345,6 @@ const docTemplate = `{
                 },
                 "level": {
                     "type": "integer"
-                },
-                "numberHierarchy": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
                 },
                 "sobId": {
                     "type": "string"

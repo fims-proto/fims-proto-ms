@@ -65,7 +65,13 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 	}
 
 	if cmd.SuperiorAccountNumber != "" {
-		superiorAccount, err := h.repo.ReadAccountByNumber(ctx, cmd.SobId, cmd.SuperiorAccountNumber)
+		// Convert human-readable superior account number to raw
+		rawSuperiorNumber, err := account.RawFromReadable(cmd.SuperiorAccountNumber, sob.AccountsCodeLength)
+		if err != nil {
+			return fmt.Errorf("invalid superior account number %s: %w", cmd.SuperiorAccountNumber, err)
+		}
+
+		superiorAccount, err := h.repo.ReadAccountByRawNumber(ctx, cmd.SobId, rawSuperiorNumber)
 		if err != nil {
 			return err
 		}
@@ -84,7 +90,11 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 
 		superiorAccountId = superiorAccount.Id()
 		level = superiorAccount.Level() + 1
-		numberHierarchy = append(superiorAccount.NumberHierarchy(), cmd.LevelNumber)
+		superiorHierarchy, err := account.HierarchyFromRaw(superiorAccount.RawAccountNumber())
+		if err != nil {
+			return fmt.Errorf("failed to extract hierarchy from raw account number: %w", err)
+		}
+		numberHierarchy = append(superiorHierarchy, cmd.LevelNumber)
 	}
 
 	newAccount, err := account.New(

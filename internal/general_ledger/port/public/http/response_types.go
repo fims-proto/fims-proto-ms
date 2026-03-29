@@ -46,7 +46,6 @@ type AccountSlimResponse struct {
 	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
 	Title             string     `json:"title,omitempty"`
 	AccountNumber     string     `json:"accountNumber,omitempty"`
-	NumberHierarchy   []int      `json:"numberHierarchy,omitempty"`
 	Level             int        `json:"level"`
 	IsLeaf            bool       `json:"isLeaf"`
 	Class             string     `json:"class"`
@@ -64,7 +63,6 @@ type AccountDetailResponse struct {
 	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
 	Title               string                      `json:"title,omitempty"`
 	AccountNumber       string                      `json:"accountNumber,omitempty"`
-	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
 	Level               int                         `json:"level"`
 	IsLeaf              bool                        `json:"isLeaf"`
 	Class               string                      `json:"class"`
@@ -245,7 +243,6 @@ func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {
 		SuperiorAccountId: dto.SuperiorAccountId,
 		Title:             dto.Title,
 		AccountNumber:     dto.AccountNumber,
-		NumberHierarchy:   dto.NumberHierarchy,
 		Level:             dto.Level,
 		IsLeaf:            dto.IsLeaf,
 		Class:             strconv.Itoa(dto.Class),
@@ -268,7 +265,6 @@ func accountDTOToDetailVO(dto query.Account) AccountDetailResponse {
 		SuperiorAccountId:   dto.SuperiorAccountId,
 		Title:               dto.Title,
 		AccountNumber:       dto.AccountNumber,
-		NumberHierarchy:     dto.NumberHierarchy,
 		Level:               dto.Level,
 		IsLeaf:              dto.IsLeaf,
 		Class:               strconv.Itoa(dto.Class),

@@ -60,34 +60,34 @@ func (a *Application) Inject(
 	dimensionService service.DimensionService,
 ) {
 	a.Queries = Queries{
-		AllAccounts:            query.NewAllAccountsHandler(readModel),
-		AccountById:            query.NewAccountByIdHandler(readModel, dimensionService),
+		AllAccounts:            query.NewAllAccountsHandler(readModel, sobService),
+		AccountById:            query.NewAccountByIdHandler(readModel, sobService, dimensionService),
 		AllPeriods:             query.NewAllPeriodsHandler(readModel),
-		FirstPeriodLedgers:     query.NewFirstPeriodLedgersHandler(readModel),
-		PagingLedgersByPeriod:  query.NewLedgersByPeriodRangeHandler(readModel),
+		FirstPeriodLedgers:     query.NewFirstPeriodLedgersHandler(readModel, sobService),
+		PagingLedgersByPeriod:  query.NewLedgersByPeriodRangeHandler(readModel, sobService),
 		LedgerSummary:          query.NewLedgerSummaryHandler(readModel),
 		LedgerDimensionSummary: query.NewLedgerDimensionSummaryHandler(readModel),
 		PagingLedgerEntries:    query.NewPagingLedgerEntriesHandler(readModel),
-		JournalById:            query.NewJournalByIdHandler(readModel, userService, dimensionService),
-		PagingJournals:         query.NewPagingJournalsHandler(readModel, userService),
-		PeriodPreCloseCheck:    query.NewPeriodPreCloseCheckHandler(readModel),
+		JournalById:            query.NewJournalByIdHandler(readModel, sobService, userService, dimensionService),
+		PagingJournals:         query.NewPagingJournalsHandler(readModel, sobService, userService),
+		PeriodPreCloseCheck:    query.NewPeriodPreCloseCheckHandler(readModel, sobService),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
 		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
 
 		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
-		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
+		UpdateAccount: command.NewUpdateAccountHandler(repo),
 		DeleteAccount: command.NewDeleteAccountHandler(repo),
 
 		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
 
-		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService, dimensionService),
+		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService, dimensionService, sobService),
 		AuditJournal:        command.NewAuditJournalHandler(repo),
 		CancelAuditJournal:  command.NewCancelAuditJournalHandler(repo),
 		ReviewJournal:       command.NewReviewJournalHandler(repo),
 		CancelReviewJournal: command.NewCancelReviewJournalHandler(repo),
-		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService, dimensionService),
+		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService, dimensionService, sobService),
 		PostJournal:         command.NewPostJournalHandler(repo),
 
 		Migrate: command.NewMigrationHandler(repo),

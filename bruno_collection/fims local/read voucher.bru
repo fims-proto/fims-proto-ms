@@ -1,7 +1,7 @@
 meta {
   name: read journal
   type: http
-  seq: 12
+  seq: 24
 }
 
 get {
@@ -13,7 +13,7 @@ get {
 script:pre-request {
   const journalIds = bru.getVar("journal_ids")
   const index = Number(bru.getVar("journal_index")) || 0
-
+  
   bru.setVar("current_journal_id", journalIds[index])
   bru.setVar("journal_index", index + 1)
 }
@@ -22,7 +22,7 @@ tests {
   test("Read journal by id 200", function () {
       expect(res.getStatus()).to.equal(200)
   })
-
+  
   test("Number check", function () {
       var jsonData = res.getBody()
       expect(jsonData.documentNumber).to.eql(`记 ${bru.getVar("journal_index")} 号`)

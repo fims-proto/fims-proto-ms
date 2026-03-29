@@ -27,9 +27,10 @@ type UpdateJournalHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
 	dimensionService service.DimensionService
+	sobService       service.SobService
 }
 
-func NewUpdateJournalHandler(repo domain.Repository, numberingService service.NumberingService, dimensionService service.DimensionService) UpdateJournalHandler {
+func NewUpdateJournalHandler(repo domain.Repository, numberingService service.NumberingService, dimensionService service.DimensionService, sobService service.SobService) UpdateJournalHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -42,10 +43,15 @@ func NewUpdateJournalHandler(repo domain.Repository, numberingService service.Nu
 		panic("nil dimension service")
 	}
 
+	if sobService == nil {
+		panic("nil sob service")
+	}
+
 	return UpdateJournalHandler{
 		repo:             repo,
 		numberingService: numberingService,
 		dimensionService: dimensionService,
+		sobService:       sobService,
 	}
 }
 
@@ -62,7 +68,7 @@ func (h UpdateJournalHandler) updateJournal(ctx context.Context, cmd UpdateJourn
 		func(j *journal.Journal) (*journal.Journal, error) {
 			// update journal lines
 			if len(cmd.JournalLines) > 0 {
-				journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, j.SobId(), cmd.JournalLines)
+				journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, h.sobService, j.SobId(), cmd.JournalLines)
 				if err != nil {
 					return nil, fmt.Errorf("failed to prepare journal lines: %w", err)
 				}

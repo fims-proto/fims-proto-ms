@@ -13,7 +13,7 @@ type GeneralLedgerService interface {
 	ReadPeriodById(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) (*general_ledger.Period, error)
 	ReadFirstPeriodOfTheYear(ctx context.Context, sobId uuid.UUID, fiscalYear int) (*general_ledger.Period, error)
 
-	ReadAccountIdsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) (map[string]uuid.UUID, error)
+	ReadAccountIdsByRawNumbers(ctx context.Context, sobId uuid.UUID, rawAccountNumbers []string) (map[string]uuid.UUID, error)
 
 	ReadLedgersByAccountAndPeriodsOrderByPeriod(
 		ctx context.Context,

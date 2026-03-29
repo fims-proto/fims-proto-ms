@@ -1,14 +1,22 @@
 package account
 
-func (a *Account) UpdateNumber(levelNumber int, codeLengths []int) error {
-	a.numberHierarchy = a.numberHierarchy[:len(a.numberHierarchy)-1]
-	a.numberHierarchy = append(a.numberHierarchy, levelNumber)
+import "fmt"
 
-	accountNumber, err := composeAccountNumber(a.numberHierarchy, codeLengths)
+func (a *Account) UpdateNumber(levelNumber int) error {
+	// Get current hierarchy and replace the last element with the new level number
+	currentHierarchy, err := HierarchyFromRaw(a.RawAccountNumber())
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to extract hierarchy from raw account number: %w", err)
+	}
+	newHierarchy := currentHierarchy[:len(currentHierarchy)-1]
+	newHierarchy = append(newHierarchy, levelNumber)
+
+	// Create new raw account number from updated hierarchy
+	newRawNumber, err := PadRawAccountNumber(newHierarchy)
+	if err != nil {
+		return fmt.Errorf("failed to pad raw account number: %w", err)
 	}
 
-	a.accountNumber = accountNumber
+	a.rawAccountNumber = newRawNumber
 	return nil
 }

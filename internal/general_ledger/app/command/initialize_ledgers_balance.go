@@ -8,6 +8,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
 	"github.com/google/uuid"
@@ -65,15 +66,27 @@ func (h InitializeLedgersBalanceHandler) Handle(ctx context.Context, cmd Initial
 	if err != nil {
 		return fmt.Errorf("failed to read all sub accounts: %w", err)
 	}
-	cmdMap := utils.SliceToMap(cmd.Ledgers, func(l InitializeLedgersBalanceItemCmd) string {
-		return l.AccountNumber
-	}, func(l InitializeLedgersBalanceItemCmd) *InitializeLedgersBalanceItemCmd {
-		return &l
-	})
+
+	// Fetch SoB for code lengths to convert readable account numbers to raw
+	sob, err := h.sobService.ReadById(ctx, cmd.SobId)
+	if err != nil {
+		return fmt.Errorf("failed to read SoB: %w", err)
+	}
+
+	// Convert human-readable account numbers to raw format
+	cmdMap := make(map[string]*InitializeLedgersBalanceItemCmd)
+	for i := range cmd.Ledgers {
+		item := &cmd.Ledgers[i]
+		rawNumber, err := account.RawFromReadable(item.AccountNumber, sob.AccountsCodeLength)
+		if err != nil {
+			return fmt.Errorf("invalid account number %s: %w", item.AccountNumber, err)
+		}
+		cmdMap[rawNumber] = item
+	}
 
 	var ledgerRecords []ledgerRecord
 	for _, subAccount := range subAccountsWithSuperiors {
-		itemCmd, ok := cmdMap[subAccount.AccountNumber()]
+		itemCmd, ok := cmdMap[subAccount.RawAccountNumber()]
 		if !ok {
 			// means command doesn't provide this account
 			continue

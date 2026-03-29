@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
@@ -22,23 +21,15 @@ type UpdateAccountCmd struct {
 }
 
 type UpdateAccountHandler struct {
-	repo       domain.Repository
-	sobService service.SobService
+	repo domain.Repository
 }
 
-func NewUpdateAccountHandler(repo domain.Repository, sobService service.SobService) UpdateAccountHandler {
+func NewUpdateAccountHandler(repo domain.Repository) UpdateAccountHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
-	if sobService == nil {
-		panic("nil sob service")
-	}
-
-	return UpdateAccountHandler{
-		repo:       repo,
-		sobService: sobService,
-	}
+	return UpdateAccountHandler{repo: repo}
 }
 
 func (h UpdateAccountHandler) Handle(ctx context.Context, cmd UpdateAccountCmd) error {
@@ -56,12 +47,7 @@ func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd) 
 		}
 
 		if cmd.LevelNumber != 0 {
-			sob, err := h.sobService.ReadById(ctx, cmd.SobId)
-			if err != nil {
-				return nil, fmt.Errorf("failed to read sob: %w", err)
-			}
-
-			if err = a.UpdateNumber(cmd.LevelNumber, sob.AccountsCodeLength); err != nil {
+			if err := a.UpdateNumber(cmd.LevelNumber); err != nil {
 				return nil, fmt.Errorf("failed to update account number: %w", err)
 			}
 		}

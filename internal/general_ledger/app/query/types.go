@@ -28,8 +28,8 @@ type Account struct {
 	SobId                uuid.UUID
 	SuperiorAccountId    *uuid.UUID
 	Title                string
-	AccountNumber        string
-	NumberHierarchy      []int
+	RawAccountNumber     string
+	AccountNumber        string // human-readable, derived in query handler
 	Level                int
 	IsLeaf               bool
 	Class                int

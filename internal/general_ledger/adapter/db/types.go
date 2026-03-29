@@ -15,17 +15,15 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgtype"
 	"github.com/shopspring/decimal"
 )
 
 type accountPO struct {
 	Id                uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	SobId             uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
+	SobId             uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Accounts_SobId_RawAccountNumber"`
 	SuperiorAccountId *uuid.UUID `gorm:"type:uuid"`
 	Title             string
-	AccountNumber     string           `gorm:"uniqueIndex:UQ_Accounts_SobId_AccountNumber"`
-	NumberHierarchy   pgtype.Int4Array `gorm:"type:integer[]"`
+	RawAccountNumber  string `gorm:"uniqueIndex:UQ_Accounts_SobId_RawAccountNumber"`
 	Level             int
 	IsLeaf            bool
 	Class             int
@@ -176,11 +174,6 @@ func (j journalLinePO) ResolveAssociation(entity string) (string, error) {
 // mappers
 
 func accountBOToPO(bo *account.Account) accountPO {
-	var int4array pgtype.Int4Array
-	if err := int4array.Set(bo.NumberHierarchy()); err != nil {
-		panic(fmt.Errorf("failde to convert []int to Int4Array: %w", err))
-	}
-
 	dimCategories := make([]accountDimensionCategoryPO, 0, len(bo.DimensionCategoryIds()))
 	for _, catId := range bo.DimensionCategoryIds() {
 		dimCategories = append(dimCategories, accountDimensionCategoryPO{
@@ -194,8 +187,7 @@ func accountBOToPO(bo *account.Account) accountPO {
 		SobId:               bo.SobId(),
 		SuperiorAccountId:   converter.UUIDToPtr(bo.SuperiorAccountId()),
 		Title:               bo.Title(),
-		AccountNumber:       bo.AccountNumber(),
-		NumberHierarchy:     int4array,
+		RawAccountNumber:    bo.RawAccountNumber(),
 		Level:               bo.Level(),
 		IsLeaf:              bo.IsLeaf(),
 		Class:               int(bo.Class()),
@@ -206,11 +198,6 @@ func accountBOToPO(bo *account.Account) accountPO {
 }
 
 func accountPOToBO(po accountPO) (*account.Account, error) {
-	var numberHierarchy []int
-	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
-		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
-	}
-
 	dimCategoryIds := make([]uuid.UUID, 0, len(po.DimensionCategories))
 	for _, dc := range po.DimensionCategories {
 		dimCategoryIds = append(dimCategoryIds, dc.DimensionCategoryId)
@@ -222,8 +209,7 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		converter.UUIDFromPtr(po.SuperiorAccountId),
 		nil,
 		po.Title,
-		po.AccountNumber,
-		numberHierarchy,
+		po.RawAccountNumber,
 		po.Level,
 		po.IsLeaf,
 		po.Class,
@@ -234,11 +220,6 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 }
 
 func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*account.Account, error) {
-	var numberHierarchy []int
-	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
-		return nil, fmt.Errorf("failed to assign Int4Array to []int: %w", err)
-	}
-
 	dimCategoryIds := make([]uuid.UUID, 0, len(po.DimensionCategories))
 	for _, dc := range po.DimensionCategories {
 		dimCategoryIds = append(dimCategoryIds, dc.DimensionCategoryId)
@@ -250,8 +231,7 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 		converter.UUIDFromPtr(po.SuperiorAccountId),
 		superior,
 		po.Title,
-		po.AccountNumber,
-		numberHierarchy,
+		po.RawAccountNumber,
 		po.Level,
 		po.IsLeaf,
 		po.Class,
@@ -262,11 +242,6 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 }
 
 func accountPOToDTO(po accountPO) query.Account {
-	var numberHierarchy []int
-	if err := po.NumberHierarchy.AssignTo(&numberHierarchy); err != nil {
-		panic(fmt.Errorf("failed to assign Int4Array to []int: %w", err))
-	}
-
 	dimCategoryIds := make([]uuid.UUID, 0, len(po.DimensionCategories))
 	for _, dc := range po.DimensionCategories {
 		dimCategoryIds = append(dimCategoryIds, dc.DimensionCategoryId)
@@ -277,8 +252,7 @@ func accountPOToDTO(po accountPO) query.Account {
 		Id:                   po.Id,
 		SuperiorAccountId:    po.SuperiorAccountId,
 		Title:                po.Title,
-		AccountNumber:        po.AccountNumber,
-		NumberHierarchy:      numberHierarchy,
+		RawAccountNumber:     po.RawAccountNumber,
 		Level:                po.Level,
 		IsLeaf:               po.IsLeaf,
 		Class:                po.Class,
