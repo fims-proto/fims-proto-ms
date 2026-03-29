@@ -6,9 +6,8 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
-
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
@@ -25,24 +24,12 @@ func prepareJournalLines(
 	ctx context.Context,
 	repo domain.Repository,
 	dimensionService service.DimensionService,
-	sobService service.SobService,
 	sobId uuid.UUID,
 	commands []JournalLineCmd,
 ) ([]*journal.JournalLine, error) {
-	// Fetch SoB for code lengths to convert readable account numbers to raw
-	sob, err := sobService.ReadById(ctx, sobId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read SoB: %w", err)
-	}
-
-	// Convert human-readable account numbers to raw format
 	var rawAccountNumbers []string
 	for _, item := range commands {
-		rawNumber, err := account.RawFromReadable(item.AccountNumber, sob.AccountsCodeLength)
-		if err != nil {
-			return nil, fmt.Errorf("invalid account number %s: %w", item.AccountNumber, err)
-		}
-		rawAccountNumbers = append(rawAccountNumbers, rawNumber)
+		rawAccountNumbers = append(rawAccountNumbers, item.RawAccountNumber)
 	}
 
 	// validate account numbers

@@ -68,7 +68,7 @@ func (h UpdateJournalHandler) updateJournal(ctx context.Context, cmd UpdateJourn
 		func(j *journal.Journal) (*journal.Journal, error) {
 			// update journal lines
 			if len(cmd.JournalLines) > 0 {
-				journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, h.sobService, j.SobId(), cmd.JournalLines)
+				journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, j.SobId(), cmd.JournalLines)
 				if err != nil {
 					return nil, fmt.Errorf("failed to prepare journal lines: %w", err)
 				}

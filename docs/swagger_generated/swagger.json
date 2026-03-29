@@ -2234,9 +2234,6 @@
         "http.AccountDetailResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -2263,6 +2260,9 @@
                 },
                 "level": {
                     "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -2316,9 +2316,6 @@
         "http.AccountSlimResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -2339,6 +2336,9 @@
                 },
                 "level": {
                     "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -2403,7 +2403,7 @@
                 "levelNumber": {
                     "type": "integer"
                 },
-                "superiorAccountNumber": {
+                "superiorRawAccountNumber": {
                     "type": "string"
                 },
                 "title": {
@@ -2568,11 +2568,11 @@
         "http.InitializeLedgersBalanceItemRequest": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "openingBalance": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -2711,9 +2711,6 @@
         "http.JournalLineRequest": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "amount": {
                     "type": "number"
                 },
@@ -2724,6 +2721,9 @@
                     }
                 },
                 "id": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
                     "type": "string"
                 },
                 "text": {
@@ -2877,9 +2877,6 @@
                 "accountId": {
                     "type": "string"
                 },
-                "accountNumber": {
-                    "type": "string"
-                },
                 "accountTitle": {
                     "type": "string"
                 },
@@ -2903,6 +2900,9 @@
                 },
                 "periodDebit": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -3006,14 +3006,14 @@
         "http.PreCloseCheckPnLAccountResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "accountTitle": {
                     "type": "string"
                 },
                 "endingAmount": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 }
             }
         },

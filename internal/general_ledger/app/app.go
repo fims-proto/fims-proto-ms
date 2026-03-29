@@ -60,21 +60,21 @@ func (a *Application) Inject(
 	dimensionService service.DimensionService,
 ) {
 	a.Queries = Queries{
-		AllAccounts:            query.NewAllAccountsHandler(readModel, sobService),
-		AccountById:            query.NewAccountByIdHandler(readModel, sobService, dimensionService),
+		AllAccounts:            query.NewAllAccountsHandler(readModel),
+		AccountById:            query.NewAccountByIdHandler(readModel, dimensionService),
 		AllPeriods:             query.NewAllPeriodsHandler(readModel),
-		FirstPeriodLedgers:     query.NewFirstPeriodLedgersHandler(readModel, sobService),
-		PagingLedgersByPeriod:  query.NewLedgersByPeriodRangeHandler(readModel, sobService),
+		FirstPeriodLedgers:     query.NewFirstPeriodLedgersHandler(readModel),
+		PagingLedgersByPeriod:  query.NewLedgersByPeriodRangeHandler(readModel),
 		LedgerSummary:          query.NewLedgerSummaryHandler(readModel),
 		LedgerDimensionSummary: query.NewLedgerDimensionSummaryHandler(readModel),
 		PagingLedgerEntries:    query.NewPagingLedgerEntriesHandler(readModel),
-		JournalById:            query.NewJournalByIdHandler(readModel, sobService, userService, dimensionService),
-		PagingJournals:         query.NewPagingJournalsHandler(readModel, sobService, userService),
-		PeriodPreCloseCheck:    query.NewPeriodPreCloseCheckHandler(readModel, sobService),
+		JournalById:            query.NewJournalByIdHandler(readModel, userService, dimensionService),
+		PagingJournals:         query.NewPagingJournalsHandler(readModel, userService),
+		PeriodPreCloseCheck:    query.NewPeriodPreCloseCheckHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
-		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
+		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo),
 
 		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
 		UpdateAccount: command.NewUpdateAccountHandler(repo),

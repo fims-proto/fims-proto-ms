@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -17,15 +17,15 @@ import (
 )
 
 type CreateAccountCmd struct {
-	AccountId             uuid.UUID
-	SobId                 uuid.UUID
-	Title                 string
-	LevelNumber           int
-	SuperiorAccountNumber string
-	BalanceDirection      string
-	Class                 int
-	Group                 int
-	DimensionCategoryIds  []uuid.UUID
+	AccountId                uuid.UUID
+	SobId                    uuid.UUID
+	Title                    string
+	LevelNumber              int
+	SuperiorRawAccountNumber string
+	BalanceDirection         string
+	Class                    int
+	Group                    int
+	DimensionCategoryIds     []uuid.UUID
 }
 
 type CreateAccountHandler struct {
@@ -64,14 +64,8 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		return fmt.Errorf("invalid class or group: %w", err)
 	}
 
-	if cmd.SuperiorAccountNumber != "" {
-		// Convert human-readable superior account number to raw
-		rawSuperiorNumber, err := account.RawFromReadable(cmd.SuperiorAccountNumber, sob.AccountsCodeLength)
-		if err != nil {
-			return fmt.Errorf("invalid superior account number %s: %w", cmd.SuperiorAccountNumber, err)
-		}
-
-		superiorAccount, err := h.repo.ReadAccountByRawNumber(ctx, cmd.SobId, rawSuperiorNumber)
+	if cmd.SuperiorRawAccountNumber != "" {
+		superiorAccount, err := h.repo.ReadAccountByRawNumber(ctx, cmd.SobId, cmd.SuperiorRawAccountNumber)
 		if err != nil {
 			return err
 		}
@@ -97,13 +91,20 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		numberHierarchy = append(superiorHierarchy, cmd.LevelNumber)
 	}
 
+	// Validate: levelNumber string length must not exceed code length for this level
+	levelNumberStr := fmt.Sprintf("%d", cmd.LevelNumber)
+	codeLength := sob.AccountsCodeLength[level-1]
+	if len(levelNumberStr) > codeLength {
+		return fmt.Errorf("level number %d (length %d) exceeds code length %d for level %d",
+			cmd.LevelNumber, len(levelNumberStr), codeLength, level)
+	}
+
 	newAccount, err := account.New(
 		cmd.AccountId,
 		cmd.SobId,
 		superiorAccountId,
 		cmd.Title,
 		numberHierarchy,
-		sob.AccountsCodeLength,
 		level,
 		true,
 		cmd.Class,

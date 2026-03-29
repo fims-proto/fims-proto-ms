@@ -6,7 +6,6 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
 	"github.com/google/uuid"
 )
@@ -15,45 +14,7 @@ type void struct{}
 
 var empty void
 
-// enrichAccountNumber derives Account.AccountNumber from RawAccountNumber using codeLengths
-func enrichAccountNumber(codeLengths []int, a Account) Account {
-	if a.RawAccountNumber == "" {
-		return a
-	}
-	readable, err := account.ReadableFromRaw(a.RawAccountNumber, codeLengths)
-	if err != nil {
-		return a
-	}
-	a.AccountNumber = readable
-	return a
-}
-
-// enrichAccountNumbers enriches a slice of accounts
-func enrichAccountNumbers(codeLengths []int, accounts []Account) []Account {
-	for i := range accounts {
-		accounts[i] = enrichAccountNumber(codeLengths, accounts[i])
-	}
-	return accounts
-}
-
-// enrichLedgerAccountNumbers enriches the Account field in each Ledger
-func enrichLedgerAccountNumbers(codeLengths []int, ledgers []Ledger) []Ledger {
-	for i := range ledgers {
-		ledgers[i].Account = enrichAccountNumber(codeLengths, ledgers[i].Account)
-	}
-	return ledgers
-}
-
-// enrichJournalAccountNumbers enriches the Account field in each JournalLine of each Journal
-func enrichJournalAccountNumbers(codeLengths []int, journals []Journal) []Journal {
-	for i := range journals {
-		for j := range journals[i].JournalLines {
-			journals[i].JournalLines[j].Account = enrichAccountNumber(codeLengths, journals[i].JournalLines[j].Account)
-		}
-	}
-	return journals
-}
-
+// enrichUserName enriches journals with full user data (name, traits) by looking up users in the user service
 func enrichUserName(ctx context.Context, service service.UserService, journals []Journal) ([]Journal, error) {
 	userSet := make(map[uuid.UUID]void)
 	addSetIfNotNil := func(u *User) {

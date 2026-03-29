@@ -150,7 +150,6 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					superiorAccountId,
 					entry.title,
 					numberHierarchy,
-					codeLengthLimits,
 					entry.level,
 					!found,
 					entry.class,

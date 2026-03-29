@@ -2240,9 +2240,6 @@ const docTemplate = `{
         "http.AccountDetailResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -2269,6 +2266,9 @@ const docTemplate = `{
                 },
                 "level": {
                     "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -2322,9 +2322,6 @@ const docTemplate = `{
         "http.AccountSlimResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -2345,6 +2342,9 @@ const docTemplate = `{
                 },
                 "level": {
                     "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -2409,7 +2409,7 @@ const docTemplate = `{
                 "levelNumber": {
                     "type": "integer"
                 },
-                "superiorAccountNumber": {
+                "superiorRawAccountNumber": {
                     "type": "string"
                 },
                 "title": {
@@ -2574,11 +2574,11 @@ const docTemplate = `{
         "http.InitializeLedgersBalanceItemRequest": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "openingBalance": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -2717,9 +2717,6 @@ const docTemplate = `{
         "http.JournalLineRequest": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "amount": {
                     "type": "number"
                 },
@@ -2730,6 +2727,9 @@ const docTemplate = `{
                     }
                 },
                 "id": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
                     "type": "string"
                 },
                 "text": {
@@ -2883,9 +2883,6 @@ const docTemplate = `{
                 "accountId": {
                     "type": "string"
                 },
-                "accountNumber": {
-                    "type": "string"
-                },
                 "accountTitle": {
                     "type": "string"
                 },
@@ -2909,6 +2906,9 @@ const docTemplate = `{
                 },
                 "periodDebit": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -3012,14 +3012,14 @@ const docTemplate = `{
         "http.PreCloseCheckPnLAccountResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "accountTitle": {
                     "type": "string"
                 },
                 "endingAmount": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 }
             }
         },

@@ -115,15 +115,15 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		return
 	}
 	cmd := command.CreateAccountCmd{
-		AccountId:             uuid.New(),
-		SobId:                 uuid.MustParse(c.Param("sobId")),
-		Title:                 req.Title,
-		LevelNumber:           req.LevelNumber,
-		BalanceDirection:      req.BalanceDirection,
-		Class:                 classReq,
-		Group:                 group,
-		SuperiorAccountNumber: req.SuperiorAccountNumber,
-		DimensionCategoryIds:  req.DimensionCategoryIds,
+		AccountId:                uuid.New(),
+		SobId:                    uuid.MustParse(c.Param("sobId")),
+		Title:                    req.Title,
+		LevelNumber:              req.LevelNumber,
+		BalanceDirection:         req.BalanceDirection,
+		Class:                    classReq,
+		Group:                    group,
+		SuperiorRawAccountNumber: req.SuperiorRawAccountNumber,
+		DimensionCategoryIds:     req.DimensionCategoryIds,
 	}
 
 	if err = h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {

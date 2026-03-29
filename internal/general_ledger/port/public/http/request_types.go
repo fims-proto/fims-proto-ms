@@ -9,13 +9,13 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Title                 string      `json:"title"`
-	LevelNumber           int         `json:"levelNumber"`
-	SuperiorAccountNumber string      `json:"superiorAccountNumber,omitempty"`
-	BalanceDirection      string      `json:"balanceDirection"`
-	Class                 string      `json:"class,omitempty"`
-	Group                 string      `json:"group,omitempty"`
-	DimensionCategoryIds  []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	Title                    string      `json:"title"`
+	LevelNumber              int         `json:"levelNumber"`
+	SuperiorRawAccountNumber string      `json:"superiorRawAccountNumber,omitempty"`
+	BalanceDirection         string      `json:"balanceDirection"`
+	Class                    string      `json:"class,omitempty"`
+	Group                    string      `json:"group,omitempty"`
+	DimensionCategoryIds     []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
 }
 
 type UpdateAccountRequest struct {
@@ -38,7 +38,7 @@ type CreateJournalRequest struct {
 
 type JournalLineRequest struct {
 	Id                 uuid.UUID       `json:"id"`
-	AccountNumber      string          `json:"accountNumber"`
+	RawAccountNumber   string          `json:"rawAccountNumber"`
 	Text               string          `json:"text"`
 	Amount             decimal.Decimal `json:"amount"`
 	DimensionOptionIds []uuid.UUID     `json:"dimensionOptionIds,omitempty"`
@@ -68,8 +68,8 @@ type InitializeLedgersBalanceRequest struct {
 }
 
 type InitializeLedgersBalanceItemRequest struct {
-	AccountNumber  string          `json:"accountNumber"`
-	OpeningBalance decimal.Decimal `json:"openingBalance"`
+	RawAccountNumber string          `json:"rawAccountNumber"`
+	OpeningBalance   decimal.Decimal `json:"openingBalance"`
 }
 
 // mapper
@@ -78,7 +78,7 @@ func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
 	return command.JournalLineCmd{
 		Id:                 r.Id,
 		Text:               r.Text,
-		AccountNumber:      r.AccountNumber,
+		RawAccountNumber:   r.RawAccountNumber,
 		Amount:             r.Amount,
 		DimensionOptionIds: r.DimensionOptionIds,
 	}
@@ -117,8 +117,8 @@ func (r InitializeLedgersBalanceRequest) mapToCommand(sobId uuid.UUID) command.I
 	var itemCmd []command.InitializeLedgersBalanceItemCmd
 	for _, l := range r.Ledgers {
 		itemCmd = append(itemCmd, command.InitializeLedgersBalanceItemCmd{
-			AccountNumber:  l.AccountNumber,
-			OpeningBalance: l.OpeningBalance,
+			RawAccountNumber: l.RawAccountNumber,
+			OpeningBalance:   l.OpeningBalance,
 		})
 	}
 

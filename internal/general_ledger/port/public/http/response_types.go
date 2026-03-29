@@ -45,7 +45,7 @@ type AccountSlimResponse struct {
 	SobId             uuid.UUID  `json:"sobId,omitempty"`
 	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
 	Title             string     `json:"title,omitempty"`
-	AccountNumber     string     `json:"accountNumber,omitempty"`
+	RawAccountNumber  string     `json:"rawAccountNumber,omitempty"`
 	Level             int        `json:"level"`
 	IsLeaf            bool       `json:"isLeaf"`
 	Class             string     `json:"class"`
@@ -62,7 +62,7 @@ type AccountDetailResponse struct {
 	SobId               uuid.UUID                   `json:"sobId,omitempty"`
 	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
 	Title               string                      `json:"title,omitempty"`
-	AccountNumber       string                      `json:"accountNumber,omitempty"`
+	RawAccountNumber    string                      `json:"rawAccountNumber,omitempty"`
 	Level               int                         `json:"level"`
 	IsLeaf              bool                        `json:"isLeaf"`
 	Class               string                      `json:"class"`
@@ -88,7 +88,7 @@ type LedgerResponse struct {
 	SobId             uuid.UUID       `json:"sobId,omitempty"`
 	AccountId         uuid.UUID       `json:"accountId,omitempty"`
 	SuperiorAccountId *uuid.UUID      `json:"superiorAccountId,omitempty"`
-	AccountNumber     string          `json:"accountNumber,omitempty"`
+	RawAccountNumber  string          `json:"rawAccountNumber,omitempty"`
 	AccountTitle      string          `json:"accountTitle,omitempty"`
 	AccountClass      string          `json:"accountClass"`
 	AccountGroup      string          `json:"accountGroup"`
@@ -205,9 +205,9 @@ type PreCloseCheckJournalResponse struct {
 }
 
 type PreCloseCheckPnLAccountResponse struct {
-	AccountNumber string          `json:"accountNumber"`
-	AccountTitle  string          `json:"accountTitle"`
-	EndingAmount  decimal.Decimal `json:"endingAmount"`
+	RawAccountNumber string          `json:"rawAccountNumber"`
+	AccountTitle     string          `json:"accountTitle"`
+	EndingAmount     decimal.Decimal `json:"endingAmount"`
 }
 
 type PreCloseCheckUnpostedJournalsResponse struct {
@@ -242,7 +242,7 @@ func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {
 		SobId:             dto.SobId,
 		SuperiorAccountId: dto.SuperiorAccountId,
 		Title:             dto.Title,
-		AccountNumber:     dto.AccountNumber,
+		RawAccountNumber:  dto.RawAccountNumber,
 		Level:             dto.Level,
 		IsLeaf:            dto.IsLeaf,
 		Class:             strconv.Itoa(dto.Class),
@@ -264,7 +264,7 @@ func accountDTOToDetailVO(dto query.Account) AccountDetailResponse {
 		SobId:               dto.SobId,
 		SuperiorAccountId:   dto.SuperiorAccountId,
 		Title:               dto.Title,
-		AccountNumber:       dto.AccountNumber,
+		RawAccountNumber:    dto.RawAccountNumber,
 		Level:               dto.Level,
 		IsLeaf:              dto.IsLeaf,
 		Class:               strconv.Itoa(dto.Class),
@@ -285,7 +285,7 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 		SobId:             dto.SobId,
 		AccountId:         dto.AccountId,
 		SuperiorAccountId: dto.Account.SuperiorAccountId,
-		AccountNumber:     dto.Account.AccountNumber,
+		RawAccountNumber:  dto.Account.RawAccountNumber,
 		AccountTitle:      dto.Account.Title,
 		AccountClass:      strconv.Itoa(dto.Account.Class),
 		AccountGroup:      strconv.Itoa(dto.Account.Group),
@@ -425,9 +425,9 @@ func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
 	accounts := make([]PreCloseCheckPnLAccountResponse, 0, len(dto.ProfitAndLossBalance.Accounts))
 	for _, a := range dto.ProfitAndLossBalance.Accounts {
 		accounts = append(accounts, PreCloseCheckPnLAccountResponse{
-			AccountNumber: a.AccountNumber,
-			AccountTitle:  a.AccountTitle,
-			EndingAmount:  a.EndingAmount,
+			RawAccountNumber: a.RawAccountNumber,
+			AccountTitle:     a.AccountTitle,
+			EndingAmount:     a.EndingAmount,
 		})
 	}
 

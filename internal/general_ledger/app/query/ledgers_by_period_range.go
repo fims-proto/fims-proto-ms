@@ -4,29 +4,21 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
-
 	"github.com/google/uuid"
 )
 
 type LedgersByPeriodRangeHandler struct {
 	readModel            GeneralLedgerReadModel
-	sobService           service.SobService
 	periodRangeValidator periodRangeValidator
 }
 
-func NewLedgersByPeriodRangeHandler(readModel GeneralLedgerReadModel, sobService service.SobService) LedgersByPeriodRangeHandler {
+func NewLedgersByPeriodRangeHandler(readModel GeneralLedgerReadModel) LedgersByPeriodRangeHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 
-	if sobService == nil {
-		panic("nil sob service")
-	}
-
 	return LedgersByPeriodRangeHandler{
 		readModel:            readModel,
-		sobService:           sobService,
 		periodRangeValidator: newPeriodRangeValidator(readModel),
 	}
 }
@@ -44,12 +36,7 @@ func (h LedgersByPeriodRangeHandler) Handle(ctx context.Context, sobId uuid.UUID
 
 	aggregated := aggregateLedgersByAccount(ledgers)
 
-	sob, err := h.sobService.ReadById(ctx, sobId)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read sob: %w", err)
-	}
-
-	return enrichLedgerAccountNumbers(sob.AccountsCodeLength, aggregated), nil
+	return aggregated, nil
 }
 
 // aggregateLedgersByAccount merges per-period ledger rows into one Ledger per account.

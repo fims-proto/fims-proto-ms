@@ -6,9 +6,7 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 
 	"github.com/google/uuid"
@@ -21,29 +19,21 @@ type InitializeLedgersBalanceCmd struct {
 }
 
 type InitializeLedgersBalanceItemCmd struct {
-	AccountNumber  string
-	OpeningBalance decimal.Decimal
-	validated      bool // for command validation
+	RawAccountNumber string
+	OpeningBalance   decimal.Decimal
+	validated        bool // for command validation
 }
 
 type InitializeLedgersBalanceHandler struct {
-	repo       domain.Repository
-	sobService service.SobService
+	repo domain.Repository
 }
 
-func NewInitializeLedgersBalanceHandler(repo domain.Repository, sobService service.SobService) InitializeLedgersBalanceHandler {
+func NewInitializeLedgersBalanceHandler(repo domain.Repository) InitializeLedgersBalanceHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
 
-	if sobService == nil {
-		panic("nil sob service")
-	}
-
-	return InitializeLedgersBalanceHandler{
-		repo:       repo,
-		sobService: sobService,
-	}
+	return InitializeLedgersBalanceHandler{repo: repo}
 }
 
 func (h InitializeLedgersBalanceHandler) Handle(ctx context.Context, cmd InitializeLedgersBalanceCmd) error {
@@ -67,21 +57,10 @@ func (h InitializeLedgersBalanceHandler) Handle(ctx context.Context, cmd Initial
 		return fmt.Errorf("failed to read all sub accounts: %w", err)
 	}
 
-	// Fetch SoB for code lengths to convert readable account numbers to raw
-	sob, err := h.sobService.ReadById(ctx, cmd.SobId)
-	if err != nil {
-		return fmt.Errorf("failed to read SoB: %w", err)
-	}
-
-	// Convert human-readable account numbers to raw format
 	cmdMap := make(map[string]*InitializeLedgersBalanceItemCmd)
 	for i := range cmd.Ledgers {
 		item := &cmd.Ledgers[i]
-		rawNumber, err := account.RawFromReadable(item.AccountNumber, sob.AccountsCodeLength)
-		if err != nil {
-			return fmt.Errorf("invalid account number %s: %w", item.AccountNumber, err)
-		}
-		cmdMap[rawNumber] = item
+		cmdMap[item.RawAccountNumber] = item
 	}
 
 	var ledgerRecords []ledgerRecord
@@ -110,7 +89,7 @@ func (h InitializeLedgersBalanceHandler) Handle(ctx context.Context, cmd Initial
 	// if command item remains un-validated, means input gives account we don't know
 	for _, itemCmd := range cmdMap {
 		if !itemCmd.validated {
-			return fmt.Errorf("accept only sub-accounts, but got invalid account: %s", itemCmd.AccountNumber)
+			return fmt.Errorf("accept only sub-accounts, but got invalid account: %s", itemCmd.RawAccountNumber)
 		}
 	}
 

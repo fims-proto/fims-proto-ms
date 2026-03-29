@@ -85,7 +85,7 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 	}
 
 	// prepare journal lines
-	journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, h.sobService, cmd.SobId, cmd.JournalLines)
+	journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, cmd.SobId, cmd.JournalLines)
 	if err != nil {
 		return fmt.Errorf("failed to prepare journal lines: %w", err)
 	}

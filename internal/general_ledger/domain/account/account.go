@@ -35,7 +35,6 @@ func New(
 	superiorAccountId uuid.UUID,
 	title string,
 	numberHierarchy []int,
-	codeLengths []int,
 	level int,
 	isLeaf bool,
 	classId int,

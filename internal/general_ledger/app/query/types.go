@@ -29,7 +29,6 @@ type Account struct {
 	SuperiorAccountId    *uuid.UUID
 	Title                string
 	RawAccountNumber     string
-	AccountNumber        string // human-readable, derived in query handler
 	Level                int
 	IsLeaf               bool
 	Class                int
@@ -139,9 +138,9 @@ type PreCloseCheckUnpostedJournals struct {
 }
 
 type PreCloseCheckPnLAccount struct {
-	AccountNumber string
-	AccountTitle  string
-	EndingAmount  decimal.Decimal
+	RawAccountNumber string
+	AccountTitle     string
+	EndingAmount     decimal.Decimal
 }
 
 type PreCloseCheckPnLBalance struct {

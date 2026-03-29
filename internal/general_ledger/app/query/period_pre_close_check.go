@@ -8,30 +8,21 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/pageable"
 	"github/fims-proto/fims-proto-ms/internal/common/data/sortable"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type PeriodPreCloseCheckHandler struct {
-	readModel  GeneralLedgerReadModel
-	sobService service.SobService
+	readModel GeneralLedgerReadModel
 }
 
-func NewPeriodPreCloseCheckHandler(readModel GeneralLedgerReadModel, sobService service.SobService) PeriodPreCloseCheckHandler {
+func NewPeriodPreCloseCheckHandler(readModel GeneralLedgerReadModel) PeriodPreCloseCheckHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
 
-	if sobService == nil {
-		panic("nil sob service")
-	}
-
-	return PeriodPreCloseCheckHandler{
-		readModel:  readModel,
-		sobService: sobService,
-	}
+	return PeriodPreCloseCheckHandler{readModel: readModel}
 }
 
 func (h PeriodPreCloseCheckHandler) Handle(ctx context.Context, sobId, periodId uuid.UUID) (PreCloseCheck, error) {
@@ -105,19 +96,12 @@ func (h PeriodPreCloseCheckHandler) checkProfitAndLossBalance(ctx context.Contex
 		return PreCloseCheckPnLBalance{}, err
 	}
 
-	sob, err := h.sobService.ReadById(ctx, sobId)
-	if err != nil {
-		return PreCloseCheckPnLBalance{}, fmt.Errorf("failed to read sob: %w", err)
-	}
-
-	ledgers = enrichLedgerAccountNumbers(sob.AccountsCodeLength, ledgers)
-
 	accounts := make([]PreCloseCheckPnLAccount, 0, len(ledgers))
 	for _, l := range ledgers {
 		accounts = append(accounts, PreCloseCheckPnLAccount{
-			AccountNumber: l.Account.AccountNumber,
-			AccountTitle:  l.Account.Title,
-			EndingAmount:  l.EndingAmount,
+			RawAccountNumber: l.Account.RawAccountNumber,
+			AccountTitle:     l.Account.Title,
+			EndingAmount:     l.EndingAmount,
 		})
 	}
 
