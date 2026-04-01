@@ -22,91 +22,91 @@ tests {
   
   test("Ledgers have right opening balance", function () {
       const tobeTested = {
-          "1001": {
+          "001001": {
               "tested": false,
               "expectedAmount": "98400"
           },
-          "1002": {
+          "001002": {
               "tested": false,
               "expectedAmount": "285000"
           },
-          "100201": {
+          "001002000001": {
               "tested": false,
               "expectedAmount": "285000"
           },
-          "1601": {
+          "001601": {
               "tested": false,
               "expectedAmount": "18500"
           },
-          "160101": {
+          "001601000001": {
               "tested": false,
               "expectedAmount": "18500"
           },
-          "1701": {
+          "001701": {
               "tested": false,
               "expectedAmount": "36000"
           },
-          "170101": {
+          "001701000001": {
               "tested": false,
               "expectedAmount": "36000"
           },
-          "1702": {
+          "001702": {
               "tested": false,
               "expectedAmount": "-1000"
           },
-          "1801": {
+          "001801": {
               "tested": false,
               "expectedAmount": "57500"
           },
-          "180101": {
+          "001801000001": {
               "tested": false,
               "expectedAmount": "57500"
           },
-          "2211": {
+          "002211": {
               "tested": false,
               "expectedAmount": "-10000"
           },
-          "221101": {
+          "002211000001": {
               "tested": false,
               "expectedAmount": "-10000"
           },
-          "3001": {
+          "003001": {
               "tested": false,
               "expectedAmount": "-500000"
           },
-          "300101": {
+          "003001000001": {
               "tested": false,
               "expectedAmount": "-300000"
           },
-          "300102": {
+          "003001000002": {
               "tested": false,
               "expectedAmount": "-200000"
           },
-          "3103": {
+          "003103": {
               "tested": false,
               "expectedAmount": "15600"
           },
-          "5602": {
+          "005602": {
               "tested": false,
               "expectedAmount": "0"
           },
-          "560201": {
+          "005602000001": {
               "tested": false,
               "expectedAmount": "0"
           },
-          "560202": {
+          "005602000002": {
               "tested": false,
               "expectedAmount": "0"
           },
-          "560203": {
+          "005602000003": {
               "tested": false,
               "expectedAmount": "0"
           },
-          "560204": {
+          "005602000004": {
               "tested": false,
               "expectedAmount": "0"
           },
-          "560205": {
+          "005602000005": {
               "tested": false,
               "expectedAmount": "0"
           }
@@ -115,11 +115,11 @@ tests {
       const ls = res.getBody()
   
       for (let i = 0; i < ls.length; i++) {
-          const accountNumber = ls[i].accountNumber
-          if (tobeTested.hasOwnProperty(accountNumber)) {
-              tobeTested[accountNumber].tested = true
-              tobeTested[accountNumber].openingAmount = ls[i].openingAmount
-              tobeTested[accountNumber].endingAmount = ls[i].endingAmount
+          const rawAccountNumber = ls[i].rawAccountNumber
+          if (tobeTested.hasOwnProperty(rawAccountNumber)) {
+              tobeTested[rawAccountNumber].tested = true
+              tobeTested[rawAccountNumber].openingAmount = ls[i].openingAmount
+              tobeTested[rawAccountNumber].endingAmount = ls[i].endingAmount
           }
       }
   

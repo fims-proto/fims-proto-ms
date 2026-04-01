@@ -789,16 +789,16 @@ definitions:
     type: object
   http.UpdateReportFormulaRequest:
     properties:
-      accountNumber:
-        type: string
       id:
+        type: string
+      rawAccountNumber:
         type: string
       rule:
         type: string
       sumFactor:
         type: integer
     required:
-    - accountNumber
+    - rawAccountNumber
     - rule
     - sumFactor
     type: object

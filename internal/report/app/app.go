@@ -44,7 +44,7 @@ func (a *Application) Inject(
 		ReportById:    query.NewReportByIdHandler(readModel),
 	}
 	a.Commands = Commands{
-		Initialize: command.NewInitializeHandler(repo, generalLedgerService, sobService),
+		Initialize: command.NewInitializeHandler(repo, generalLedgerService),
 
 		Generate:   command.NewGenerateHandler(repo, generalLedgerService),
 		Regenerate: command.NewRegenerateHandler(repo, generalLedgerService),

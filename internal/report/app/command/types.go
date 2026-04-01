@@ -28,7 +28,7 @@ type InitializeCmdItem struct {
 }
 
 type InitializeCmdFormula struct {
-	AccountNumber string `json:"accountNumber"`
-	SumFactor     int    `json:"sumFactor"`
-	Rule          string `json:"rule"`
+	RawAccountNumber string `json:"rawAccountNumber"`
+	SumFactor        int    `json:"sumFactor"`
+	Rule             string `json:"rule"`
 }

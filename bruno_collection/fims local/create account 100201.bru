@@ -16,7 +16,7 @@ body:json {
     "class": "1",
     "group": "101",
     "levelNumber": 1,
-    "superiorAccountNumber": "1002",
+    "superiorRawAccountNumber": "001002",
     "title": "招商银行"
   }
 }
@@ -24,7 +24,7 @@ body:json {
 tests {
   test("Create account", function () {
     expect(res.getStatus()).to.equal(201)
-    expect(res.body.accountNumber).to.equal('100201')
+    expect(res.body.rawAccountNumber).to.equal('001002000001')
   })
 }
 

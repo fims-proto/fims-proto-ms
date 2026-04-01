@@ -7,9 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
-	"strings"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
@@ -37,7 +35,7 @@ func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repos
 	}
 
 	// 2. prepare accounts
-	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries, sob.AccountsCodeLength)
+	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries)
 	if err != nil {
 		return err
 	}
@@ -103,42 +101,63 @@ func readFromCSV() ([]accountEntry, error) {
 	return entries, nil
 }
 
-func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthLimits []int) ([]*account.Account, error) {
-	var superiorNumbers []string
+func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry) ([]*account.Account, error) {
+	// Build a set of superior account numbers for quick lookup (O(1) instead of binary search)
+	superiorNumbers := make(map[string]bool)
 	for _, entry := range accountEntries {
 		if entry.superiorNumber != "" {
-			superiorNumbers = append(superiorNumbers, entry.superiorNumber)
+			superiorNumbers[entry.superiorNumber] = true
 		}
 	}
-	slices.Sort(superiorNumbers)
 
-	// Map from readable account number to raw account number (for accounting for duplicate keys)
-	readableToRawMap := make(map[string]string)
-
+	// Map from raw account number to domain account object
 	preparedAccounts := make(map[string]*account.Account) // keyed by raw account number
-	for i := 0; i < len(codeLengthLimits); i++ {
+
+	// Process accounts level by level to ensure superiors are created first
+	maxLevel := 0
+	for _, entry := range accountEntries {
+		if entry.level > maxLevel {
+			maxLevel = entry.level
+		}
+	}
+
+	for level := 1; level <= maxLevel; level++ {
 		for _, entry := range accountEntries {
-			if entry.level == i+1 {
+			if entry.level == level {
 				var levelNumber int
 				var superiorAccountId uuid.UUID
 				var superiorRaw string
+
 				if entry.level == 1 {
+					// Level 1: extract the single 6-digit segment directly
 					superiorAccountId = uuid.Nil
-					levelNumber, _ = strconv.Atoi(entry.number)
+					levelNumberStr := entry.number[:6]
+					var err error
+					levelNumber, err = strconv.Atoi(levelNumberStr)
+					if err != nil {
+						return nil, fmt.Errorf("invalid level number in account %s: %w", entry.number, err)
+					}
 					superiorRaw = ""
 				} else {
-					levelNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
-					superiorRawNumber := readableToRawMap[entry.superiorNumber]
-					superiorAccount, ok := preparedAccounts[superiorRawNumber]
+					// Level 2+: get superior from already-prepared accounts
+					superiorAccount, ok := preparedAccounts[entry.superiorNumber]
 					if !ok {
-						return nil, fmt.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
+						return nil, fmt.Errorf("cannot find prepared superior account %s for %s", entry.superiorNumber, entry.number)
 					}
 					superiorAccountId = superiorAccount.Id()
 					superiorRaw = superiorAccount.RawAccountNumber()
+
+					// Extract just the last 6-digit segment (the level number)
+					lastSegmentStr := entry.number[len(entry.number)-6:]
+					var err error
+					levelNumber, err = strconv.Atoi(lastSegmentStr)
+					if err != nil {
+						return nil, fmt.Errorf("invalid level number in account %s: %w", entry.number, err)
+					}
 				}
 
-				// when an account is not superior for all other accounts, it's a leaf
-				_, found := slices.BinarySearch(superiorNumbers, entry.number)
+				// Check if this account is a superior for any other account (O(1) lookup)
+				isLeaf := !superiorNumbers[entry.number]
 
 				domainAccount, err := account.New(
 					uuid.New(),
@@ -148,7 +167,7 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 					superiorRaw,
 					levelNumber,
 					entry.level,
-					!found,
+					isLeaf,
 					entry.class,
 					entry.group,
 					entry.balanceDirection,
@@ -157,14 +176,14 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 				if err != nil {
 					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
 				}
-				rawNumber := domainAccount.RawAccountNumber()
-				preparedAccounts[rawNumber] = domainAccount
-				readableToRawMap[entry.number] = rawNumber
+
+				// Store using entry.number (the raw account number from CSV)
+				preparedAccounts[entry.number] = domainAccount
 			}
 		}
 	}
 
-	// to slice
+	// Convert map to slice
 	accounts := make([]*account.Account, len(preparedAccounts))
 	i := 0
 	for _, v := range preparedAccounts {

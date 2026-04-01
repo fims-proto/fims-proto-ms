@@ -15,8 +15,8 @@ body:json {
       "name": "Test {{now}}",
       "description": "test company at {{now}}",
       "baseCurrency": "CNY",
-      "startingPeriodYear": 2023,
-      "startingPeriodMonth": 1,
+      "startingPeriodYear": 2026,
+      "startingPeriodMonth": 4,
       "accountsCodeLength": [
           4,
           2,
@@ -42,4 +42,8 @@ tests {
   })
   
   bru.setVar("sob", res.body.id)
+  
+  // reset something
+  bru.setVar("journal_index", 0)
+  bru.setVar("journal_ids", [])
 }

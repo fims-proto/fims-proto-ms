@@ -7,8 +7,6 @@ import (
 	"os"
 	"path/filepath"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	appService "github/fims-proto/fims-proto-ms/internal/report/app/service"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
@@ -23,13 +21,11 @@ type InitializeCmd struct {
 type InitializeHandler struct {
 	repo                 domain.Repository
 	generalLedgerService service.GeneralLedgerService
-	sobService           appService.SobService
 
-	accounts    map[string]uuid.UUID // key: rawAccountNumber, value: accountId
-	codeLengths []int
+	accounts map[string]uuid.UUID // key: rawAccountNumber, value: accountId
 }
 
-func NewInitializeHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService, sobService appService.SobService) InitializeHandler {
+func NewInitializeHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService) InitializeHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -38,14 +34,9 @@ func NewInitializeHandler(repo domain.Repository, generalLedgerService service.G
 		panic("nil general ledger service")
 	}
 
-	if sobService == nil {
-		panic("nil sob service")
-	}
-
 	return InitializeHandler{
 		repo:                 repo,
 		generalLedgerService: generalLedgerService,
-		sobService:           sobService,
 		accounts:             make(map[string]uuid.UUID),
 	}
 }
@@ -160,15 +151,9 @@ func (h *InitializeHandler) convertItem(cmd InitializeCmdItem, sequence int) (*r
 }
 
 func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence int) (*report.Formula, error) {
-	// Convert human-readable account number to raw format for lookup
-	rawAccountNumber, err := account.RawFromReadable(cmd.AccountNumber, h.codeLengths)
-	if err != nil {
-		return nil, fmt.Errorf("could not convert account number %s: %w", cmd.AccountNumber, err)
-	}
-
-	accountId, ok := h.accounts[rawAccountNumber]
+	accountId, ok := h.accounts[cmd.RawAccountNumber]
 	if !ok {
-		return nil, fmt.Errorf("could not find account number %s", cmd.AccountNumber)
+		return nil, fmt.Errorf("could not find account number %s", cmd.RawAccountNumber)
 	}
 
 	return report.NewFormula(
@@ -182,37 +167,24 @@ func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence in
 }
 
 func (h *InitializeHandler) prepareAccounts(ctx context.Context, sobId uuid.UUID, cmds ...InitializeCmdReport) error {
-	// Fetch SoB to get codeLengths for conversion
-	sob, err := h.sobService.ReadById(ctx, sobId)
-	if err != nil {
-		return fmt.Errorf("could not read sob: %w", err)
-	}
-	h.codeLengths = sob.AccountsCodeLength
-
-	// Collect all human-readable account numbers and convert to raw format
-	var rawAccountNumbers []string
-	humanReadableToRaw := make(map[string]string) // human-readable -> raw
+	// Collect all raw account numbers from the report data-load commands
+	rawAccountNumbers := make(map[string]bool)
 
 	for _, cmd := range cmds {
 		for _, section := range cmd.Sections {
-			for _, humanNum := range collectAccountNumbersFromSection(section) {
-				// Skip if already converted
-				if _, exists := humanReadableToRaw[humanNum]; exists {
-					continue
-				}
-				// Convert to raw format
-				rawNum, err := account.RawFromReadable(humanNum, h.codeLengths)
-				if err != nil {
-					return fmt.Errorf("could not convert account number %s: %w", humanNum, err)
-				}
-				humanReadableToRaw[humanNum] = rawNum
-				rawAccountNumbers = append(rawAccountNumbers, rawNum)
+			for _, rawNum := range collectAccountNumbersFromSection(section) {
+				rawAccountNumbers[rawNum] = true
 			}
 		}
 	}
 
 	// Query by raw account numbers
-	accountIds, err := h.generalLedgerService.ReadAccountIdsByRawNumbers(ctx, sobId, rawAccountNumbers)
+	var rawNumSlice []string
+	for rawNum := range rawAccountNumbers {
+		rawNumSlice = append(rawNumSlice, rawNum)
+	}
+
+	accountIds, err := h.generalLedgerService.ReadAccountIdsByRawNumbers(ctx, sobId, rawNumSlice)
 	if err != nil {
 		return err
 	}
@@ -226,7 +198,7 @@ func collectAccountNumbersFromSection(section InitializeCmdSection) []string {
 	var result []string
 	for _, item := range section.Items {
 		for _, formula := range item.Formulas {
-			result = append(result, formula.AccountNumber)
+			result = append(result, formula.RawAccountNumber)
 		}
 	}
 

@@ -3266,15 +3266,15 @@ const docTemplate = `{
         "http.UpdateReportFormulaRequest": {
             "type": "object",
             "required": [
-                "accountNumber",
+                "rawAccountNumber",
                 "rule",
                 "sumFactor"
             ],
             "properties": {
-                "accountNumber": {
+                "id": {
                     "type": "string"
                 },
-                "id": {
+                "rawAccountNumber": {
                     "type": "string"
                 },
                 "rule": {

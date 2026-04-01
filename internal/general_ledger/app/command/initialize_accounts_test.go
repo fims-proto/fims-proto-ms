@@ -24,7 +24,7 @@ var sobId = uuid.New()
 
 var sampleAccountEntries = []accountEntry{
 	{
-		number:           "1001",
+		number:           "001001",
 		level:            1,
 		title:            "库存现金",
 		superiorNumber:   "",
@@ -33,7 +33,7 @@ var sampleAccountEntries = []accountEntry{
 		balanceDirection: "debit",
 	},
 	{
-		number:           "1002",
+		number:           "001002",
 		level:            1,
 		title:            "银行存款",
 		superiorNumber:   "",
@@ -42,25 +42,25 @@ var sampleAccountEntries = []accountEntry{
 		balanceDirection: "debit",
 	},
 	{
-		number:           "1002001",
+		number:           "001002000001",
 		level:            2,
 		title:            "中国银行存款",
-		superiorNumber:   "1002",
+		superiorNumber:   "001002",
 		class:            1,
 		group:            101,
 		balanceDirection: "debit",
 	},
 	{
-		number:           "1002002",
+		number:           "001002000002",
 		level:            2,
 		title:            "招商银行存款",
-		superiorNumber:   "1002",
+		superiorNumber:   "001002",
 		class:            1,
 		group:            101,
 		balanceDirection: "debit",
 	},
 	{
-		number:           "6602",
+		number:           "006602",
 		level:            1,
 		title:            "管理费用",
 		superiorNumber:   "",
@@ -69,28 +69,28 @@ var sampleAccountEntries = []accountEntry{
 		balanceDirection: "not_defined",
 	},
 	{
-		number:           "6602001",
+		number:           "006602000001",
 		level:            2,
 		title:            "办公费",
-		superiorNumber:   "6602",
+		superiorNumber:   "006602",
 		class:            5,
 		group:            503,
 		balanceDirection: "not_defined",
 	},
 	{
-		number:           "6602001001",
+		number:           "006602000001000001",
 		level:            3,
 		title:            "办公室租金",
-		superiorNumber:   "6602001",
+		superiorNumber:   "006602000001",
 		class:            5,
 		group:            503,
 		balanceDirection: "not_defined",
 	},
 	{
-		number:           "6602001002",
+		number:           "006602000001000002",
 		level:            3,
 		title:            "文具费用",
-		superiorNumber:   "6602001",
+		superiorNumber:   "006602000001",
 		class:            5,
 		group:            503,
 		balanceDirection: "not_defined",
@@ -104,9 +104,8 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 		sobService service.SobService
 	}
 	type args struct {
-		sobId            uuid.UUID
-		accountEntries   []accountEntry
-		codeLengthLimits []int
+		sobId          uuid.UUID
+		accountEntries []accountEntry
 	}
 	tests := []struct {
 		name       string
@@ -122,72 +121,25 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 				sobService: mockSobService{},
 			},
 			args: args{
-				sobId:            sobId,
-				accountEntries:   sampleAccountEntries,
-				codeLengthLimits: []int{4, 3, 3},
+				sobId:          sobId,
+				accountEntries: sampleAccountEntries,
 			},
 			wantNumber: map[string]string{
-				"库存现金":   "1001",
-				"银行存款":   "1002",
-				"中国银行存款": "1002001",
-				"招商银行存款": "1002002",
-				"管理费用":   "6602",
-				"办公费":    "6602001",
-				"办公室租金":  "6602001001",
-				"文具费用":   "6602001002",
-			},
-			wantErr: false,
-		},
-		{
-			name: "shorter_code_length_success",
-			fields: fields{
-				repo:       mockRepo{},
-				sobService: mockSobService{},
-			},
-			args: args{
-				sobId:            sobId,
-				accountEntries:   sampleAccountEntries,
-				codeLengthLimits: []int{4, 2, 2},
-			},
-			wantNumber: map[string]string{
-				"库存现金":   "1001",
-				"银行存款":   "1002",
-				"中国银行存款": "100201",
-				"招商银行存款": "100202",
-				"管理费用":   "6602",
-				"办公费":    "660201",
-				"办公室租金":  "66020101",
-				"文具费用":   "66020102",
-			},
-			wantErr: false,
-		},
-		{
-			name: "longer_code_length_success",
-			fields: fields{
-				repo:       mockRepo{},
-				sobService: mockSobService{},
-			},
-			args: args{
-				sobId:            sobId,
-				accountEntries:   sampleAccountEntries,
-				codeLengthLimits: []int{4, 4, 4},
-			},
-			wantNumber: map[string]string{
-				"库存现金":   "1001",
-				"银行存款":   "1002",
-				"中国银行存款": "10020001",
-				"招商银行存款": "10020002",
-				"管理费用":   "6602",
-				"办公费":    "66020001",
-				"办公室租金":  "660200010001",
-				"文具费用":   "660200010002",
+				"库存现金":   "001001",
+				"银行存款":   "001002",
+				"中国银行存款": "001002000001",
+				"招商银行存款": "001002000002",
+				"管理费用":   "006602",
+				"办公费":    "006602000001",
+				"办公室租金":  "006602000001000001",
+				"文具费用":   "006602000001000002",
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.codeLengthLimits)
+			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("prepareAccounts() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -196,57 +148,49 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 			for _, acc := range got {
 				switch acc.Title() {
 				case "库存现金":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["库存现金"], readable)
+					assert.Equal(t, tt.wantNumber["库存现金"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{1001}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "银行存款":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["银行存款"], readable)
+					assert.Equal(t, tt.wantNumber["银行存款"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{1002}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.False(t, acc.IsLeaf())
 				case "中国银行存款":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["中国银行存款"], readable)
+					assert.Equal(t, tt.wantNumber["中国银行存款"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{1002, 1}, hierarchy)
 					assert.Equal(t, 2, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "招商银行存款":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["招商银行存款"], readable)
+					assert.Equal(t, tt.wantNumber["招商银行存款"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{1002, 2}, hierarchy)
 					assert.Equal(t, 2, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "管理费用":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["管理费用"], readable)
+					assert.Equal(t, tt.wantNumber["管理费用"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{6602}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.False(t, acc.IsLeaf())
 				case "办公费":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["办公费"], readable)
+					assert.Equal(t, tt.wantNumber["办公费"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{6602, 1}, hierarchy)
 					assert.Equal(t, 2, acc.Level())
 					assert.False(t, acc.IsLeaf())
 				case "办公室租金":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["办公室租金"], readable)
+					assert.Equal(t, tt.wantNumber["办公室租金"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 1}, hierarchy)
 					assert.Equal(t, 3, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "文具费用":
-					readable, _ := account.ReadableFromRaw(acc.RawAccountNumber(), tt.args.codeLengthLimits)
-					assert.Equal(t, tt.wantNumber["文具费用"], readable)
+					assert.Equal(t, tt.wantNumber["文具费用"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
 					assert.EqualValues(t, []int{6602, 1, 2}, hierarchy)
 					assert.Equal(t, 3, acc.Level())

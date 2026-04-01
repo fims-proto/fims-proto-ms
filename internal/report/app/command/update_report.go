@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	appService "github/fims-proto/fims-proto-ms/internal/report/app/service"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
@@ -48,11 +47,11 @@ type UpdateReportCmdItem struct {
 }
 
 type UpdateReportCmdFormula struct {
-	FormulaId     *uuid.UUID
-	SumFactor     int
-	AccountNumber string
-	AccountId     uuid.UUID // Resolved from AccountNumber
-	Rule          formula_rule.FormulaRule
+	FormulaId        *uuid.UUID
+	SumFactor        int
+	RawAccountNumber string
+	AccountId        uuid.UUID // Resolved from RawAccountNumber
+	Rule             formula_rule.FormulaRule
 }
 
 type UpdateReportHandler struct {
@@ -106,32 +105,7 @@ func (h UpdateReportHandler) Handle(ctx context.Context, cmd UpdateReportCmd) er
 }
 
 func (h UpdateReportHandler) resolveAccountIds(ctx context.Context, sobId uuid.UUID, cmd *UpdateReportCmd) error {
-	// Fetch SoB to get codeLengths for conversion
-	sob, err := h.sobService.ReadById(ctx, sobId)
-	if err != nil {
-		return fmt.Errorf("could not read sob: %w", err)
-	}
-
-	// Collect all human-readable account numbers and convert to raw format
-	accountNumbers := h.collectAccountNumbers(cmd.Sections)
-
-	// Convert all to raw format
-	var rawAccountNumbers []string
-	humanReadableToRaw := make(map[string]string) // human-readable -> raw
-
-	for _, humanNum := range accountNumbers {
-		// Skip if already converted
-		if _, exists := humanReadableToRaw[humanNum]; exists {
-			continue
-		}
-		// Convert to raw format
-		rawNum, err := account.RawFromReadable(humanNum, sob.AccountsCodeLength)
-		if err != nil {
-			return fmt.Errorf("could not convert account number %s: %w", humanNum, err)
-		}
-		humanReadableToRaw[humanNum] = rawNum
-		rawAccountNumbers = append(rawAccountNumbers, rawNum)
-	}
+	rawAccountNumbers := h.collectAccountNumbers(cmd.Sections)
 
 	// Batch resolve all raw account numbers
 	if len(rawAccountNumbers) > 0 {
@@ -141,7 +115,7 @@ func (h UpdateReportHandler) resolveAccountIds(ctx context.Context, sobId uuid.U
 		}
 
 		// Update all formulas with resolved account IDs (recursively)
-		if err := h.updateFormulaAccountIds(cmd.Sections, accountIds, sob.AccountsCodeLength); err != nil {
+		if err := h.updateFormulaAccountIds(cmd.Sections, accountIds); err != nil {
 			return err
 		}
 	}
@@ -149,7 +123,7 @@ func (h UpdateReportHandler) resolveAccountIds(ctx context.Context, sobId uuid.U
 	return nil
 }
 
-// collectAccountNumbers recursively collects all unique account numbers from sections
+// collectAccountNumbers recursively collects all unique raw account numbers from sections
 func (h UpdateReportHandler) collectAccountNumbers(sections []UpdateReportCmdSection) []string {
 	accountNumbersSet := make(map[string]bool)
 	h.collectAccountNumbersRecursive(sections, accountNumbersSet)
@@ -168,7 +142,7 @@ func (h UpdateReportHandler) collectAccountNumbersRecursive(sections []UpdateRep
 		for j := range sections[i].Items {
 			item := &sections[i].Items[j]
 			for k := range item.Formulas {
-				accountNumbersSet[item.Formulas[k].AccountNumber] = true
+				accountNumbersSet[item.Formulas[k].RawAccountNumber] = true
 			}
 		}
 		// Recursively collect from nested sections
@@ -180,7 +154,7 @@ func (h UpdateReportHandler) collectAccountNumbersRecursive(sections []UpdateRep
 
 // updateFormulaAccountIds recursively updates formula account IDs in all sections
 // accountIds map is keyed by raw account numbers
-func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdSection, accountIds map[string]uuid.UUID, codeLengths []int) error {
+func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdSection, accountIds map[string]uuid.UUID) error {
 	for i := range sections {
 		// Update items in this section
 		for j := range sections[i].Items {
@@ -188,16 +162,10 @@ func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdS
 			for k := range item.Formulas {
 				formula := &item.Formulas[k]
 
-				// Convert human-readable to raw for lookup
-				rawNum, err := account.RawFromReadable(formula.AccountNumber, codeLengths)
-				if err != nil {
-					return fmt.Errorf("could not convert account number %s: %w", formula.AccountNumber, err)
-				}
-
-				accountId, ok := accountIds[rawNum]
+				accountId, ok := accountIds[formula.RawAccountNumber]
 				if !ok {
 					return errors.NewSlugError("account-notFound", map[string]interface{}{
-						"accountNumber": formula.AccountNumber,
+						"accountNumber": formula.RawAccountNumber,
 					})
 				}
 				formula.AccountId = accountId
@@ -205,7 +173,7 @@ func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdS
 		}
 		// Recursively update nested sections
 		if len(sections[i].Sections) > 0 {
-			if err := h.updateFormulaAccountIds(sections[i].Sections, accountIds, codeLengths); err != nil {
+			if err := h.updateFormulaAccountIds(sections[i].Sections, accountIds); err != nil {
 				return err
 			}
 		}

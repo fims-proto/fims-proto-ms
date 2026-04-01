@@ -25,17 +25,17 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1001",
+                  "rawAccountNumber": "001001",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1002",
+                  "rawAccountNumber": "001002",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1012",
+                  "rawAccountNumber": "001012",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -50,7 +50,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1101",
+                  "rawAccountNumber": "001101",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -65,7 +65,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1121",
+                  "rawAccountNumber": "001121",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -80,7 +80,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1122",
+                  "rawAccountNumber": "001122",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -95,7 +95,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1123",
+                  "rawAccountNumber": "001123",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -110,7 +110,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1131",
+                  "rawAccountNumber": "001131",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -125,7 +125,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1132",
+                  "rawAccountNumber": "001132",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -140,7 +140,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1221",
+                  "rawAccountNumber": "001221",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -155,67 +155,67 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1401",
+                  "rawAccountNumber": "001401",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1402",
+                  "rawAccountNumber": "001402",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1403",
+                  "rawAccountNumber": "001403",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1404",
+                  "rawAccountNumber": "001404",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1405",
+                  "rawAccountNumber": "001405",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1407",
+                  "rawAccountNumber": "001407",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1408",
+                  "rawAccountNumber": "001408",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1411",
+                  "rawAccountNumber": "001411",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1421",
+                  "rawAccountNumber": "001421",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4001",
+                  "rawAccountNumber": "004001",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4101",
+                  "rawAccountNumber": "004101",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4401",
+                  "rawAccountNumber": "004401",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4403",
+                  "rawAccountNumber": "004403",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -230,12 +230,12 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1403",
+                  "rawAccountNumber": "001403",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1404",
+                  "rawAccountNumber": "001404",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -250,22 +250,22 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "4001",
+                  "rawAccountNumber": "004001",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4101",
+                  "rawAccountNumber": "004101",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4401",
+                  "rawAccountNumber": "004401",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "4403",
+                  "rawAccountNumber": "004403",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -280,12 +280,12 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1405",
+                  "rawAccountNumber": "001405",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1407",
+                  "rawAccountNumber": "001407",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -300,7 +300,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1411",
+                  "rawAccountNumber": "001411",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -339,7 +339,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1501",
+                  "rawAccountNumber": "001501",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -354,7 +354,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1511",
+                  "rawAccountNumber": "001511",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -369,7 +369,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1601",
+                  "rawAccountNumber": "001601",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -385,7 +385,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1602",
+                  "rawAccountNumber": "001602",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -400,12 +400,12 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1601",
+                  "rawAccountNumber": "001601",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1602",
+                  "rawAccountNumber": "001602",
                   "sumFactor": -1,
                   "rule": "net"
                 }
@@ -418,7 +418,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1604",
+                  "rawAccountNumber": "001604",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -433,7 +433,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1605",
+                  "rawAccountNumber": "001605",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -448,7 +448,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1606",
+                  "rawAccountNumber": "001606",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -463,12 +463,12 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1621",
+                  "rawAccountNumber": "001621",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1622",
+                  "rawAccountNumber": "001622",
                   "sumFactor": -1,
                   "rule": "net"
                 }
@@ -483,12 +483,12 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1701",
+                  "rawAccountNumber": "001701",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "1702",
+                  "rawAccountNumber": "001702",
                   "sumFactor": -1,
                   "rule": "net"
                 }
@@ -503,7 +503,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "4301",
+                  "rawAccountNumber": "004301",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -518,7 +518,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1801",
+                  "rawAccountNumber": "001801",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -533,7 +533,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "1901",
+                  "rawAccountNumber": "001901",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -579,7 +579,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2001",
+                      "rawAccountNumber": "002001",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -594,7 +594,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2201",
+                      "rawAccountNumber": "002201",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -609,7 +609,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2202",
+                      "rawAccountNumber": "002202",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -624,7 +624,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2203",
+                      "rawAccountNumber": "002203",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -639,7 +639,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2211",
+                      "rawAccountNumber": "002211",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -654,7 +654,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2221",
+                      "rawAccountNumber": "002221",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -669,7 +669,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2231",
+                      "rawAccountNumber": "002231",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -684,7 +684,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2232",
+                      "rawAccountNumber": "002232",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -699,7 +699,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2241",
+                      "rawAccountNumber": "002241",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -737,7 +737,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2501",
+                      "rawAccountNumber": "002501",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -752,7 +752,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2701",
+                      "rawAccountNumber": "002701",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -767,7 +767,7 @@
                   "dataSource": "formulas",
                   "formulas": [
                     {
-                      "accountNumber": "2401",
+                      "rawAccountNumber": "002401",
                       "sumFactor": 1,
                       "rule": "net"
                     }
@@ -816,7 +816,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "3001",
+                  "rawAccountNumber": "003001",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -831,7 +831,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "3002",
+                  "rawAccountNumber": "003002",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -846,7 +846,7 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "3101",
+                  "rawAccountNumber": "003101",
                   "sumFactor": 1,
                   "rule": "net"
                 }
@@ -861,12 +861,12 @@
               "dataSource": "formulas",
               "formulas": [
                 {
-                  "accountNumber": "3103",
+                  "rawAccountNumber": "003103",
                   "sumFactor": 1,
                   "rule": "net"
                 },
                 {
-                  "accountNumber": "3104",
+                  "rawAccountNumber": "003104",
                   "sumFactor": 1,
                   "rule": "net"
                 }

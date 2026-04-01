@@ -48,10 +48,10 @@ type UpdateReportItemRequest struct {
 }
 
 type UpdateReportFormulaRequest struct {
-	Id            *string `json:"id,omitempty"`
-	SumFactor     int     `json:"sumFactor" binding:"required"`
-	AccountNumber string  `json:"accountNumber" binding:"required"`
-	Rule          string  `json:"rule" binding:"required"`
+	Id               *string `json:"id,omitempty"`
+	SumFactor        int     `json:"sumFactor" binding:"required"`
+	RawAccountNumber string  `json:"rawAccountNumber" binding:"required"`
+	Rule             string  `json:"rule" binding:"required"`
 }
 
 // mapToCommand converts UpdateReportRequest to UpdateReportCmd
@@ -146,10 +146,10 @@ func (r UpdateReportItemRequest) toUpdateItemData() (command.UpdateReportCmdItem
 			return command.UpdateReportCmdItem{}, err
 		}
 		formulas = append(formulas, command.UpdateReportCmdFormula{
-			FormulaId:     formulaId,
-			SumFactor:     f.SumFactor,
-			AccountNumber: f.AccountNumber,
-			Rule:          rule,
+			FormulaId:        formulaId,
+			SumFactor:        f.SumFactor,
+			RawAccountNumber: f.RawAccountNumber,
+			Rule:             rule,
 		})
 	}
 

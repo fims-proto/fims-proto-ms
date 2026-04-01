@@ -16,7 +16,7 @@ body:json {
     "class": "1",
     "group": "102",
     "levelNumber": 1,
-    "superiorAccountNumber": "1601",
+    "superiorRawAccountNumber": "001601",
     "title": "电脑"
   }
 }
@@ -24,7 +24,7 @@ body:json {
 tests {
   test("Create account", function () {
     expect(res.getStatus()).to.equal(201)
-    expect(res.body.accountNumber).to.equal('160101')
+    expect(res.body.rawAccountNumber).to.equal('001601000001')
   })
 }
 

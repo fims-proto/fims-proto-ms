@@ -16,12 +16,12 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5001",
+              "rawAccountNumber": "005001",
               "sumFactor": 1,
               "rule": "transaction"
             },
             {
-              "accountNumber": "5051",
+              "rawAccountNumber": "005051",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -37,12 +37,12 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5401",
+              "rawAccountNumber": "005401",
               "sumFactor": 1,
               "rule": "transaction"
             },
             {
-              "accountNumber": "5402",
+              "rawAccountNumber": "005402",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -57,7 +57,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5403",
+              "rawAccountNumber": "005403",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -135,7 +135,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5601",
+              "rawAccountNumber": "005601",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -168,7 +168,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5602",
+              "rawAccountNumber": "005602",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -210,7 +210,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5603",
+              "rawAccountNumber": "005603",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -235,7 +235,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5111",
+              "rawAccountNumber": "005111",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -259,7 +259,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5301",
+              "rawAccountNumber": "005301",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -284,7 +284,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5711",
+              "rawAccountNumber": "005711",
               "sumFactor": 1,
               "rule": "transaction"
             }
@@ -353,7 +353,7 @@
           "dataSource": "formulas",
           "formulas": [
             {
-              "accountNumber": "5801",
+              "rawAccountNumber": "005801",
               "sumFactor": 1,
               "rule": "transaction"
             }
