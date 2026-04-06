@@ -1,7 +1,7 @@
 meta {
   name: create sob
   type: http
-  seq: 6
+  seq: 5
 }
 
 post {
@@ -12,8 +12,8 @@ post {
 
 body:json {
   {
-      "name": "Test {{now}}",
-      "description": "test company at {{now}}",
+      "name": "{{$randomCompanyName}}",
+      "description": "Auto test company",
       "baseCurrency": "CNY",
       "startingPeriodYear": 2026,
       "startingPeriodMonth": 4,
@@ -23,17 +23,6 @@ body:json {
           2
       ]
   }
-}
-
-script:pre-request {
-  const formatDate = (d) => d.getFullYear().toString().slice(-2) +
-    String(d.getMonth() + 1).padStart(2, '0') +
-    String(d.getDate()).padStart(2, '0') +
-    String(d.getHours()).padStart(2, '0') +
-    String(d.getMinutes()).padStart(2, '0') +
-    String(d.getSeconds()).padStart(2, '0')
-  
-  bru.setVar("now", formatDate(new Date()))
 }
 
 tests {

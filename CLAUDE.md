@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Financial Information Management System (FIMS) - A multi-tenant accounting system built with Go, using hexagonal architecture with CQRS patterns. Core domains: Set of Books (SoB/账套), General Ledger (总账), Reports, Numbering, and User management.
+Financial Information Management System (FIMS) - A multi-tenant accounting system built with Go, using hexagonal architecture with CQRS patterns. Core domains: Set of Books (SoB/账套), General Ledger (总账), Dimension (维度), Reports, Numbering, and User management.
 
 ## Development Commands
 
@@ -79,7 +79,7 @@ internal/{domain}/
     └── {module}/  # Cross-module adapters (e.g., numbering, sob)
 ```
 
-Core domains: `general_ledger`, `sob`, `report`, `numbering`, `user`
+Core domains: `general_ledger`, `sob`, `report`, `numbering`, `user`, `dimension`
 
 ### Dependency Injection
 
@@ -106,7 +106,7 @@ EnableTransaction(ctx context.Context, transactionalFn func(txCtx context.Contex
 Two implementations:
 
 - `dedicated-datasource/` - Single database (production ready)
-- `multitenant-datasource/` - Multi-tenant routing via subdomain (stub)
+- `multitenant-datasource/` - Multi-tenant routing via subdomain (**stub only**, not production-ready; `app.multiTenancy` defaults to false)
 
 Subdomain resolution: `ResolveSubdomain()` middleware extracts tenant from URL (`tenant.domain.com` → `tenant`)
 
@@ -216,6 +216,8 @@ if amount.IsPositive() {
 
 Workflow: Create → Review → Audit → Post (登账) → affects Ledgers
 
+(Note: `CancelReview` and `CancelAudit` commands exist to revert journal back to earlier states)
+
 Business rules enforced in `internal/general_ledger/domain/journal/`:
 
 - Journal must be reviewed AND audited before posting
@@ -252,9 +254,18 @@ Reports use two data source types:
 
 ### Numbering Service
 
-Generates sequential identifiers for journals: `numberingService.GenerateIdentifier(ctx, periodId, journalType)`
+Generates sequential identifiers for journals: `numberingService.GenerateIdentifier(ctx, periodId)`
 
 Configurations define patterns with auto-increment counters per period/type.
+
+### Dimension Domain
+
+`internal/dimension/` - Manages accounting dimensions (cost centers, departments, tags, etc.)
+
+- **category** - Dimension categories (e.g., "Department", "Project")
+- **option** - Dimension values within a category (e.g., "Engineering", "Marketing")
+
+The GL domain depends on Dimension via `DimensionService` (injected as `generalLedgerDimensionAdapter`) for validating and fetching dimension options on journal lines.
 
 ### Set of Books (SoB)
 
@@ -324,6 +335,8 @@ Use these flows as integration test templates.
 - `internal/general_ledger/app/command/post_journal.go` - Posting logic
 - `internal/report/domain/generator/generator.go` - Report generation
 - `internal/common/errors/gin_middleware.go` - Error translation
+
+**Dev-only**: `internal/devops/jwt_handler.go` — JWT utility registered at `/devops/` route only when `profile` starts with `"dev"` (controlled via `cmd/main.go`)
 
 ## Common Pitfalls
 
