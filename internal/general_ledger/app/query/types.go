@@ -155,7 +155,7 @@ type PreCloseCheckTrialBalance struct {
 	EndingAmount  decimal.Decimal
 }
 
-type PreCloseCheckYearEndAccount struct {
+type PreCloseCheckCurrentYearProfitAccount struct {
 	Applicable       bool
 	Passed           bool
 	RawAccountNumber string
@@ -164,8 +164,8 @@ type PreCloseCheckYearEndAccount struct {
 }
 
 type PreCloseCheck struct {
-	UnpostedJournals     PreCloseCheckUnpostedJournals
-	ProfitAndLossBalance PreCloseCheckPnLBalance
-	TrialBalance         PreCloseCheckTrialBalance
-	YearEndAccount       PreCloseCheckYearEndAccount
+	UnpostedJournals         PreCloseCheckUnpostedJournals
+	ProfitAndLossBalance     PreCloseCheckPnLBalance
+	TrialBalance             PreCloseCheckTrialBalance
+	CurrentYearProfitAccount PreCloseCheckCurrentYearProfitAccount
 }

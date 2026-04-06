@@ -52,16 +52,16 @@ func (h PeriodPreCloseCheckHandler) Handle(ctx context.Context, sobId, periodId 
 	}
 
 	// Year-end check
-	yearEndAccount, err := h.checkYearEndAccount(ctx, sobId, periodId, period.PeriodNumber)
+	currentYearProfitAccount, err := h.checkCurrentYearProfitAccount(ctx, sobId, periodId, period.PeriodNumber)
 	if err != nil {
 		return PreCloseCheck{}, fmt.Errorf("failed to check year-end account: %w", err)
 	}
 
 	return PreCloseCheck{
-		UnpostedJournals:     unpostedJournals,
-		ProfitAndLossBalance: pnlBalance,
-		TrialBalance:         trialBalance,
-		YearEndAccount:       yearEndAccount,
+		UnpostedJournals:         unpostedJournals,
+		ProfitAndLossBalance:     pnlBalance,
+		TrialBalance:             trialBalance,
+		CurrentYearProfitAccount: currentYearProfitAccount,
 	}, nil
 }
 
@@ -160,21 +160,21 @@ func (h PeriodPreCloseCheckHandler) checkTrialBalance(ctx context.Context, sobId
 	}, nil
 }
 
-func (h PeriodPreCloseCheckHandler) checkYearEndAccount(ctx context.Context, sobId, periodId uuid.UUID, periodNumber int) (PreCloseCheckYearEndAccount, error) {
+func (h PeriodPreCloseCheckHandler) checkCurrentYearProfitAccount(ctx context.Context, sobId, periodId uuid.UUID, periodNumber int) (PreCloseCheckCurrentYearProfitAccount, error) {
 	if periodNumber != 12 {
-		return PreCloseCheckYearEndAccount{Applicable: false, Passed: true}, nil
+		return PreCloseCheckCurrentYearProfitAccount{Applicable: false, Passed: true}, nil
 	}
 
 	ledger, err := h.readModel.LedgerByRawAccountNumberInPeriod(ctx, sobId, yearEndRetainedEarningsAccount, periodId)
 	if err != nil {
-		return PreCloseCheckYearEndAccount{}, err
+		return PreCloseCheckCurrentYearProfitAccount{}, err
 	}
 	if ledger == nil {
 		// account not found or no ledger entry — treat as zero balance
-		return PreCloseCheckYearEndAccount{Applicable: true, Passed: true}, nil
+		return PreCloseCheckCurrentYearProfitAccount{Applicable: true, Passed: true}, nil
 	}
 
-	return PreCloseCheckYearEndAccount{
+	return PreCloseCheckCurrentYearProfitAccount{
 		Applicable:       true,
 		Passed:           ledger.EndingAmount.IsZero(),
 		RawAccountNumber: ledger.Account.RawAccountNumber,

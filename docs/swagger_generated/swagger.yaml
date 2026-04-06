@@ -605,6 +605,17 @@ definitions:
       poster:
         type: string
     type: object
+  http.PreCloseCheckCurrentYearProfitAccountResponse:
+    properties:
+      accountTitle:
+        type: string
+      endingAmount:
+        type: number
+      passed:
+        type: boolean
+      rawAccountNumber:
+        type: string
+    type: object
   http.PreCloseCheckJournalResponse:
     properties:
       amount:
@@ -642,14 +653,14 @@ definitions:
     type: object
   http.PreCloseCheckResponse:
     properties:
+      currentYearProfitAccount:
+        $ref: '#/definitions/http.PreCloseCheckCurrentYearProfitAccountResponse'
       profitAndLossBalance:
         $ref: '#/definitions/http.PreCloseCheckPnLBalanceResponse'
       trialBalance:
         $ref: '#/definitions/http.PreCloseCheckTrialBalanceResponse'
       unpostedJournals:
         $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
-      yearEndAccount:
-        $ref: '#/definitions/http.PreCloseCheckYearEndAccountResponse'
     type: object
   http.PreCloseCheckTrialBalanceResponse:
     properties:
@@ -672,19 +683,6 @@ definitions:
         type: array
       passed:
         type: boolean
-    type: object
-  http.PreCloseCheckYearEndAccountResponse:
-    properties:
-      accountTitle:
-        type: string
-      applicable:
-        type: boolean
-      endingAmount:
-        type: number
-      passed:
-        type: boolean
-      rawAccountNumber:
-        type: string
     type: object
   http.ReportResponse:
     properties:

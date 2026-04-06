@@ -2983,6 +2983,23 @@ const docTemplate = `{
                 }
             }
         },
+        "http.PreCloseCheckCurrentYearProfitAccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountTitle": {
+                    "type": "string"
+                },
+                "endingAmount": {
+                    "type": "number"
+                },
+                "passed": {
+                    "type": "boolean"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                }
+            }
+        },
         "http.PreCloseCheckJournalResponse": {
             "type": "object",
             "properties": {
@@ -3040,6 +3057,9 @@ const docTemplate = `{
         "http.PreCloseCheckResponse": {
             "type": "object",
             "properties": {
+                "currentYearProfitAccount": {
+                    "$ref": "#/definitions/http.PreCloseCheckCurrentYearProfitAccountResponse"
+                },
                 "profitAndLossBalance": {
                     "$ref": "#/definitions/http.PreCloseCheckPnLBalanceResponse"
                 },
@@ -3048,9 +3068,6 @@ const docTemplate = `{
                 },
                 "unpostedJournals": {
                     "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
-                },
-                "yearEndAccount": {
-                    "$ref": "#/definitions/http.PreCloseCheckYearEndAccountResponse"
                 }
             }
         },
@@ -3085,26 +3102,6 @@ const docTemplate = `{
                 },
                 "passed": {
                     "type": "boolean"
-                }
-            }
-        },
-        "http.PreCloseCheckYearEndAccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountTitle": {
-                    "type": "string"
-                },
-                "applicable": {
-                    "type": "boolean"
-                },
-                "endingAmount": {
-                    "type": "number"
-                },
-                "passed": {
-                    "type": "boolean"
-                },
-                "rawAccountNumber": {
-                    "type": "string"
                 }
             }
         },

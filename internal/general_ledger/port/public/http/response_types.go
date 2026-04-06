@@ -228,19 +228,18 @@ type PreCloseCheckTrialBalanceResponse struct {
 	EndingAmount  decimal.Decimal `json:"endingAmount"`
 }
 
-type PreCloseCheckYearEndAccountResponse struct {
-	Applicable       bool            `json:"applicable"`
+type PreCloseCheckCurrentYearProfitAccountResponse struct {
 	Passed           bool            `json:"passed"`
-	RawAccountNumber string          `json:"rawAccountNumber,omitempty"`
-	AccountTitle     string          `json:"accountTitle,omitempty"`
-	EndingAmount     decimal.Decimal `json:"endingAmount,omitempty"`
+	RawAccountNumber string          `json:"rawAccountNumber"`
+	AccountTitle     string          `json:"accountTitle"`
+	EndingAmount     decimal.Decimal `json:"endingAmount"`
 }
 
 type PreCloseCheckResponse struct {
-	UnpostedJournals     PreCloseCheckUnpostedJournalsResponse `json:"unpostedJournals"`
-	ProfitAndLossBalance PreCloseCheckPnLBalanceResponse       `json:"profitAndLossBalance"`
-	TrialBalance         PreCloseCheckTrialBalanceResponse     `json:"trialBalance"`
-	YearEndAccount       PreCloseCheckYearEndAccountResponse   `json:"yearEndAccount"`
+	UnpostedJournals         PreCloseCheckUnpostedJournalsResponse          `json:"unpostedJournals"`
+	ProfitAndLossBalance     PreCloseCheckPnLBalanceResponse                `json:"profitAndLossBalance"`
+	TrialBalance             PreCloseCheckTrialBalanceResponse              `json:"trialBalance"`
+	CurrentYearProfitAccount *PreCloseCheckCurrentYearProfitAccountResponse `json:"currentYearProfitAccount,omitempty"`
 }
 
 // mapper
@@ -440,6 +439,16 @@ func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
 		})
 	}
 
+	var currentYearProfitAccount *PreCloseCheckCurrentYearProfitAccountResponse
+	if dto.CurrentYearProfitAccount.Applicable {
+		currentYearProfitAccount = &PreCloseCheckCurrentYearProfitAccountResponse{
+			Passed:           dto.CurrentYearProfitAccount.Passed,
+			RawAccountNumber: dto.CurrentYearProfitAccount.RawAccountNumber,
+			AccountTitle:     dto.CurrentYearProfitAccount.AccountTitle,
+			EndingAmount:     dto.CurrentYearProfitAccount.EndingAmount,
+		}
+	}
+
 	return PreCloseCheckResponse{
 		UnpostedJournals: PreCloseCheckUnpostedJournalsResponse{
 			Passed:   dto.UnpostedJournals.Passed,
@@ -456,12 +465,6 @@ func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
 			PeriodAmount:  dto.TrialBalance.PeriodAmount,
 			EndingAmount:  dto.TrialBalance.EndingAmount,
 		},
-		YearEndAccount: PreCloseCheckYearEndAccountResponse{
-			Applicable:       dto.YearEndAccount.Applicable,
-			Passed:           dto.YearEndAccount.Passed,
-			RawAccountNumber: dto.YearEndAccount.RawAccountNumber,
-			AccountTitle:     dto.YearEndAccount.AccountTitle,
-			EndingAmount:     dto.YearEndAccount.EndingAmount,
-		},
+		CurrentYearProfitAccount: currentYearProfitAccount,
 	}
 }

@@ -93,7 +93,7 @@ func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd
 		); err != nil {
 			return fmt.Errorf("failed to check year-end account balance: %w", err)
 		} else if hasBalance {
-			return commonErrors.NewSlugError("period-close-unclearedYearEndAccount")
+			return commonErrors.NewSlugError("period-close-unclearedCurrentYearProfitAccount")
 		}
 	}
 
