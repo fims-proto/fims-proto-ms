@@ -228,10 +228,19 @@ type PreCloseCheckTrialBalanceResponse struct {
 	EndingAmount  decimal.Decimal `json:"endingAmount"`
 }
 
+type PreCloseCheckYearEndAccountResponse struct {
+	Applicable       bool            `json:"applicable"`
+	Passed           bool            `json:"passed"`
+	RawAccountNumber string          `json:"rawAccountNumber,omitempty"`
+	AccountTitle     string          `json:"accountTitle,omitempty"`
+	EndingAmount     decimal.Decimal `json:"endingAmount,omitempty"`
+}
+
 type PreCloseCheckResponse struct {
 	UnpostedJournals     PreCloseCheckUnpostedJournalsResponse `json:"unpostedJournals"`
 	ProfitAndLossBalance PreCloseCheckPnLBalanceResponse       `json:"profitAndLossBalance"`
 	TrialBalance         PreCloseCheckTrialBalanceResponse     `json:"trialBalance"`
+	YearEndAccount       PreCloseCheckYearEndAccountResponse   `json:"yearEndAccount"`
 }
 
 // mapper
@@ -446,6 +455,13 @@ func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
 			OpeningAmount: dto.TrialBalance.OpeningAmount,
 			PeriodAmount:  dto.TrialBalance.PeriodAmount,
 			EndingAmount:  dto.TrialBalance.EndingAmount,
+		},
+		YearEndAccount: PreCloseCheckYearEndAccountResponse{
+			Applicable:       dto.YearEndAccount.Applicable,
+			Passed:           dto.YearEndAccount.Passed,
+			RawAccountNumber: dto.YearEndAccount.RawAccountNumber,
+			AccountTitle:     dto.YearEndAccount.AccountTitle,
+			EndingAmount:     dto.YearEndAccount.EndingAmount,
 		},
 	}
 }

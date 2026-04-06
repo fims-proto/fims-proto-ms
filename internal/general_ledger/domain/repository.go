@@ -54,6 +54,7 @@ type Repository interface {
 	ReadLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*ledger.Ledger, error)
 	ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error)
 	ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
+	ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(ctx context.Context, sobId uuid.UUID, rawAccountNumber string, periodId uuid.UUID) (bool, error)
 
 	CreateJournal(ctx context.Context, j *journal.Journal) error
 	ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error)

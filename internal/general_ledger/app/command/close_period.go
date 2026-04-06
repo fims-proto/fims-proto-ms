@@ -12,6 +12,10 @@ import (
 	"github.com/google/uuid"
 )
 
+// yearEndRetainedEarningsAccount is the raw account number for 本年利润.
+// TODO: make this configurable per SoB in the future.
+const yearEndRetainedEarningsAccount = "003103"
+
 type ClosePeriodCmd struct {
 	SobId    uuid.UUID
 	PeriodId uuid.UUID
@@ -65,6 +69,7 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 
 func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd) error {
 	var nextFiscalYear, nextPeriodNumber int
+	var closingPeriodNumber int
 
 	// update current period to closed
 	if err := h.repo.UpdatePeriod(ctx, cmd.PeriodId, func(p *period.Period) (*period.Period, error) {
@@ -74,10 +79,22 @@ func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd
 
 		// get next period year and number
 		nextFiscalYear, nextPeriodNumber = p.NextNumber()
+		closingPeriodNumber = p.PeriodNumber()
 
 		return p, nil
 	}); err != nil {
 		return err
+	}
+
+	// if closing the last period of a fiscal year, check 本年利润 has zero balance
+	if closingPeriodNumber == 12 {
+		if hasBalance, err := h.repo.ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
+			ctx, cmd.SobId, yearEndRetainedEarningsAccount, cmd.PeriodId,
+		); err != nil {
+			return fmt.Errorf("failed to check year-end account balance: %w", err)
+		} else if hasBalance {
+			return commonErrors.NewSlugError("period-close-unclearedYearEndAccount")
+		}
 	}
 
 	// create next period if it does not exist

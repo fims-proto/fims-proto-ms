@@ -13,6 +13,10 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// yearEndRetainedEarningsAccount is the raw account number for 本年利润.
+// TODO: make this configurable per SoB in the future.
+const yearEndRetainedEarningsAccount = "003103"
+
 type PeriodPreCloseCheckHandler struct {
 	readModel GeneralLedgerReadModel
 }
@@ -26,6 +30,12 @@ func NewPeriodPreCloseCheckHandler(readModel GeneralLedgerReadModel) PeriodPreCl
 }
 
 func (h PeriodPreCloseCheckHandler) Handle(ctx context.Context, sobId, periodId uuid.UUID) (PreCloseCheck, error) {
+	// Fetch period to know if this is a year-end period
+	period, err := h.readModel.PeriodById(ctx, sobId, periodId)
+	if err != nil {
+		return PreCloseCheck{}, fmt.Errorf("failed to fetch period: %w", err)
+	}
+
 	unpostedJournals, err := h.checkUnpostedJournals(ctx, sobId, periodId)
 	if err != nil {
 		return PreCloseCheck{}, fmt.Errorf("failed to check unposted journals: %w", err)
@@ -41,10 +51,17 @@ func (h PeriodPreCloseCheckHandler) Handle(ctx context.Context, sobId, periodId 
 		return PreCloseCheck{}, fmt.Errorf("failed to check trial balance: %w", err)
 	}
 
+	// Year-end check
+	yearEndAccount, err := h.checkYearEndAccount(ctx, sobId, periodId, period.PeriodNumber)
+	if err != nil {
+		return PreCloseCheck{}, fmt.Errorf("failed to check year-end account: %w", err)
+	}
+
 	return PreCloseCheck{
 		UnpostedJournals:     unpostedJournals,
 		ProfitAndLossBalance: pnlBalance,
 		TrialBalance:         trialBalance,
+		YearEndAccount:       yearEndAccount,
 	}, nil
 }
 
@@ -140,5 +157,28 @@ func (h PeriodPreCloseCheckHandler) checkTrialBalance(ctx context.Context, sobId
 		OpeningAmount: totalOpening,
 		PeriodAmount:  totalPeriod,
 		EndingAmount:  totalEnding,
+	}, nil
+}
+
+func (h PeriodPreCloseCheckHandler) checkYearEndAccount(ctx context.Context, sobId, periodId uuid.UUID, periodNumber int) (PreCloseCheckYearEndAccount, error) {
+	if periodNumber != 12 {
+		return PreCloseCheckYearEndAccount{Applicable: false, Passed: true}, nil
+	}
+
+	ledger, err := h.readModel.LedgerByRawAccountNumberInPeriod(ctx, sobId, yearEndRetainedEarningsAccount, periodId)
+	if err != nil {
+		return PreCloseCheckYearEndAccount{}, err
+	}
+	if ledger == nil {
+		// account not found or no ledger entry — treat as zero balance
+		return PreCloseCheckYearEndAccount{Applicable: true, Passed: true}, nil
+	}
+
+	return PreCloseCheckYearEndAccount{
+		Applicable:       true,
+		Passed:           ledger.EndingAmount.IsZero(),
+		RawAccountNumber: ledger.Account.RawAccountNumber,
+		AccountTitle:     ledger.Account.Title,
+		EndingAmount:     ledger.EndingAmount,
 	}, nil
 }

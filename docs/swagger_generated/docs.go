@@ -3048,6 +3048,9 @@ const docTemplate = `{
                 },
                 "unpostedJournals": {
                     "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
+                },
+                "yearEndAccount": {
+                    "$ref": "#/definitions/http.PreCloseCheckYearEndAccountResponse"
                 }
             }
         },
@@ -3082,6 +3085,26 @@ const docTemplate = `{
                 },
                 "passed": {
                     "type": "boolean"
+                }
+            }
+        },
+        "http.PreCloseCheckYearEndAccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountTitle": {
+                    "type": "string"
+                },
+                "applicable": {
+                    "type": "boolean"
+                },
+                "endingAmount": {
+                    "type": "number"
+                },
+                "passed": {
+                    "type": "boolean"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 }
             }
         },

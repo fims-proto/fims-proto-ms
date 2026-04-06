@@ -347,3 +347,41 @@ func (r GeneralLedgerPostgresReadRepository) ProfitAndLossLedgersHavingBalanceIn
 
 	return converter.POsToDTOs(pos, ledgerPOToDTO), nil
 }
+
+func (r GeneralLedgerPostgresReadRepository) PeriodById(
+	ctx context.Context,
+	sobId, periodId uuid.UUID,
+) (query.Period, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po periodPO
+	if err := db.Where(periodPO{Id: periodId, SobId: sobId}).First(&po).Error; err != nil {
+		return query.Period{}, err
+	}
+
+	return periodPOToDTO(po), nil
+}
+
+func (r GeneralLedgerPostgresReadRepository) LedgerByRawAccountNumberInPeriod(
+	ctx context.Context,
+	sobId uuid.UUID,
+	rawAccountNumber string,
+	periodId uuid.UUID,
+) (*query.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []ledgerPO
+	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		InnerJoins("Account", db.Where(accountPO{RawAccountNumber: rawAccountNumber})).
+		Find(&pos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	if len(pos) == 0 {
+		return nil, nil
+	}
+
+	dto := ledgerPOToDTO(pos[0])
+	return &dto, nil
+}

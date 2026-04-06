@@ -275,6 +275,10 @@ func (m mockRepo) ExistsProfitAndLossLedgersHavingBalanceInPeriod(context.Contex
 	panic("implement me")
 }
 
+func (m mockRepo) ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(context.Context, uuid.UUID, string, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
 func (m mockRepo) CreateJournal(context.Context, *journal.Journal) error {
 	panic("implement me")
 }

@@ -21,8 +21,10 @@ type GeneralLedgerReadModel interface {
 
 	FirstPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error
+	PeriodById(ctx context.Context, sobId, periodId uuid.UUID) (Period, error)
 
 	JournalById(ctx context.Context, journalId uuid.UUID) (Journal, error)
 
 	ProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]Ledger, error)
+	LedgerByRawAccountNumberInPeriod(ctx context.Context, sobId uuid.UUID, rawAccountNumber string, periodId uuid.UUID) (*Ledger, error)
 }

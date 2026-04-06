@@ -459,6 +459,25 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 	return count > 0, err
 }
 
+func (r GeneralLedgerPostgresRepository) ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
+	ctx context.Context,
+	sobId uuid.UUID,
+	rawAccountNumber string,
+	periodId uuid.UUID,
+) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&ledgerPO{}).
+		Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		Where("ending_amount <> 0").
+		InnerJoins("Account", db.Where(accountPO{RawAccountNumber: rawAccountNumber})).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
 func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error) {
 	db := r.dataSource.GetConnection(ctx)
 
