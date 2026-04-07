@@ -2,25 +2,25 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-
-	"github.com/google/uuid"
 )
 
-func (j *Journal) Review(reviewer uuid.UUID) error {
+func (j *Journal) Review(reviewer string) error {
 	if j.isReviewed {
 		return errors.NewSlugError("journal-review-repeatReview")
 	}
 
-	if reviewer == uuid.Nil {
+	if isEmptyUser(reviewer) {
 		return errors.NewSlugError("journal-review-emptyReviewer")
 	}
 
-	if reviewer == j.creator {
-		return errors.NewSlugError("journal-review-reviewerSameAsCreator")
-	}
+	if !IsSystemUser(reviewer) {
+		if reviewer == j.creator {
+			return errors.NewSlugError("journal-review-reviewerSameAsCreator")
+		}
 
-	if j.auditor != uuid.Nil && reviewer == j.auditor {
-		return errors.NewSlugError("journal-review-reviewerSameAsAuditor")
+		if !isEmptyUser(j.auditor) && reviewer == j.auditor {
+			return errors.NewSlugError("journal-review-reviewerSameAsAuditor")
+		}
 	}
 
 	j.isReviewed = true
@@ -28,7 +28,7 @@ func (j *Journal) Review(reviewer uuid.UUID) error {
 	return nil
 }
 
-func (j *Journal) CancelReview(reviewer uuid.UUID) error {
+func (j *Journal) CancelReview(reviewer string) error {
 	if !j.isReviewed {
 		return errors.NewSlugError("journal-cancelReview-notReviewed")
 	}
@@ -42,6 +42,6 @@ func (j *Journal) CancelReview(reviewer uuid.UUID) error {
 	}
 
 	j.isReviewed = false
-	j.reviewer = uuid.Nil
+	j.reviewer = emptyUser
 	return nil
 }

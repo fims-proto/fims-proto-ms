@@ -2,25 +2,25 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-
-	"github.com/google/uuid"
 )
 
-func (j *Journal) Audit(auditor uuid.UUID) error {
+func (j *Journal) Audit(auditor string) error {
 	if j.isAudited {
 		return errors.NewSlugError("journal-audit-repeatAudit")
 	}
 
-	if auditor == uuid.Nil {
+	if isEmptyUser(auditor) {
 		return errors.NewSlugError("journal-audit-emptyAuditor")
 	}
 
-	if auditor == j.creator {
-		return errors.NewSlugError("journal-audit-auditorSameAsCreator")
-	}
+	if !IsSystemUser(auditor) {
+		if auditor == j.creator {
+			return errors.NewSlugError("journal-audit-auditorSameAsCreator")
+		}
 
-	if j.reviewer != uuid.Nil && auditor == j.reviewer {
-		return errors.NewSlugError("journal-audit-auditorSameAsReviewer")
+		if !isEmptyUser(j.reviewer) && auditor == j.reviewer {
+			return errors.NewSlugError("journal-audit-auditorSameAsReviewer")
+		}
 	}
 
 	j.isAudited = true
@@ -28,7 +28,7 @@ func (j *Journal) Audit(auditor uuid.UUID) error {
 	return nil
 }
 
-func (j *Journal) CancelAudit(auditor uuid.UUID) error {
+func (j *Journal) CancelAudit(auditor string) error {
 	if !j.isAudited {
 		return errors.NewSlugError("journal-cancelAudit-notAudited")
 	}
@@ -42,6 +42,6 @@ func (j *Journal) CancelAudit(auditor uuid.UUID) error {
 	}
 
 	j.isAudited = false
-	j.auditor = uuid.Nil
+	j.auditor = emptyUser
 	return nil
 }

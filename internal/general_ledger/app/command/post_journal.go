@@ -16,7 +16,7 @@ import (
 
 type PostJournalCmd struct {
 	JournalId uuid.UUID
-	Poster    uuid.UUID
+	Poster    string
 }
 
 type postLedgersCmd struct {

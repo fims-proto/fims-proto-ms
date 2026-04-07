@@ -10,7 +10,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func (j *Journal) checkUpdatePossible(user uuid.UUID) error {
+func (j *Journal) checkUpdatePossible(user string) error {
 	if j.isAudited {
 		return commonErrors.NewSlugError("journal-update-audited")
 	}
@@ -19,14 +19,14 @@ func (j *Journal) checkUpdatePossible(user uuid.UUID) error {
 		return commonErrors.NewSlugError("journal-update-reviewed")
 	}
 
-	if user != j.creator {
+	if !IsSystemUser(user) && user != j.creator {
 		return commonErrors.NewSlugError("journal-update-notCreator")
 	}
 
 	return nil
 }
 
-func (j *Journal) UpdateJournalLines(journalLines []*JournalLine, user uuid.UUID) error {
+func (j *Journal) UpdateJournalLines(journalLines []*JournalLine, user string) error {
 	if err := j.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
@@ -41,7 +41,7 @@ func (j *Journal) UpdateJournalLines(journalLines []*JournalLine, user uuid.UUID
 	return nil
 }
 
-func (j *Journal) UpdateTransactionDate(transactionDate transaction_date.TransactionDate, user uuid.UUID) error {
+func (j *Journal) UpdateTransactionDate(transactionDate transaction_date.TransactionDate, user string) error {
 	if err := j.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
@@ -54,7 +54,7 @@ func (j *Journal) UpdateTransactionDate(transactionDate transaction_date.Transac
 	return nil
 }
 
-func (j *Journal) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumber string, user uuid.UUID) error {
+func (j *Journal) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumber string, user string) error {
 	if err := j.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}
@@ -72,7 +72,7 @@ func (j *Journal) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumb
 	return nil
 }
 
-func (j *Journal) UpdateHeaderText(headerText string, user uuid.UUID) error {
+func (j *Journal) UpdateHeaderText(headerText string, user string) error {
 	if err := j.checkUpdatePossible(user); err != nil {
 		return fmt.Errorf("update not allowed: %w", err)
 	}

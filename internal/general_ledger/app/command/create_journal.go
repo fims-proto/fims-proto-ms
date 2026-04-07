@@ -23,7 +23,7 @@ type CreateJournalCmd struct {
 	ReferenceJournalId uuid.UUID
 	AttachmentQuantity int
 	JournalLines       []JournalLineCmd
-	Creator            uuid.UUID
+	Creator            string
 	TransactionDate    transaction_date.TransactionDate
 }
 
@@ -106,9 +106,9 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 		cmd.ReferenceJournalId,
 		cmd.AttachmentQuantity,
 		cmd.Creator,
-		uuid.Nil,
-		uuid.Nil,
-		uuid.Nil,
+		"",
+		"",
+		"",
 		false,
 		false,
 		false,

@@ -2,11 +2,9 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-
-	"github.com/google/uuid"
 )
 
-func (j *Journal) Post(poster uuid.UUID) error {
+func (j *Journal) Post(poster string) error {
 	if j.Period().IsClosed() {
 		return errors.NewSlugError("journal-post-periodClosed")
 	}
@@ -27,7 +25,7 @@ func (j *Journal) Post(poster uuid.UUID) error {
 		return errors.NewSlugError("journal-post-notReviewed")
 	}
 
-	if poster == uuid.Nil {
+	if isEmptyUser(poster) {
 		return errors.NewSlugError("journal-post-emptyPoster")
 	}
 

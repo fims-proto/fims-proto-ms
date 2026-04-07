@@ -20,10 +20,10 @@ type Journal struct {
 	referenceJournalId uuid.UUID
 	attachmentQuantity int
 	amount             decimal.Decimal
-	creator            uuid.UUID
-	reviewer           uuid.UUID
-	auditor            uuid.UUID
-	poster             uuid.UUID
+	creator            string
+	reviewer           string
+	auditor            string
+	poster             string
 	isReviewed         bool
 	isAudited          bool
 	isPosted           bool
@@ -40,10 +40,10 @@ func New(
 	journalType JournalType,
 	referenceJournalId uuid.UUID,
 	attachmentQuantity int,
-	creator uuid.UUID,
-	reviewer uuid.UUID,
-	auditor uuid.UUID,
-	poster uuid.UUID,
+	creator string,
+	reviewer string,
+	auditor string,
+	poster string,
 	isReviewed bool,
 	isAudited bool,
 	isPosted bool,
@@ -78,19 +78,19 @@ func New(
 		return nil, errors.NewSlugError("journal-invalidAttachmentQuantity")
 	}
 
-	if creator == uuid.Nil {
+	if isEmptyUser(creator) {
 		return nil, errors.NewSlugError("journal-emptyCreator")
 	}
 
-	if isReviewed && reviewer == uuid.Nil {
+	if isReviewed && isEmptyUser(reviewer) {
 		return nil, errors.NewSlugError("journal-emptyReviewer")
 	}
 
-	if isAudited && auditor == uuid.Nil {
+	if isAudited && isEmptyUser(auditor) {
 		return nil, errors.NewSlugError("journal-emptyAuditor")
 	}
 
-	if isPosted && poster == uuid.Nil {
+	if isPosted && isEmptyUser(poster) {
 		return nil, errors.NewSlugError("journal-emptyPoster")
 	}
 
@@ -182,19 +182,19 @@ func (j *Journal) Amount() decimal.Decimal {
 	return j.amount
 }
 
-func (j *Journal) Creator() uuid.UUID {
+func (j *Journal) Creator() string {
 	return j.creator
 }
 
-func (j *Journal) Reviewer() uuid.UUID {
+func (j *Journal) Reviewer() string {
 	return j.reviewer
 }
 
-func (j *Journal) Auditor() uuid.UUID {
+func (j *Journal) Auditor() string {
 	return j.auditor
 }
 
-func (j *Journal) Poster() uuid.UUID {
+func (j *Journal) Poster() string {
 	return j.poster
 }
 

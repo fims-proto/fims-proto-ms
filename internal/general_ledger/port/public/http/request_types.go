@@ -45,22 +45,22 @@ type JournalLineRequest struct {
 }
 
 type AuditJournalRequest struct {
-	Auditor uuid.UUID `json:"auditor"`
+	Auditor string `json:"auditor"`
 }
 
 type ReviewJournalRequest struct {
-	Reviewer uuid.UUID `json:"reviewer"`
+	Reviewer string `json:"reviewer"`
 }
 
 type PostJournalRequest struct {
-	Poster uuid.UUID `json:"poster"`
+	Poster string `json:"poster"`
 }
 
 type UpdateJournalRequest struct {
 	HeaderText      string                           `json:"headerText"`
 	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	JournalLines    []JournalLineRequest             `json:"journalLines"`
-	Updater         uuid.UUID                        `json:"updater"`
+	Updater         string                           `json:"updater"`
 }
 
 type InitializeLedgersBalanceRequest struct {
@@ -108,7 +108,7 @@ func (r CreateJournalRequest) mapToCommand(sobId uuid.UUID) command.CreateJourna
 		ReferenceJournalId: referenceJournalId,
 		AttachmentQuantity: r.AttachmentQuantity,
 		JournalLines:       itemCmd,
-		Creator:            uuid.MustParse(r.Creator),
+		Creator:            r.Creator,
 		TransactionDate:    r.TransactionDate,
 	}
 }

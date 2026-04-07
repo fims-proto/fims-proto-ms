@@ -2,6 +2,7 @@ package query
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
@@ -14,19 +15,24 @@ type void struct{}
 
 var empty void
 
+// systemUserTraits is returned for SYSTEM_USER — no service call required.
+var systemUserTraits = json.RawMessage(`{"email":"system@fims.internal"}`)
+
+// isSystemUserStub: non-nil *User with Id == uuid.Nil → system actor.
+func isSystemUserStub(u *User) bool {
+	return u != nil && u.Id == uuid.Nil
+}
+
 // enrichUserName enriches journals with full user data (name, traits) by looking up users in the user service
 func enrichUserName(ctx context.Context, service service.UserService, journals []Journal) ([]Journal, error) {
+	// Collect only real user UUIDs (skip nil = unset, skip system stubs)
 	userSet := make(map[uuid.UUID]void)
-	addSetIfNotNil := func(u *User) {
-		if u != nil {
-			userSet[u.Id] = empty
-		}
-	}
 	for _, j := range journals {
-		addSetIfNotNil(j.Creator)
-		addSetIfNotNil(j.Reviewer)
-		addSetIfNotNil(j.Auditor)
-		addSetIfNotNil(j.Poster)
+		for _, u := range []*User{j.Creator, j.Reviewer, j.Auditor, j.Poster} {
+			if u != nil && u.Id != uuid.Nil {
+				userSet[u.Id] = empty
+			}
+		}
 	}
 
 	users, err := service.ReadUsersByIds(ctx, utils.MapToKeySlice(userSet))
@@ -35,13 +41,13 @@ func enrichUserName(ctx context.Context, service service.UserService, journals [
 	}
 
 	enrichUser := func(u *User) *User {
-		if u != nil {
-			return &User{
-				Id:     u.Id,
-				Traits: users[u.Id].Traits,
-			}
+		if u == nil {
+			return nil
 		}
-		return nil
+		if isSystemUserStub(u) {
+			return &User{Id: uuid.Nil, Traits: systemUserTraits}
+		}
+		return &User{Id: u.Id, Traits: users[u.Id].Traits}
 	}
 
 	for i := range journals {

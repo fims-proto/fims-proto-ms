@@ -18,6 +18,39 @@ import (
 	"github.com/shopspring/decimal"
 )
 
+// userIDToUUID translates a domain UserID string → DB uuid.UUID.
+//
+//	""        → uuid.Nil          (not yet assigned)
+//	"SYSTEM"  → SystemUserDBUUID  (00000000-0000-0000-0000-000000000001)
+//	other     → uuid.Parse(s)     (real user UUID string)
+func userIDToUUID(id string) uuid.UUID {
+	switch id {
+	case "":
+		return uuid.Nil
+	case journal.SystemUser:
+		return journal.SystemUserDBUUID
+	default:
+		parsed, _ := uuid.Parse(id) // domain validates format; error is unreachable
+		return parsed
+	}
+}
+
+// uuidToUserID translates a DB uuid.UUID → domain UserID string.
+//
+//	uuid.Nil          → ""              (not yet assigned)
+//	SystemUserDBUUID  → "SYSTEM"
+//	other             → UUID string     (real user)
+func uuidToUserID(id uuid.UUID) string {
+	switch id {
+	case uuid.Nil:
+		return ""
+	case journal.SystemUserDBUUID:
+		return journal.SystemUser
+	default:
+		return id.String()
+	}
+}
+
 type accountPO struct {
 	Id                uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	SobId             uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Accounts_SobId_RawAccountNumber"`
@@ -367,10 +400,10 @@ func journalBOToPO(bo journal.Journal) journalPO {
 		ReferenceJournalId: converter.UUIDToPtr(bo.ReferenceJournalId()),
 		AttachmentQuantity: bo.AttachmentQuantity(),
 		Amount:             bo.Amount(),
-		Creator:            bo.Creator(),
-		Reviewer:           bo.Reviewer(),
-		Auditor:            bo.Auditor(),
-		Poster:             bo.Poster(),
+		Creator:            userIDToUUID(bo.Creator()),
+		Reviewer:           userIDToUUID(bo.Reviewer()),
+		Auditor:            userIDToUUID(bo.Auditor()),
+		Poster:             userIDToUUID(bo.Poster()),
 		IsReviewed:         bo.IsReviewed(),
 		IsAudited:          bo.IsAudited(),
 		IsPosted:           bo.IsPosted(),
@@ -412,10 +445,10 @@ func journalPOToBO(po journalPO) (*journal.Journal, error) {
 		journalType,
 		converter.UUIDFromPtr(po.ReferenceJournalId),
 		po.AttachmentQuantity,
-		po.Creator,
-		po.Reviewer,
-		po.Auditor,
-		po.Poster,
+		uuidToUserID(po.Creator),
+		uuidToUserID(po.Reviewer),
+		uuidToUserID(po.Auditor),
+		uuidToUserID(po.Poster),
 		po.IsReviewed,
 		po.IsAudited,
 		po.IsPosted,
@@ -430,10 +463,17 @@ func journalPOToDTO(po journalPO) query.Journal {
 	lineDTOs := converter.POsToDTOs(po.JournalLines, journalLinePOToDTO)
 
 	userOrNil := func(id uuid.UUID) *query.User {
-		if id != uuid.Nil {
+		switch id {
+		case uuid.Nil:
+			// field not yet set
+			return nil
+		case journal.SystemUserDBUUID:
+			// system stub: Id=uuid.Nil signals enricher
+			return &query.User{Id: uuid.Nil}
+		default:
+			// real user
 			return &query.User{Id: id}
 		}
-		return nil
 	}
 
 	// Convert time.Time DATE to TransactionDate

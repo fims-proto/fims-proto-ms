@@ -20,7 +20,7 @@ type UpdateJournalCmd struct {
 	HeaderText      string
 	JournalLines    []JournalLineCmd
 	TransactionDate transaction_date.TransactionDate
-	Updater         uuid.UUID
+	Updater         string
 }
 
 type UpdateJournalHandler struct {
