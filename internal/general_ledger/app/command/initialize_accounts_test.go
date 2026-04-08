@@ -343,6 +343,18 @@ func (m mockRepo) ExistsLedgerWithOpeningBalanceByAccountId(context.Context, uui
 	panic("implement me")
 }
 
+func (m mockRepo) ReadProfitAndLossLedgersHavingBalanceInPeriod(context.Context, uuid.UUID, uuid.UUID) ([]*ledger.Ledger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadLedgerByRawAccountNumberInPeriod(context.Context, uuid.UUID, string, uuid.UUID) (*ledger.Ledger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsClosingJournalInPeriod(context.Context, uuid.UUID, uuid.UUID, journal.JournalType) (bool, error) {
+	panic("implement me")
+}
+
 type mockSobService struct{}
 
 func (m mockSobService) ReadById(context.Context, uuid.UUID) (query.Sob, error) {

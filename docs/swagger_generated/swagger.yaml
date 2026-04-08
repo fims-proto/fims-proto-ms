@@ -213,6 +213,11 @@ definitions:
       updatedAt:
         type: string
     type: object
+  http.ClosingJournalResponse:
+    properties:
+      journalId:
+        type: string
+    type: object
   http.CreateAccountRequest:
     properties:
       balanceDirection:
@@ -1670,6 +1675,66 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/http.JournalDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journals/monthly-closing-journal:
+    post:
+      consumes:
+      - application/json
+      description: Generate and post monthly closing journal that reverses all leaf
+        P&L account balances to zero and transfers the net result to the Current Year
+        Profit account
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.ClosingJournalResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journals/year-end-closing-journal:
+    post:
+      consumes:
+      - application/json
+      description: Generate and post year-end closing journal that transfers the Current
+        Year Profit account balance to Retained Earnings. Only callable in period
+        12 (year-end) after monthly closing is complete
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/http.ClosingJournalResponse'
         "400":
           description: Bad Request
           schema:

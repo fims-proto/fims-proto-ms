@@ -478,6 +478,69 @@ func (r GeneralLedgerPostgresRepository) ExistsLedgerHavingBalanceByRawAccountNu
 	return count > 0, err
 }
 
+func (r GeneralLedgerPostgresRepository) ReadProfitAndLossLedgersHavingBalanceInPeriod(
+	ctx context.Context,
+	sobId, periodId uuid.UUID,
+) ([]*ledger.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var ledgerPOs []ledgerPO
+	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		Where("ending_amount <> 0").
+		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses), IsLeaf: true})).
+		Find(&ledgerPOs).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*ledger.Ledger, 0, len(ledgerPOs))
+	for _, po := range ledgerPOs {
+		bo, err := ledgerPOToBO(po)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, bo)
+	}
+	return result, nil
+}
+
+func (r GeneralLedgerPostgresRepository) ReadLedgerByRawAccountNumberInPeriod(
+	ctx context.Context,
+	sobId uuid.UUID,
+	rawAccountNumber string,
+	periodId uuid.UUID,
+) (*ledger.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po ledgerPO
+	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		InnerJoins("Account", db.Where(accountPO{RawAccountNumber: rawAccountNumber})).
+		First(&po).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return ledgerPOToBO(po)
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsClosingJournalInPeriod(
+	ctx context.Context,
+	sobId, periodId uuid.UUID,
+	journalType journal.JournalType,
+) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&journalPO{}).
+		Where("sob_id = ? AND period_id = ? AND journal_type = ?", sobId, periodId, string(journalType)).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
 func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error) {
 	db := r.dataSource.GetConnection(ctx)
 

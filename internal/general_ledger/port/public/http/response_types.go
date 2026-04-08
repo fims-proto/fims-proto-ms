@@ -242,6 +242,10 @@ type PreCloseCheckResponse struct {
 	CurrentYearProfitAccount *PreCloseCheckCurrentYearProfitAccountResponse `json:"currentYearProfitAccount,omitempty"`
 }
 
+type ClosingJournalResponse struct {
+	JournalId uuid.UUID `json:"journalId"`
+}
+
 // mapper
 
 func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {

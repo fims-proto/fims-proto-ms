@@ -1090,6 +1090,92 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/journals/monthly-closing-journal": {
+            "post": {
+                "description": "Generate and post monthly closing journal that reverses all leaf P\u0026L account balances to zero and transfers the net result to the Current Year Profit account",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.ClosingJournalResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/journals/year-end-closing-journal": {
+            "post": {
+                "description": "Generate and post year-end closing journal that transfers the Current Year Profit account balance to Retained Earnings. Only callable in period 12 (year-end) after monthly closing is complete",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/http.ClosingJournalResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/ledger/{accountId}": {
             "get": {
                 "description": "Get aggregated ledger summary for a single account across a period range",
@@ -2384,6 +2470,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ClosingJournalResponse": {
+            "type": "object",
+            "properties": {
+                "journalId": {
                     "type": "string"
                 }
             }

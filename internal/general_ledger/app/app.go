@@ -39,6 +39,9 @@ type Commands struct {
 	UpdateJournal       command.UpdateJournalHandler
 	PostJournal         command.PostJournalHandler
 
+	CreateMonthlyClosingJournal command.CreateMonthlyClosingJournalHandler
+	CreateYearEndClosingJournal command.CreateYearEndClosingJournalHandler
+
 	Migrate command.MigrationHandler
 }
 
@@ -89,6 +92,9 @@ func (a *Application) Inject(
 		CancelReviewJournal: command.NewCancelReviewJournalHandler(repo),
 		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService, dimensionService, sobService),
 		PostJournal:         command.NewPostJournalHandler(repo),
+
+		CreateMonthlyClosingJournal: command.NewCreateMonthlyClosingJournalHandler(repo, numberingService, dimensionService, sobService),
+		CreateYearEndClosingJournal: command.NewCreateYearEndClosingJournalHandler(repo, numberingService, dimensionService, sobService),
 
 		Migrate: command.NewMigrationHandler(repo),
 	}

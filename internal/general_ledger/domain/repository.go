@@ -53,11 +53,14 @@ type Repository interface {
 	) error
 	ReadLedgersByPeriod(ctx context.Context, periodId uuid.UUID) ([]*ledger.Ledger, error)
 	ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error)
+	ReadProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error)
+	ReadLedgerByRawAccountNumberInPeriod(ctx context.Context, sobId uuid.UUID, rawAccountNumber string, periodId uuid.UUID) (*ledger.Ledger, error)
 	ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
 	ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(ctx context.Context, sobId uuid.UUID, rawAccountNumber string, periodId uuid.UUID) (bool, error)
 
 	CreateJournal(ctx context.Context, j *journal.Journal) error
 	ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error)
+	ExistsClosingJournalInPeriod(ctx context.Context, sobId, periodId uuid.UUID, journalType journal.JournalType) (bool, error)
 	ExistsJournalLinesByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error)
 	ExistsChildAccountsByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error)
 	ExistsLedgerWithOpeningBalanceByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error)

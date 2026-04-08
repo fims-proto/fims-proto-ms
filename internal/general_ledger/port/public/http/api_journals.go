@@ -287,3 +287,51 @@ func (h Handler) PostJournal(c *gin.Context) {
 	}
 	c.Status(http.StatusNoContent)
 }
+
+// CreateMonthlyClosingJournal godoc
+//
+//	@Text			Create monthly closing journal
+//	@Description	Generate and post monthly closing journal that reverses all leaf P&L account balances to zero and transfers the net result to the Current Year Profit account
+//	@Tags			journals
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Success		201		{object}	ClosingJournalResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/journals/monthly-closing-journal [post]
+func (h Handler) CreateMonthlyClosingJournal(c *gin.Context) {
+	sobId := uuid.MustParse(c.Param("sobId"))
+	journalId, err := h.app.Commands.CreateMonthlyClosingJournal.Handle(c,
+		command.CreateMonthlyClosingJournalCmd{SobId: sobId},
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+}
+
+// CreateYearEndClosingJournal godoc
+//
+//	@Text			Create year-end closing journal
+//	@Description	Generate and post year-end closing journal that transfers the Current Year Profit account balance to Retained Earnings. Only callable in period 12 (year-end) after monthly closing is complete
+//	@Tags			journals
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Success		201		{object}	ClosingJournalResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/journals/year-end-closing-journal [post]
+func (h Handler) CreateYearEndClosingJournal(c *gin.Context) {
+	sobId := uuid.MustParse(c.Param("sobId"))
+	journalId, err := h.app.Commands.CreateYearEndClosingJournal.Handle(c,
+		command.CreateYearEndClosingJournalCmd{SobId: sobId},
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+}
