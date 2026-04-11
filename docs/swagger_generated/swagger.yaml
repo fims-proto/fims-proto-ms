@@ -213,6 +213,13 @@ definitions:
       updatedAt:
         type: string
     type: object
+  http.ClosingJournalIdsResponse:
+    properties:
+      monthlyClosingJournalId:
+        type: string
+      yearEndClosingJournalId:
+        type: string
+    type: object
   http.ClosingJournalResponse:
     properties:
       journalId:
@@ -1675,6 +1682,39 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/http.JournalDetailResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - journals
+  /sob/{sobId}/journals/closing-journal:
+    get:
+      consumes:
+      - application/json
+      description: Get both monthly and year-end closing journal IDs for a given period
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Period in YYYY-MM format
+        in: query
+        name: period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ClosingJournalIdsResponse'
         "400":
           description: Bad Request
           schema:

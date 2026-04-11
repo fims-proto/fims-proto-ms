@@ -246,6 +246,11 @@ type ClosingJournalResponse struct {
 	JournalId uuid.UUID `json:"journalId"`
 }
 
+type ClosingJournalIdsResponse struct {
+	MonthlyClosingJournalId *uuid.UUID `json:"monthlyClosingJournalId"`
+	YearEndClosingJournalId *uuid.UUID `json:"yearEndClosingJournalId"`
+}
+
 // mapper
 
 func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {

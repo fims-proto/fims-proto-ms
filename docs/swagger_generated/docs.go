@@ -1090,6 +1090,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/journals/closing-journal": {
+            "get": {
+                "description": "Get both monthly and year-end closing journal IDs for a given period",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "journals"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period in YYYY-MM format",
+                        "name": "period",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ClosingJournalIdsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/journals/monthly-closing-journal": {
             "post": {
                 "description": "Generate and post monthly closing journal that reverses all leaf P\u0026L account balances to zero and transfers the net result to the Current Year Profit account",
@@ -2470,6 +2520,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ClosingJournalIdsResponse": {
+            "type": "object",
+            "properties": {
+                "monthlyClosingJournalId": {
+                    "type": "string"
+                },
+                "yearEndClosingJournalId": {
                     "type": "string"
                 }
             }

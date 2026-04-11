@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -334,4 +335,39 @@ func (h Handler) CreateYearEndClosingJournal(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+}
+
+// GetClosingJournal godoc
+//
+//	@Text			Get closing journals by period
+//	@Description	Get both monthly and year-end closing journal IDs for a given period
+//	@Tags			journals
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			period	query		string	true	"Period in YYYY-MM format"
+//	@Success		200		{object}	ClosingJournalIdsResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/journals/closing-journal [get]
+func (h Handler) GetClosingJournal(c *gin.Context) {
+	sobId := uuid.MustParse(c.Param("sobId"))
+
+	periodStr := c.Query("period")
+	var fiscalYear, periodNumber int
+	if _, err := fmt.Sscanf(periodStr, "%d-%d", &fiscalYear, &periodNumber); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period format, expected YYYY-MM"})
+		return
+	}
+
+	result, err := h.app.Queries.ClosingJournalIdsByPeriod.Handle(c, sobId, fiscalYear, periodNumber)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, ClosingJournalIdsResponse{
+		MonthlyClosingJournalId: result.MonthlyClosingJournalId,
+		YearEndClosingJournalId: result.YearEndClosingJournalId,
+	})
 }

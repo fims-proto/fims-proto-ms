@@ -97,6 +97,25 @@ func (r GeneralLedgerPostgresReadRepository) JournalById(ctx context.Context, jo
 	return journalPOToDTO(po), nil
 }
 
+func (r GeneralLedgerPostgresReadRepository) ClosingJournalIdBySobAndPeriod(ctx context.Context, sobId uuid.UUID, fiscalYear, periodNumber int, journalType string) (*uuid.UUID, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var row struct{ Id uuid.UUID }
+	err := db.Model(&journalPO{}).
+		Select("journals.id").
+		InnerJoins("Period").
+		Where("journals.sob_id = ? AND journals.journal_type = ?", sobId, journalType).
+		Where("\"Period\".fiscal_year = ? AND \"Period\".period_number = ?", fiscalYear, periodNumber).
+		First(&row).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return &row.Id, nil
+}
+
 func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
 	if sobId != uuid.Nil {
 		sobIdFilter, _ := filterable.NewFilter("sobId", filterable.OptEq, sobId.String())

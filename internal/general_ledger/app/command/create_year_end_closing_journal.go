@@ -87,13 +87,13 @@ func (h CreateYearEndClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-alreadyExists")
 	}
 
-	// 4. Check monthly closing was done (CLOSING journal must exist)
-	monthlyDone, err := h.repo.ExistsClosingJournalInPeriod(ctx, cmd.SobId, currentPeriod.Id(), journal.TypeClosing)
+	// 4. Check all P&L accounts have been zeroed out
+	pnlHasBalance, err := h.repo.ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx, cmd.SobId, currentPeriod.Id())
 	if err != nil {
 		return nil, nil, err
 	}
-	if !monthlyDone {
-		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-monthlyClosingRequired")
+	if pnlHasBalance {
+		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-pnlNotCleared")
 	}
 
 	// 5. Read Current Year Profit ledger
