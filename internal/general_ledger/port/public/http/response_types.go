@@ -211,35 +211,35 @@ type PreCloseCheckPnLAccountResponse struct {
 }
 
 type PreCloseCheckUnpostedJournalsResponse struct {
-	Passed   bool                           `json:"passed"`
+	Status   string                         `json:"status"`
 	Count    int                            `json:"count"`
 	Journals []PreCloseCheckJournalResponse `json:"journals"`
 }
 
 type PreCloseCheckPnLBalanceResponse struct {
-	Passed   bool                              `json:"passed"`
+	Status   string                            `json:"status"`
 	Accounts []PreCloseCheckPnLAccountResponse `json:"accounts"`
 }
 
 type PreCloseCheckTrialBalanceResponse struct {
-	Passed        bool            `json:"passed"`
+	Status        string          `json:"status"`
 	OpeningAmount decimal.Decimal `json:"openingAmount"`
 	PeriodAmount  decimal.Decimal `json:"periodAmount"`
 	EndingAmount  decimal.Decimal `json:"endingAmount"`
 }
 
 type PreCloseCheckCurrentYearProfitAccountResponse struct {
-	Passed           bool            `json:"passed"`
+	Status           string          `json:"status"`
 	RawAccountNumber string          `json:"rawAccountNumber"`
 	AccountTitle     string          `json:"accountTitle"`
 	EndingAmount     decimal.Decimal `json:"endingAmount"`
 }
 
 type PreCloseCheckResponse struct {
-	UnpostedJournals         PreCloseCheckUnpostedJournalsResponse          `json:"unpostedJournals"`
-	ProfitAndLossBalance     PreCloseCheckPnLBalanceResponse                `json:"profitAndLossBalance"`
-	TrialBalance             PreCloseCheckTrialBalanceResponse              `json:"trialBalance"`
-	CurrentYearProfitAccount *PreCloseCheckCurrentYearProfitAccountResponse `json:"currentYearProfitAccount,omitempty"`
+	UnpostedJournals         PreCloseCheckUnpostedJournalsResponse         `json:"unpostedJournals"`
+	ProfitAndLossBalance     PreCloseCheckPnLBalanceResponse               `json:"profitAndLossBalance"`
+	TrialBalance             PreCloseCheckTrialBalanceResponse             `json:"trialBalance"`
+	CurrentYearProfitAccount PreCloseCheckCurrentYearProfitAccountResponse `json:"currentYearProfitAccount"`
 }
 
 type ClosingJournalResponse struct {
@@ -448,32 +448,27 @@ func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
 		})
 	}
 
-	var currentYearProfitAccount *PreCloseCheckCurrentYearProfitAccountResponse
-	if dto.CurrentYearProfitAccount.Applicable {
-		currentYearProfitAccount = &PreCloseCheckCurrentYearProfitAccountResponse{
-			Passed:           dto.CurrentYearProfitAccount.Passed,
-			RawAccountNumber: dto.CurrentYearProfitAccount.RawAccountNumber,
-			AccountTitle:     dto.CurrentYearProfitAccount.AccountTitle,
-			EndingAmount:     dto.CurrentYearProfitAccount.EndingAmount,
-		}
-	}
-
 	return PreCloseCheckResponse{
 		UnpostedJournals: PreCloseCheckUnpostedJournalsResponse{
-			Passed:   dto.UnpostedJournals.Passed,
+			Status:   string(dto.UnpostedJournals.Status),
 			Count:    dto.UnpostedJournals.Count,
 			Journals: journals,
 		},
 		ProfitAndLossBalance: PreCloseCheckPnLBalanceResponse{
-			Passed:   dto.ProfitAndLossBalance.Passed,
+			Status:   string(dto.ProfitAndLossBalance.Status),
 			Accounts: accounts,
 		},
 		TrialBalance: PreCloseCheckTrialBalanceResponse{
-			Passed:        dto.TrialBalance.Passed,
+			Status:        string(dto.TrialBalance.Status),
 			OpeningAmount: dto.TrialBalance.OpeningAmount,
 			PeriodAmount:  dto.TrialBalance.PeriodAmount,
 			EndingAmount:  dto.TrialBalance.EndingAmount,
 		},
-		CurrentYearProfitAccount: currentYearProfitAccount,
+		CurrentYearProfitAccount: PreCloseCheckCurrentYearProfitAccountResponse{
+			Status:           string(dto.CurrentYearProfitAccount.Status),
+			RawAccountNumber: dto.CurrentYearProfitAccount.RawAccountNumber,
+			AccountTitle:     dto.CurrentYearProfitAccount.AccountTitle,
+			EndingAmount:     dto.CurrentYearProfitAccount.EndingAmount,
+		},
 	}
 }

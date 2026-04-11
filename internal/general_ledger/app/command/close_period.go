@@ -61,6 +61,19 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 		return fmt.Errorf("not balance: %w", err)
 	}
 
+	// check current-year profit account has zero balance if closing the last period of fiscal year
+	if period, err := h.repo.ReadPeriodById(ctx, cmd.SobId, cmd.PeriodId); err != nil {
+		return fmt.Errorf("failed to read period: %w", err)
+	} else if period.PeriodNumber() == 12 {
+		if hasBalance, err := h.repo.ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
+			ctx, cmd.SobId, yearEndRetainedEarningsAccount, cmd.PeriodId,
+		); err != nil {
+			return fmt.Errorf("failed to check year-end account balance: %w", err)
+		} else if hasBalance {
+			return commonErrors.NewSlugError("period-close-unclearedCurrentYearProfitAccount")
+		}
+	}
+
 	// update
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		return h.handleUpdate(txCtx, cmd)
@@ -69,7 +82,6 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 
 func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd) error {
 	var nextFiscalYear, nextPeriodNumber int
-	var closingPeriodNumber int
 
 	// update current period to closed
 	if err := h.repo.UpdatePeriod(ctx, cmd.PeriodId, func(p *period.Period) (*period.Period, error) {
@@ -79,22 +91,10 @@ func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd
 
 		// get next period year and number
 		nextFiscalYear, nextPeriodNumber = p.NextNumber()
-		closingPeriodNumber = p.PeriodNumber()
 
 		return p, nil
 	}); err != nil {
 		return err
-	}
-
-	// if closing the last period of a fiscal year, check 本年利润 has zero balance
-	if closingPeriodNumber == 12 {
-		if hasBalance, err := h.repo.ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
-			ctx, cmd.SobId, yearEndRetainedEarningsAccount, cmd.PeriodId,
-		); err != nil {
-			return fmt.Errorf("failed to check year-end account balance: %w", err)
-		} else if hasBalance {
-			return commonErrors.NewSlugError("period-close-unclearedCurrentYearProfitAccount")
-		}
 	}
 
 	// create next period if it does not exist

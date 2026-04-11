@@ -251,6 +251,10 @@ func (m mockRepo) ReadCurrentPeriod(context.Context, uuid.UUID) (*period.Period,
 	panic("implement me")
 }
 
+func (m mockRepo) ReadPeriodById(context.Context, uuid.UUID, uuid.UUID) (*period.Period, error) {
+	panic("implement me")
+}
+
 func (m mockRepo) ReadPreviousPeriod(context.Context, uuid.UUID) (*period.Period, error) {
 	panic("implement me")
 }

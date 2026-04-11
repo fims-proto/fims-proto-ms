@@ -147,8 +147,6 @@ definitions:
     type: object
   http.AccountResponse:
     properties:
-      accountNumber:
-        type: string
       balanceDirection:
         type: string
       class:
@@ -161,6 +159,8 @@ definitions:
         type: boolean
       level:
         type: integer
+      rawAccountNumber:
+        type: string
       sobId:
         type: string
       superiorAccountId:
@@ -623,9 +623,9 @@ definitions:
         type: string
       endingAmount:
         type: number
-      passed:
-        type: boolean
       rawAccountNumber:
+        type: string
+      status:
         type: string
     type: object
   http.PreCloseCheckJournalResponse:
@@ -660,8 +660,8 @@ definitions:
         items:
           $ref: '#/definitions/http.PreCloseCheckPnLAccountResponse'
         type: array
-      passed:
-        type: boolean
+      status:
+        type: string
     type: object
   http.PreCloseCheckResponse:
     properties:
@@ -680,10 +680,10 @@ definitions:
         type: number
       openingAmount:
         type: number
-      passed:
-        type: boolean
       periodAmount:
         type: number
+      status:
+        type: string
     type: object
   http.PreCloseCheckUnpostedJournalsResponse:
     properties:
@@ -693,8 +693,8 @@ definitions:
         items:
           $ref: '#/definitions/http.PreCloseCheckJournalResponse'
         type: array
-      passed:
-        type: boolean
+      status:
+        type: string
     type: object
   http.ReportResponse:
     properties:

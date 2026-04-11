@@ -36,25 +36,58 @@ func (h PeriodPreCloseCheckHandler) Handle(ctx context.Context, sobId, periodId 
 		return PreCloseCheck{}, fmt.Errorf("failed to fetch period: %w", err)
 	}
 
+	// 1. Unposted journal check
 	unpostedJournals, err := h.checkUnpostedJournals(ctx, sobId, periodId)
 	if err != nil {
 		return PreCloseCheck{}, fmt.Errorf("failed to check unposted journals: %w", err)
 	}
 
+	// If unposted journals check fails, skip remaining checks
+	if unpostedJournals.Status != CheckStatusPassed {
+		return PreCloseCheck{
+			UnpostedJournals:         unpostedJournals,
+			ProfitAndLossBalance:     PreCloseCheckPnLBalance{Status: CheckStatusUndetermined},
+			CurrentYearProfitAccount: PreCloseCheckCurrentYearProfitAccount{Status: CheckStatusUndetermined},
+			TrialBalance:             PreCloseCheckTrialBalance{Status: CheckStatusUndetermined},
+		}, nil
+	}
+
+	// 2. P&L balance check
 	pnlBalance, err := h.checkProfitAndLossBalance(ctx, sobId, periodId)
 	if err != nil {
 		return PreCloseCheck{}, fmt.Errorf("failed to check profit and loss balance: %w", err)
 	}
 
-	trialBalance, err := h.checkTrialBalance(ctx, sobId, periodId)
-	if err != nil {
-		return PreCloseCheck{}, fmt.Errorf("failed to check trial balance: %w", err)
+	// If P&L balance check fails, skip remaining checks
+	if pnlBalance.Status != CheckStatusPassed {
+		return PreCloseCheck{
+			UnpostedJournals:         unpostedJournals,
+			ProfitAndLossBalance:     pnlBalance,
+			CurrentYearProfitAccount: PreCloseCheckCurrentYearProfitAccount{Status: CheckStatusUndetermined},
+			TrialBalance:             PreCloseCheckTrialBalance{Status: CheckStatusUndetermined},
+		}, nil
 	}
 
-	// Year-end check
+	// 3. Year-end check
 	currentYearProfitAccount, err := h.checkCurrentYearProfitAccount(ctx, sobId, periodId, period.PeriodNumber)
 	if err != nil {
 		return PreCloseCheck{}, fmt.Errorf("failed to check year-end account: %w", err)
+	}
+
+	// If current year profit account check fails (and it's applicable), skip trial balance
+	if currentYearProfitAccount.Status == CheckStatusFailed {
+		return PreCloseCheck{
+			UnpostedJournals:         unpostedJournals,
+			ProfitAndLossBalance:     pnlBalance,
+			CurrentYearProfitAccount: currentYearProfitAccount,
+			TrialBalance:             PreCloseCheckTrialBalance{Status: CheckStatusUndetermined},
+		}, nil
+	}
+
+	// 4. Trial balance check
+	trialBalance, err := h.checkTrialBalance(ctx, sobId, periodId)
+	if err != nil {
+		return PreCloseCheck{}, fmt.Errorf("failed to check trial balance: %w", err)
 	}
 
 	return PreCloseCheck{
@@ -100,8 +133,13 @@ func (h PeriodPreCloseCheckHandler) checkUnpostedJournals(ctx context.Context, s
 		})
 	}
 
+	status := CheckStatusPassed
+	if count != 0 {
+		status = CheckStatusFailed
+	}
+
 	return PreCloseCheckUnpostedJournals{
-		Passed:   count == 0,
+		Status:   status,
 		Count:    count,
 		Journals: journals,
 	}, nil
@@ -122,8 +160,13 @@ func (h PeriodPreCloseCheckHandler) checkProfitAndLossBalance(ctx context.Contex
 		})
 	}
 
+	status := CheckStatusPassed
+	if len(accounts) != 0 {
+		status = CheckStatusFailed
+	}
+
 	return PreCloseCheckPnLBalance{
-		Passed:   len(accounts) == 0,
+		Status:   status,
 		Accounts: accounts,
 	}, nil
 }
@@ -150,10 +193,13 @@ func (h PeriodPreCloseCheckHandler) checkTrialBalance(ctx context.Context, sobId
 		totalEnding = totalEnding.Add(l.EndingAmount)
 	}
 
-	passed := totalOpening.IsZero() && totalPeriod.IsZero() && totalEnding.IsZero()
+	status := CheckStatusPassed
+	if !totalOpening.IsZero() || !totalPeriod.IsZero() || !totalEnding.IsZero() {
+		status = CheckStatusFailed
+	}
 
 	return PreCloseCheckTrialBalance{
-		Passed:        passed,
+		Status:        status,
 		OpeningAmount: totalOpening,
 		PeriodAmount:  totalPeriod,
 		EndingAmount:  totalEnding,
@@ -162,7 +208,8 @@ func (h PeriodPreCloseCheckHandler) checkTrialBalance(ctx context.Context, sobId
 
 func (h PeriodPreCloseCheckHandler) checkCurrentYearProfitAccount(ctx context.Context, sobId, periodId uuid.UUID, periodNumber int) (PreCloseCheckCurrentYearProfitAccount, error) {
 	if periodNumber != 12 {
-		return PreCloseCheckCurrentYearProfitAccount{Applicable: false, Passed: true}, nil
+		// Not applicable for non-year-end periods, so mark as passed
+		return PreCloseCheckCurrentYearProfitAccount{Status: CheckStatusPassed}, nil
 	}
 
 	ledger, err := h.readModel.LedgerByRawAccountNumberInPeriod(ctx, sobId, yearEndRetainedEarningsAccount, periodId)
@@ -170,13 +217,17 @@ func (h PeriodPreCloseCheckHandler) checkCurrentYearProfitAccount(ctx context.Co
 		return PreCloseCheckCurrentYearProfitAccount{}, err
 	}
 	if ledger == nil {
-		// account not found or no ledger entry — treat as zero balance
-		return PreCloseCheckCurrentYearProfitAccount{Applicable: true, Passed: true}, nil
+		// account not found or no ledger entry — treat as zero balance, which passes
+		return PreCloseCheckCurrentYearProfitAccount{Status: CheckStatusPassed}, nil
+	}
+
+	status := CheckStatusPassed
+	if !ledger.EndingAmount.IsZero() {
+		status = CheckStatusFailed
 	}
 
 	return PreCloseCheckCurrentYearProfitAccount{
-		Applicable:       true,
-		Passed:           ledger.EndingAmount.IsZero(),
+		Status:           status,
 		RawAccountNumber: ledger.Account.RawAccountNumber,
 		AccountTitle:     ledger.Account.Title,
 		EndingAmount:     ledger.EndingAmount,

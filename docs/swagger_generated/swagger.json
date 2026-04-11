@@ -2417,9 +2417,6 @@
         "http.AccountResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -2437,6 +2434,9 @@
                 },
                 "level": {
                     "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -3141,10 +3141,10 @@
                 "endingAmount": {
                     "type": "number"
                 },
-                "passed": {
-                    "type": "boolean"
-                },
                 "rawAccountNumber": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -3198,8 +3198,8 @@
                         "$ref": "#/definitions/http.PreCloseCheckPnLAccountResponse"
                     }
                 },
-                "passed": {
-                    "type": "boolean"
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -3229,11 +3229,11 @@
                 "openingAmount": {
                     "type": "number"
                 },
-                "passed": {
-                    "type": "boolean"
-                },
                 "periodAmount": {
                     "type": "number"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -3249,8 +3249,8 @@
                         "$ref": "#/definitions/http.PreCloseCheckJournalResponse"
                     }
                 },
-                "passed": {
-                    "type": "boolean"
+                "status": {
+                    "type": "string"
                 }
             }
         },

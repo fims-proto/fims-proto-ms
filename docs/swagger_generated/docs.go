@@ -2423,9 +2423,6 @@ const docTemplate = `{
         "http.AccountResponse": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "balanceDirection": {
                     "type": "string"
                 },
@@ -2443,6 +2440,9 @@ const docTemplate = `{
                 },
                 "level": {
                     "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sobId": {
                     "type": "string"
@@ -3147,10 +3147,10 @@ const docTemplate = `{
                 "endingAmount": {
                     "type": "number"
                 },
-                "passed": {
-                    "type": "boolean"
-                },
                 "rawAccountNumber": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 }
             }
@@ -3204,8 +3204,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/http.PreCloseCheckPnLAccountResponse"
                     }
                 },
-                "passed": {
-                    "type": "boolean"
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -3235,11 +3235,11 @@ const docTemplate = `{
                 "openingAmount": {
                     "type": "number"
                 },
-                "passed": {
-                    "type": "boolean"
-                },
                 "periodAmount": {
                     "type": "number"
+                },
+                "status": {
+                    "type": "string"
                 }
             }
         },
@@ -3255,8 +3255,8 @@ const docTemplate = `{
                         "$ref": "#/definitions/http.PreCloseCheckJournalResponse"
                     }
                 },
-                "passed": {
-                    "type": "boolean"
+                "status": {
+                    "type": "string"
                 }
             }
         },

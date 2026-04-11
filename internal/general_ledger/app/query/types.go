@@ -11,6 +11,14 @@ import (
 	"github.com/google/uuid"
 )
 
+type CheckStatus string
+
+const (
+	CheckStatusPassed       CheckStatus = "PASSED"
+	CheckStatusFailed       CheckStatus = "FAILED"
+	CheckStatusUndetermined CheckStatus = "UNDETERMINED"
+)
+
 type DimensionCategory struct {
 	Id   uuid.UUID
 	Name string
@@ -132,7 +140,7 @@ type PreCloseCheckJournal struct {
 }
 
 type PreCloseCheckUnpostedJournals struct {
-	Passed   bool
+	Status   CheckStatus
 	Count    int
 	Journals []PreCloseCheckJournal
 }
@@ -144,20 +152,19 @@ type PreCloseCheckPnLAccount struct {
 }
 
 type PreCloseCheckPnLBalance struct {
-	Passed   bool
+	Status   CheckStatus
 	Accounts []PreCloseCheckPnLAccount
 }
 
 type PreCloseCheckTrialBalance struct {
-	Passed        bool
+	Status        CheckStatus
 	OpeningAmount decimal.Decimal
 	PeriodAmount  decimal.Decimal
 	EndingAmount  decimal.Decimal
 }
 
 type PreCloseCheckCurrentYearProfitAccount struct {
-	Applicable       bool
-	Passed           bool
+	Status           CheckStatus
 	RawAccountNumber string
 	AccountTitle     string
 	EndingAmount     decimal.Decimal

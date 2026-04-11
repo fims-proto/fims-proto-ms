@@ -66,7 +66,7 @@ type Account struct {
 	SobId             uuid.UUID
 	SuperiorAccountId *uuid.UUID
 	Title             string
-	AccountNumber     string
+	RawAccountNumber  string
 	Level             int
 	IsLeaf            bool
 	Class             int

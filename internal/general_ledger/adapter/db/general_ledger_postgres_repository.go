@@ -393,6 +393,20 @@ func (r GeneralLedgerPostgresRepository) ReadFirstPeriod(ctx context.Context, so
 	return nil, err
 }
 
+func (r GeneralLedgerPostgresRepository) ReadPeriodById(ctx context.Context, sobId, periodId uuid.UUID) (*period.Period, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po periodPO
+	err := db.Where(periodPO{Id: periodId, SobId: sobId}).First(&po).Error
+	if err == nil {
+		return periodPOToBO(po)
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, commonErrors.ErrRecordNotFound()
+	}
+	return nil, err
+}
+
 func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
 	db := r.dataSource.GetConnection(ctx)
 

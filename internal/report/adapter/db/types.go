@@ -419,7 +419,7 @@ func accountPOToDTO(po accountPO) query.Account {
 		SobId:             po.SobId,
 		SuperiorAccountId: superiorAccountId,
 		Title:             po.Title,
-		AccountNumber:     po.RawAccountNumber,
+		RawAccountNumber:  po.RawAccountNumber,
 		Level:             po.Level,
 		IsLeaf:            po.IsLeaf,
 		Class:             po.Class,

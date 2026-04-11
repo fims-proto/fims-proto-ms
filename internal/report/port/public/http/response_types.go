@@ -70,7 +70,7 @@ type AccountResponse struct {
 	SobId             uuid.UUID  `json:"sobId,omitempty"`
 	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
 	Title             string     `json:"title"`
-	AccountNumber     string     `json:"accountNumber"`
+	RawAccountNumber  string     `json:"rawAccountNumber"`
 	Level             int        `json:"level"`
 	IsLeaf            bool       `json:"isLeaf"`
 	Class             int        `json:"class"`
@@ -142,7 +142,7 @@ func accountDTOToVO(dto query.Account) AccountResponse {
 		SobId:             dto.SobId,
 		SuperiorAccountId: dto.SuperiorAccountId,
 		Title:             dto.Title,
-		AccountNumber:     dto.AccountNumber,
+		RawAccountNumber:  dto.RawAccountNumber,
 		Level:             dto.Level,
 		IsLeaf:            dto.IsLeaf,
 		Class:             dto.Class,

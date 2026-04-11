@@ -39,6 +39,7 @@ type Repository interface {
 		periodId uuid.UUID,
 		updateFn func(p *period.Period) (*period.Period, error),
 	) error
+	ReadPeriodById(ctx context.Context, sobId, periodId uuid.UUID) (*period.Period, error)
 	ReadCurrentPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
 	ReadPreviousPeriod(ctx context.Context, currentPeriodId uuid.UUID) (*period.Period, error)
 	ReadFirstPeriod(ctx context.Context, sobId uuid.UUID) (*period.Period, error)
