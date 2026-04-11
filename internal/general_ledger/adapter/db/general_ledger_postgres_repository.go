@@ -736,3 +736,65 @@ func (r GeneralLedgerPostgresRepository) DeleteAccount(ctx context.Context, acco
 
 	return db.Where("id = ?", accountId).Delete(&accountPO{}).Error
 }
+
+func (r GeneralLedgerPostgresRepository) ReadJournalById(
+	ctx context.Context,
+	journalId uuid.UUID,
+) (*journal.Journal, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	po := journalPO{Id: journalId}
+	if err := db.
+		Preload("JournalLines.Account").
+		Preload("JournalLines.DimensionOptions").
+		Preload("Period").
+		First(&po).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, commonErrors.ErrRecordNotFound()
+		}
+		return nil, err
+	}
+
+	return journalPOToBO(po)
+}
+
+func (r GeneralLedgerPostgresRepository) DeleteJournalById(
+	ctx context.Context,
+	journalId uuid.UUID,
+) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	// Step 1: collect line IDs (needed for FK cascade on dimension options)
+	var lineIds []uuid.UUID
+	if err := db.Model(&journalLinePO{}).
+		Select("id").
+		Where("journal_id = ?", journalId).
+		Find(&lineIds).Error; err != nil {
+		return fmt.Errorf("failed to query journal line ids: %w", err)
+	}
+
+	// Step 2: delete dimension option join rows
+	if len(lineIds) > 0 {
+		if err := db.Where("journal_line_id IN ?", lineIds).
+			Delete(&journalLineDimensionOptionPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete journal line dimension options: %w", err)
+		}
+	}
+
+	// Step 3: delete journal lines
+	if err := db.Where("journal_id = ?", journalId).
+		Delete(&journalLinePO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete journal lines: %w", err)
+	}
+
+	// Step 4: delete journal header (with RowsAffected guard for concurrent deletion)
+	result := db.Where("id = ?", journalId).Delete(&journalPO{})
+	if result.Error != nil {
+		return fmt.Errorf("failed to delete journal: %w", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return commonErrors.ErrRecordNotFound()
+	}
+
+	return nil
+}

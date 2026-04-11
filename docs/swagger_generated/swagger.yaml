@@ -1369,6 +1369,38 @@ paths:
       tags:
       - ledgers
   /sob/{sobId}/journal/{journalId}:
+    delete:
+      description: Delete a CLOSING or YEARLY_CLOSING journal and reverse its ledger
+        posts.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      summary: Delete system journal
+      tags:
+      - journals
     get:
       consumes:
       - application/json

@@ -80,4 +80,13 @@ type Repository interface {
 		updateFn func(j *journal.Journal) (*journal.Journal, error),
 	) error
 	ExistsJournalsNotPostedInPeriod(ctx context.Context, sobId, periodId uuid.UUID) (bool, error)
+
+	// ReadJournalById reads a journal (header + lines + period) by its primary key.
+	// Returns commonErrors.ErrRecordNotFound() if no row exists.
+	ReadJournalById(ctx context.Context, journalId uuid.UUID) (*journal.Journal, error)
+
+	// DeleteJournalById hard-deletes the journal header, all journal_lines rows,
+	// and all journal_line_dimension_options rows.
+	// Callers must reverse ledgers before calling this method.
+	DeleteJournalById(ctx context.Context, journalId uuid.UUID) error
 }

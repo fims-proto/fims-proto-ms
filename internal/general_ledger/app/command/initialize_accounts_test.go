@@ -359,6 +359,14 @@ func (m mockRepo) ExistsClosingJournalInPeriod(context.Context, uuid.UUID, uuid.
 	panic("implement me")
 }
 
+func (m mockRepo) ReadJournalById(context.Context, uuid.UUID) (*journal.Journal, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) DeleteJournalById(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
 type mockSobService struct{}
 
 func (m mockSobService) ReadById(context.Context, uuid.UUID) (query.Sob, error) {

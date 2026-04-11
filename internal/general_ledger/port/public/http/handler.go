@@ -44,6 +44,7 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.POST("/sob/:sobId/journal/:journalId/review", h.ReviewJournal)
 	r.POST("/sob/:sobId/journal/:journalId/cancel-review", h.CancelReviewJournal)
 	r.POST("/sob/:sobId/journal/:journalId/post", h.PostJournal)
+	r.DELETE("/sob/:sobId/journal/:journalId", h.DeleteSystemJournal)
 	r.POST("/sob/:sobId/journals/monthly-closing-journal", h.CreateMonthlyClosingJournal)
 	r.POST("/sob/:sobId/journals/year-end-closing-journal", h.CreateYearEndClosingJournal)
 	r.GET("/sob/:sobId/journals/closing-journal", h.GetClosingJournal)

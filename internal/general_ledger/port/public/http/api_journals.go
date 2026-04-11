@@ -371,3 +371,27 @@ func (h Handler) GetClosingJournal(c *gin.Context) {
 		YearEndClosingJournalId: result.YearEndClosingJournalId,
 	})
 }
+
+// DeleteSystemJournal godoc
+//
+//	@Tags			journals
+//	@Summary		Delete system journal
+//	@Description	Delete a CLOSING or YEARLY_CLOSING journal and reverse its ledger posts.
+//	@Param			sobId		path	string	true	"Sob ID"
+//	@Param			journalId	path	string	true	"Journal ID"
+//	@Success		204
+//	@Failure		404	{object}	Error
+//	@Failure		422	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/journal/{journalId} [delete]
+func (h Handler) DeleteSystemJournal(c *gin.Context) {
+	cmd := command.DeleteSystemJournalCmd{
+		SobId:     uuid.MustParse(c.Param("sobId")),
+		JournalId: uuid.MustParse(c.Param("journalId")),
+	}
+	if err := h.app.Commands.DeleteSystemJournal.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}

@@ -49,6 +49,7 @@
     "journal-yearEndClosing-monthlyClosingRequired": "年末结账前请先完成当期月末结账",
     "journal-yearEndClosing-pnlNotCleared": "损益类科目余额未清零，无法进行年末结账",
     "journal-yearEndClosing-noBalanceToClear": "本年利润科目余额为零，无需创建年末结账分录",
+    "journal-delete-notSystemJournal": "只有结账分录或年末结账分录可以被删除",
     "journalLine-emptyId": "分录行 ID 不能为空",
     "journalLine-emptyAccountId": "分录行科目 ID 不能为空",
     "journalLine-emptyText": "分录行摘要不能为空",
