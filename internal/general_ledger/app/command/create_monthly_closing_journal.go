@@ -2,6 +2,7 @@ package command
 
 import (
 	"context"
+	"sort"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
@@ -134,6 +135,12 @@ func (h CreateMonthlyClosingJournalHandler) buildJournal(pnlLedgers []*ledger.Le
 		Text:             "月末结账",
 		Amount:           sumPnL,
 	})
+
+	// Sort debit lines (positive) before credit lines (negative) — 先借后贷
+	sort.SliceStable(journalLineCmds, func(i, j int) bool {
+		return journalLineCmds[i].Amount.Sign() > journalLineCmds[j].Amount.Sign()
+	})
+
 	return journalLineCmds, nil
 }
 
