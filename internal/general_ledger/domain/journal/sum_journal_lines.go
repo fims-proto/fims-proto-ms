@@ -8,13 +8,13 @@ import (
 
 func sumJournalLines(journalLines []*JournalLine) (decimal.Decimal, error) {
 	if len(journalLines) == 0 {
-		return decimal.Decimal{}, errors.NewSlugError("journal-emptyJournalLines")
+		return decimal.Decimal{}, errors.NewInvalidInputError(errors.SlugJournalEmptyJournalLines)
 	}
 
 	var sumAmount decimal.Decimal
 	for _, item := range journalLines {
 		if item == nil {
-			return decimal.Decimal{}, errors.NewSlugError("journal-nilJournalLine")
+			return decimal.Decimal{}, errors.NewInvalidInputError(errors.SlugJournalNilJournalLine)
 		}
 
 		sumAmount = sumAmount.Add(item.Amount())
@@ -22,7 +22,7 @@ func sumJournalLines(journalLines []*JournalLine) (decimal.Decimal, error) {
 
 	// Trial balance: sum of all signed amounts must be zero
 	if !sumAmount.IsZero() {
-		return decimal.Decimal{}, errors.NewSlugError("journal-notBalanced")
+		return decimal.Decimal{}, errors.NewInvalidInputError(errors.SlugJournalNotBalanced)
 	}
 
 	// Return the transaction amount (sum of all positive amounts/debits only)

@@ -1,8 +1,6 @@
 package report
 
 import (
-	"errors"
-
 	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
 
@@ -28,19 +26,19 @@ func NewFormula(
 	amounts []decimal.Decimal,
 ) (*Formula, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("formula id cannot be nil")
+		return nil, commonerrors.NewInternalError(commonerrors.SlugReportFormulaNilId)
 	}
 
 	if sequence == 0 {
-		return nil, commonerrors.NewSlugError("report-formula-zeroSequence")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportFormulaZeroSeq)
 	}
 
 	if accountId == uuid.Nil {
-		return nil, commonerrors.NewSlugError("report-formula-emptyAccountId")
+		return nil, commonerrors.NewInternalError(commonerrors.SlugReportFormulaEmptyAccountId)
 	}
 
 	if sumFactor != 1 && sumFactor != -1 {
-		return nil, commonerrors.NewSlugError("report-formula-invalidSumFactor")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportFormulaInvalidSumFactor)
 	}
 
 	newRule, err := formula_rule.FromString(rule)

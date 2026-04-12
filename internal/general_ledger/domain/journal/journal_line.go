@@ -25,23 +25,23 @@ func NewJournalLine(
 	dimensionOptionIds []uuid.UUID,
 ) (*JournalLine, error) {
 	if id == uuid.Nil {
-		return nil, errors.NewSlugError("journalLine-emptyId")
+		return nil, errors.NewInternalError(errors.SlugJournalLineEmptyId)
 	}
 
 	if account == nil {
-		return nil, errors.NewSlugError("journalLine-nilAccount")
+		return nil, errors.NewInternalError(errors.SlugJournalLineNilAccount)
 	}
 
 	if account.Id() == uuid.Nil {
-		return nil, errors.NewSlugError("journalLine-emptyAccountId")
+		return nil, errors.NewInternalError(errors.SlugJournalLineEmptyAccountId)
 	}
 
 	if text == "" {
-		return nil, errors.NewSlugError("journalLine-emptyText")
+		return nil, errors.NewInvalidInputError(errors.SlugJournalLineEmptyText)
 	}
 
 	if amount.IsZero() {
-		return nil, errors.NewSlugError("journalLine-emptyAmount")
+		return nil, errors.NewInvalidInputError(errors.SlugJournalLineEmptyAmount)
 	}
 
 	return &JournalLine{

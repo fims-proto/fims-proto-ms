@@ -12,15 +12,15 @@ import (
 
 func (j *Journal) checkUpdatePossible(user string) error {
 	if j.isAudited {
-		return commonErrors.NewSlugError("journal-update-audited")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalUpdateAudited)
 	}
 
 	if j.isReviewed {
-		return commonErrors.NewSlugError("journal-update-reviewed")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalUpdateReviewed)
 	}
 
 	if !IsSystemUser(user) && user != j.creator {
-		return commonErrors.NewSlugError("journal-update-notCreator")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalUpdateNotCreator)
 	}
 
 	return nil
@@ -47,7 +47,7 @@ func (j *Journal) UpdateTransactionDate(transactionDate transaction_date.Transac
 	}
 
 	if transactionDate.IsZero() {
-		return commonErrors.NewSlugError("journal-zeroTransactionDate")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalZeroTransactionDate)
 	}
 
 	j.transactionDate = transactionDate
@@ -60,11 +60,11 @@ func (j *Journal) UpdatePeriodAndDocumentNumber(periodId uuid.UUID, documentNumb
 	}
 
 	if periodId == uuid.Nil {
-		return commonErrors.NewSlugError("journal-emptyPeriodId")
+		return commonErrors.NewInternalError(commonErrors.SlugJournalEmptyPeriodId)
 	}
 
 	if documentNumber == "" {
-		return commonErrors.NewSlugError("journal-emptyNumber")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalEmptyNumber)
 	}
 
 	j.periodId = periodId
@@ -78,7 +78,7 @@ func (j *Journal) UpdateHeaderText(headerText string, user string) error {
 	}
 
 	if headerText == "" {
-		return commonErrors.NewSlugError("journal-emptyHeaderText")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalEmptyHeaderText)
 	}
 
 	j.headerText = headerText

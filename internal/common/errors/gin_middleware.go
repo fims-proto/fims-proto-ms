@@ -17,6 +17,7 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 
 		var slug string
 		var localizationArgs []any
+		statusCode := http.StatusInternalServerError // default for unknown / unexpected errors
 		if len(c.Errors) == 1 {
 			// there should only be 1 error in the stack
 			var se SlugErr
@@ -24,6 +25,7 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 			if ok {
 				slug = se.slug
 				localizationArgs = se.args
+				statusCode = se.errorType.HTTPStatus()
 			} else {
 				slug = unknownErrorSlug
 			}
@@ -33,7 +35,7 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 		}
 
 		if slug == unknownErrorSlug {
-			c.JSON(http.StatusBadRequest, slugErrResponse{
+			c.JSON(http.StatusInternalServerError, slugErrResponse{
 				Slug:    slug,
 				Message: message,
 			})
@@ -44,7 +46,7 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 				message = localize
 			}
 
-			c.JSON(http.StatusBadRequest, slugErrResponse{
+			c.JSON(statusCode, slugErrResponse{
 				Slug:    slug,
 				Message: message,
 			})

@@ -120,7 +120,7 @@ func (s *Section) SynchronizeItems(desiredItems []UpdateReportParamsItem) error 
 		} else {
 			// Item not in desired list - delete it
 			if !currentItem.isEditable {
-				return errors.NewSlugError("report-item-notEditable")
+				return errors.NewInvalidInputError(errors.SlugReportItemNotEditable)
 			}
 			// Simply don't add to keptItems (implicit deletion)
 		}
@@ -192,16 +192,16 @@ func (i *Item) applyUpdates(data UpdateReportParamsItem) error {
 func (s *Section) createItemFromData(data UpdateReportParamsItem, sequence int) (*Item, error) {
 	// Validate required fields for new items
 	if data.Text == nil {
-		return nil, errors.NewSlugError("report-item-textRequired")
+		return nil, errors.NewInvalidInputError(errors.SlugReportItemTextRequired)
 	}
 	if data.Level == nil {
-		return nil, errors.NewSlugError("report-item-levelRequired")
+		return nil, errors.NewInvalidInputError(errors.SlugReportItemLevelRequired)
 	}
 	if data.SumFactor == nil {
-		return nil, errors.NewSlugError("report-item-sumFactorRequired")
+		return nil, errors.NewInvalidInputError(errors.SlugReportItemSumFactorRequired)
 	}
 	if data.DataSource == nil {
-		return nil, errors.NewSlugError("report-item-dataSourceRequired")
+		return nil, errors.NewInvalidInputError(errors.SlugReportItemDataSourceRequired)
 	}
 
 	// Build formulas

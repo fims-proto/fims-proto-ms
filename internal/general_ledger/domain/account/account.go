@@ -1,10 +1,10 @@
 package account
 
 import (
-	"errors"
 	"fmt"
 	"unicode/utf8"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 
@@ -78,27 +78,27 @@ func NewByAllFields(
 	dimensionCategoryIds []uuid.UUID,
 ) (*Account, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("nil account id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.New("nil sob")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilSob)
 	}
 
 	if superiorAccountId == uuid.Nil && level > 1 {
-		return nil, errors.New("nil superior account id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilSuperiorId)
 	}
 
 	if title == "" {
-		return nil, errors.New("empty account title")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugAccountEmptyTitle)
 	}
 
 	if utf8.RuneCountInString(title) > 50 {
-		return nil, errors.New("account title exceeds max length (50)")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugAccountTitleTooLong)
 	}
 
 	if rawAccountNumber == "" {
-		return nil, errors.New("empty raw account number")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugAccountEmptyRawNumber)
 	}
 
 	// Validate rawAccountNumber format

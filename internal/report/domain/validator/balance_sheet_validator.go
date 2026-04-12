@@ -15,17 +15,17 @@ func (v *BalanceSheetValidator) Validate(_ context.Context, r *report.Report) er
 	// Find required sections by type
 	assetsSection := findSectionByType(r.Sections(), sectiontype.Assets)
 	if assetsSection == nil {
-		return errors.NewSlugError("report-validation-missingSectionType", "assets")
+		return errors.NewInternalError(errors.SlugReportValidationMissingSection, "assets")
 	}
 
 	liabilitiesSection := findSectionByType(r.Sections(), sectiontype.Liabilities)
 	if liabilitiesSection == nil {
-		return errors.NewSlugError("report-validation-missingSectionType", "liabilities")
+		return errors.NewInternalError(errors.SlugReportValidationMissingSection, "liabilities")
 	}
 
 	equitySection := findSectionByType(r.Sections(), sectiontype.Equity)
 	if equitySection == nil {
-		return errors.NewSlugError("report-validation-missingSectionType", "equity")
+		return errors.NewInternalError(errors.SlugReportValidationMissingSection, "equity")
 	}
 
 	// Validate balance for each amount type column
@@ -38,8 +38,8 @@ func (v *BalanceSheetValidator) Validate(_ context.Context, r *report.Report) er
 
 		if !assets[i].Equal(liabilitiesEquity) {
 			difference := assets[i].Sub(liabilitiesEquity)
-			return errors.NewSlugError(
-				"report-balanceSheet-imbalance",
+			return errors.NewInvalidInputError(
+				errors.SlugReportBalanceSheetImbalance,
 				amountType.String(),
 				assets[i].String(),
 				liabilitiesEquity.String(),

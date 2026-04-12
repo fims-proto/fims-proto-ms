@@ -80,7 +80,7 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 			return fmt.Errorf("failed to check reference journal: %w", err)
 		}
 		if !exists {
-			return errors.NewSlugError("journal-referenceJournalNotFound")
+			return errors.NewInternalError(errors.SlugJournalReferenceNotFound)
 		}
 	}
 

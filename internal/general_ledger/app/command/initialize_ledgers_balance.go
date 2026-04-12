@@ -43,7 +43,8 @@ func (h InitializeLedgersBalanceHandler) Handle(ctx context.Context, cmd Initial
 		return fmt.Errorf("failed to read first period: %w", err)
 	}
 	if firstPeriod.IsClosed() {
-		return errors.ErrPeriodClosed()
+		// 400 — business rule
+		return errors.NewInvalidInputError(errors.SlugPeriodClosed)
 	}
 
 	// prepare ledgers to be updated

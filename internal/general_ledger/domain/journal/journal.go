@@ -51,67 +51,67 @@ func New(
 	journalLines []*JournalLine,
 ) (*Journal, error) {
 	if id == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyId")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
+		return nil, errors.NewInternalError(errors.SlugEmptySobId)
 	}
 
 	if period == nil {
-		return nil, errors.NewSlugError("journal-emptyPeriod")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyPeriod)
 	}
 
 	if period.Id() == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyPeriodId")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyPeriodId)
 	}
 
 	if headerText == "" {
-		return nil, errors.NewSlugError("journal-emptyHeaderText")
+		return nil, errors.NewInvalidInputError(errors.SlugJournalEmptyHeaderText)
 	}
 
 	if documentNumber == "" {
-		return nil, errors.NewSlugError("journal-emptyNumber")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyNumber)
 	}
 
 	if attachmentQuantity < 0 {
-		return nil, errors.NewSlugError("journal-invalidAttachmentQuantity")
+		return nil, errors.NewInvalidInputError(errors.SlugJournalInvalidAttachmentQty)
 	}
 
 	if isEmptyUser(creator) {
-		return nil, errors.NewSlugError("journal-emptyCreator")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyCreator)
 	}
 
 	if isReviewed && isEmptyUser(reviewer) {
-		return nil, errors.NewSlugError("journal-emptyReviewer")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyReviewer)
 	}
 
 	if isAudited && isEmptyUser(auditor) {
-		return nil, errors.NewSlugError("journal-emptyAuditor")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyAuditor)
 	}
 
 	if isPosted && isEmptyUser(poster) {
-		return nil, errors.NewSlugError("journal-emptyPoster")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyPoster)
 	}
 
 	if isPosted && (!isReviewed || !isAudited) {
-		return nil, errors.NewSlugError("journal-invalidPostStatus")
+		return nil, errors.NewInternalError(errors.SlugJournalInvalidPostStatus)
 	}
 
 	if transactionDate.IsZero() {
-		return nil, errors.NewSlugError("journal-zeroTransactionDate")
+		return nil, errors.NewInternalError(errors.SlugJournalZeroTransactionDate)
 	}
 
 	if !journalType.IsValid() {
-		return nil, errors.NewSlugError("journal-invalidJournalType")
+		return nil, errors.NewInternalError(errors.SlugJournalInvalidJournalType)
 	}
 
 	if journalType.RequiresReferenceJournal() && referenceJournalId == uuid.Nil {
-		return nil, errors.NewSlugError("journal-missingReferenceJournalId")
+		return nil, errors.NewInternalError(errors.SlugJournalMissingReferenceId)
 	}
 
 	if !journalType.RequiresReferenceJournal() && referenceJournalId != uuid.Nil {
-		return nil, errors.NewSlugError("journal-unexpectedReferenceJournalId")
+		return nil, errors.NewInternalError(errors.SlugJournalUnexpectedReferenceId)
 	}
 
 	totalVal, err := sumJournalLines(journalLines)

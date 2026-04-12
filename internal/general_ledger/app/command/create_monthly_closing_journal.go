@@ -75,7 +75,7 @@ func (h CreateMonthlyClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 	// 1. Read current period
 	currentPeriod, err := h.repo.ReadCurrentPeriod(ctx, cmd.SobId)
 	if err != nil {
-		return nil, nil, commonErrors.NewSlugError("period-notFound")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodNotFound)
 	}
 
 	// 2. Check if CLOSING journal already exists in this period
@@ -84,7 +84,7 @@ func (h CreateMonthlyClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, err
 	}
 	if exists {
-		return nil, nil, commonErrors.NewSlugError("journal-closing-alreadyExists")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalClosingAlreadyExists)
 	}
 
 	// 3. Check all journals are posted
@@ -93,7 +93,7 @@ func (h CreateMonthlyClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, err
 	}
 	if hasUnposted {
-		return nil, nil, commonErrors.NewSlugError("journal-closing-unpostedJournalsExist")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalClosingUnpostedExist)
 	}
 
 	// 4. Read P&L ledgers with non-zero balance
@@ -102,7 +102,7 @@ func (h CreateMonthlyClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, err
 	}
 	if len(pnlLedgers) == 0 {
-		return nil, nil, commonErrors.NewSlugError("journal-closing-noBalanceToClear")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalClosingNoBalance)
 	}
 	return currentPeriod, pnlLedgers, nil
 }
@@ -114,7 +114,7 @@ func (h CreateMonthlyClosingJournalHandler) buildJournal(pnlLedgers []*ledger.Le
 	for _, l := range pnlLedgers {
 		account := l.Account()
 		if account == nil {
-			return nil, commonErrors.NewSlugError("account-notFound")
+			return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNotFound)
 		}
 
 		// Reverse the balance: line.amount = -endingAmount

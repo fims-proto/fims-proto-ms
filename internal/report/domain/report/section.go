@@ -1,8 +1,6 @@
 package report
 
 import (
-	"errors"
-
 	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/section_type"
 
@@ -30,11 +28,11 @@ func NewSection(
 	items []*Item,
 ) (*Section, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("section id cannot be nil")
+		return nil, commonerrors.NewInternalError(commonerrors.SlugReportSectionNilId)
 	}
 
 	if sequence == 0 {
-		return nil, commonerrors.NewSlugError("report-section-zeroSequence")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportSectionZeroSeq)
 	}
 
 	newSectionType, err := section_type.FromString(sectionTypeStr)

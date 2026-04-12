@@ -1,7 +1,7 @@
 package identifier
 
 import (
-	"errors"
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/google/uuid"
 )
@@ -14,15 +14,15 @@ type Identifier struct {
 
 func New(id, identifierConfigurationId uuid.UUID, identifier string) (*Identifier, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("id cannot be empty")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugNumberingIdEmpty)
 	}
 
 	if identifierConfigurationId == uuid.Nil {
-		return nil, errors.New("identifier configuration id cannot be empty")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugNumberingConfigIdEmpty)
 	}
 
 	if identifier == "" {
-		return nil, errors.New("identifier cannot be empty")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugNumberingIdentifierEmpty)
 	}
 
 	return &Identifier{

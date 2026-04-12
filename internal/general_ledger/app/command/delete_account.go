@@ -40,7 +40,7 @@ func (h DeleteAccountHandler) Handle(ctx context.Context, cmd DeleteAccountCmd) 
 			return fmt.Errorf("failed to check child accounts: %w", err)
 		}
 		if hasChildren {
-			return commonErrors.NewSlugError("account-delete-hasChildren")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountDeleteHasChildren)
 		}
 
 		usedByJournalLine, err := h.repo.ExistsJournalLinesByAccountId(txCtx, cmd.AccountId)
@@ -48,7 +48,7 @@ func (h DeleteAccountHandler) Handle(ctx context.Context, cmd DeleteAccountCmd) 
 			return fmt.Errorf("failed to check journal line usage: %w", err)
 		}
 		if usedByJournalLine {
-			return commonErrors.NewSlugError("account-delete-usedByJournalLine")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountDeleteUsedByJLine)
 		}
 
 		hasOpeningBalance, err := h.repo.ExistsLedgerWithOpeningBalanceByAccountId(txCtx, cmd.AccountId)
@@ -56,7 +56,7 @@ func (h DeleteAccountHandler) Handle(ctx context.Context, cmd DeleteAccountCmd) 
 			return fmt.Errorf("failed to check ledger opening balance: %w", err)
 		}
 		if hasOpeningBalance {
-			return commonErrors.NewSlugError("account-delete-hasOpeningBalance")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountDeleteHasOpBalance)
 		}
 
 		if err := h.repo.DeleteLedgersByAccountId(txCtx, cmd.AccountId); err != nil {

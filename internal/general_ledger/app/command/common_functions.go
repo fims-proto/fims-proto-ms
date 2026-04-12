@@ -99,7 +99,7 @@ func readPeriodIdAndCheck(
 	}
 
 	if p.IsClosed() {
-		return nil, commonErrors.ErrPeriodClosed()
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodClosed)
 	}
 
 	return p, nil

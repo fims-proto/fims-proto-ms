@@ -6,20 +6,20 @@ import (
 
 func (j *Journal) Review(reviewer string) error {
 	if j.isReviewed {
-		return errors.NewSlugError("journal-review-repeatReview")
+		return errors.NewInvalidInputError(errors.SlugJournalReviewRepeat)
 	}
 
 	if isEmptyUser(reviewer) {
-		return errors.NewSlugError("journal-review-emptyReviewer")
+		return errors.NewInternalError(errors.SlugJournalReviewEmptyReviewer)
 	}
 
 	if !IsSystemUser(reviewer) {
 		if reviewer == j.creator {
-			return errors.NewSlugError("journal-review-reviewerSameAsCreator")
+			return errors.NewInvalidInputError(errors.SlugJournalReviewSameAsCreator)
 		}
 
 		if !isEmptyUser(j.auditor) && reviewer == j.auditor {
-			return errors.NewSlugError("journal-review-reviewerSameAsAuditor")
+			return errors.NewInvalidInputError(errors.SlugJournalReviewSameAsAuditor)
 		}
 	}
 
@@ -30,15 +30,15 @@ func (j *Journal) Review(reviewer string) error {
 
 func (j *Journal) CancelReview(reviewer string) error {
 	if !j.isReviewed {
-		return errors.NewSlugError("journal-cancelReview-notReviewed")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelReviewNotReviewed)
 	}
 
 	if j.reviewer != reviewer {
-		return errors.NewSlugError("journal-cancelReview-differentReviewer")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelReviewDiffReviewer)
 	}
 
 	if j.isPosted {
-		return errors.NewSlugError("journal-cancelReview-posted")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelReviewPosted)
 	}
 
 	j.isReviewed = false

@@ -1,27 +1,5 @@
 package errors
 
-func ErrNoWhereUsed(args ...string) SlugErr {
-	return NewSlugError("no-where-used", args)
-}
-
-// common
-
 func ErrRecordNotFound() SlugErr {
-	return NewSlugError("record-not-found")
-}
-
-// account
-
-func ErrInvalidAccountClass(class string) SlugErr {
-	return NewSlugError("invalid-account-class", class)
-}
-
-func ErrInvalidAccountGroup(class string, group string) SlugErr {
-	return NewSlugError("invalid-account-group", class, group)
-}
-
-// period
-
-func ErrPeriodClosed() SlugErr {
-	return NewSlugError("period-closed")
+	return NewNotFoundError(SlugRecordNotFound) // 404
 }

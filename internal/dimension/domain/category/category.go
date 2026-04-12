@@ -19,21 +19,21 @@ type DimensionCategory struct {
 
 func New(id, sobId uuid.UUID, name string) (*DimensionCategory, error) {
 	if id == uuid.Nil {
-		return nil, commonErrors.NewSlugError("dimension-category-emptyId")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugDimCategoryEmptyId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, commonErrors.NewSlugError("dimension-category-emptySobId")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugDimCategoryEmptySobId)
 	}
 
 	name = strings.TrimSpace(name)
 
 	if name == "" {
-		return nil, commonErrors.NewSlugError("dimension-category-emptyName")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugDimCategoryEmptyName)
 	}
 
 	if utf8.RuneCountInString(name) > maxNameRunes {
-		return nil, commonErrors.NewSlugError("dimension-category-nameTooLong")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugDimCategoryNameTooLong)
 	}
 
 	return &DimensionCategory{
@@ -47,11 +47,11 @@ func (c *DimensionCategory) Rename(newName string) error {
 	newName = strings.TrimSpace(newName)
 
 	if newName == "" {
-		return commonErrors.NewSlugError("dimension-category-emptyName")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugDimCategoryEmptyName)
 	}
 
 	if utf8.RuneCountInString(newName) > maxNameRunes {
-		return commonErrors.NewSlugError("dimension-category-nameTooLong")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugDimCategoryNameTooLong)
 	}
 
 	c.name = newName

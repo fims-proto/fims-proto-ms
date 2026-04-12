@@ -1,8 +1,6 @@
 package report
 
 import (
-	"errors"
-
 	commonerrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report/item_type"
@@ -43,23 +41,23 @@ func NewItem(
 	isAbleToAddChild bool,
 ) (*Item, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("item id cannot be nil")
+		return nil, commonerrors.NewInternalError(commonerrors.SlugReportItemNilId)
 	}
 
 	if text == "" {
-		return nil, commonerrors.NewSlugError("report-item-emptyText")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemEmptyText)
 	}
 
 	if level == 0 {
-		return nil, commonerrors.NewSlugError("report-item-invalidLevel")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemInvalidLevel)
 	}
 
 	if sequence == 0 {
-		return nil, commonerrors.NewSlugError("report-item-zeroSequence")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemZeroSeq)
 	}
 
 	if sumFactor != -1 && sumFactor != 0 && sumFactor != 1 {
-		return nil, commonerrors.NewSlugError("report-item-invalidSumFactor")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemInvalidSumFactor)
 	}
 
 	newItemType, err := item_type.FromString(itemType)
@@ -73,15 +71,15 @@ func NewItem(
 	}
 
 	if newDataSource != data_source.Formulas && len(formulas) > 0 {
-		return nil, commonerrors.NewSlugError("report-item-invalidDataSourceWithFormulas")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemInvalidDataSourceWithForms)
 	}
 
 	if level == 1 && isBreakdownItem {
-		return nil, commonerrors.NewSlugError("report-item-rootLevelIsBreakdownItem")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemRootIsBreakdown)
 	}
 
 	if isBreakdownItem && isAbleToAddChild {
-		return nil, commonerrors.NewSlugError("report-item-breakdownItemCannotAddChild")
+		return nil, commonerrors.NewInvalidInputError(commonerrors.SlugReportItemBreakdownNoChild)
 	}
 
 	return &Item{

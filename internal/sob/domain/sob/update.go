@@ -1,18 +1,19 @@
 package sob
 
 import (
-	"errors"
 	"fmt"
 	"unicode/utf8"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 func (s *Sob) UpdateName(name string) error {
 	if name == "" {
-		return errors.New("empty sob name")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugSobEmptyName)
 	}
 
 	if utf8.RuneCountInString(name) > 50 {
-		return errors.New("sob name too long")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugSobNameTooLong)
 	}
 
 	s.name = name
@@ -21,7 +22,7 @@ func (s *Sob) UpdateName(name string) error {
 
 func (s *Sob) UpdateDescription(description string) error {
 	if utf8.RuneCountInString(description) > 500 {
-		return errors.New("sob description too long")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugSobDescriptionTooLong)
 	}
 
 	s.description = description
@@ -30,12 +31,12 @@ func (s *Sob) UpdateDescription(description string) error {
 
 func (s *Sob) UpdateAccountsCodeLength(accountsCodeLength []int) error {
 	if len(accountsCodeLength) < 2 || len(accountsCodeLength) > 10 {
-		return errors.New("invalid account level")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugSobInvalidAccountLevel)
 	}
 
 	// account level can only be enlarged
 	if len(accountsCodeLength) < len(s.accountsCodeLength) {
-		return errors.New("cannot shorten account level")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugSobCannotShortenLevel)
 	}
 
 	for i, accountCodeLength := range accountsCodeLength {

@@ -6,20 +6,20 @@ import (
 
 func (j *Journal) Audit(auditor string) error {
 	if j.isAudited {
-		return errors.NewSlugError("journal-audit-repeatAudit")
+		return errors.NewInvalidInputError(errors.SlugJournalAuditRepeatAudit)
 	}
 
 	if isEmptyUser(auditor) {
-		return errors.NewSlugError("journal-audit-emptyAuditor")
+		return errors.NewInternalError(errors.SlugJournalAuditEmptyAuditor)
 	}
 
 	if !IsSystemUser(auditor) {
 		if auditor == j.creator {
-			return errors.NewSlugError("journal-audit-auditorSameAsCreator")
+			return errors.NewInvalidInputError(errors.SlugJournalAuditSameAsCreator)
 		}
 
 		if !isEmptyUser(j.reviewer) && auditor == j.reviewer {
-			return errors.NewSlugError("journal-audit-auditorSameAsReviewer")
+			return errors.NewInvalidInputError(errors.SlugJournalAuditSameAsReviewer)
 		}
 	}
 
@@ -30,15 +30,15 @@ func (j *Journal) Audit(auditor string) error {
 
 func (j *Journal) CancelAudit(auditor string) error {
 	if !j.isAudited {
-		return errors.NewSlugError("journal-cancelAudit-notAudited")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelAuditNotAudited)
 	}
 
 	if j.auditor != auditor {
-		return errors.NewSlugError("journal-cancelAudit-differentAuditor")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelAuditDiffAuditor)
 	}
 
 	if j.isPosted {
-		return errors.NewSlugError("journal-cancelAudit-posted")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelAuditPosted)
 	}
 
 	j.isAudited = false

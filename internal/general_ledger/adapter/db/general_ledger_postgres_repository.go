@@ -75,7 +75,7 @@ func (r GeneralLedgerPostgresRepository) CreateAccount(ctx context.Context, a *a
 	db := r.dataSource.GetConnection(ctx)
 
 	po := accountBOToPO(a)
-	return db.Create(&po).Error
+	return commonErrors.TranslateDBError(db.Create(&po).Error)
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateAccount(
@@ -299,17 +299,10 @@ func (r GeneralLedgerPostgresRepository) CreatePeriodIfNotExists(ctx context.Con
 
 	po := periodBOToPO(*p)
 
-	if po.IsCurrent {
-		// make sure only 1 current period in one sob
-		_, err = r.ReadCurrentPeriod(ctx, po.SobId)
-		if err == nil {
-			return nil, false, commonErrors.NewSlugError("period-duplicatedCurrent")
-		} else if !errors.Is(err, commonErrors.ErrRecordNotFound()) {
-			return nil, false, fmt.Errorf("failed to check current period: %w", err)
-		}
+	if saveErr := db.Save(&po).Error; saveErr != nil {
+		return nil, false, commonErrors.TranslateDBError(saveErr)
 	}
-
-	return p, true, db.Save(&po).Error
+	return p, true, nil
 }
 
 func (r GeneralLedgerPostgresRepository) UpdatePeriod(
@@ -571,7 +564,7 @@ func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx conte
 func (r GeneralLedgerPostgresRepository) CreateJournal(ctx context.Context, j *journal.Journal) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Create(new(journalBOToPO(*j))).Error
+	return commonErrors.TranslateDBError(db.Create(new(journalBOToPO(*j))).Error)
 }
 
 func (r GeneralLedgerPostgresRepository) ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error) {

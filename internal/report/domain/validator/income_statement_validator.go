@@ -11,11 +11,11 @@ import (
 // IncomeStatementValidator validates the income statement structure and key items
 type IncomeStatementValidator struct{}
 
-func (v *IncomeStatementValidator) Validate(ctx context.Context, r *report.Report) error {
+func (v *IncomeStatementValidator) Validate(_ context.Context, r *report.Report) error {
 	// Find required net profit item
 	netProfitItem := findItemByType(r.Sections(), itemtype.NetProfit)
 	if netProfitItem == nil {
-		return errors.NewSlugError("report-validation-missingItemType", "net_profit")
+		return errors.NewInvalidInputError(errors.SlugReportValidationMissingItem, "net_profit")
 	}
 
 	// For now, we only validate that the net profit item exists and has amounts
@@ -24,7 +24,7 @@ func (v *IncomeStatementValidator) Validate(ctx context.Context, r *report.Repor
 
 	amounts := netProfitItem.Amounts()
 	if len(amounts) == 0 {
-		return errors.NewSlugError("report-incomeStatement-profitMismatch",
+		return errors.NewInvalidInputError(errors.SlugReportIncomeProfitMismatch,
 			"net_profit", "has values", "empty")
 	}
 

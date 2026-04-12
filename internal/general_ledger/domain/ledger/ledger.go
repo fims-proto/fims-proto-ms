@@ -1,8 +1,7 @@
 package ledger
 
 import (
-	"errors"
-
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
 	"github.com/google/uuid"
@@ -35,23 +34,23 @@ func New(
 	endingAmount decimal.Decimal,
 ) (*Ledger, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("nil ledger id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugLedgerNilId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.New("nil sob id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugLedgerNilSobId)
 	}
 
 	if periodId == uuid.Nil {
-		return nil, errors.New("nil period id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugLedgerNilPeriodId)
 	}
 
 	if accountId == uuid.Nil {
-		return nil, errors.New("nil account id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugLedgerNilAccountId)
 	}
 
 	if account == nil {
-		return nil, errors.New("nil account")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugLedgerNilAccount)
 	}
 
 	return &Ledger{

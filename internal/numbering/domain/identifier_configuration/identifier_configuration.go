@@ -1,8 +1,9 @@
 package identifier_configuration
 
 import (
-	"errors"
 	"fmt"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/google/uuid"
 )
@@ -18,15 +19,15 @@ type IdentifierConfiguration struct {
 
 func New(id uuid.UUID, targetBusinessObject string, propertyMatchers []PropertyMatcher, counter int, prefix, suffix string) (*IdentifierConfiguration, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("id cannot be empty")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugNumberingIdEmpty)
 	}
 
 	if targetBusinessObject == "" {
-		return nil, errors.New("target business object cannot be empty")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugNumberingTargetObjectEmpty)
 	}
 
 	if len(propertyMatchers) == 0 {
-		return nil, errors.New("property matchers cannot be empty")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugNumberingPropertyMatchersEmpty)
 	}
 
 	if counter < 0 {

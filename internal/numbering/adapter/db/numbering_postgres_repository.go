@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/numbering/app/query"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier"
 	"github/fims-proto/fims-proto-ms/internal/numbering/domain/identifier_configuration"
@@ -48,7 +49,7 @@ func (r NumberingPostgresRepository) CreateIdentifierConfiguration(
 		return err
 	}
 
-	return db.Create(&dbConfig).Error
+	return commonErrors.TranslateDBError(db.Create(&dbConfig).Error)
 }
 
 func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(
@@ -78,13 +79,13 @@ func (r NumberingPostgresRepository) UpdateIdentifierConfiguration(
 		return err
 	}
 
-	return db.Save(&po).Error
+	return commonErrors.TranslateDBError(db.Save(&po).Error)
 }
 
 func (r NumberingPostgresRepository) CreateIdentifier(ctx context.Context, bo *identifier.Identifier) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Create(new(identifierBOToPO(*bo))).Error
+	return commonErrors.TranslateDBError(db.Create(new(identifierBOToPO(*bo))).Error)
 }
 
 func (r NumberingPostgresRepository) ResolveIdentifierConfiguration(

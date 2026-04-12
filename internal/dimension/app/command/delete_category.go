@@ -34,7 +34,7 @@ func (h DeleteCategoryHandler) Handle(ctx context.Context, cmd DeleteCategoryCmd
 		}
 
 		if used {
-			return commonErrors.NewSlugError("dimension-deleteCategory-hasUsedOptions")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugDimCategoryDeleteHasUsed)
 		}
 
 		// Cascade-delete options (safe because none are used).

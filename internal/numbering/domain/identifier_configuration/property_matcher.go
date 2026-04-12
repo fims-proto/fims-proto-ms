@@ -1,8 +1,9 @@
 package identifier_configuration
 
 import (
-	"errors"
 	"strings"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 )
 
 type PropertyMatcher struct {
@@ -12,11 +13,11 @@ type PropertyMatcher struct {
 
 func NewPropertyMatcher(name, value string) (*PropertyMatcher, error) {
 	if strings.TrimSpace(name) == "" {
-		return nil, errors.New("property name cannot be empty")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugNumberingPropertyNameEmpty)
 	}
 
 	if strings.TrimSpace(value) == "" {
-		return nil, errors.New("property value cannot be empty")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugNumberingPropertyValueEmpty)
 	}
 
 	return &PropertyMatcher{

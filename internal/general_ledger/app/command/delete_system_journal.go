@@ -47,12 +47,12 @@ func (h DeleteSystemJournalHandler) deleteSystemJournal(ctx context.Context, cmd
 
 	// 2. Guard: sobId must match (cross-tenant access prevention)
 	if j.SobId() != cmd.SobId {
-		return commonErrors.NewSlugError("journal-notFound")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalNotFound)
 	}
 
 	// 3. Guard: only CLOSING and YEARLY_CLOSING may be deleted
 	if j.JournalType() != journal.TypeClosing && j.JournalType() != journal.TypeYearlyClosing {
-		return commonErrors.NewSlugError("journal-delete-notSystemJournal")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalDeleteNotSystemJournal)
 	}
 
 	// 4. Reverse ledger balances (system journals are always posted, but guard defensively)

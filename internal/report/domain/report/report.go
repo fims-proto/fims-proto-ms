@@ -32,27 +32,27 @@ func New(
 	sections []*Section,
 ) (*Report, error) {
 	if id == uuid.Nil {
-		return nil, errors.NewSlugError("report-emptyId")
+		return nil, errors.NewInternalError(errors.SlugReportEmptyId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("report-emptySobId")
+		return nil, errors.NewInternalError(errors.SlugReportEmptySobId)
 	}
 
 	if template && periodId != uuid.Nil {
-		return nil, errors.NewSlugError("report-templateHasPeriod")
+		return nil, errors.NewInternalError(errors.SlugReportTemplateHasPeriod)
 	}
 
 	if !template && periodId == uuid.Nil {
-		return nil, errors.NewSlugError("report-emptyPeriodId")
+		return nil, errors.NewInvalidInputError(errors.SlugReportEmptyPeriodId)
 	}
 
 	if title == "" {
-		return nil, errors.NewSlugError("report-emptyTitle")
+		return nil, errors.NewInvalidInputError(errors.SlugReportEmptyTitle)
 	}
 
 	if len(sections) == 0 {
-		return nil, errors.NewSlugError("report-emptySections")
+		return nil, errors.NewInvalidInputError(errors.SlugReportEmptySections)
 	}
 
 	newClass, err := class.FromString(reportClass)
@@ -61,7 +61,7 @@ func New(
 	}
 
 	if len(amountTypes) == 0 {
-		return nil, errors.NewSlugError("report-emptyAmountTypes")
+		return nil, errors.NewInvalidInputError(errors.SlugReportEmptyAmountTypes)
 	}
 
 	var newAmountTypes []amount_type.AmountType
@@ -78,7 +78,7 @@ func New(
 		amount_type.YearOpeningBalance,
 		amount_type.PeriodEndingBalance,
 	) {
-		return nil, errors.NewSlugError("report-invalidAmountType")
+		return nil, errors.NewInvalidInputError(errors.SlugReportInvalidAmountType)
 	}
 
 	if newClass == class.IncomeStatement && !containsOnly(
@@ -87,7 +87,7 @@ func New(
 		amount_type.YearToDateAmount,
 		amount_type.PeriodAmount,
 	) {
-		return nil, errors.NewSlugError("report-invalidAmountType")
+		return nil, errors.NewInvalidInputError(errors.SlugReportInvalidAmountType)
 	}
 
 	return &Report{
@@ -105,7 +105,7 @@ func New(
 // Instantiate deep copies report instance from template
 func (r *Report) Instantiate(reportId uuid.UUID, periodId uuid.UUID, title string, amountTypes []string) (*Report, error) {
 	if !r.template {
-		return nil, errors.NewSlugError("report-copyTemplate")
+		return nil, errors.NewInvalidInputError(errors.SlugReportCopyTemplate)
 	}
 
 	if title == "" {

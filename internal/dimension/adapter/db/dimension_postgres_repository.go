@@ -46,7 +46,7 @@ func (r DimensionPostgresRepository) CreateCategory(ctx context.Context, c *cate
 
 	po := categoryBOToPO(c)
 
-	return db.Create(&po).Error
+	return commonErrors.TranslateDBError(db.Create(&po).Error)
 }
 
 func (r DimensionPostgresRepository) UpdateCategory(
@@ -74,7 +74,7 @@ func (r DimensionPostgresRepository) UpdateCategory(
 
 	po = categoryBOToPO(updatedBO)
 
-	return db.Save(&po).Error
+	return commonErrors.TranslateDBError(db.Save(&po).Error)
 }
 
 func (r DimensionPostgresRepository) DeleteCategory(ctx context.Context, categoryId uuid.UUID) error {
@@ -120,7 +120,7 @@ func (r DimensionPostgresRepository) CreateOption(ctx context.Context, o *option
 
 	po := optionBOToPO(o)
 
-	return db.Create(&po).Error
+	return commonErrors.TranslateDBError(db.Create(&po).Error)
 }
 
 func (r DimensionPostgresRepository) UpdateOption(
@@ -148,7 +148,7 @@ func (r DimensionPostgresRepository) UpdateOption(
 
 	po = optionBOToPO(updatedBO)
 
-	return db.Save(&po).Error
+	return commonErrors.TranslateDBError(db.Save(&po).Error)
 }
 
 func (r DimensionPostgresRepository) DeleteOption(ctx context.Context, optionId uuid.UUID) error {

@@ -6,6 +6,7 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 
 	"github.com/google/uuid"
@@ -47,7 +48,7 @@ func (r ReportPostgresRepository) CreateReports(ctx context.Context, reports []*
 
 	pos := converter.BOsToPOs(reports, reportBOToPO)
 
-	return db.Create(pos).Error
+	return commonErrors.TranslateDBError(db.Create(pos).Error)
 }
 
 func (r ReportPostgresRepository) UpdateReport(
@@ -116,7 +117,7 @@ func (r ReportPostgresRepository) UpdateReport(
 
 	// Step 6: Save the updated report with all new associations
 	updatedPO := reportBOToPO(updatedBO)
-	return db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updatedPO).Error
+	return commonErrors.TranslateDBError(db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updatedPO).Error)
 }
 
 func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error) {

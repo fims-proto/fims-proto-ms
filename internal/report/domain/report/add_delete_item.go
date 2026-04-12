@@ -13,7 +13,7 @@ import (
 //   - >= max sequence: append to the end
 func (r *Report) AddItemToSection(sectionId uuid.UUID, item *Item, insertAfterSequence int) error {
 	if item == nil {
-		return errors.NewSlugError("report-item-nil")
+		return errors.NewInternalError(errors.SlugReportItemNil)
 	}
 
 	section, err := r.findSectionById(sectionId)
@@ -41,7 +41,7 @@ func (r *Report) findSectionById(sectionId uuid.UUID) (*Section, error) {
 			return found, nil
 		}
 	}
-	return nil, errors.NewSlugError("report-section-notFound", map[string]interface{}{"sectionId": sectionId.String()})
+	return nil, errors.NewInternalError(errors.SlugReportSectionNotFound, map[string]any{"sectionId": sectionId.String()})
 }
 
 // AddItem adds an item at the specified position and renumbers sequences
@@ -51,7 +51,7 @@ func (r *Report) findSectionById(sectionId uuid.UUID) (*Section, error) {
 //   - >= max sequence: append to the end
 func (s *Section) AddItem(item *Item, insertAfterSequence int) error {
 	if item == nil {
-		return errors.NewSlugError("report-item-nil")
+		return errors.NewInternalError(errors.SlugReportItemNil)
 	}
 
 	// If no items exist or insertAfterSequence <= 0, insert at beginning
@@ -85,7 +85,7 @@ func (s *Section) DeleteItem(itemId uuid.UUID) error {
 	for i, item := range s.items {
 		if item.id == itemId {
 			if !item.isEditable {
-				return errors.NewSlugError("report-item-notEditable")
+				return errors.NewInvalidInputError(errors.SlugReportItemNotEditable)
 			}
 			itemIndex = i
 			break
@@ -93,7 +93,7 @@ func (s *Section) DeleteItem(itemId uuid.UUID) error {
 	}
 
 	if itemIndex == -1 {
-		return errors.NewSlugError("report-item-notFound", map[string]interface{}{"itemId": itemId.String()})
+		return errors.NewInvalidInputError(errors.SlugReportItemNotFound, map[string]any{"itemId": itemId.String()})
 	}
 
 	// Remove the item from the slice

@@ -46,14 +46,14 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 	if notPostedJournalExists, err := h.repo.ExistsJournalsNotPostedInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
 		return fmt.Errorf("failed to check journals posted status: %w", err)
 	} else if notPostedJournalExists {
-		return commonErrors.NewSlugError("period-close-notAllJournalsPosted")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseNotAllPosted)
 	}
 
 	// check all profit and loss ledgers have zero ending balance
 	if unclearedProfitAndLoss, err := h.repo.ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
 		return fmt.Errorf("failed to check profit and loss ledgers balances: %w", err)
 	} else if unclearedProfitAndLoss {
-		return commonErrors.NewSlugError("period-close-unclearedProfitAndLoss")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseUnclearedPnL)
 	}
 
 	// check trial balance
@@ -62,15 +62,15 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 	}
 
 	// check current-year profit account has zero balance if closing the last period of fiscal year
-	if period, err := h.repo.ReadPeriodById(ctx, cmd.SobId, cmd.PeriodId); err != nil {
+	if p, err := h.repo.ReadPeriodById(ctx, cmd.SobId, cmd.PeriodId); err != nil {
 		return fmt.Errorf("failed to read period: %w", err)
-	} else if period.PeriodNumber() == 12 {
+	} else if p.PeriodNumber() == 12 {
 		if hasBalance, err := h.repo.ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
 			ctx, cmd.SobId, yearEndRetainedEarningsAccount, cmd.PeriodId,
 		); err != nil {
 			return fmt.Errorf("failed to check year-end account balance: %w", err)
 		} else if hasBalance {
-			return commonErrors.NewSlugError("period-close-unclearedCurrentYearProfitAccount")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseUnclearedProfit)
 		}
 	}
 

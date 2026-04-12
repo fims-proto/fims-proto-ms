@@ -71,12 +71,12 @@ func (h CreateYearEndClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 	// 1. Read current period
 	currentPeriod, err := h.repo.ReadCurrentPeriod(ctx, cmd.SobId)
 	if err != nil {
-		return nil, nil, commonErrors.NewSlugError("period-notFound")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodNotFound)
 	}
 
 	// 2. Validate period is month 12 (year-end)
 	if currentPeriod.PeriodNumber() != 12 {
-		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-notYearEndPeriod")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalYearEndNotYearEnd)
 	}
 
 	// 3. Check if YEARLY_CLOSING journal already exists
@@ -85,7 +85,7 @@ func (h CreateYearEndClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, err
 	}
 	if exists {
-		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-alreadyExists")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalYearEndAlreadyExists)
 	}
 
 	// 4. Check all P&L accounts have been zeroed out
@@ -94,7 +94,7 @@ func (h CreateYearEndClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, err
 	}
 	if pnlHasBalance {
-		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-pnlNotCleared")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalYearEndPnLNotCleared)
 	}
 
 	// 5. Read Current Year Profit ledger
@@ -103,12 +103,12 @@ func (h CreateYearEndClosingJournalHandler) preCheck(ctx context.Context, cmd Cr
 		return nil, nil, err
 	}
 	if cypLedger == nil {
-		return nil, nil, commonErrors.NewSlugError("account-notFound")
+		return nil, nil, commonErrors.NewInternalError(commonErrors.SlugAccountNotFound)
 	}
 
 	// Check if CYP balance is zero
 	if cypLedger.EndingAmount().IsZero() {
-		return nil, nil, commonErrors.NewSlugError("journal-yearEndClosing-noBalanceToClear")
+		return nil, nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalYearEndNoBalance)
 	}
 	return currentPeriod, cypLedger, nil
 }

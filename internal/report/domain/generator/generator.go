@@ -82,7 +82,7 @@ func (g *Generator) Generate(
 // Regenerate calculates the report amounts as per the latest ledgers
 func (g *Generator) Regenerate(ctx context.Context) error {
 	if g.r.PeriodId() == uuid.Nil {
-		return errors.NewSlugError("report-generate-emptyPeriod")
+		return errors.NewInternalError(errors.SlugReportGenerateEmptyPeriod)
 	}
 
 	if err := g.preparePeriods(ctx); err != nil {

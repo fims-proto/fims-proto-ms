@@ -33,7 +33,7 @@ func (h DeleteOptionHandler) Handle(ctx context.Context, cmd DeleteOptionCmd) er
 	}
 
 	if used {
-		return commonErrors.NewSlugError("dimension-deleteOption-isUsed")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugDimOptionDeleteIsUsed)
 	}
 
 	return h.repo.DeleteOption(ctx, cmd.OptionId)

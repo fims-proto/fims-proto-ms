@@ -164,7 +164,7 @@ func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdS
 
 				accountId, ok := accountIds[formula.RawAccountNumber]
 				if !ok {
-					return errors.NewSlugError("account-notFound", map[string]interface{}{
+					return errors.NewInternalError(errors.SlugAccountNotFound, map[string]any{
 						"accountNumber": formula.RawAccountNumber,
 					})
 				}

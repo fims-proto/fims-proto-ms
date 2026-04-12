@@ -42,12 +42,12 @@ func (h ValidateOptionsHandler) Handle(
 
 	// If account has no dimension categories but options are provided, reject.
 	if len(requiredCategoryIds) == 0 && len(optionIds) > 0 {
-		return commonErrors.NewSlugError("journalLine-disallowedDimensionCategory")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineDisallowedDimCategory)
 	}
 
 	// If options are provided, fetch them to validate.
 	if len(optionIds) == 0 && len(requiredCategoryIds) > 0 {
-		return commonErrors.NewSlugError("journalLine-missingRequiredDimensionCategory")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineMissingDimCategory)
 	}
 
 	options, err := h.readModel.OptionsByIds(ctx, optionIds)
@@ -56,7 +56,7 @@ func (h ValidateOptionsHandler) Handle(
 	}
 
 	if len(options) != len(optionIds) {
-		return commonErrors.NewSlugError("journalLine-invalidDimensionOption")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineInvalidDimension)
 	}
 
 	// Build a set of allowed category IDs.
@@ -69,11 +69,11 @@ func (h ValidateOptionsHandler) Handle(
 	coveredCategories := make(map[uuid.UUID]bool, len(options))
 	for _, opt := range options {
 		if !allowedCategories[opt.CategoryId] {
-			return commonErrors.NewSlugError("journalLine-disallowedDimensionCategory")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineDisallowedDimCategory)
 		}
 
 		if coveredCategories[opt.CategoryId] {
-			return commonErrors.NewSlugError("journalLine-duplicateDimensionCategory")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineDuplicateDimCategory)
 		}
 
 		coveredCategories[opt.CategoryId] = true
@@ -82,7 +82,7 @@ func (h ValidateOptionsHandler) Handle(
 	// All required categories must be covered.
 	for _, catId := range requiredCategoryIds {
 		if !coveredCategories[catId] {
-			return commonErrors.NewSlugError("journalLine-missingRequiredDimensionCategory")
+			return commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineMissingDimCategory)
 		}
 	}
 
