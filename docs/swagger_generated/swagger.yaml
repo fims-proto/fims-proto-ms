@@ -30,11 +30,11 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse:
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse:
     properties:
       content:
         items:
-          $ref: '#/definitions/http.LedgerDimensionSummaryItemResponse'
+          $ref: '#/definitions/http.LedgerDimensionOptionResponse'
         type: array
       numberOfElements:
         type: integer
@@ -50,6 +50,21 @@ definitions:
       content:
         items:
           $ref: '#/definitions/http.LedgerEntryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.LedgerResponse'
         type: array
       numberOfElements:
         type: integer
@@ -520,11 +535,19 @@ definitions:
       updatedAt:
         type: string
     type: object
-  http.LedgerDimensionSummaryItemResponse:
+  http.LedgerDimensionOptionResponse:
     properties:
       dimensionOption:
         $ref: '#/definitions/http.DimensionOptionResponse'
-      totalAmount:
+      endingAmount:
+        type: number
+      openingAmount:
+        type: number
+      periodAmount:
+        type: number
+      periodCredit:
+        type: number
+      periodDebit:
         type: number
     type: object
   http.LedgerEntryResponse:
@@ -574,21 +597,6 @@ definitions:
         type: string
       superiorAccountId:
         type: string
-    type: object
-  http.LedgerSummaryResponse:
-    properties:
-      accountId:
-        type: string
-      endingAmount:
-        type: number
-      openingAmount:
-        type: number
-      periodAmount:
-        type: number
-      periodCredit:
-        type: number
-      periodDebit:
-        type: number
     type: object
   http.OptionResponse:
     properties:
@@ -1817,21 +1825,19 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - journals
-  /sob/{sobId}/ledger/{accountId}:
+  /sob/{sobId}/ledgers:
     get:
       consumes:
       - application/json
-      description: Get aggregated ledger summary for a single account across a period
-        range
+      description: List all ledgers for a SoB aggregated across a period range. Returns
+        one entry per account with opening amount from the first period, summed period
+        debit/credit/amount, and ending amount from the last period. When dimensionOptionId
+        is provided, only accounts that have journal lines tagged with that dimension
+        option are returned.
       parameters:
       - description: Sob ID
         in: path
         name: sobId
-        required: true
-        type: string
-      - description: Account ID
-        in: path
-        name: accountId
         required: true
         type: string
       - description: From period (YYYY-MM)
@@ -1844,41 +1850,58 @@ paths:
         name: toPeriod
         required: true
         type: string
+      - description: Dimension Option ID (optional filter)
+        in: query
+        name: dimensionOptionId
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.LedgerSummaryResponse'
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "404":
-          description: Not Found
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
-  /sob/{sobId}/ledger/{accountId}/entries:
+  /sob/{sobId}/ledgers/dimension-category/{dimensionCategoryId}/options:
     get:
       consumes:
       - application/json
-      description: Get detailed ledger entries for a single account across a period
-        range
+      description: Get total amounts from journal lines for a specific dimension category
+        across a period range, grouped by dimension option. When accountId is provided,
+        results are scoped to that account only; otherwise all accounts are aggregated.
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Account ID
+      - description: Dimension Category ID
         in: path
-        name: accountId
+        name: dimensionCategoryId
         required: true
+        type: string
+      - description: Account ID (optional — omit to aggregate all accounts)
+        in: query
+        name: accountId
         type: string
       - description: From period (YYYY-MM)
         in: query
@@ -1900,116 +1923,13 @@ paths:
         in: query
         name: $size
         type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: text eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - ledgers
-  /sob/{sobId}/ledgers:
-    get:
-      consumes:
-      - application/json
-      description: List all ledgers for a SoB aggregated across a period range. Returns
-        one entry per account with opening amount from the first period, summed period
-        debit/credit/amount, and ending amount from the last period.
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: From period (YYYY-MM)
-        in: query
-        name: fromPeriod
-        required: true
-        type: string
-      - description: To period (YYYY-MM)
-        in: query
-        name: toPeriod
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/http.LedgerResponse'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - ledgers
-  /sob/{sobId}/ledgers/{accountId}/dimension/{dimensionCategoryId}:
-    get:
-      consumes:
-      - application/json
-      description: Get total amounts from journal lines for a specific account and
-        dimension category across a period range, grouped by dimension option
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Account ID
-        in: path
-        name: accountId
-        required: true
-        type: string
-      - description: Dimension Category ID
-        in: path
-        name: dimensionCategoryId
-        required: true
-        type: string
-      - description: From period (YYYY-MM)
-        in: query
-        name: fromPeriod
-        required: true
-        type: string
-      - description: To period (YYYY-MM)
-        in: query
-        name: toPeriod
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse'
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse'
         "400":
           description: Bad Request
           schema:
@@ -2046,6 +1966,78 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
+  /sob/{sobId}/ledgers/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed ledger transaction entries across a period range.
+        At least one of accountId or dimensionOptionId must be provided. When both
+        are provided, entries matching both filters are returned.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      - description: Account ID (optional filter — must provide at least one of accountId
+          or dimensionOptionId)
+        in: query
+        name: accountId
+        type: string
+      - description: Dimension Option ID (optional filter — must provide at least
+          one of accountId or dimensionOptionId)
+        in: query
+        name: dimensionOptionId
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: text eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "404":
+          description: Not Found
         "500":
           description: Internal Server Error
           schema:

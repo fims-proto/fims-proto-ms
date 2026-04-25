@@ -14,10 +14,9 @@ type GeneralLedgerReadModel interface {
 	SearchPeriods(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Period], error)
 	SearchJournals(ctx context.Context, sobId uuid.UUID, pageRequest data.PageRequest) (data.Page[Journal], error)
 
-	LedgersByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
-	AllLedgersByPeriodRange(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) ([]Ledger, error)
-	LedgerEntriesByPeriodRange(ctx context.Context, sobId, accountId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerEntry], error)
-	LedgerDimensionSummary(ctx context.Context, sobId, accountId, dimensionCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerDimensionSummaryItem], error)
+	LedgersByPeriodRange(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, dimensionOptionId *uuid.UUID, pageRequest data.PageRequest) (data.Page[Ledger], error)
+	LedgerEntriesByPeriodRange(ctx context.Context, sobId uuid.UUID, accountId *uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, dimensionOptionId *uuid.UUID, pageRequest data.PageRequest) (data.Page[LedgerEntry], error)
+	LedgersByAccountAndDimensionOption(ctx context.Context, sobId uuid.UUID, accountId *uuid.UUID, dimensionCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerDimensionSummaryItem], error)
 
 	FirstPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
 	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error

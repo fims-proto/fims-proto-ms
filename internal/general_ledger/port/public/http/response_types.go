@@ -101,15 +101,6 @@ type LedgerResponse struct {
 	EndingAmount      decimal.Decimal `json:"endingAmount"`
 }
 
-type LedgerSummaryResponse struct {
-	AccountId     uuid.UUID       `json:"accountId"`
-	OpeningAmount decimal.Decimal `json:"openingAmount"`
-	PeriodAmount  decimal.Decimal `json:"periodAmount"`
-	PeriodDebit   decimal.Decimal `json:"periodDebit"`
-	PeriodCredit  decimal.Decimal `json:"periodCredit"`
-	EndingAmount  decimal.Decimal `json:"endingAmount"`
-}
-
 type PeriodAndLedgersResponse struct {
 	Period  PeriodResponse   `json:"period"`
 	Ledgers []LedgerResponse `json:"ledgers"`
@@ -189,9 +180,13 @@ type LedgerEntryResponse struct {
 	UpdatedAt       time.Time                        `json:"updatedAt"`
 }
 
-type LedgerDimensionSummaryItemResponse struct {
+type LedgerDimensionOptionResponse struct {
 	DimensionOption DimensionOptionResponse `json:"dimensionOption"`
-	TotalAmount     decimal.Decimal         `json:"totalAmount"`
+	OpeningAmount   decimal.Decimal         `json:"openingAmount"`
+	PeriodDebit     decimal.Decimal         `json:"periodDebit"`
+	PeriodCredit    decimal.Decimal         `json:"periodCredit"`
+	PeriodAmount    decimal.Decimal         `json:"periodAmount"`
+	EndingAmount    decimal.Decimal         `json:"endingAmount"`
 }
 
 type PreCloseCheckJournalResponse struct {
@@ -316,10 +311,6 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 	}
 }
 
-func ledgerSummaryToVO(dto query.LedgerSummary) LedgerSummaryResponse {
-	return LedgerSummaryResponse(dto)
-}
-
 func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
 	options := make([]DimensionOptionResponse, 0, len(dto.DimensionOptions))
 	for _, opt := range dto.DimensionOptions {
@@ -415,13 +406,17 @@ func ledgerEntryDTOToVO(dto query.LedgerEntry) LedgerEntryResponse {
 	}
 }
 
-func ledgerDimensionSummaryItemToVO(dto query.LedgerDimensionSummaryItem) LedgerDimensionSummaryItemResponse {
-	return LedgerDimensionSummaryItemResponse{
+func ledgerDimensionSummaryItemToVO(dto query.LedgerDimensionSummaryItem) LedgerDimensionOptionResponse {
+	return LedgerDimensionOptionResponse{
 		DimensionOption: DimensionOptionResponse{
 			Id:   dto.DimensionOptionId,
 			Name: dto.DimensionOptionName,
 		},
-		TotalAmount: dto.TotalAmount,
+		OpeningAmount: dto.OpeningAmount,
+		PeriodDebit:   dto.PeriodDebit,
+		PeriodCredit:  dto.PeriodCredit,
+		PeriodAmount:  dto.PeriodAmount,
+		EndingAmount:  dto.EndingAmount,
 	}
 }
 

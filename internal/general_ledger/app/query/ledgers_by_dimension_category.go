@@ -9,26 +9,25 @@ import (
 	"github.com/google/uuid"
 )
 
-type LedgerDimensionSummaryHandler struct {
+type LedgersByDimensionCategoryHandler struct {
 	readModel            GeneralLedgerReadModel
 	periodRangeValidator periodRangeValidator
 }
 
-func NewLedgerDimensionSummaryHandler(
-	readModel GeneralLedgerReadModel,
-) LedgerDimensionSummaryHandler {
+func NewLedgersByDimensionCategoryHandler(readModel GeneralLedgerReadModel) LedgersByDimensionCategoryHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
-	return LedgerDimensionSummaryHandler{
+	return LedgersByDimensionCategoryHandler{
 		readModel:            readModel,
 		periodRangeValidator: newPeriodRangeValidator(readModel),
 	}
 }
 
-func (h LedgerDimensionSummaryHandler) Handle(
+func (h LedgersByDimensionCategoryHandler) Handle(
 	ctx context.Context,
-	sobId, accountId, dimensionCategoryId uuid.UUID,
+	sobId, dimensionCategoryId uuid.UUID,
+	accountId *uuid.UUID,
 	fromPeriod, toPeriod string,
 	pageRequest data.PageRequest,
 ) (data.Page[LedgerDimensionSummaryItem], error) {
@@ -37,7 +36,7 @@ func (h LedgerDimensionSummaryHandler) Handle(
 		return nil, fmt.Errorf("invalid period range: %w", err)
 	}
 
-	return h.readModel.LedgerDimensionSummary(
+	return h.readModel.LedgersByAccountAndDimensionOption(
 		ctx,
 		sobId,
 		accountId,

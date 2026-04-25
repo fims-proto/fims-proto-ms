@@ -89,6 +89,8 @@ const (
 	SlugLedgerNilPeriodId  = "ledger-nilPeriodId"
 	SlugLedgerNilAccountId = "ledger-nilAccountId"
 	SlugLedgerNilAccount   = "ledger-nilAccount"
+
+	SlugLedgerTransactionsMissingFilter = "ledger-transactions-missingFilter"
 )
 
 // Journal

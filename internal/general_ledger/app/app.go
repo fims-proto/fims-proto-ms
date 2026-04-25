@@ -8,18 +8,17 @@ import (
 )
 
 type Queries struct {
-	AllAccounts               query.AllAccountsHandler
-	AccountById               query.AccountByIdHandler
-	AllPeriods                query.AllPeriodsHandler
-	FirstPeriodLedgers        query.FirstPeriodLedgersHandler
-	PagingLedgersByPeriod     query.LedgersByPeriodRangeHandler
-	LedgerSummary             query.LedgerSummaryHandler
-	LedgerDimensionSummary    query.LedgerDimensionSummaryHandler
-	PagingLedgerEntries       query.PagingLedgerEntriesHandler
-	JournalById               query.JournalByIdHandler
-	PagingJournals            query.PagingJournalsHandler
-	PeriodPreCloseCheck       query.PeriodPreCloseCheckHandler
-	ClosingJournalIdsByPeriod query.ClosingJournalIdsByPeriodHandler
+	AllAccounts                query.AllAccountsHandler
+	AccountById                query.AccountByIdHandler
+	AllPeriods                 query.AllPeriodsHandler
+	FirstPeriodLedgers         query.FirstPeriodLedgersHandler
+	PagingLedgersByPeriod      query.LedgersByPeriodRangeHandler
+	LedgersByDimensionCategory query.LedgersByDimensionCategoryHandler
+	LedgerEntries              query.LedgerEntriesHandler
+	JournalById                query.JournalByIdHandler
+	PagingJournals             query.PagingJournalsHandler
+	PeriodPreCloseCheck        query.PeriodPreCloseCheckHandler
+	ClosingJournalIdsByPeriod  query.ClosingJournalIdsByPeriodHandler
 }
 
 type Commands struct {
@@ -65,18 +64,17 @@ func (a *Application) Inject(
 	dimensionService service.DimensionService,
 ) {
 	a.Queries = Queries{
-		AllAccounts:               query.NewAllAccountsHandler(readModel),
-		AccountById:               query.NewAccountByIdHandler(readModel, dimensionService),
-		AllPeriods:                query.NewAllPeriodsHandler(readModel),
-		FirstPeriodLedgers:        query.NewFirstPeriodLedgersHandler(readModel),
-		PagingLedgersByPeriod:     query.NewLedgersByPeriodRangeHandler(readModel),
-		LedgerSummary:             query.NewLedgerSummaryHandler(readModel),
-		LedgerDimensionSummary:    query.NewLedgerDimensionSummaryHandler(readModel),
-		PagingLedgerEntries:       query.NewPagingLedgerEntriesHandler(readModel),
-		JournalById:               query.NewJournalByIdHandler(readModel, userService, dimensionService),
-		PagingJournals:            query.NewPagingJournalsHandler(readModel, userService),
-		PeriodPreCloseCheck:       query.NewPeriodPreCloseCheckHandler(readModel),
-		ClosingJournalIdsByPeriod: query.NewClosingJournalIdsByPeriodHandler(readModel),
+		AllAccounts:                query.NewAllAccountsHandler(readModel),
+		AccountById:                query.NewAccountByIdHandler(readModel, dimensionService),
+		AllPeriods:                 query.NewAllPeriodsHandler(readModel),
+		FirstPeriodLedgers:         query.NewFirstPeriodLedgersHandler(readModel),
+		PagingLedgersByPeriod:      query.NewLedgersByPeriodRangeHandler(readModel),
+		LedgersByDimensionCategory: query.NewLedgersByDimensionCategoryHandler(readModel),
+		LedgerEntries:              query.NewLedgerEntriesHandler(readModel),
+		JournalById:                query.NewJournalByIdHandler(readModel, userService, dimensionService),
+		PagingJournals:             query.NewPagingJournalsHandler(readModel, userService),
+		PeriodPreCloseCheck:        query.NewPeriodPreCloseCheckHandler(readModel),
+		ClosingJournalIdsByPeriod:  query.NewClosingJournalIdsByPeriodHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),

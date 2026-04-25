@@ -126,7 +126,11 @@ type LedgerEntry struct {
 type LedgerDimensionSummaryItem struct {
 	DimensionOptionId   uuid.UUID
 	DimensionOptionName string
-	TotalAmount         decimal.Decimal
+	OpeningAmount       decimal.Decimal
+	PeriodDebit         decimal.Decimal
+	PeriodCredit        decimal.Decimal
+	PeriodAmount        decimal.Decimal
+	EndingAmount        decimal.Decimal
 }
 
 type PreCloseCheckJournal struct {

@@ -151,19 +151,25 @@ When adding a new read-only query, always add it to `GeneralLedgerReadModel`. On
 
 ### Error Handling with i18n
 
-Use slug-based errors for business logic:
+Use typed slug-based errors for business logic. Each constructor sets the HTTP status automatically:
 
 ```go
-return errors.NewSlugError("journal-post-notAudited")
+return commonErrors.NewInvalidInputError(commonErrors.SlugJournalPostNotAudited) // → HTTP 400
+return commonErrors.NewNotFoundError(commonErrors.SlugJournalNotFound)           // → HTTP 404
+return commonErrors.NewConflictError(commonErrors.SlugJournalDuplicateDocumentNumber) // → HTTP 409
+return commonErrors.NewInternalError(commonErrors.SlugRecordNotFound)            // → HTTP 500
 ```
+
+All slug string constants live in `internal/common/errors/slugs.go` — **never use inline string literals**.
 
 When adding new slugs:
 
-1. Use in code: `errors.NewSlugError("module-operation-reason", args...)`
-2. Add to `i18n/zh-CN.json`: `"module-operation-reason": "本地化消息 {{.A}}"`
-3. Middleware auto-maps slugs to localized responses
+1. Add a constant to `internal/common/errors/slugs.go`: `SlugMyNewSlug = "module-operation-reason"`
+2. Reference it with the appropriate typed constructor: `commonErrors.NewInvalidInputError(commonErrors.SlugMyNewSlug, args...)`
+3. Add to `i18n/zh-CN.json`: `"module-operation-reason": "本地化消息 {{.A}}"`
+4. Middleware auto-maps slugs to localized responses
 
-See `internal/common/errors/slug_err.go` and `internal/common/errors/gin_middleware.go`
+See `internal/common/errors/slug_err.go`, `slugs.go`, and `internal/common/errors/gin_middleware.go`
 
 ## Domain-Specific Knowledge
 
@@ -218,6 +224,8 @@ Workflow: Create → Review → Audit → Post (登账) → affects Ledgers
 
 (Note: `CancelReview` and `CancelAudit` commands exist to revert journal back to earlier states)
 
+**Delete path**: Only `TypeClosing` and `TypeYearlyClosing` system journals can be deleted (`DELETE /sob/{sobId}/journal/{journalId}`). Deletion reverses the journal's ledger impact (negates all posted amounts — exact inverse of posting). Regular user-created journals cannot be deleted. See `internal/general_ledger/app/command/delete_system_journal.go`.
+
 Business rules enforced in `internal/general_ledger/domain/journal/`:
 
 - Journal must be reviewed AND audited before posting
@@ -248,7 +256,10 @@ Reports use two data source types:
 - **Sum** - Aggregates ledger balances by account filters
 - **Formulas** - Four formula rules: `Net`, `Debit`, `Credit`, `Transaction`
 
-`ledgersCache` reduces DB reads during generation. Changes require extensive testing.
+**Why high risk:**
+- `ledgersCache` is a shared in-memory map across all formula evaluations — stale or incorrect entries produce wrong financial figures with no runtime error
+- Formula rules interact with `balance_direction` and `data_source` in non-obvious ways; bugs only surface in output numbers, not compile time
+- Balance sheet (`report-balanceSheet-imbalance`) and income statement (`report-incomeStatement-profitMismatch`) validations only catch end-to-end failures, not intermediate calculation errors
 
 **Any formula or aggregation changes MUST have unit tests.**
 
@@ -260,12 +271,51 @@ Configurations define patterns with auto-increment counters per period/type.
 
 ### Dimension Domain
 
-`internal/dimension/` - Manages accounting dimensions (cost centers, departments, tags, etc.)
+`internal/dimension/` — Manages accounting dimensions (cost centers, departments, tags, etc.)
 
-- **category** - Dimension categories (e.g., "Department", "Project")
-- **option** - Dimension values within a category (e.g., "Engineering", "Marketing")
+- **category** — Dimension categories (e.g., "Department", "Project"), scoped per SoB
+- **option** — Dimension values within a category (e.g., "Engineering", "Marketing")
 
-The GL domain depends on Dimension via `DimensionService` (injected as `generalLedgerDimensionAdapter`) for validating and fetching dimension options on journal lines.
+#### Account → Dimension Category Binding
+
+Each GL account stores `dimensionCategoryIds []uuid.UUID` — the set of dimension categories that are **required** when tagging a journal line against that account. Persisted as a join table (`accountDimensionCategoryPO`) in `internal/general_ledger/adapter/db/types.go`.
+
+#### Journal Line → Dimension Option Association
+
+Each `JournalLine` stores `dimensionOptionIds []uuid.UUID` — the selected dimension option IDs for that line. Options are stored by ID only; full objects are resolved at query time (see Enrichment below).
+
+#### Validation Flow (Write Path)
+
+In `prepareJournalLines` (`internal/general_ledger/app/command/common_functions.go`), for each journal line:
+
+```go
+dimensionService.ValidateOptions(ctx, a.DimensionCategoryIds(), item.DimensionOptionIds)
+```
+
+`ValidateOptions` enforces (`internal/dimension/app/query/validate_options.go`):
+1. Every required category (from the account) must have exactly one option provided.
+2. No option may belong to a category not bound to the account.
+3. No duplicate options for the same category.
+4. All provided option IDs must exist.
+
+#### Enrichment (Read Path)
+
+On detail queries, raw IDs are hydrated to full objects by `internal/general_ledger/app/query/enricher.go`:
+
+- `enrichJournalLineDimensionOptions` — batch-fetches all option objects for all lines in a journal, maps them to `JournalLine.DimensionOptions []DimensionOption`
+- `enrichAccountDimensionCategories` — fetches category objects for `Account.DimensionCategories []DimensionCategory`
+
+These fields are **not stored in the DB** — populated on read only. The raw `DimensionOptionIds` / `DimensionCategoryIds` fields in query types are marked *"internal: used by enricher, not exposed in HTTP response"*.
+
+#### LedgerDimensionSummary Query
+
+`internal/general_ledger/app/query/ledger_dimension_summary.go` — aggregates ledger entries by dimension option within a period range for a given account and dimension category. Returns `[]LedgerDimensionSummaryItem{DimensionOptionId, DimensionOptionName, TotalAmount}`.
+
+#### Cross-Module Wiring
+
+- `DimensionService` interface: `internal/general_ledger/app/service/services.go`
+- Intraprocess adapter: `internal/dimension/port/private/intraprocess/dimension.go` (`DimensionInterface`)
+- Injected in `cmd/main.go` as `generalLedgerDimensionAdapter`
 
 ### Set of Books (SoB)
 

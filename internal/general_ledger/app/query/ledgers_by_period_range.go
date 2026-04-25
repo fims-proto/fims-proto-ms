@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/common/data"
+
 	"github.com/google/uuid"
 )
 
@@ -23,48 +25,22 @@ func NewLedgersByPeriodRangeHandler(readModel GeneralLedgerReadModel) LedgersByP
 	}
 }
 
-func (h LedgersByPeriodRangeHandler) Handle(ctx context.Context, sobId uuid.UUID, fromPeriod, toPeriod string) ([]Ledger, error) {
+func (h LedgersByPeriodRangeHandler) Handle(
+	ctx context.Context,
+	sobId uuid.UUID,
+	fromPeriod, toPeriod string,
+	dimensionOptionId *uuid.UUID,
+	pageRequest data.PageRequest,
+) (data.Page[Ledger], error) {
 	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber, err := h.periodRangeValidator.validate(ctx, sobId, fromPeriod, toPeriod)
 	if err != nil {
 		return nil, fmt.Errorf("invalid period range: %w", err)
 	}
 
-	ledgers, err := h.readModel.AllLedgersByPeriodRange(ctx, sobId, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber)
+	ledgers, err := h.readModel.LedgersByPeriodRange(ctx, sobId, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber, dimensionOptionId, pageRequest)
 	if err != nil {
 		return nil, fmt.Errorf("failed to fetch ledgers: %w", err)
 	}
 
-	aggregated := aggregateLedgersByAccount(ledgers)
-
-	return aggregated, nil
-}
-
-// aggregateLedgersByAccount merges per-period ledger rows into one Ledger per account.
-// Input must be sorted by account_number asc, then period asc (guaranteed by AllLedgersByPeriodRange).
-//
-//   - openingAmount: first period's openingAmount
-//   - periodDebit/periodCredit/periodAmount: sum across all periods
-//   - endingAmount: last period's endingAmount
-func aggregateLedgersByAccount(ledgers []Ledger) []Ledger {
-	result := make([]Ledger, 0, len(ledgers))
-
-	var current *Ledger
-	for _, l := range ledgers {
-		if current == nil || current.AccountId != l.AccountId {
-			if current != nil {
-				result = append(result, *current)
-			}
-			current = new(l)
-		} else {
-			current.PeriodAmount = current.PeriodAmount.Add(l.PeriodAmount)
-			current.PeriodDebit = current.PeriodDebit.Add(l.PeriodDebit)
-			current.PeriodCredit = current.PeriodCredit.Add(l.PeriodCredit)
-			current.EndingAmount = l.EndingAmount
-		}
-	}
-	if current != nil {
-		result = append(result, *current)
-	}
-
-	return result
+	return ledgers, nil
 }

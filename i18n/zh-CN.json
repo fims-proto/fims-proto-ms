@@ -38,6 +38,7 @@
     "ledger-nilPeriodId": "账本账期 ID 不能为空",
     "ledger-nilAccountId": "账本科目 ID 不能为空",
     "ledger-nilAccount": "账本科目不能为空",
+    "ledger-transactions-missingFilter": "至少需要提供账户ID或维度选项ID之一",
 
     "journal-emptyPeriod": "分录账期不能为空",
     "journal-invalidAttachmentQuantity": "附件数量无效",

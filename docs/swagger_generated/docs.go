@@ -1272,9 +1272,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledger/{accountId}": {
+        "/sob/{sobId}/ledgers": {
             "get": {
-                "description": "Get aggregated ledger summary for a single account across a period range",
+                "description": "List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period. When dimensionOptionId is provided, only accounts that have journal lines tagged with that dimension option are returned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1289,13 +1289,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Sob ID",
                         "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
                         "in": "path",
                         "required": true
                     },
@@ -1312,13 +1305,33 @@ const docTemplate = `{
                         "name": "toPeriod",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dimension Option ID (optional filter)",
+                        "name": "dimensionOptionId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.LedgerSummaryResponse"
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse"
                         }
                     },
                     "400": {
@@ -1326,9 +1339,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1339,9 +1349,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledger/{accountId}/entries": {
+        "/sob/{sobId}/ledgers/dimension-category/{dimensionCategoryId}/options": {
             "get": {
-                "description": "Get detailed ledger entries for a single account across a period range",
+                "description": "Get total amounts from journal lines for a specific dimension category across a period range, grouped by dimension option. When accountId is provided, results are scoped to that account only; otherwise all accounts are aggregated.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1361,10 +1371,16 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
+                        "description": "Dimension Category ID",
+                        "name": "dimensionCategoryId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID (optional — omit to aggregate all accounts)",
+                        "name": "accountId",
+                        "in": "query"
                     },
                     {
                         "type": "string",
@@ -1393,90 +1409,13 @@ const docTemplate = `{
                         "description": "page size",
                         "name": "$size",
                         "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "text eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/ledgers": {
-            "get": {
-                "description": "List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ledgers"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "From period (YYYY-MM)",
-                        "name": "fromPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "To period (YYYY-MM)",
-                        "name": "toPeriod",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse"
                         }
                     },
                     "400": {
@@ -1543,9 +1482,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledgers/{accountId}/dimension/{dimensionCategoryId}": {
+        "/sob/{sobId}/ledgers/transactions": {
             "get": {
-                "description": "Get total amounts from journal lines for a specific account and dimension category across a period range, grouped by dimension option",
+                "description": "Get detailed ledger transaction entries across a period range. At least one of accountId or dimensionOptionId must be provided. When both are provided, entries matching both filters are returned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1565,20 +1504,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Dimension Category ID",
-                        "name": "dimensionCategoryId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "From period (YYYY-MM)",
                         "name": "fromPeriod",
                         "in": "query",
@@ -1590,13 +1515,53 @@ const docTemplate = `{
                         "name": "toPeriod",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID (optional filter — must provide at least one of accountId or dimensionOptionId)",
+                        "name": "accountId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dimension Option ID (optional filter — must provide at least one of accountId or dimensionOptionId)",
+                        "name": "dimensionOptionId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "text eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse"
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse"
                         }
                     },
                     "400": {
@@ -1604,6 +1569,9 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -2290,13 +2258,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionSummaryItemResponse": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.LedgerDimensionSummaryItemResponse"
+                        "$ref": "#/definitions/http.LedgerDimensionOptionResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2320,6 +2288,29 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.LedgerEntryResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerResponse"
                     }
                 },
                 "numberOfElements": {
@@ -3035,13 +3026,25 @@ const docTemplate = `{
                 }
             }
         },
-        "http.LedgerDimensionSummaryItemResponse": {
+        "http.LedgerDimensionOptionResponse": {
             "type": "object",
             "properties": {
                 "dimensionOption": {
                     "$ref": "#/definitions/http.DimensionOptionResponse"
                 },
-                "totalAmount": {
+                "endingAmount": {
+                    "type": "number"
+                },
+                "openingAmount": {
+                    "type": "number"
+                },
+                "periodAmount": {
+                    "type": "number"
+                },
+                "periodCredit": {
+                    "type": "number"
+                },
+                "periodDebit": {
                     "type": "number"
                 }
             }
@@ -3116,29 +3119,6 @@ const docTemplate = `{
                 },
                 "superiorAccountId": {
                     "type": "string"
-                }
-            }
-        },
-        "http.LedgerSummaryResponse": {
-            "type": "object",
-            "properties": {
-                "accountId": {
-                    "type": "string"
-                },
-                "endingAmount": {
-                    "type": "number"
-                },
-                "openingAmount": {
-                    "type": "number"
-                },
-                "periodAmount": {
-                    "type": "number"
-                },
-                "periodCredit": {
-                    "type": "number"
-                },
-                "periodDebit": {
-                    "type": "number"
                 }
             }
         },
