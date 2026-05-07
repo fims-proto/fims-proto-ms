@@ -183,5 +183,9 @@
     "journal-referenceJournalNotFound": "关联的原始分录不存在",
     "account-delete-hasChildren": "科目下存在子科目，无法删除",
     "account-delete-usedByJournalLine": "科目已被凭证行引用，无法删除",
-    "account-delete-hasOpeningBalance": "科目存在期初余额，无法删除"
+    "account-delete-hasOpeningBalance": "科目存在期初余额，无法删除",
+    "account-classMismatch": "科目类别 {{.A}} 与上级科目类别 {{.B}} 不匹配",
+    "account-groupMismatch": "科目组 {{.A}} 与上级科目组 {{.B}} 不匹配",
+    "account-levelExceedsLimit": "科目层级 {{.A}} 超过最大层级限制 {{.B}}",
+    "account-codeLengthExceeded": "层级编号 {{.A}}（长度 {{.B}}）超过第 {{.D}} 层的编号长度限制 {{.C}}"
 }

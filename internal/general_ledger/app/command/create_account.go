@@ -7,6 +7,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
@@ -71,15 +72,15 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		}
 
 		if superiorAccount.Class() != accountClass {
-			return fmt.Errorf("class %s does not match superior account's class %s", accountClass, superiorAccount.Class())
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountClassMismatch, accountClass, superiorAccount.Class())
 		}
 
 		if superiorAccount.Group() != accountGroup {
-			return fmt.Errorf("group %s does not match superior account's group %s", accountGroup, superiorAccount.Group())
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountGroupMismatch, accountGroup, superiorAccount.Group())
 		}
 
 		if superiorAccount.Level()+1 > len(sob.AccountsCodeLength) {
-			return fmt.Errorf("level %d exceeds limit %d", superiorAccount.Level()+1, len(sob.AccountsCodeLength))
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountLevelExceedsLimit, superiorAccount.Level()+1, len(sob.AccountsCodeLength))
 		}
 
 		superiorAccountId = superiorAccount.Id()
@@ -91,8 +92,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 	levelNumberStr := fmt.Sprintf("%d", cmd.LevelNumber)
 	codeLength := sob.AccountsCodeLength[level-1]
 	if len(levelNumberStr) > codeLength {
-		return fmt.Errorf("level number %d (length %d) exceeds code length %d for level %d",
-			cmd.LevelNumber, len(levelNumberStr), codeLength, level)
+		return commonErrors.NewInvalidInputError(commonErrors.SlugAccountCodeLengthExceeded, cmd.LevelNumber, len(levelNumberStr), codeLength, level)
 	}
 
 	newAccount, err := account.New(
@@ -115,7 +115,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		// create account
-		if err := h.createAccount(txCtx, superiorAccountId, newAccount); err != nil {
+		if err = h.createAccount(txCtx, superiorAccountId, newAccount); err != nil {
 			return err
 		}
 

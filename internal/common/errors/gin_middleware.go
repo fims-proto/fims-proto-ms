@@ -21,7 +21,7 @@ func ErrorHandler(localizer localization.Localizer) gin.HandlerFunc {
 		if len(c.Errors) == 1 {
 			// there should only be 1 error in the stack
 			var se SlugErr
-			ok := errors.As(errors.Unwrap(c.Errors.Last().Err), &se)
+			ok := errors.As(c.Errors.Last().Err, &se)
 			if ok {
 				slug = se.slug
 				localizationArgs = se.args

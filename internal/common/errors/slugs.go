@@ -79,6 +79,11 @@ const (
 	SlugAccountDeleteHasChildren  = "account-delete-hasChildren"
 	SlugAccountDeleteUsedByJLine  = "account-delete-usedByJournalLine"
 	SlugAccountDeleteHasOpBalance = "account-delete-hasOpeningBalance"
+
+	SlugAccountClassMismatch      = "account-classMismatch"
+	SlugAccountGroupMismatch      = "account-groupMismatch"
+	SlugAccountLevelExceedsLimit  = "account-levelExceedsLimit"
+	SlugAccountCodeLengthExceeded = "account-codeLengthExceeded"
 )
 
 // Ledger
