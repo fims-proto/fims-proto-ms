@@ -18,6 +18,7 @@ type Queries struct {
 	JournalById                query.JournalByIdHandler
 	PagingJournals             query.PagingJournalsHandler
 	PeriodPreCloseCheck        query.PeriodPreCloseCheckHandler
+	BatchPeriodPreCloseCheck   query.BatchPeriodPreCloseCheckHandler
 	ClosingJournalIdsByPeriod  query.ClosingJournalIdsByPeriodHandler
 }
 
@@ -29,7 +30,8 @@ type Commands struct {
 	UpdateAccount command.UpdateAccountHandler
 	DeleteAccount command.DeleteAccountHandler
 
-	ClosePeriod command.ClosePeriodHandler
+	ClosePeriod  command.ClosePeriodHandler
+	ClosePeriods command.ClosePeriodsHandler
 
 	CreateJournal       command.CreateJournalHandler
 	AuditJournal        command.AuditJournalHandler
@@ -74,6 +76,7 @@ func (a *Application) Inject(
 		JournalById:                query.NewJournalByIdHandler(readModel, userService, dimensionService),
 		PagingJournals:             query.NewPagingJournalsHandler(readModel, userService),
 		PeriodPreCloseCheck:        query.NewPeriodPreCloseCheckHandler(readModel),
+		BatchPeriodPreCloseCheck:   query.NewBatchPeriodPreCloseCheckHandler(readModel),
 		ClosingJournalIdsByPeriod:  query.NewClosingJournalIdsByPeriodHandler(readModel),
 	}
 	a.Commands = Commands{
@@ -84,7 +87,8 @@ func (a *Application) Inject(
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 		DeleteAccount: command.NewDeleteAccountHandler(repo),
 
-		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
+		ClosePeriod:  command.NewClosePeriodHandler(repo, numberingService),
+		ClosePeriods: command.NewClosePeriodsHandler(repo, numberingService, dimensionService, sobService),
 
 		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService, dimensionService, sobService),
 		AuditJournal:        command.NewAuditJournalHandler(repo),

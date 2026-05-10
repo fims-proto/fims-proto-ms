@@ -237,6 +237,11 @@ type PreCloseCheckResponse struct {
 	CurrentYearProfitAccount PreCloseCheckCurrentYearProfitAccountResponse `json:"currentYearProfitAccount"`
 }
 
+type BatchPreCloseCheckResponse struct {
+	UnpostedJournals PreCloseCheckUnpostedJournalsResponse `json:"unpostedJournals"`
+	TrialBalance     PreCloseCheckTrialBalanceResponse     `json:"trialBalance"`
+}
+
 type ClosingJournalResponse struct {
 	JournalId uuid.UUID `json:"journalId"`
 }
@@ -464,6 +469,35 @@ func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
 			RawAccountNumber: dto.CurrentYearProfitAccount.RawAccountNumber,
 			AccountTitle:     dto.CurrentYearProfitAccount.AccountTitle,
 			EndingAmount:     dto.CurrentYearProfitAccount.EndingAmount,
+		},
+	}
+}
+
+func batchPreCloseCheckDTOToVO(dto query.BatchPreCloseCheckResult) BatchPreCloseCheckResponse {
+	journals := make([]PreCloseCheckJournalResponse, 0, len(dto.UnpostedJournals.Journals))
+	for _, j := range dto.UnpostedJournals.Journals {
+		journals = append(journals, PreCloseCheckJournalResponse{
+			Id:              j.Id,
+			DocumentNumber:  j.DocumentNumber,
+			HeaderText:      j.HeaderText,
+			Amount:          j.Amount,
+			TransactionDate: j.TransactionDate,
+			IsReviewed:      j.IsReviewed,
+			IsAudited:       j.IsAudited,
+		})
+	}
+
+	return BatchPreCloseCheckResponse{
+		UnpostedJournals: PreCloseCheckUnpostedJournalsResponse{
+			Status:   string(dto.UnpostedJournals.Status),
+			Count:    dto.UnpostedJournals.Count,
+			Journals: journals,
+		},
+		TrialBalance: PreCloseCheckTrialBalanceResponse{
+			Status:        string(dto.TrialBalance.Status),
+			OpeningAmount: dto.TrialBalance.OpeningAmount,
+			PeriodAmount:  dto.TrialBalance.PeriodAmount,
+			EndingAmount:  dto.TrialBalance.EndingAmount,
 		},
 	}
 }

@@ -215,6 +215,13 @@ definitions:
       auditor:
         type: string
     type: object
+  http.BatchPreCloseCheckResponse:
+    properties:
+      trialBalance:
+        $ref: '#/definitions/http.PreCloseCheckTrialBalanceResponse'
+      unpostedJournals:
+        $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
+    type: object
   http.CategoryResponse:
     properties:
       createdAt:
@@ -2121,6 +2128,75 @@ paths:
             items:
               $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
             type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - periods
+  /sob/{sobId}/periods/batch-close:
+    post:
+      consumes:
+      - application/json
+      description: Sequentially close all periods from the current period to the target
+        period (inclusive) in a single atomic transaction. For each period, automatically
+        creates monthly and year-end closing journals before closing. Rolls back entirely
+        if any period fails validation.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Target period in YYYY-MM format
+        in: query
+        name: targetPeriod
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - periods
+  /sob/{sobId}/periods/batch-pre-close-check:
+    get:
+      consumes:
+      - application/json
+      description: Validate from the current period to the target period. Checks for
+        unposted journals and trial balance in each existing period. P&L and CYP checks
+        are omitted because auto-transfer handles them during batch close.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Target period in YYYY-MM format
+        in: query
+        name: targetPeriod
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.BatchPreCloseCheckResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:

@@ -34,6 +34,8 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/periods", h.ReadPeriods)
 	r.GET("/sob/:sobId/period/:periodId/pre-close-check", h.PreCloseCheck)
 	r.POST("/sob/:sobId/period/:periodId/close", h.ClosePeriod)
+	r.GET("/sob/:sobId/periods/batch-pre-close-check", h.BatchPreCloseCheck)
+	r.POST("/sob/:sobId/periods/batch-close", h.ClosePeriods)
 
 	r.GET("/sob/:sobId/journals", h.SearchJournals)
 	r.GET("/sob/:sobId/journal/:journalId", h.ReadJournalById)

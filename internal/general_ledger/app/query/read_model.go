@@ -19,6 +19,8 @@ type GeneralLedgerReadModel interface {
 	LedgersByAccountAndDimensionOption(ctx context.Context, sobId uuid.UUID, accountId *uuid.UUID, dimensionCategoryId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int, pageRequest data.PageRequest) (data.Page[LedgerDimensionSummaryItem], error)
 
 	FirstPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
+	CurrentPeriod(ctx context.Context, sobId uuid.UUID) (Period, error)
+	PeriodsInRange(ctx context.Context, sobId uuid.UUID, fromYear, fromMonth, toYear, toMonth int) ([]Period, error)
 	CheckPeriodContinuity(ctx context.Context, sobId uuid.UUID, fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int) error
 	PeriodById(ctx context.Context, sobId, periodId uuid.UUID) (Period, error)
 

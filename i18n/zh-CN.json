@@ -98,6 +98,8 @@
     "invalid-period-format": "期间格式无效，应为 YYYY-MM 格式",
     "period-range-invalid": "期间范围无效，起始期间不能晚于结束期间",
     "period-range-not-continuous": "期间范围不连续，部分期间不存在",
+    "period-batchClose-targetInPast": "目标账期不能早于当前账期",
+    "period-batchClose-tooManyPeriods": "批量结账最多支持12个账期",
     "journal-notFound": "分录不存在",
     "journal-emptyId": "分录 ID 不能为空",
     "journal-emptyPeriodId": "分录账期 ID 不能为空",

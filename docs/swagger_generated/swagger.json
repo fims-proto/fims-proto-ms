@@ -1701,6 +1701,103 @@
                 }
             }
         },
+        "/sob/{sobId}/periods/batch-close": {
+            "post": {
+                "description": "Sequentially close all periods from the current period to the target period (inclusive) in a single atomic transaction. For each period, automatically creates monthly and year-end closing journals before closing. Rolls back entirely if any period fails validation.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "periods"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target period in YYYY-MM format",
+                        "name": "targetPeriod",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/periods/batch-pre-close-check": {
+            "get": {
+                "description": "Validate from the current period to the target period. Checks for unposted journals and trial balance in each existing period. P\u0026L and CYP checks are omitted because auto-transfer handles them during batch close.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "periods"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target period in YYYY-MM format",
+                        "name": "targetPeriod",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.BatchPreCloseCheckResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/report/{reportId}": {
             "get": {
                 "description": "Show report by sob and id",
@@ -2532,6 +2629,17 @@
             "properties": {
                 "auditor": {
                     "type": "string"
+                }
+            }
+        },
+        "http.BatchPreCloseCheckResponse": {
+            "type": "object",
+            "properties": {
+                "trialBalance": {
+                    "$ref": "#/definitions/http.PreCloseCheckTrialBalanceResponse"
+                },
+                "unpostedJournals": {
+                    "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
                 }
             }
         },

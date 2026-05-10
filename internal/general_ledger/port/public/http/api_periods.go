@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
@@ -78,4 +79,68 @@ func (h Handler) PreCloseCheck(c *gin.Context) {
 		return
 	}
 	c.JSON(http.StatusOK, preCloseCheckDTOToVO(result))
+}
+
+// BatchPreCloseCheck godoc
+//
+//	@Text			Validate periods against closing conditions for batch close
+//	@Description	Validate from the current period to the target period. Checks for unposted journals and trial balance in each existing period. P&L and CYP checks are omitted because auto-transfer handles them during batch close.
+//	@Tags			periods
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId			path		string	true	"Sob ID"
+//	@Param			targetPeriod	query		string	true	"Target period in YYYY-MM format"
+//	@Success		200				{object}	BatchPreCloseCheckResponse
+//	@Failure		400				{object}	Error
+//	@Failure		500				{object}	Error
+//	@Router			/sob/{sobId}/periods/batch-pre-close-check [get]
+func (h Handler) BatchPreCloseCheck(c *gin.Context) {
+	var targetYear, targetMonth int
+	if _, err := fmt.Sscanf(c.Query("targetPeriod"), "%d-%d", &targetYear, &targetMonth); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid targetPeriod format, expected YYYY-MM"})
+		return
+	}
+
+	result, err := h.app.Queries.BatchPeriodPreCloseCheck.Handle(
+		c,
+		uuid.MustParse(c.Param("sobId")),
+		targetYear,
+		targetMonth,
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusOK, batchPreCloseCheckDTOToVO(result))
+}
+
+// ClosePeriods godoc
+//
+//	@Text			Batch close periods to a target period
+//	@Description	Sequentially close all periods from the current period to the target period (inclusive) in a single atomic transaction. For each period, automatically creates monthly and year-end closing journals before closing. Rolls back entirely if any period fails validation.
+//	@Tags			periods
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId			path	string	true	"Sob ID"
+//	@Param			targetPeriod	query	string	true	"Target period in YYYY-MM format"
+//	@Success		204
+//	@Failure		400	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/periods/batch-close [post]
+func (h Handler) ClosePeriods(c *gin.Context) {
+	var targetYear, targetMonth int
+	if _, err := fmt.Sscanf(c.Query("targetPeriod"), "%d-%d", &targetYear, &targetMonth); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid targetPeriod format, expected YYYY-MM"})
+		return
+	}
+
+	if err := h.app.Commands.ClosePeriods.Handle(c, command.ClosePeriodsCmd{
+		SobId:       uuid.MustParse(c.Param("sobId")),
+		TargetYear:  targetYear,
+		TargetMonth: targetMonth,
+	}); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
 }

@@ -99,6 +99,10 @@ func (h PeriodPreCloseCheckHandler) Handle(ctx context.Context, sobId, periodId 
 }
 
 func (h PeriodPreCloseCheckHandler) checkUnpostedJournals(ctx context.Context, sobId, periodId uuid.UUID) (PreCloseCheckUnpostedJournals, error) {
+	return checkUnpostedJournals(ctx, h.readModel, sobId, periodId)
+}
+
+func checkUnpostedJournals(ctx context.Context, readModel GeneralLedgerReadModel, sobId, periodId uuid.UUID) (PreCloseCheckUnpostedJournals, error) {
 	page, size := 1, 3
 	p, err := pageable.New(page, size)
 	if err != nil {
@@ -114,7 +118,7 @@ func (h PeriodPreCloseCheckHandler) checkUnpostedJournals(ctx context.Context, s
 	)
 
 	pageRequest := data.NewPageRequest(p, sortable.Unsorted(), combined)
-	journalsPage, err := h.readModel.SearchJournals(ctx, sobId, pageRequest)
+	journalsPage, err := readModel.SearchJournals(ctx, sobId, pageRequest)
 	if err != nil {
 		return PreCloseCheckUnpostedJournals{}, err
 	}
@@ -172,6 +176,10 @@ func (h PeriodPreCloseCheckHandler) checkProfitAndLossBalance(ctx context.Contex
 }
 
 func (h PeriodPreCloseCheckHandler) checkTrialBalance(ctx context.Context, sobId, periodId uuid.UUID) (PreCloseCheckTrialBalance, error) {
+	return checkTrialBalance(ctx, h.readModel, sobId, periodId)
+}
+
+func checkTrialBalance(ctx context.Context, readModel GeneralLedgerReadModel, sobId, periodId uuid.UUID) (PreCloseCheckTrialBalance, error) {
 	periodIdFilter, _ := filterable.NewFilter("periodId", filterable.OptEq, periodId.String())
 	accountLevelFilter, _ := filterable.NewFilter("account.level", filterable.OptEq, 1)
 	combined := filterable.NewFilterable(
@@ -181,7 +189,7 @@ func (h PeriodPreCloseCheckHandler) checkTrialBalance(ctx context.Context, sobId
 	)
 
 	pageRequest := data.NewPageRequest(pageable.Unpaged(), sortable.Unsorted(), combined)
-	ledgersPage, err := h.readModel.SearchLedgers(ctx, sobId, pageRequest)
+	ledgersPage, err := readModel.SearchLedgers(ctx, sobId, pageRequest)
 	if err != nil {
 		return PreCloseCheckTrialBalance{}, err
 	}

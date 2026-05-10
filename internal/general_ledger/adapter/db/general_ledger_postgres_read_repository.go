@@ -82,6 +82,42 @@ func (r GeneralLedgerPostgresReadRepository) FirstPeriod(ctx context.Context, so
 	return query.Period{}, err
 }
 
+func (r GeneralLedgerPostgresReadRepository) CurrentPeriod(ctx context.Context, sobId uuid.UUID) (query.Period, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po periodPO
+	err := db.Where(periodPO{SobId: sobId, IsCurrent: true}).Take(&po).Error
+	if err == nil {
+		return periodPOToDTO(po), nil
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return query.Period{}, commonErrors.ErrRecordNotFound()
+	}
+	return query.Period{}, err
+}
+
+func (r GeneralLedgerPostgresReadRepository) PeriodsInRange(ctx context.Context, sobId uuid.UUID, fromYear, fromMonth, toYear, toMonth int) ([]query.Period, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []periodPO
+	err := db.
+		Where(
+			"sob_id = ? AND (fiscal_year * 100 + period_number) >= ? AND (fiscal_year * 100 + period_number) <= ?",
+			sobId, fromYear*100+fromMonth, toYear*100+toMonth,
+		).
+		Order("fiscal_year asc, period_number asc").
+		Find(&pos).Error
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]query.Period, 0, len(pos))
+	for _, po := range pos {
+		result = append(result, periodPOToDTO(po))
+	}
+	return result, nil
+}
+
 func (r GeneralLedgerPostgresReadRepository) JournalById(ctx context.Context, journalId uuid.UUID) (query.Journal, error) {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -161,8 +197,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 	openingQ := commonJoins(db.Model(&journalLinePO{})).
 		Select("journal_lines.account_id, SUM(journal_lines.amount) AS opening_amount").
 		Where(
-			"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number < ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
+			"(periods.fiscal_year * 100 + periods.period_number) < ?",
+			fromFiscalYear*100+fromPeriodNumber,
 		).
 		Group("journal_lines.account_id")
 	if err := openingQ.Scan(&openingRows).Error; err != nil {
@@ -179,10 +215,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 				"SUM(journal_lines.amount) AS period_amount",
 		).
 		Where(
-			"(periods.fiscal_year > ? OR (periods.fiscal_year = ? AND periods.period_number >= ?)) AND "+
-				"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number <= ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
-			toFiscalYear, toFiscalYear, toPeriodNumber,
+			"(periods.fiscal_year * 100 + periods.period_number) >= ? AND (periods.fiscal_year * 100 + periods.period_number) <= ?",
+			fromFiscalYear*100+fromPeriodNumber, toFiscalYear*100+toPeriodNumber,
 		).
 		Group("journal_lines.account_id")
 	if err := periodQ.Scan(&periodRows).Error; err != nil {
@@ -279,9 +313,8 @@ func (r GeneralLedgerPostgresReadRepository) CheckPeriodContinuity(
 	db.Model(&periodPO{}).
 		Where("sob_id = ?", sobId).
 		Where(
-			"(fiscal_year > ? OR (fiscal_year = ? AND period_number >= ?)) AND "+
-				"(fiscal_year < ? OR (fiscal_year = ? AND period_number <= ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber, toFiscalYear, toFiscalYear, toPeriodNumber,
+			"(fiscal_year * 100 + period_number) >= ? AND (fiscal_year * 100 + period_number) <= ?",
+			fromFiscalYear*100+fromPeriodNumber, toFiscalYear*100+toPeriodNumber,
 		).
 		Count(&count)
 	if err := db.Error; err != nil {
@@ -328,10 +361,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgerEntriesByPeriodRange(
 		Where("journals.sob_id = ?", sobId).
 		Where("journals.is_posted = ?", true).
 		Where(
-			"(periods.fiscal_year > ? OR (periods.fiscal_year = ? AND periods.period_number >= ?)) AND "+
-				"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number <= ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
-			toFiscalYear, toFiscalYear, toPeriodNumber,
+			"(periods.fiscal_year * 100 + periods.period_number) >= ? AND (periods.fiscal_year * 100 + periods.period_number) <= ?",
+			fromFiscalYear*100+fromPeriodNumber, toFiscalYear*100+toPeriodNumber,
 		)
 
 	if accountId != nil {
@@ -428,8 +459,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByAccountAndDimensionOption(
 	openingQ := commonJoins(db.Model(&journalLinePO{})).
 		Select("journal_line_dimension_options.dimension_option_id, SUM(journal_lines.amount) AS opening_amount").
 		Where(
-			"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number < ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
+			"(periods.fiscal_year * 100 + periods.period_number) < ?",
+			fromFiscalYear*100+fromPeriodNumber,
 		).
 		Group("journal_line_dimension_options.dimension_option_id")
 	if err := openingQ.Scan(&openingRows).Error; err != nil {
@@ -447,10 +478,8 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByAccountAndDimensionOption(
 				"SUM(journal_lines.amount) AS period_amount",
 		).
 		Where(
-			"(periods.fiscal_year > ? OR (periods.fiscal_year = ? AND periods.period_number >= ?)) AND "+
-				"(periods.fiscal_year < ? OR (periods.fiscal_year = ? AND periods.period_number <= ?))",
-			fromFiscalYear, fromFiscalYear, fromPeriodNumber,
-			toFiscalYear, toFiscalYear, toPeriodNumber,
+			"(periods.fiscal_year * 100 + periods.period_number) >= ? AND (periods.fiscal_year * 100 + periods.period_number) <= ?",
+			fromFiscalYear*100+fromPeriodNumber, toFiscalYear*100+toPeriodNumber,
 		).
 		Group("journal_line_dimension_options.dimension_option_id, dimension_options.name")
 	if err := periodQ.Scan(&periodRows).Error; err != nil {
