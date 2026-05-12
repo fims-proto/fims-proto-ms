@@ -1,8 +1,26 @@
 # CONTEXT.md
 
-This file captures the bounded context glossary for the FIMS General Ledger domain. Terms here are meaningful to domain experts and should be used consistently across code, tests, and documentation.
+This file captures the bounded context glossary for FIMS. Terms here are meaningful to domain experts and should be used consistently across code, tests, and documentation.
 
-## Glossary
+For a full business-facing overview of the system, see [docs/system-overview.md](docs/system-overview.md).
+
+## System-Level Terms
+
+### FIMS (Financial Information Management System / 财务信息管理系统)
+
+A standalone accounting SaaS product for Chinese SMEs. Each customer receives an isolated deployment (not shared-tenant). Implements **小企业会计准则 (Small Business Accounting Standards)**; multi-standard support is on the roadmap.
+
+### Set of Books (SoB / 账套)
+
+The top-level accounting entity within a FIMS deployment. One deployment hosts multiple SoBs — enabling management of multiple subsidiary companies, legal entities, or (for accounting firms) multiple client companies. Each SoB is fully independent: its own chart of accounts, accounting periods, journals, and ledger balances.
+
+### Small Business Accounting Standards (小企业会计准则)
+
+The Chinese accounting standard that FIMS currently implements. Pre-loaded as seed data in `dataload/xqykjzz/`. Support for additional standards (e.g., 企业会计准则) is planned.
+
+---
+
+## General Ledger Glossary
 
 ### Period Closing (结账)
 
