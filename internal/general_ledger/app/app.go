@@ -64,6 +64,7 @@ func (a *Application) Inject(
 	numberingService service.NumberingService,
 	userService service.UserService,
 	dimensionService service.DimensionService,
+	reportService service.ReportService,
 ) {
 	a.Queries = Queries{
 		AllAccounts:                query.NewAllAccountsHandler(readModel),
@@ -87,8 +88,8 @@ func (a *Application) Inject(
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
 		DeleteAccount: command.NewDeleteAccountHandler(repo),
 
-		ClosePeriod:  command.NewClosePeriodHandler(repo, numberingService),
-		ClosePeriods: command.NewClosePeriodsHandler(repo, numberingService, dimensionService, sobService),
+		ClosePeriod:  command.NewClosePeriodHandler(repo, numberingService, reportService),
+		ClosePeriods: command.NewClosePeriodsHandler(repo, numberingService, dimensionService, sobService, reportService),
 
 		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService, dimensionService, sobService),
 		AuditJournal:        command.NewAuditJournalHandler(repo),

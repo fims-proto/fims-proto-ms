@@ -81,21 +81,21 @@ func (h Handler) GenerateReport(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	newReportId := uuid.New()
 	cmd := command.GenerateReportCmd{
 		TemplateId:       uuid.MustParse(c.Param("reportId")),
-		ReportId:         newReportId,
+		ReportId:         uuid.New(),
 		SobId:            uuid.MustParse(c.Param("sobId")),
 		Title:            req.Title,
 		AmountTypes:      req.AmountTypes,
 		PeriodFiscalYear: req.PeriodFiscalYear,
 		PeriodNumber:     req.PeriodNumber,
 	}
-	if err := h.app.Commands.Generate.Handle(c, cmd); err != nil {
+	actualId, err := h.app.Commands.Generate.Handle(c, cmd)
+	if err != nil {
 		_ = c.Error(err)
 		return
 	}
-	generatedReport, err := h.app.Queries.ReportById.Handle(c, newReportId)
+	generatedReport, err := h.app.Queries.ReportById.Handle(c, actualId)
 	if err != nil {
 		_ = c.Error(err)
 		return

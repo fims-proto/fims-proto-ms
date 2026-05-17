@@ -24,9 +24,10 @@ type ClosePeriodCmd struct {
 type ClosePeriodHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
+	reportService    service.ReportService // nil when called internally by ClosePeriodsHandler
 }
 
-func NewClosePeriodHandler(repo domain.Repository, numberingService service.NumberingService) ClosePeriodHandler {
+func NewClosePeriodHandler(repo domain.Repository, numberingService service.NumberingService, reportService service.ReportService) ClosePeriodHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -38,6 +39,7 @@ func NewClosePeriodHandler(repo domain.Repository, numberingService service.Numb
 	return ClosePeriodHandler{
 		repo:             repo,
 		numberingService: numberingService,
+		reportService:    reportService,
 	}
 }
 
@@ -74,10 +76,21 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 		}
 	}
 
-	// update
-	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+	// update — period close commits here
+	if err := h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		return h.handleUpdate(txCtx, cmd)
-	})
+	}); err != nil {
+		return err
+	}
+
+	// generate reports outside the GL transaction; failure surfaces as a warning
+	if h.reportService != nil {
+		if err := h.reportService.GenerateForPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
+			return commonErrors.NewInternalError(commonErrors.SlugPeriodClosedButReportFailed)
+		}
+	}
+
+	return nil
 }
 
 func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd) error {

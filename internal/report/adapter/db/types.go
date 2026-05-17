@@ -18,11 +18,11 @@ import (
 
 type reportPO struct {
 	Id          uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	SobId       uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_PeriodId_Title"`
-	PeriodId    *uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_PeriodId_Title"`
-	Title       string     `gorm:"uniqueIndex:UQ_Reports_SobId_PeriodId_Title"`
+	SobId       uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_Class_PeriodId,where:template = false"`
+	PeriodId    *uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_Class_PeriodId,where:template = false"`
+	Title       string
 	Template    bool
-	Class       string
+	Class       string           `gorm:"uniqueIndex:UQ_Reports_SobId_Class_PeriodId,where:template = false"`
 	AmountTypes pgtype.TextArray `gorm:"type:text[]"`
 	Sections    []*sectionPO     `gorm:"foreignKey:ReportId"`
 

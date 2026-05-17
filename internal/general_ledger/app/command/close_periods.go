@@ -20,6 +20,7 @@ type ClosePeriodsCmd struct {
 
 type ClosePeriodsHandler struct {
 	repo                  domain.Repository
+	reportService         service.ReportService
 	closePeriodHandler    ClosePeriodHandler
 	monthlyClosingHandler CreateMonthlyClosingJournalHandler
 	yearEndClosingHandler CreateYearEndClosingJournalHandler
@@ -30,13 +31,19 @@ func NewClosePeriodsHandler(
 	numberingService service.NumberingService,
 	dimensionService service.DimensionService,
 	sobService service.SobService,
+	reportService service.ReportService,
 ) ClosePeriodsHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
+	if reportService == nil {
+		panic("nil report service")
+	}
 	return ClosePeriodsHandler{
-		repo:                  repo,
-		closePeriodHandler:    NewClosePeriodHandler(repo, numberingService),
+		repo:          repo,
+		reportService: reportService,
+		// nil reportService: ClosePeriodsHandler handles report generation after the batch tx
+		closePeriodHandler:    NewClosePeriodHandler(repo, numberingService, nil),
 		monthlyClosingHandler: NewCreateMonthlyClosingJournalHandler(repo, numberingService, dimensionService, sobService),
 		yearEndClosingHandler: NewCreateYearEndClosingJournalHandler(repo, numberingService, dimensionService, sobService),
 	}
@@ -58,34 +65,48 @@ func (h ClosePeriodsHandler) Handle(ctx context.Context, cmd ClosePeriodsCmd) er
 		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodBatchCloseTooManyPeriods)
 	}
 
-	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+	var closedPeriodIds []uuid.UUID
+	if err = h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		for _, ref := range sequence {
-			if err := h.closeSinglePeriod(txCtx, cmd.SobId, ref.year, ref.month); err != nil {
+			periodId, err := h.closeSinglePeriod(txCtx, cmd.SobId, ref.year, ref.month)
+			if err != nil {
 				return err
 			}
+			closedPeriodIds = append(closedPeriodIds, periodId)
 		}
 		return nil
-	})
+	}); err != nil {
+		return err
+	}
+
+	// generate reports outside the GL transaction
+	for _, periodId := range closedPeriodIds {
+		if err = h.reportService.GenerateForPeriod(ctx, cmd.SobId, periodId); err != nil {
+			return commonErrors.NewInternalError(commonErrors.SlugPeriodClosedButReportFailed)
+		}
+	}
+
+	return nil
 }
 
-func (h ClosePeriodsHandler) closeSinglePeriod(ctx context.Context, sobId uuid.UUID, expectedYear, expectedMonth int) error {
+func (h ClosePeriodsHandler) closeSinglePeriod(ctx context.Context, sobId uuid.UUID, expectedYear, expectedMonth int) (uuid.UUID, error) {
 	current, err := h.repo.ReadCurrentPeriod(ctx, sobId)
 	if err != nil {
-		return fmt.Errorf("failed to read current period: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to read current period: %w", err)
 	}
 	if current.FiscalYear() != expectedYear || current.PeriodNumber() != expectedMonth {
-		return fmt.Errorf("unexpected current period: got %d-%02d, expected %d-%02d",
+		return uuid.Nil, fmt.Errorf("unexpected current period: got %d-%02d, expected %d-%02d",
 			current.FiscalYear(), current.PeriodNumber(), expectedYear, expectedMonth)
 	}
 
 	// Create monthly closing journal (skip if P&L has no balance).
 	pnlLedgers, err := h.repo.ReadProfitAndLossLedgersHavingBalanceInPeriod(ctx, sobId, current.Id())
 	if err != nil {
-		return fmt.Errorf("failed to check P&L balance: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to check P&L balance: %w", err)
 	}
 	if len(pnlLedgers) > 0 {
 		if _, err = h.monthlyClosingHandler.Handle(ctx, CreateMonthlyClosingJournalCmd{SobId: sobId}); err != nil {
-			return fmt.Errorf("failed to create monthly closing journal for %d-%02d: %w", expectedYear, expectedMonth, err)
+			return uuid.Nil, fmt.Errorf("failed to create monthly closing journal for %d-%02d: %w", expectedYear, expectedMonth, err)
 		}
 	}
 
@@ -93,20 +114,24 @@ func (h ClosePeriodsHandler) closeSinglePeriod(ctx context.Context, sobId uuid.U
 	if current.PeriodNumber() == 12 {
 		cypLedger, err := h.repo.ReadLedgerByRawAccountNumberInPeriod(ctx, sobId, yearEndRetainedEarningsAccount, current.Id())
 		if err != nil {
-			return fmt.Errorf("failed to read CYP ledger: %w", err)
+			return uuid.Nil, fmt.Errorf("failed to read CYP ledger: %w", err)
 		}
 		if cypLedger != nil && !cypLedger.EndingAmount().IsZero() {
 			if _, err = h.yearEndClosingHandler.Handle(ctx, CreateYearEndClosingJournalCmd{SobId: sobId}); err != nil {
-				return fmt.Errorf("failed to create year-end closing journal for %d-%02d: %w", expectedYear, expectedMonth, err)
+				return uuid.Nil, fmt.Errorf("failed to create year-end closing journal for %d-%02d: %w", expectedYear, expectedMonth, err)
 			}
 		}
 	}
 
 	// Close the period (re-validates all checks — they should pass after auto-journals).
-	return h.closePeriodHandler.Handle(ctx, ClosePeriodCmd{
+	if err = h.closePeriodHandler.Handle(ctx, ClosePeriodCmd{
 		SobId:    sobId,
 		PeriodId: current.Id(),
-	})
+	}); err != nil {
+		return uuid.Nil, err
+	}
+
+	return current.Id(), nil
 }
 
 type periodRef struct {

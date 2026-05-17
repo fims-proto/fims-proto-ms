@@ -2,12 +2,14 @@ package db
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -127,6 +129,44 @@ func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId u
 	if err := db.Preload("Sections.Items.Formulas.Account").
 		Joins("Period").
 		First(&po).Error; err != nil {
+		return nil, err
+	}
+
+	return reportPOToBO(&po)
+}
+
+func (r ReportPostgresRepository) ReadTemplatesBySobId(ctx context.Context, sobId uuid.UUID) ([]*report.Report, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []*reportPO
+	if err := db.Preload("Sections.Items.Formulas.Account").
+		Where("sob_id = ? AND template = true", sobId).
+		Find(&pos).Error; err != nil {
+		return nil, err
+	}
+
+	return converter.POsToBOs(pos, func(po *reportPO) (*report.Report, error) {
+		return reportPOToBO(po)
+	})
+}
+
+func (r ReportPostgresRepository) ReadInstanceBySobClassAndPeriod(
+	ctx context.Context,
+	sobId uuid.UUID,
+	reportClass class.Class,
+	periodId uuid.UUID,
+) (*report.Report, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po reportPO
+	err := db.Preload("Sections.Items.Formulas.Account").
+		Joins("Period").
+		Where("sob_id = ? AND class = ? AND period_id = ? AND template = false", sobId, reportClass.String(), periodId).
+		First(&po).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
 

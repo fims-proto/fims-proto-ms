@@ -31,3 +31,7 @@ type DimensionService interface {
 	FetchCategoriesByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]dimensionQuery.DimensionCategory, error)
 	FetchOptionsByIds(ctx context.Context, ids []uuid.UUID) (map[uuid.UUID]dimensionQuery.DimensionOption, error)
 }
+
+type ReportService interface {
+	GenerateForPeriod(ctx context.Context, sobId uuid.UUID, periodId uuid.UUID) error
+}

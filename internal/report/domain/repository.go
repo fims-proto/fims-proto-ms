@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
 
 	"github.com/google/uuid"
 )
@@ -19,6 +20,8 @@ type Repository interface {
 		updateFn func(r *report.Report) (*report.Report, error),
 	) error
 	ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error)
+	ReadTemplatesBySobId(ctx context.Context, sobId uuid.UUID) ([]*report.Report, error)
+	ReadInstanceBySobClassAndPeriod(ctx context.Context, sobId uuid.UUID, reportClass class.Class, periodId uuid.UUID) (*report.Report, error)
 
 	UpdateItem(
 		ctx context.Context,

@@ -16,8 +16,9 @@ type Queries struct {
 type Commands struct {
 	Initialize command.InitializeHandler
 
-	Generate   command.GenerateHandler
-	Regenerate command.RegenerateHandler
+	Generate          command.GenerateHandler
+	GenerateForPeriod command.GenerateForPeriodHandler
+	Regenerate        command.RegenerateHandler
 
 	UpdateReport command.UpdateReportHandler
 
@@ -46,8 +47,9 @@ func (a *Application) Inject(
 	a.Commands = Commands{
 		Initialize: command.NewInitializeHandler(repo, generalLedgerService),
 
-		Generate:   command.NewGenerateHandler(repo, generalLedgerService),
-		Regenerate: command.NewRegenerateHandler(repo, generalLedgerService),
+		Generate:          command.NewGenerateHandler(repo, generalLedgerService),
+		GenerateForPeriod: command.NewGenerateForPeriodHandler(repo, generalLedgerService),
+		Regenerate:        command.NewRegenerateHandler(repo, generalLedgerService),
 
 		UpdateReport: command.NewUpdateReportHandler(repo, generalLedgerService, sobService),
 

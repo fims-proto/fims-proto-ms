@@ -21,6 +21,7 @@ import (
 	generalLedgerAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/db"
 	generalLedgerDimensionAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/dimension"
 	generalLedgerNumberingAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/numbering"
+	generalLedgerReportAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/report"
 	generalLedgerSobAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/sob"
 	generalLedgerUserAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/user"
 	generalLedgerApp "github/fims-proto/fims-proto-ms/internal/general_ledger/app"
@@ -116,6 +117,7 @@ func main() {
 	numberingServiceForGeneralLedger := generalLedgerNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
 	userServiceForGeneralLedger := generalLedgerUserAdapter.NewIntraProcessAdapter(userInterface)
 	dimensionServiceForGeneralLedger := generalLedgerDimensionAdapter.NewIntraProcessAdapter(dimensionInterface)
+	reportServiceForGeneralLedger := generalLedgerReportAdapter.NewIntraProcessAdapter(reportInterface)
 	generalLedgerApplication.Inject(
 		generalLedgerRepository,
 		generalLedgerReadRepository,
@@ -123,6 +125,7 @@ func main() {
 		numberingServiceForGeneralLedger,
 		userServiceForGeneralLedger,
 		dimensionServiceForGeneralLedger,
+		reportServiceForGeneralLedger,
 	)
 
 	reportApplication.Inject(

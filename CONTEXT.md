@@ -50,3 +50,15 @@ A validation that confirms the sum of all signed amounts across level-1 accounts
 ### Current Year Profit (本年利润)
 
 Account number 003103. Accumulates the net P&L result across all months of the fiscal year via Monthly Closing Journals. Must be transferred to Retained Earnings (003104000002) via the Year-End Closing Journal before period 12 can be closed.
+
+---
+
+## Reports Glossary
+
+### Report Template (报表模板)
+
+Per-SoB structural configuration for a mandatory report type. Holds sections, items, and formula rules. No period association. Two templates exist per SoB after initialization: Balance Sheet (资产负债表) and Income Statement (利润表). Updated via `PATCH /sob/{sobId}/report/{reportId}`. Changes to a template do not cascade to existing instances — instances must be manually regenerated.
+
+### Report Instance (报表实例)
+
+A generated financial report for a specific accounting period. Exactly one instance exists per (SoB, class, period) — enforced by a DB partial unique index. Generation is idempotent: calling generate for a period that already has an instance regenerates it (recalculates amounts from current ledgers) rather than creating a duplicate. Automatically generated for all classes when a period is closed via `ClosePeriodHandler`.

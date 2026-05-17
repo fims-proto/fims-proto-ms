@@ -63,6 +63,7 @@ const (
 	SlugPeriodRangeNotContinuous       = "period-range-not-continuous"
 	SlugPeriodBatchCloseTargetInPast   = "period-batchClose-targetInPast"
 	SlugPeriodBatchCloseTooManyPeriods = "period-batchClose-tooManyPeriods"
+	SlugPeriodClosedButReportFailed    = "period-close-reportFailed"
 )
 
 // Account
