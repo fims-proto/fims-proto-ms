@@ -46,14 +46,14 @@ func (h Handler) SearchReports(c *gin.Context) {
 //	@Accept			application/json
 //	@Produce		application/json
 //	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			class	path		string	true	"Report class"	Enums(balance_sheet, income_statement)
+//	@Param			class	query		string	true	"Report class"	Enums(balance_sheet, income_statement)
 //	@Success		200		{object}	ReportResponse
 //	@Failure		400		{object}	Error
 //	@Failure		404
 //	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report/{class}/template [get]
+//	@Router			/sob/{sobId}/report/template [get]
 func (h Handler) ReadReportTemplateByClass(c *gin.Context) {
-	reportClass, err := class.FromString(c.Param("class"))
+	reportClass, err := class.FromString(c.Query("class"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -77,27 +77,27 @@ func (h Handler) ReadReportTemplateByClass(c *gin.Context) {
 
 // ReadReportByClassAndPeriod godoc
 //
-// @Summary		Get report instance by class and period
-// @Description	Returns the report instance for a given SoB, class, and period. Returns 404 if not yet generated.
-// @Tags			reports
-// @Accept			application/json
-// @Produce		application/json
-// @Param			sobId	path		string	true	"Sob ID"
-// @Param			class	path		string	true	"Report class"	Enums(balance_sheet, income_statement)
-// @Param			period	path		string	true	"Period (YYYY-MM)"
-// @Success		200		{object}	ReportResponse
-// @Failure		400		{object}	Error
-// @Failure		404
-// @Failure		500	{object}	Error
-// @Router			/sob/{sobId}/report/{class}/{period} [get]
+//	@Summary		Get report instance by class and period
+//	@Description	Returns the report instance for a given SoB, class, and period. Returns 404 if not yet generated.
+//	@Tags			reports
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			class	query		string	true	"Report class"	Enums(balance_sheet, income_statement)
+//	@Param			period	query		string	true	"Period (YYYY-MM)"
+//	@Success		200		{object}	ReportResponse
+//	@Failure		400		{object}	Error
+//	@Failure		404
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/report [get]
 func (h Handler) ReadReportByClassAndPeriod(c *gin.Context) {
-	reportClass, err := class.FromString(c.Param("class"))
+	reportClass, err := class.FromString(c.Query("class"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	t, err := time.Parse("2006-01", c.Param("period"))
+	t, err := time.Parse("2006-01", c.Query("period"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "period must be YYYY-MM"})
 		return
@@ -128,20 +128,20 @@ func (h Handler) ReadReportByClassAndPeriod(c *gin.Context) {
 //	@Tags			reports
 //	@Produce		application/json
 //	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			class	path		string	true	"Report class"	Enums(balance_sheet, income_statement)
-//	@Param			period	path		string	true	"Period (YYYY-MM)"
+//	@Param			class	query		string	true	"Report class"	Enums(balance_sheet, income_statement)
+//	@Param			period	query		string	true	"Period (YYYY-MM)"
 //	@Success		200		{object}	ReportResponse
 //	@Failure		400		{object}	Error
 //	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/report/{class}/{period}/generate [post]
+//	@Router			/sob/{sobId}/report/generate [post]
 func (h Handler) GenerateReport(c *gin.Context) {
-	reportClass, err := class.FromString(c.Param("class"))
+	reportClass, err := class.FromString(c.Query("class"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	t, err := time.Parse("2006-01", c.Param("period"))
+	t, err := time.Parse("2006-01", c.Query("period"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "period must be YYYY-MM"})
 		return
@@ -173,7 +173,8 @@ func (h Handler) GenerateReport(c *gin.Context) {
 //	@Tags			reports
 //	@Accept			application/json
 //	@Produce		application/json
-//	@Param			sobId	path	string	true	"Sob ID"
+//	@Param			sobId		path	string	true	"Sob ID"
+//	@Param			reportId	path	string	true	"Report ID"
 //	@Success		204
 //	@Failure		400	{object}	Error
 //	@Failure		500	{object}	Error

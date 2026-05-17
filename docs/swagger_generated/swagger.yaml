@@ -2190,7 +2190,7 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
-  /sob/{sobId}/report/{class}/{period}:
+  /sob/{sobId}/report:
     get:
       consumes:
       - application/json
@@ -2206,12 +2206,12 @@ paths:
         enum:
         - balance_sheet
         - income_statement
-        in: path
+        in: query
         name: class
         required: true
         type: string
       - description: Period (YYYY-MM)
-        in: path
+        in: query
         name: period
         required: true
         type: string
@@ -2233,88 +2233,6 @@ paths:
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
       summary: Get report instance by class and period
-      tags:
-      - reports
-  /sob/{sobId}/report/{class}/{period}/generate:
-    post:
-      description: Generates a report instance for the given SoB, class, and period.
-        If an instance already exists it is regenerated (amounts recalculated). Returns
-        the resulting report.
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Report class
-        enum:
-        - balance_sheet
-        - income_statement
-        in: path
-        name: class
-        required: true
-        type: string
-      - description: Period (YYYY-MM)
-        in: path
-        name: period
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-      summary: Generate or regenerate a report instance
-      tags:
-      - reports
-  /sob/{sobId}/report/{class}/template:
-    get:
-      consumes:
-      - application/json
-      description: Returns the report template for a given SoB and class. Returns
-        404 if not found.
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Report class
-        enum:
-        - balance_sheet
-        - income_statement
-        in: path
-        name: class
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-        "404":
-          description: Not Found
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-      summary: Get report template by class
       tags:
       - reports
   /sob/{sobId}/report/{reportId}:
@@ -2368,6 +2286,11 @@ paths:
         name: sobId
         required: true
         type: string
+      - description: Report ID
+        in: path
+        name: reportId
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -2381,6 +2304,88 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
+      tags:
+      - reports
+  /sob/{sobId}/report/generate:
+    post:
+      description: Generates a report instance for the given SoB, class, and period.
+        If an instance already exists it is regenerated (amounts recalculated). Returns
+        the resulting report.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report class
+        enum:
+        - balance_sheet
+        - income_statement
+        in: query
+        name: class
+        required: true
+        type: string
+      - description: Period (YYYY-MM)
+        in: query
+        name: period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Generate or regenerate a report instance
+      tags:
+      - reports
+  /sob/{sobId}/report/template:
+    get:
+      consumes:
+      - application/json
+      description: Returns the report template for a given SoB and class. Returns
+        404 if not found.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report class
+        enum:
+        - balance_sheet
+        - income_statement
+        in: query
+        name: class
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Get report template by class
       tags:
       - reports
   /sob/{sobId}/reports:

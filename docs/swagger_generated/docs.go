@@ -1804,65 +1804,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{class}/template": {
-            "get": {
-                "description": "Returns the report template for a given SoB and class. Returns 404 if not found.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "summary": "Get report template by class",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "balance_sheet",
-                            "income_statement"
-                        ],
-                        "type": "string",
-                        "description": "Report class",
-                        "name": "class",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/http.ReportResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/report/{class}/{period}": {
+        "/sob/{sobId}/report": {
             "get": {
                 "description": "Returns the report instance for a given SoB, class, and period. Returns 404 if not yet generated.",
                 "consumes": [
@@ -1891,14 +1833,14 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Report class",
                         "name": "class",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Period (YYYY-MM)",
                         "name": "period",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1927,7 +1869,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{class}/{period}/generate": {
+        "/sob/{sobId}/report/generate": {
             "post": {
                 "description": "Generates a report instance for the given SoB, class, and period. If an instance already exists it is regenerated (amounts recalculated). Returns the resulting report.",
                 "produces": [
@@ -1953,14 +1895,14 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Report class",
                         "name": "class",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "Period (YYYY-MM)",
                         "name": "period",
-                        "in": "path",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1976,6 +1918,64 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/template": {
+            "get": {
+                "description": "Returns the report template for a given SoB and class. Returns 404 if not found.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Get report template by class",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "balance_sheet",
+                            "income_statement"
+                        ],
+                        "type": "string",
+                        "description": "Report class",
+                        "name": "class",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -2060,6 +2060,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Sob ID",
                         "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
                         "in": "path",
                         "required": true
                     }
