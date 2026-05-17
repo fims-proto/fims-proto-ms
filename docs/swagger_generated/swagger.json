@@ -1605,6 +1605,12 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Period closed but report generation failed",
+                        "schema": {
+                            "$ref": "#/definitions/http.PeriodCloseWarningResponse"
+                        }
+                    },
                     "204": {
                         "description": "No Content"
                     },
@@ -1730,6 +1736,12 @@
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Periods closed but report generation failed",
+                        "schema": {
+                            "$ref": "#/definitions/http.PeriodCloseWarningResponse"
+                        }
+                    },
                     "204": {
                         "description": "No Content"
                     },
@@ -3327,6 +3339,17 @@
                 },
                 "period": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                }
+            }
+        },
+        "http.PeriodCloseWarningResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
                 }
             }
         },

@@ -157,7 +157,7 @@ func main() {
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
 	generalLedgerPublicHttpPort.InitRouter(
-		generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication),
+		generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication, localizer),
 		publicApiRouter,
 	)
 	reportPublicHttpPort.InitRouter(reportPublicHttpPort.NewHandler(&reportApplication), publicApiRouter)

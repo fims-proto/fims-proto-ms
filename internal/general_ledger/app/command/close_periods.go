@@ -18,6 +18,10 @@ type ClosePeriodsCmd struct {
 	TargetMonth int
 }
 
+type ClosePeriodsResult struct {
+	ReportGenerationFailed bool
+}
+
 type ClosePeriodsHandler struct {
 	repo                  domain.Repository
 	reportService         service.ReportService
@@ -49,20 +53,20 @@ func NewClosePeriodsHandler(
 	}
 }
 
-func (h ClosePeriodsHandler) Handle(ctx context.Context, cmd ClosePeriodsCmd) error {
+func (h ClosePeriodsHandler) Handle(ctx context.Context, cmd ClosePeriodsCmd) (ClosePeriodsResult, error) {
 	current, err := h.repo.ReadCurrentPeriod(ctx, cmd.SobId)
 	if err != nil {
-		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodNotFound)
+		return ClosePeriodsResult{}, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodNotFound)
 	}
 
 	if cmd.TargetYear < current.FiscalYear() ||
 		(cmd.TargetYear == current.FiscalYear() && cmd.TargetMonth < current.PeriodNumber()) {
-		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodBatchCloseTargetInPast)
+		return ClosePeriodsResult{}, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodBatchCloseTargetInPast)
 	}
 
 	sequence := buildPeriodSequence(current.FiscalYear(), current.PeriodNumber(), cmd.TargetYear, cmd.TargetMonth)
 	if len(sequence) > 12 {
-		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodBatchCloseTooManyPeriods)
+		return ClosePeriodsResult{}, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodBatchCloseTooManyPeriods)
 	}
 
 	var closedPeriodIds []uuid.UUID
@@ -76,17 +80,17 @@ func (h ClosePeriodsHandler) Handle(ctx context.Context, cmd ClosePeriodsCmd) er
 		}
 		return nil
 	}); err != nil {
-		return err
+		return ClosePeriodsResult{}, err
 	}
 
 	// generate reports outside the GL transaction
 	for _, periodId := range closedPeriodIds {
 		if err = h.reportService.GenerateForPeriod(ctx, cmd.SobId, periodId); err != nil {
-			return commonErrors.NewInternalError(commonErrors.SlugPeriodClosedButReportFailed)
+			return ClosePeriodsResult{ReportGenerationFailed: true}, nil
 		}
 	}
 
-	return nil
+	return ClosePeriodsResult{}, nil
 }
 
 func (h ClosePeriodsHandler) closeSinglePeriod(ctx context.Context, sobId uuid.UUID, expectedYear, expectedMonth int) (uuid.UUID, error) {
@@ -124,7 +128,7 @@ func (h ClosePeriodsHandler) closeSinglePeriod(ctx context.Context, sobId uuid.U
 	}
 
 	// Close the period (re-validates all checks — they should pass after auto-journals).
-	if err = h.closePeriodHandler.Handle(ctx, ClosePeriodCmd{
+	if _, err = h.closePeriodHandler.Handle(ctx, ClosePeriodCmd{
 		SobId:    sobId,
 		PeriodId: current.Id(),
 	}); err != nil {

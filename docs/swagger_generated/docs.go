@@ -1611,6 +1611,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Period closed but report generation failed",
+                        "schema": {
+                            "$ref": "#/definitions/http.PeriodCloseWarningResponse"
+                        }
+                    },
                     "204": {
                         "description": "No Content"
                     },
@@ -1736,6 +1742,12 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Periods closed but report generation failed",
+                        "schema": {
+                            "$ref": "#/definitions/http.PeriodCloseWarningResponse"
+                        }
+                    },
                     "204": {
                         "description": "No Content"
                     },
@@ -3333,6 +3345,17 @@ const docTemplate = `{
                 },
                 "period": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                }
+            }
+        },
+        "http.PeriodCloseWarningResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
                 }
             }
         },

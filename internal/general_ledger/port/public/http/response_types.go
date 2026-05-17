@@ -19,6 +19,11 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
+type PeriodCloseWarningResponse struct {
+	Slug    string `json:"slug"`
+	Message string `json:"message"`
+}
+
 type AccountClass struct {
 	Class  string   `json:"id"`
 	Groups []string `json:"groups"`

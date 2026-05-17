@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 
@@ -43,14 +44,23 @@ func (h Handler) ReadPeriods(c *gin.Context) {
 //	@Param			sobId		path	string	true	"Sob ID"
 //	@Param			periodId	path	string	true	"Period ID"
 //	@Success		204
+//	@Success		200	{object}	PeriodCloseWarningResponse	"Period closed but report generation failed"
 //	@Failure		500	{object}	Error
 //	@Router			/sob/{sobId}/period/{periodId}/close [post]
 func (h Handler) ClosePeriod(c *gin.Context) {
-	if err := h.app.Commands.ClosePeriod.Handle(c, command.ClosePeriodCmd{
+	result, err := h.app.Commands.ClosePeriod.Handle(c, command.ClosePeriodCmd{
 		SobId:    uuid.MustParse(c.Param("sobId")),
 		PeriodId: uuid.MustParse(c.Param("periodId")),
-	}); err != nil {
+	})
+	if err != nil {
 		_ = c.Error(err)
+		return
+	}
+	if result.ReportGenerationFailed {
+		c.JSON(http.StatusOK, PeriodCloseWarningResponse{
+			Slug:    commonErrors.SlugPeriodClosedButReportFailed,
+			Message: h.localizer.Get(c.Request.Header.Get("Accept-Language"), commonErrors.SlugPeriodClosedButReportFailed, nil),
+		})
 		return
 	}
 	c.Status(http.StatusNoContent)
@@ -124,6 +134,7 @@ func (h Handler) BatchPreCloseCheck(c *gin.Context) {
 //	@Param			sobId			path	string	true	"Sob ID"
 //	@Param			targetPeriod	query	string	true	"Target period in YYYY-MM format"
 //	@Success		204
+//	@Success		200	{object}	PeriodCloseWarningResponse	"Periods closed but report generation failed"
 //	@Failure		400	{object}	Error
 //	@Failure		500	{object}	Error
 //	@Router			/sob/{sobId}/periods/batch-close [post]
@@ -134,12 +145,20 @@ func (h Handler) ClosePeriods(c *gin.Context) {
 		return
 	}
 
-	if err := h.app.Commands.ClosePeriods.Handle(c, command.ClosePeriodsCmd{
+	result, err := h.app.Commands.ClosePeriods.Handle(c, command.ClosePeriodsCmd{
 		SobId:       uuid.MustParse(c.Param("sobId")),
 		TargetYear:  targetYear,
 		TargetMonth: targetMonth,
-	}); err != nil {
+	})
+	if err != nil {
 		_ = c.Error(err)
+		return
+	}
+	if result.ReportGenerationFailed {
+		c.JSON(http.StatusOK, PeriodCloseWarningResponse{
+			Slug:    commonErrors.SlugPeriodClosedButReportFailed,
+			Message: h.localizer.Get(c.Request.Header.Get("Accept-Language"), commonErrors.SlugPeriodClosedButReportFailed, nil),
+		})
 		return
 	}
 	c.Status(http.StatusNoContent)

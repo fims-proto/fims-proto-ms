@@ -21,6 +21,10 @@ type ClosePeriodCmd struct {
 	PeriodId uuid.UUID
 }
 
+type ClosePeriodResult struct {
+	ReportGenerationFailed bool
+}
+
 type ClosePeriodHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
@@ -43,36 +47,36 @@ func NewClosePeriodHandler(repo domain.Repository, numberingService service.Numb
 	}
 }
 
-func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) error {
+func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) (ClosePeriodResult, error) {
 	// check all journals are posted
 	if notPostedJournalExists, err := h.repo.ExistsJournalsNotPostedInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-		return fmt.Errorf("failed to check journals posted status: %w", err)
+		return ClosePeriodResult{}, fmt.Errorf("failed to check journals posted status: %w", err)
 	} else if notPostedJournalExists {
-		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseNotAllPosted)
+		return ClosePeriodResult{}, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseNotAllPosted)
 	}
 
 	// check all profit and loss ledgers have zero ending balance
 	if unclearedProfitAndLoss, err := h.repo.ExistsProfitAndLossLedgersHavingBalanceInPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-		return fmt.Errorf("failed to check profit and loss ledgers balances: %w", err)
+		return ClosePeriodResult{}, fmt.Errorf("failed to check profit and loss ledgers balances: %w", err)
 	} else if unclearedProfitAndLoss {
-		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseUnclearedPnL)
+		return ClosePeriodResult{}, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseUnclearedPnL)
 	}
 
 	// check trial balance
 	if err := trialBalance(ctx, h.repo, cmd.SobId, cmd.PeriodId); err != nil {
-		return fmt.Errorf("not balance: %w", err)
+		return ClosePeriodResult{}, fmt.Errorf("not balance: %w", err)
 	}
 
 	// check current-year profit account has zero balance if closing the last period of fiscal year
 	if p, err := h.repo.ReadPeriodById(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-		return fmt.Errorf("failed to read period: %w", err)
+		return ClosePeriodResult{}, fmt.Errorf("failed to read period: %w", err)
 	} else if p.PeriodNumber() == 12 {
 		if hasBalance, err := h.repo.ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
 			ctx, cmd.SobId, yearEndRetainedEarningsAccount, cmd.PeriodId,
 		); err != nil {
-			return fmt.Errorf("failed to check year-end account balance: %w", err)
+			return ClosePeriodResult{}, fmt.Errorf("failed to check year-end account balance: %w", err)
 		} else if hasBalance {
-			return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseUnclearedProfit)
+			return ClosePeriodResult{}, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseUnclearedProfit)
 		}
 	}
 
@@ -80,17 +84,17 @@ func (h ClosePeriodHandler) Handle(ctx context.Context, cmd ClosePeriodCmd) erro
 	if err := h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		return h.handleUpdate(txCtx, cmd)
 	}); err != nil {
-		return err
+		return ClosePeriodResult{}, err
 	}
 
 	// generate reports outside the GL transaction; failure surfaces as a warning
 	if h.reportService != nil {
 		if err := h.reportService.GenerateForPeriod(ctx, cmd.SobId, cmd.PeriodId); err != nil {
-			return commonErrors.NewInternalError(commonErrors.SlugPeriodClosedButReportFailed)
+			return ClosePeriodResult{ReportGenerationFailed: true}, nil
 		}
 	}
 
-	return nil
+	return ClosePeriodResult{}, nil
 }
 
 func (h ClosePeriodHandler) handleUpdate(ctx context.Context, cmd ClosePeriodCmd) error {

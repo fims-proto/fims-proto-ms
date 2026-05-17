@@ -1,20 +1,22 @@
 package http
 
 import (
+	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	app *app.Application
+	app       *app.Application
+	localizer localization.Localizer
 }
 
-func NewHandler(app *app.Application) Handler {
+func NewHandler(app *app.Application, localizer localization.Localizer) Handler {
 	if app == nil {
 		panic("nil application")
 	}
-	return Handler{app: app}
+	return Handler{app: app, localizer: localizer}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {

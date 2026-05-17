@@ -614,6 +614,13 @@ definitions:
       period:
         $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
     type: object
+  http.PeriodCloseWarningResponse:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
   http.PostJournalRequest:
     properties:
       poster:
@@ -2057,6 +2064,10 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: Period closed but report generation failed
+          schema:
+            $ref: '#/definitions/http.PeriodCloseWarningResponse'
         "204":
           description: No Content
         "500":
@@ -2143,6 +2154,10 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: Periods closed but report generation failed
+          schema:
+            $ref: '#/definitions/http.PeriodCloseWarningResponse'
         "204":
           description: No Content
         "400":
