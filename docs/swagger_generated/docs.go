@@ -1804,9 +1804,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{reportId}": {
+        "/sob/{sobId}/report/{class}/template": {
             "get": {
-                "description": "Show report by sob and id",
+                "description": "Returns the report template for a given SoB and class. Returns 404 if not found.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1816,6 +1816,7 @@ const docTemplate = `{
                 "tags": [
                     "reports"
                 ],
+                "summary": "Get report template by class",
                 "parameters": [
                     {
                         "type": "string",
@@ -1825,9 +1826,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "enum": [
+                            "balance_sheet",
+                            "income_statement"
+                        ],
                         "type": "string",
-                        "description": "Report ID",
-                        "name": "reportId",
+                        "description": "Report class",
+                        "name": "class",
                         "in": "path",
                         "required": true
                     }
@@ -1837,6 +1842,12 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
                     },
                     "404": {
@@ -1849,7 +1860,133 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/sob/{sobId}/report/{class}/{period}": {
+            "get": {
+                "description": "Returns the report instance for a given SoB, class, and period. Returns 404 if not yet generated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Get report instance by class and period",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "balance_sheet",
+                            "income_statement"
+                        ],
+                        "type": "string",
+                        "description": "Report class",
+                        "name": "class",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period (YYYY-MM)",
+                        "name": "period",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{class}/{period}/generate": {
+            "post": {
+                "description": "Generates a report instance for the given SoB, class, and period. If an instance already exists it is regenerated (amounts recalculated). Returns the resulting report.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Generate or regenerate a report instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "balance_sheet",
+                            "income_statement"
+                        ],
+                        "type": "string",
+                        "description": "Report class",
+                        "name": "class",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period (YYYY-MM)",
+                        "name": "period",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}": {
             "patch": {
                 "description": "Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction. Sections can contain nested sections. Items are sequenced by their position in the array.",
                 "consumes": [
@@ -1890,58 +2027,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/report/{reportId}/generate": {
-            "post": {
-                "description": "Generate report",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "reports"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Generate report request",
-                        "name": "GenerateReportRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.GenerateReportRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/http.ReportResponse"
-                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -2848,26 +2933,6 @@ const docTemplate = `{
                 },
                 "sumFactor": {
                     "type": "integer"
-                }
-            }
-        },
-        "http.GenerateReportRequest": {
-            "type": "object",
-            "properties": {
-                "amountTypes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "periodFiscalYear": {
-                    "type": "integer"
-                },
-                "periodNumber": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
                 }
             }
         },

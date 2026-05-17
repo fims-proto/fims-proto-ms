@@ -2,10 +2,12 @@ package http
 
 import (
 	"net/http"
+	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/report/app/command"
 	"github/fims-proto/fims-proto-ms/internal/report/app/query"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -36,21 +38,78 @@ func (h Handler) SearchReports(c *gin.Context) {
 	)
 }
 
-// ReadReportById godoc
+// ReadReportTemplateByClass godoc
 //
-//	@Text			Show report by sob and id
-//	@Description	Show report by sob and id
+//	@Summary		Get report template by class
+//	@Description	Returns the report template for a given SoB and class. Returns 404 if not found.
 //	@Tags			reports
 //	@Accept			application/json
 //	@Produce		application/json
-//	@Param			sobId		path		string	true	"Sob ID"
-//	@Param			reportId	path		string	true	"Report ID"
-//	@Success		200			{object}	ReportResponse
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			class	path		string	true	"Report class"	Enums(balance_sheet, income_statement)
+//	@Success		200		{object}	ReportResponse
+//	@Failure		400		{object}	Error
 //	@Failure		404
 //	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report/{reportId} [get]
-func (h Handler) ReadReportById(c *gin.Context) {
-	r, err := h.app.Queries.ReportById.Handle(c, uuid.MustParse(c.Param("reportId")))
+//	@Router			/sob/{sobId}/report/{class}/template [get]
+func (h Handler) ReadReportTemplateByClass(c *gin.Context) {
+	reportClass, err := class.FromString(c.Param("class"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	r, err := h.app.Queries.ReportTemplateByClass.Handle(
+		c,
+		uuid.MustParse(c.Param("sobId")),
+		reportClass,
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	if r.Id == uuid.Nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.JSON(http.StatusOK, reportDTOToVO(r))
+}
+
+// ReadReportByClassAndPeriod godoc
+//
+// @Summary		Get report instance by class and period
+// @Description	Returns the report instance for a given SoB, class, and period. Returns 404 if not yet generated.
+// @Tags			reports
+// @Accept			application/json
+// @Produce		application/json
+// @Param			sobId	path		string	true	"Sob ID"
+// @Param			class	path		string	true	"Report class"	Enums(balance_sheet, income_statement)
+// @Param			period	path		string	true	"Period (YYYY-MM)"
+// @Success		200		{object}	ReportResponse
+// @Failure		400		{object}	Error
+// @Failure		404
+// @Failure		500	{object}	Error
+// @Router			/sob/{sobId}/report/{class}/{period} [get]
+func (h Handler) ReadReportByClassAndPeriod(c *gin.Context) {
+	reportClass, err := class.FromString(c.Param("class"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	t, err := time.Parse("2006-01", c.Param("period"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "period must be YYYY-MM"})
+		return
+	}
+
+	r, err := h.app.Queries.ReportByClassAndPeriod.Handle(
+		c,
+		uuid.MustParse(c.Param("sobId")),
+		reportClass,
+		t.Year(),
+		int(t.Month()),
+	)
 	if err != nil {
 		_ = c.Error(err)
 		return
@@ -64,31 +123,35 @@ func (h Handler) ReadReportById(c *gin.Context) {
 
 // GenerateReport godoc
 //
-//	@Text			Generate report based on given template
-//	@Description	Generate report
+//	@Summary		Generate or regenerate a report instance
+//	@Description	Generates a report instance for the given SoB, class, and period. If an instance already exists it is regenerated (amounts recalculated). Returns the resulting report.
 //	@Tags			reports
-//	@Accept			application/json
 //	@Produce		application/json
-//	@Param			sobId					path		string					true	"Sob ID"
-//	@Param			GenerateReportRequest	body		GenerateReportRequest	true	"Generate report request"
-//	@Success		201						{object}	ReportResponse
-//	@Failure		400						{object}	Error
-//	@Failure		500						{object}	Error
-//	@Router			/sob/{sobId}/report/{reportId}/generate [post]
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			class	path		string	true	"Report class"	Enums(balance_sheet, income_statement)
+//	@Param			period	path		string	true	"Period (YYYY-MM)"
+//	@Success		200		{object}	ReportResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/report/{class}/{period}/generate [post]
 func (h Handler) GenerateReport(c *gin.Context) {
-	var req GenerateReportRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
+	reportClass, err := class.FromString(c.Param("class"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+
+	t, err := time.Parse("2006-01", c.Param("period"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "period must be YYYY-MM"})
+		return
+	}
+
 	cmd := command.GenerateReportCmd{
-		TemplateId:       uuid.MustParse(c.Param("reportId")),
-		ReportId:         uuid.New(),
-		SobId:            uuid.MustParse(c.Param("sobId")),
-		Title:            req.Title,
-		AmountTypes:      req.AmountTypes,
-		PeriodFiscalYear: req.PeriodFiscalYear,
-		PeriodNumber:     req.PeriodNumber,
+		SobId:        uuid.MustParse(c.Param("sobId")),
+		Class:        reportClass,
+		FiscalYear:   t.Year(),
+		PeriodNumber: int(t.Month()),
 	}
 	actualId, err := h.app.Commands.Generate.Handle(c, cmd)
 	if err != nil {

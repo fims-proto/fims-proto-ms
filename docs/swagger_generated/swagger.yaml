@@ -354,19 +354,6 @@ definitions:
       sumFactor:
         type: integer
     type: object
-  http.GenerateReportRequest:
-    properties:
-      amountTypes:
-        items:
-          type: string
-        type: array
-      periodFiscalYear:
-        type: integer
-      periodNumber:
-        type: integer
-      title:
-        type: string
-    type: object
   http.InitializeLedgersBalanceItemRequest:
     properties:
       openingBalance:
@@ -2203,20 +2190,29 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
-  /sob/{sobId}/report/{reportId}:
+  /sob/{sobId}/report/{class}/{period}:
     get:
       consumes:
       - application/json
-      description: Show report by sob and id
+      description: Returns the report instance for a given SoB, class, and period.
+        Returns 404 if not yet generated.
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Report ID
+      - description: Report class
+        enum:
+        - balance_sheet
+        - income_statement
         in: path
-        name: reportId
+        name: class
+        required: true
+        type: string
+      - description: Period (YYYY-MM)
+        in: path
+        name: period
         required: true
         type: string
       produces:
@@ -2226,14 +2222,102 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http.ReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
         "404":
           description: Not Found
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Get report instance by class and period
       tags:
       - reports
+  /sob/{sobId}/report/{class}/{period}/generate:
+    post:
+      description: Generates a report instance for the given SoB, class, and period.
+        If an instance already exists it is regenerated (amounts recalculated). Returns
+        the resulting report.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report class
+        enum:
+        - balance_sheet
+        - income_statement
+        in: path
+        name: class
+        required: true
+        type: string
+      - description: Period (YYYY-MM)
+        in: path
+        name: period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Generate or regenerate a report instance
+      tags:
+      - reports
+  /sob/{sobId}/report/{class}/template:
+    get:
+      consumes:
+      - application/json
+      description: Returns the report template for a given SoB and class. Returns
+        404 if not found.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report class
+        enum:
+        - balance_sheet
+        - income_statement
+        in: path
+        name: class
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Get report template by class
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}:
     patch:
       consumes:
       - application/json
@@ -2271,40 +2355,6 @@ paths:
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
       summary: Update entire report structure
-      tags:
-      - reports
-  /sob/{sobId}/report/{reportId}/generate:
-    post:
-      consumes:
-      - application/json
-      description: Generate report
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - description: Generate report request
-        in: body
-        name: GenerateReportRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.GenerateReportRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
       tags:
       - reports
   /sob/{sobId}/report/{reportId}/regenerate:

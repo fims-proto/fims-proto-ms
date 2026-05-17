@@ -7,6 +7,7 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/generator"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/validator"
 
@@ -14,13 +15,10 @@ import (
 )
 
 type GenerateReportCmd struct {
-	TemplateId       uuid.UUID
-	ReportId         uuid.UUID
-	SobId            uuid.UUID
-	Title            string
-	AmountTypes      []string
-	PeriodFiscalYear int
-	PeriodNumber     int
+	SobId        uuid.UUID
+	Class        class.Class
+	FiscalYear   int
+	PeriodNumber int
 }
 
 type GenerateHandler struct {
@@ -56,22 +54,25 @@ func (h GenerateHandler) Handle(ctx context.Context, cmd GenerateReportCmd) (uui
 }
 
 func (h GenerateHandler) handle(ctx context.Context, cmd GenerateReportCmd) (uuid.UUID, error) {
-	reportTemplate, err := h.repo.ReadReportById(ctx, cmd.TemplateId)
+	reportTemplate, err := h.repo.ReadTemplateBySobIdAndClass(ctx, cmd.SobId, cmd.Class)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("failed to read report: %w", err)
+		return uuid.Nil, fmt.Errorf("failed to read report template: %w", err)
+	}
+	if reportTemplate == nil {
+		return uuid.Nil, fmt.Errorf("no template found for class %s", cmd.Class)
 	}
 
 	periodId, err := h.generalLedgerService.ReadPeriodIdByFiscalYearAndNumber(
 		ctx,
 		cmd.SobId,
-		cmd.PeriodFiscalYear,
+		cmd.FiscalYear,
 		cmd.PeriodNumber,
 	)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to read period: %w", err)
 	}
 
-	existing, err := h.repo.ReadInstanceBySobClassAndPeriod(ctx, cmd.SobId, reportTemplate.Class(), periodId)
+	existing, err := h.repo.ReadInstanceBySobClassAndPeriod(ctx, cmd.SobId, cmd.Class, periodId)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to check existing report instance: %w", err)
 	}
@@ -90,7 +91,8 @@ func (h GenerateHandler) handle(ctx context.Context, cmd GenerateReportCmd) (uui
 
 	v := validator.NewValidatorFactory(reportTemplate.Class())
 	reportGenerator := generator.NewGenerator(reportTemplate, h.generalLedgerService, v)
-	newReport, err := reportGenerator.Generate(ctx, cmd.ReportId, periodId, cmd.Title, cmd.AmountTypes)
+	newId := uuid.New()
+	newReport, err := reportGenerator.Generate(ctx, newId, periodId, "", nil)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("failed to generate report: %w", err)
 	}
@@ -99,5 +101,5 @@ func (h GenerateHandler) handle(ctx context.Context, cmd GenerateReportCmd) (uui
 		return uuid.Nil, fmt.Errorf("failed to save report: %w", err)
 	}
 
-	return cmd.ReportId, nil
+	return newId, nil
 }

@@ -61,4 +61,4 @@ Per-SoB structural configuration for a mandatory report type. Holds sections, it
 
 ### Report Instance (报表实例)
 
-A generated financial report for a specific accounting period. Exactly one instance exists per (SoB, class, period) — enforced by a DB partial unique index. Generation is idempotent: calling generate for a period that already has an instance regenerates it (recalculates amounts from current ledgers) rather than creating a duplicate. Automatically generated for all classes when a period is closed via `ClosePeriodHandler`.
+A generated financial report for a specific accounting period. Exactly one instance exists per (SoB, class, period) — enforced by a DB partial unique index. Generation is idempotent: calling generate for a period that already has an instance regenerates it (recalculates amounts from current ledgers) rather than creating a duplicate. Automatically generated for all classes when a period is closed via `ClosePeriodHandler`. Accessible by natural key via `GET /sob/{sobId}/report/{class}/{period}` (YYYY-MM format); returns 404 if no instance has been generated for that period yet.

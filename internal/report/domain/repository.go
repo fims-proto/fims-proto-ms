@@ -21,6 +21,7 @@ type Repository interface {
 	) error
 	ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error)
 	ReadTemplatesBySobId(ctx context.Context, sobId uuid.UUID) ([]*report.Report, error)
+	ReadTemplateBySobIdAndClass(ctx context.Context, sobId uuid.UUID, reportClass class.Class) (*report.Report, error)
 	ReadInstanceBySobClassAndPeriod(ctx context.Context, sobId uuid.UUID, reportClass class.Class, periodId uuid.UUID) (*report.Report, error)
 
 	UpdateItem(

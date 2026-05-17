@@ -11,13 +11,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type GenerateReportRequest struct {
-	Title            string   `json:"title"`
-	AmountTypes      []string `json:"amountTypes"`
-	PeriodFiscalYear int      `json:"periodFiscalYear"`
-	PeriodNumber     int      `json:"periodNumber"`
-}
-
 // UpdateReportRequest represents the comprehensive update request for a report
 type UpdateReportRequest struct {
 	Title       *string                `json:"title,omitempty"`       // Optional: update report title

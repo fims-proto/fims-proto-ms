@@ -9,8 +9,10 @@ import (
 )
 
 type Queries struct {
-	PagingReports query.PagingReportsHandler
-	ReportById    query.ReportByIdHandler
+	PagingReports          query.PagingReportsHandler
+	ReportById             query.ReportByIdHandler
+	ReportByClassAndPeriod query.ReportByClassAndPeriodHandler
+	ReportTemplateByClass  query.ReportTemplateByClassHandler
 }
 
 type Commands struct {
@@ -41,8 +43,10 @@ func (a *Application) Inject(
 	sobService service.SobService,
 ) {
 	a.Queries = Queries{
-		PagingReports: query.NewPagingReportsHandler(readModel),
-		ReportById:    query.NewReportByIdHandler(readModel),
+		PagingReports:          query.NewPagingReportsHandler(readModel),
+		ReportById:             query.NewReportByIdHandler(readModel),
+		ReportByClassAndPeriod: query.NewReportByClassAndPeriodHandler(readModel),
+		ReportTemplateByClass:  query.NewReportTemplateByClassHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize: command.NewInitializeHandler(repo, generalLedgerService),

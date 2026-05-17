@@ -150,6 +150,23 @@ func (r ReportPostgresRepository) ReadTemplatesBySobId(ctx context.Context, sobI
 	})
 }
 
+func (r ReportPostgresRepository) ReadTemplateBySobIdAndClass(ctx context.Context, sobId uuid.UUID, reportClass class.Class) (*report.Report, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po reportPO
+	err := db.Preload("Sections.Items.Formulas.Account").
+		Where("sob_id = ? AND template = true AND class = ?", sobId, reportClass.String()).
+		First(&po).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return reportPOToBO(&po)
+}
+
 func (r ReportPostgresRepository) ReadInstanceBySobClassAndPeriod(
 	ctx context.Context,
 	sobId uuid.UUID,
