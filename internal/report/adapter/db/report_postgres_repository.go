@@ -178,7 +178,7 @@ func (r ReportPostgresRepository) ReadInstanceBySobClassAndPeriod(
 	var po reportPO
 	err := db.Preload("Sections.Items.Formulas.Account").
 		Joins("Period").
-		Where("sob_id = ? AND class = ? AND period_id = ? AND template = false", sobId, reportClass.String(), periodId).
+		Where("reports.sob_id = ? AND reports.class = ? AND reports.period_id = ? AND reports.template = false", sobId, reportClass.String(), periodId).
 		First(&po).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
