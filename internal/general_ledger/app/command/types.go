@@ -11,4 +11,5 @@ type JournalLineCmd struct {
 	RawAccountNumber   string
 	Amount             decimal.Decimal
 	DimensionOptionIds []uuid.UUID
+	CashFlowItemId     *uuid.UUID
 }

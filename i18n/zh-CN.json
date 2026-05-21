@@ -180,6 +180,8 @@
     "journalLine-duplicateDimensionCategory": "凭证行中同一维度分类只能选择一个选项",
     "journalLine-disallowedDimensionCategory": "该科目不允许使用此维度分类",
     "journalLine-missingRequiredDimensionCategory": "科目要求提供维度分类，凭证行未提供",
+    "journalLine-missingCashFlowItem": "包含现金科目的凭证中，非现金科目的凭证行必须指定现金流量项目",
+    "journalLine-cashFlowItemNotFound": "指定的现金流量项目不存在",
     "journal-invalidJournalType": "分录类型无效",
     "journal-missingReferenceJournalId": "调整分录或冲销分录必须关联原始分录",
     "journal-unexpectedReferenceJournalId": "普通分录或结账分录不能关联原始分录",

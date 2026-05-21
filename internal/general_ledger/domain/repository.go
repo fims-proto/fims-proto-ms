@@ -3,6 +3,7 @@ package domain
 import (
 	"context"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/cash_flow_item"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -89,4 +90,8 @@ type Repository interface {
 	// and all journal_line_dimension_options rows.
 	// Callers must reverse ledgers before calling this method.
 	DeleteJournalById(ctx context.Context, journalId uuid.UUID) error
+
+	InitializeCashFlowItems(ctx context.Context, items []*cash_flow_item.CashFlowItem) error
+	ReadCashFlowItemsBySobId(ctx context.Context, sobId uuid.UUID) ([]*cash_flow_item.CashFlowItem, error)
+	ReadExistingCashFlowItemIds(ctx context.Context, sobId uuid.UUID, ids []uuid.UUID) ([]uuid.UUID, error)
 }

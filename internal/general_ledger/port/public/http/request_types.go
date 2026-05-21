@@ -16,6 +16,7 @@ type CreateAccountRequest struct {
 	Class                    string      `json:"class,omitempty"`
 	Group                    string      `json:"group,omitempty"`
 	DimensionCategoryIds     []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	IsCashEquivalent         bool        `json:"isCashEquivalent"`
 }
 
 type UpdateAccountRequest struct {
@@ -24,6 +25,7 @@ type UpdateAccountRequest struct {
 	BalanceDirection     string      `json:"balanceDirection,omitempty"`
 	Group                string      `json:"group"`
 	DimensionCategoryIds []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	IsCashEquivalent     *bool       `json:"isCashEquivalent,omitempty"`
 }
 
 type CreateJournalRequest struct {
@@ -41,6 +43,7 @@ type JournalLineRequest struct {
 	RawAccountNumber   string          `json:"rawAccountNumber"`
 	Text               string          `json:"text"`
 	Amount             decimal.Decimal `json:"amount"`
+	CashFlowItemId     *uuid.UUID      `json:"cashFlowItemId,omitempty"`
 	DimensionOptionIds []uuid.UUID     `json:"dimensionOptionIds,omitempty"`
 }
 
@@ -80,6 +83,7 @@ func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
 		Text:               r.Text,
 		RawAccountNumber:   r.RawAccountNumber,
 		Amount:             r.Amount,
+		CashFlowItemId:     r.CashFlowItemId,
 		DimensionOptionIds: r.DimensionOptionIds,
 	}
 }

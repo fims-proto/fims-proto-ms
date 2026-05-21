@@ -51,6 +51,19 @@ func uuidToUserID(id uuid.UUID) string {
 	}
 }
 
+type cashFlowItemPO struct {
+	Id        uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId     uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_CashFlowItems_SobId_Code"`
+	Code      string    `gorm:"uniqueIndex:UQ_CashFlowItems_SobId_Code"`
+	Name      string
+	Category  string
+	Direction string
+	Sequence  int
+
+	CreatedAt time.Time `gorm:"<-:create"`
+	UpdatedAt time.Time
+}
+
 type accountPO struct {
 	Id                uuid.UUID  `gorm:"type:uuid;primaryKey"`
 	SobId             uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Accounts_SobId_RawAccountNumber"`
@@ -62,6 +75,10 @@ type accountPO struct {
 	Class             int
 	Group             int
 	BalanceDirection  string
+	IsCashEquivalent  bool
+
+	DefaultCashFlowItemIdForDebit  *uuid.UUID `gorm:"type:uuid"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID `gorm:"type:uuid"`
 
 	DimensionCategories []accountDimensionCategoryPO `gorm:"foreignKey:AccountId"`
 
@@ -132,11 +149,12 @@ type journalPO struct {
 }
 
 type journalLinePO struct {
-	Id        uuid.UUID `gorm:"type:uuid;primaryKey"`
-	JournalId uuid.UUID `gorm:"type:uuid"`
-	AccountId uuid.UUID `gorm:"type:uuid"`
-	Text      string
-	Amount    decimal.Decimal `gorm:"type:numeric"`
+	Id             uuid.UUID `gorm:"type:uuid;primaryKey"`
+	JournalId      uuid.UUID `gorm:"type:uuid"`
+	AccountId      uuid.UUID `gorm:"type:uuid"`
+	Text           string
+	Amount         decimal.Decimal `gorm:"type:numeric"`
+	CashFlowItemId *uuid.UUID      `gorm:"type:uuid"`
 
 	Journal          journalPO                      `gorm:"foreignKey:JournalId"`
 	Account          accountPO                      `gorm:"foreignKey:AccountId"`
@@ -216,17 +234,20 @@ func accountBOToPO(bo *account.Account) accountPO {
 	}
 
 	return accountPO{
-		Id:                  bo.Id(),
-		SobId:               bo.SobId(),
-		SuperiorAccountId:   converter.UUIDToPtr(bo.SuperiorAccountId()),
-		Title:               bo.Title(),
-		RawAccountNumber:    bo.RawAccountNumber(),
-		Level:               bo.Level(),
-		IsLeaf:              bo.IsLeaf(),
-		Class:               int(bo.Class()),
-		Group:               int(bo.Group()),
-		BalanceDirection:    bo.BalanceDirection().String(),
-		DimensionCategories: dimCategories,
+		Id:                             bo.Id(),
+		SobId:                          bo.SobId(),
+		SuperiorAccountId:              converter.UUIDToPtr(bo.SuperiorAccountId()),
+		Title:                          bo.Title(),
+		RawAccountNumber:               bo.RawAccountNumber(),
+		Level:                          bo.Level(),
+		IsLeaf:                         bo.IsLeaf(),
+		Class:                          int(bo.Class()),
+		Group:                          int(bo.Group()),
+		BalanceDirection:               bo.BalanceDirection().String(),
+		IsCashEquivalent:               bo.IsCashEquivalent(),
+		DefaultCashFlowItemIdForDebit:  bo.DefaultCashFlowItemIdForDebit(),
+		DefaultCashFlowItemIdForCredit: bo.DefaultCashFlowItemIdForCredit(),
+		DimensionCategories:            dimCategories,
 	}
 }
 
@@ -249,6 +270,9 @@ func accountPOToBO(po accountPO) (*account.Account, error) {
 		po.Group,
 		po.BalanceDirection,
 		dimCategoryIds,
+		po.IsCashEquivalent,
+		po.DefaultCashFlowItemIdForDebit,
+		po.DefaultCashFlowItemIdForCredit,
 	)
 }
 
@@ -271,6 +295,9 @@ func accountPOToBOWithSuperior(po accountPO, superior *account.Account) (*accoun
 		po.Group,
 		po.BalanceDirection,
 		dimCategoryIds,
+		po.IsCashEquivalent,
+		po.DefaultCashFlowItemIdForDebit,
+		po.DefaultCashFlowItemIdForCredit,
 	)
 }
 
@@ -281,19 +308,22 @@ func accountPOToDTO(po accountPO) query.Account {
 	}
 
 	return query.Account{
-		SobId:                po.SobId,
-		Id:                   po.Id,
-		SuperiorAccountId:    po.SuperiorAccountId,
-		Title:                po.Title,
-		RawAccountNumber:     po.RawAccountNumber,
-		Level:                po.Level,
-		IsLeaf:               po.IsLeaf,
-		Class:                po.Class,
-		Group:                po.Group,
-		BalanceDirection:     po.BalanceDirection,
-		DimensionCategoryIds: dimCategoryIds,
-		CreatedAt:            po.CreatedAt,
-		UpdatedAt:            po.UpdatedAt,
+		SobId:                          po.SobId,
+		Id:                             po.Id,
+		SuperiorAccountId:              po.SuperiorAccountId,
+		Title:                          po.Title,
+		RawAccountNumber:               po.RawAccountNumber,
+		Level:                          po.Level,
+		IsLeaf:                         po.IsLeaf,
+		Class:                          po.Class,
+		Group:                          po.Group,
+		BalanceDirection:               po.BalanceDirection,
+		IsCashEquivalent:               po.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  po.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: po.DefaultCashFlowItemIdForCredit,
+		DimensionCategoryIds:           dimCategoryIds,
+		CreatedAt:                      po.CreatedAt,
+		UpdatedAt:                      po.UpdatedAt,
 	}
 }
 
@@ -522,6 +552,7 @@ func journalLineBOToPO(bo journal.JournalLine, journalId uuid.UUID) journalLineP
 		AccountId:        bo.AccountId(),
 		Text:             bo.Text(),
 		Amount:           bo.Amount(),
+		CashFlowItemId:   bo.CashFlowItemId(),
 		DimensionOptions: dimOptions,
 	}
 }
@@ -543,6 +574,7 @@ func journalLinePOToBO(po journalLinePO) (*journal.JournalLine, error) {
 		po.Text,
 		po.Amount,
 		dimOptionIds,
+		po.CashFlowItemId,
 	)
 }
 
@@ -557,8 +589,21 @@ func journalLinePOToDTO(po journalLinePO) query.JournalLine {
 		Account:            accountPOToDTO(po.Account),
 		Text:               po.Text,
 		Amount:             po.Amount,
+		CashFlowItemId:     po.CashFlowItemId,
 		DimensionOptionIds: dimOptionIds,
 		CreatedAt:          po.CreatedAt,
 		UpdatedAt:          po.UpdatedAt,
+	}
+}
+
+func cashFlowItemPOToDTO(po cashFlowItemPO) query.CashFlowItem {
+	return query.CashFlowItem{
+		Id:        po.Id,
+		SobId:     po.SobId,
+		Code:      po.Code,
+		Name:      po.Name,
+		Category:  po.Category,
+		Direction: po.Direction,
+		Sequence:  po.Sequence,
 	}
 }

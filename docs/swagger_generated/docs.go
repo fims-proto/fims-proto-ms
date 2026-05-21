@@ -265,6 +265,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/cash-flow-items": {
+            "get": {
+                "description": "List all cash flow items for a Set of Books",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "cash-flow-items"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.CashFlowItemResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/dimension/categories": {
             "get": {
                 "tags": [
@@ -2623,6 +2663,12 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
                 "dimensionCategories": {
                     "type": "array",
                     "items": {
@@ -2634,6 +2680,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
                 },
                 "isLeaf": {
                     "type": "boolean"
@@ -2705,11 +2754,20 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
                 "group": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
                 },
                 "isLeaf": {
                     "type": "boolean"
@@ -2750,6 +2808,32 @@ const docTemplate = `{
                 },
                 "unpostedJournals": {
                     "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
+                }
+            }
+        },
+        "http.CashFlowItemResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "direction": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "sequence": {
+                    "type": "integer"
+                },
+                "sobId": {
+                    "type": "string"
                 }
             }
         },
@@ -2809,6 +2893,9 @@ const docTemplate = `{
                 },
                 "group": {
                     "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
                 },
                 "levelNumber": {
                     "type": "integer"
@@ -3104,6 +3191,9 @@ const docTemplate = `{
                 "amount": {
                     "type": "number"
                 },
+                "cashFlowItemId": {
+                    "type": "string"
+                },
                 "dimensionOptionIds": {
                     "type": "array",
                     "items": {
@@ -3129,6 +3219,9 @@ const docTemplate = `{
                 },
                 "amount": {
                     "type": "number"
+                },
+                "cashFlowItemId": {
+                    "type": "string"
                 },
                 "createdAt": {
                     "type": "string"
@@ -3616,6 +3709,9 @@ const docTemplate = `{
                 },
                 "group": {
                     "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
                 },
                 "levelNumber": {
                     "type": "integer"

@@ -27,6 +27,7 @@ type CreateAccountCmd struct {
 	Class                    int
 	Group                    int
 	DimensionCategoryIds     []uuid.UUID
+	IsCashEquivalent         bool
 }
 
 type CreateAccountHandler struct {
@@ -108,6 +109,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		cmd.Group,
 		cmd.BalanceDirection,
 		cmd.DimensionCategoryIds,
+		cmd.IsCashEquivalent,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create new account: %w", err)

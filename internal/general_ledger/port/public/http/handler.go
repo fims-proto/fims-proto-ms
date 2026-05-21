@@ -27,6 +27,8 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)
 	r.DELETE("/sob/:sobId/account/:accountId", h.DeleteAccount)
 
+	r.GET("/sob/:sobId/cash-flow-items", h.ReadCashFlowItems)
+
 	r.GET("/sob/:sobId/first-period/ledgers", h.ReadFirstPeriodLedgers)
 	r.POST("/sob/:sobId/ledgers/initialize", h.InitializeLedgers)
 	r.GET("/sob/:sobId/ledgers", h.ReadLedgersByPeriodRange)

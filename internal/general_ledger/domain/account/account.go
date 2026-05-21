@@ -12,18 +12,21 @@ import (
 )
 
 type Account struct {
-	id                   uuid.UUID
-	sobId                uuid.UUID
-	superiorAccountId    uuid.UUID
-	superiorAccount      *Account
-	title                string
-	rawAccountNumber     string
-	level                int
-	isLeaf               bool
-	class                class.Class
-	group                class.Group
-	balanceDirection     balance_direction.BalanceDirection
-	dimensionCategoryIds []uuid.UUID
+	id                             uuid.UUID
+	sobId                          uuid.UUID
+	superiorAccountId              uuid.UUID
+	superiorAccount                *Account
+	title                          string
+	rawAccountNumber               string
+	level                          int
+	isLeaf                         bool
+	class                          class.Class
+	group                          class.Group
+	balanceDirection               balance_direction.BalanceDirection
+	dimensionCategoryIds           []uuid.UUID
+	isCashEquivalent               bool
+	defaultCashFlowItemIdForDebit  *uuid.UUID
+	defaultCashFlowItemIdForCredit *uuid.UUID
 }
 
 func New(
@@ -39,6 +42,7 @@ func New(
 	groupId int,
 	balanceDirection string,
 	dimensionCategoryIds []uuid.UUID,
+	isCashEquivalent bool,
 ) (*Account, error) {
 	rawAccountNumber, err := AppendRawAccountNumber(superiorRawNumber, levelNumber)
 	if err != nil {
@@ -58,6 +62,9 @@ func New(
 		groupId,
 		balanceDirection,
 		dimensionCategoryIds,
+		isCashEquivalent,
+		nil,
+		nil,
 	)
 }
 
@@ -76,6 +83,9 @@ func NewByAllFields(
 	groupId int,
 	balanceDirection string,
 	dimensionCategoryIds []uuid.UUID,
+	isCashEquivalent bool,
+	defaultCashFlowItemIdForDebit *uuid.UUID,
+	defaultCashFlowItemIdForCredit *uuid.UUID,
 ) (*Account, error) {
 	if id == uuid.Nil {
 		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilId)
@@ -124,18 +134,21 @@ func NewByAllFields(
 	}
 
 	return &Account{
-		id:                   id,
-		sobId:                sobId,
-		superiorAccountId:    superiorAccountId,
-		superiorAccount:      superiorAccount,
-		title:                title,
-		rawAccountNumber:     rawAccountNumber,
-		level:                level,
-		isLeaf:               isLeaf,
-		class:                c,
-		group:                g,
-		balanceDirection:     bd,
-		dimensionCategoryIds: dimensionCategoryIds,
+		id:                             id,
+		sobId:                          sobId,
+		superiorAccountId:              superiorAccountId,
+		superiorAccount:                superiorAccount,
+		title:                          title,
+		rawAccountNumber:               rawAccountNumber,
+		level:                          level,
+		isLeaf:                         isLeaf,
+		class:                          c,
+		group:                          g,
+		balanceDirection:               bd,
+		dimensionCategoryIds:           dimensionCategoryIds,
+		isCashEquivalent:               isCashEquivalent,
+		defaultCashFlowItemIdForDebit:  defaultCashFlowItemIdForDebit,
+		defaultCashFlowItemIdForCredit: defaultCashFlowItemIdForCredit,
 	}, nil
 }
 
@@ -185,4 +198,16 @@ func (a *Account) BalanceDirection() balance_direction.BalanceDirection {
 
 func (a *Account) DimensionCategoryIds() []uuid.UUID {
 	return a.dimensionCategoryIds
+}
+
+func (a *Account) IsCashEquivalent() bool {
+	return a.isCashEquivalent
+}
+
+func (a *Account) DefaultCashFlowItemIdForDebit() *uuid.UUID {
+	return a.defaultCashFlowItemIdForDebit
+}
+
+func (a *Account) DefaultCashFlowItemIdForCredit() *uuid.UUID {
+	return a.defaultCashFlowItemIdForCredit
 }

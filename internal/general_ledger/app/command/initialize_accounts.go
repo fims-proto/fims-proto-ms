@@ -25,6 +25,7 @@ type accountEntry struct {
 	class            int
 	group            int
 	balanceDirection string
+	isCashEquivalent bool
 }
 
 func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repository) error {
@@ -53,6 +54,7 @@ func readFromCSV() ([]accountEntry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %w", err)
 	}
+	defer func() { _ = csvFile.Close() }()
 
 	csvReader := csv.NewReader(csvFile)
 
@@ -87,6 +89,7 @@ func readFromCSV() ([]accountEntry, error) {
 		if balanceDirection == "" {
 			balanceDirection = balance_direction.NotDefined.String()
 		}
+		isCashEquivalent := line[7] == "true" || line[7] == "1"
 		entries = append(entries, accountEntry{
 			number:           line[2],
 			level:            level,
@@ -95,6 +98,7 @@ func readFromCSV() ([]accountEntry, error) {
 			class:            classId,
 			group:            groupId,
 			balanceDirection: balanceDirection,
+			isCashEquivalent: isCashEquivalent,
 		})
 	}
 
@@ -172,6 +176,7 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry) ([]*account
 					entry.group,
 					entry.balanceDirection,
 					nil,
+					entry.isCashEquivalent,
 				)
 				if err != nil {
 					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)

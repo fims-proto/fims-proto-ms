@@ -633,3 +633,19 @@ func (r GeneralLedgerPostgresReadRepository) LedgerByRawAccountNumberInPeriod(
 
 	return new(ledgerPOToDTO(pos[0])), nil
 }
+
+func (r GeneralLedgerPostgresReadRepository) CashFlowItemsBySobId(ctx context.Context, sobId uuid.UUID) ([]query.CashFlowItem, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []cashFlowItemPO
+	if err := db.Where("sob_id = ?", sobId).Order("sequence asc").Find(&pos).Error; err != nil {
+		return nil, err
+	}
+
+	items := make([]query.CashFlowItem, len(pos))
+	for i, po := range pos {
+		items[i] = cashFlowItemPOToDTO(po)
+	}
+
+	return items, nil
+}

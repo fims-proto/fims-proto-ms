@@ -44,6 +44,47 @@ func prepareJournalLines(
 		func(a *account.Account) *account.Account { return a },
 	)
 
+	// determine cash flow classification requirements
+	hasCashEquivalentLine := false
+	hasNonCashEquivalentLine := false
+	for i := range commands {
+		a := accountsMap[rawAccountNumbers[i]]
+		if a.IsCashEquivalent() {
+			hasCashEquivalentLine = true
+		} else {
+			hasNonCashEquivalentLine = true
+		}
+	}
+
+	// validate cash flow item IDs when mixed entry (cash + non-cash lines)
+	if hasCashEquivalentLine && hasNonCashEquivalentLine {
+		var cfItemIds []uuid.UUID
+		for i, item := range commands {
+			a := accountsMap[rawAccountNumbers[i]]
+			if !a.IsCashEquivalent() {
+				if item.CashFlowItemId == nil {
+					return nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineMissingCashFlowItem)
+				}
+				cfItemIds = append(cfItemIds, *item.CashFlowItemId)
+			}
+		}
+
+		// batch-validate all provided CF item IDs exist in this SoB
+		existing, err := repo.ReadExistingCashFlowItemIds(ctx, sobId, cfItemIds)
+		if err != nil {
+			return nil, fmt.Errorf("failed to validate cash flow item ids: %w", err)
+		}
+		existingSet := utils.SliceToMap(existing,
+			func(id uuid.UUID) uuid.UUID { return id },
+			func(id uuid.UUID) struct{} { return struct{}{} },
+		)
+		for _, id := range cfItemIds {
+			if _, ok := existingSet[id]; !ok {
+				return nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineCashFlowItemNotFound, id)
+			}
+		}
+	}
+
 	// prepare journal lines
 	var journalLines []*journal.JournalLine
 	for i, item := range commands {
@@ -59,12 +100,19 @@ func prepareJournalLines(
 			return nil, err
 		}
 
+		// Only attach CF item ID when this is a mixed entry (cash + non-cash)
+		var cashFlowItemId *uuid.UUID
+		if hasCashEquivalentLine && hasNonCashEquivalentLine && !a.IsCashEquivalent() {
+			cashFlowItemId = item.CashFlowItemId
+		}
+
 		journalLine, err := journal.NewJournalLine(
 			itemId,
 			a,
 			item.Text,
 			item.Amount,
 			item.DimensionOptionIds,
+			cashFlowItemId,
 		)
 		if err != nil {
 			return nil, err

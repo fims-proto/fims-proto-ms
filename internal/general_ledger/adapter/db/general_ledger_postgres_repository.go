@@ -13,6 +13,7 @@ import (
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/cash_flow_item"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
@@ -40,6 +41,7 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 	db := r.dataSource.GetConnection(ctx)
 
 	return db.AutoMigrate(
+		&cashFlowItemPO{},
 		&accountPO{},
 		&accountDimensionCategoryPO{},
 		&periodPO{},
@@ -790,4 +792,69 @@ func (r GeneralLedgerPostgresRepository) DeleteJournalById(
 	}
 
 	return nil
+}
+
+func (r GeneralLedgerPostgresRepository) InitializeCashFlowItems(ctx context.Context, items []*cash_flow_item.CashFlowItem) error {
+	if len(items) == 0 {
+		return errors.New("empty CashFlowItem list")
+	}
+
+	db := r.dataSource.GetConnection(ctx)
+
+	if err := db.Where("sob_id = ?", items[0].SobId()).Delete(&cashFlowItemPO{}).Error; err != nil {
+		return fmt.Errorf("failed to initialize cash flow items: %w", err)
+	}
+
+	pos := make([]cashFlowItemPO, len(items))
+	for i, item := range items {
+		pos[i] = cashFlowItemPO{
+			Id:        item.Id(),
+			SobId:     item.SobId(),
+			Code:      item.Code(),
+			Name:      item.Name(),
+			Category:  item.Category().String(),
+			Direction: item.Direction().String(),
+			Sequence:  item.Sequence(),
+		}
+	}
+
+	return db.CreateInBatches(&pos, 100).Error
+}
+
+func (r GeneralLedgerPostgresRepository) ReadCashFlowItemsBySobId(ctx context.Context, sobId uuid.UUID) ([]*cash_flow_item.CashFlowItem, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var pos []cashFlowItemPO
+	if err := db.Where("sob_id = ?", sobId).Order("sequence asc").Find(&pos).Error; err != nil {
+		return nil, err
+	}
+
+	items := make([]*cash_flow_item.CashFlowItem, 0, len(pos))
+	for _, po := range pos {
+		item, err := cash_flow_item.New(po.Id, po.SobId, po.Code, po.Name, po.Category, po.Direction, po.Sequence)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load cash flow item %s: %w", po.Code, err)
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
+func (r GeneralLedgerPostgresRepository) ReadExistingCashFlowItemIds(ctx context.Context, sobId uuid.UUID, ids []uuid.UUID) ([]uuid.UUID, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	db := r.dataSource.GetConnection(ctx)
+
+	var found []uuid.UUID
+	if err := db.Model(&cashFlowItemPO{}).
+		Select("id").
+		Where("sob_id = ? AND id IN ?", sobId, ids).
+		Find(&found).Error; err != nil {
+		return nil, err
+	}
+
+	return found, nil
 }

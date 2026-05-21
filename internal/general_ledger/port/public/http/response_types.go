@@ -46,36 +46,42 @@ type DimensionOptionResponse struct {
 // AccountSlimResponse is used by list endpoints (GET /accounts).
 // It only contains fields from the account table itself — no cross-table dimension data.
 type AccountSlimResponse struct {
-	Id                uuid.UUID  `json:"id,omitempty"`
-	SobId             uuid.UUID  `json:"sobId,omitempty"`
-	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
-	Title             string     `json:"title,omitempty"`
-	RawAccountNumber  string     `json:"rawAccountNumber,omitempty"`
-	Level             int        `json:"level"`
-	IsLeaf            bool       `json:"isLeaf"`
-	Class             string     `json:"class"`
-	Group             string     `json:"group"`
-	BalanceDirection  string     `json:"balanceDirection,omitempty"`
-	CreatedAt         time.Time  `json:"createdAt"`
-	UpdatedAt         time.Time  `json:"updatedAt"`
+	Id                             uuid.UUID  `json:"id,omitempty"`
+	SobId                          uuid.UUID  `json:"sobId,omitempty"`
+	SuperiorAccountId              *uuid.UUID `json:"superiorAccountId,omitempty"`
+	Title                          string     `json:"title,omitempty"`
+	RawAccountNumber               string     `json:"rawAccountNumber,omitempty"`
+	Level                          int        `json:"level"`
+	IsLeaf                         bool       `json:"isLeaf"`
+	Class                          string     `json:"class"`
+	Group                          string     `json:"group"`
+	BalanceDirection               string     `json:"balanceDirection,omitempty"`
+	IsCashEquivalent               bool       `json:"isCashEquivalent"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID `json:"defaultCashFlowItemIdForCredit,omitempty"`
+	CreatedAt                      time.Time  `json:"createdAt"`
+	UpdatedAt                      time.Time  `json:"updatedAt"`
 }
 
 // AccountDetailResponse is used by detail and create endpoints (GET /account/{id}, POST /accounts).
 // It includes full dimension category objects.
 type AccountDetailResponse struct {
-	Id                  uuid.UUID                   `json:"id,omitempty"`
-	SobId               uuid.UUID                   `json:"sobId,omitempty"`
-	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
-	Title               string                      `json:"title,omitempty"`
-	RawAccountNumber    string                      `json:"rawAccountNumber,omitempty"`
-	Level               int                         `json:"level"`
-	IsLeaf              bool                        `json:"isLeaf"`
-	Class               string                      `json:"class"`
-	Group               string                      `json:"group"`
-	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
-	DimensionCategories []DimensionCategoryResponse `json:"dimensionCategories"`
-	CreatedAt           time.Time                   `json:"createdAt"`
-	UpdatedAt           time.Time                   `json:"updatedAt"`
+	Id                             uuid.UUID                   `json:"id,omitempty"`
+	SobId                          uuid.UUID                   `json:"sobId,omitempty"`
+	SuperiorAccountId              *uuid.UUID                  `json:"superiorAccountId,omitempty"`
+	Title                          string                      `json:"title,omitempty"`
+	RawAccountNumber               string                      `json:"rawAccountNumber,omitempty"`
+	Level                          int                         `json:"level"`
+	IsLeaf                         bool                        `json:"isLeaf"`
+	Class                          string                      `json:"class"`
+	Group                          string                      `json:"group"`
+	BalanceDirection               string                      `json:"balanceDirection,omitempty"`
+	IsCashEquivalent               bool                        `json:"isCashEquivalent"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID                  `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID                  `json:"defaultCashFlowItemIdForCredit,omitempty"`
+	DimensionCategories            []DimensionCategoryResponse `json:"dimensionCategories"`
+	CreatedAt                      time.Time                   `json:"createdAt"`
+	UpdatedAt                      time.Time                   `json:"updatedAt"`
 }
 
 type PeriodResponse struct {
@@ -116,6 +122,7 @@ type JournalLineResponse struct {
 	Account          AccountDetailResponse     `json:"account"`
 	Text             string                    `json:"text,omitempty"`
 	Amount           decimal.Decimal           `json:"amount"`
+	CashFlowItemId   *uuid.UUID                `json:"cashFlowItemId,omitempty"`
 	DimensionOptions []DimensionOptionResponse `json:"dimensionOptions,omitempty"`
 	CreatedAt        time.Time                 `json:"createdAt"`
 	UpdatedAt        time.Time                 `json:"updatedAt"`
@@ -260,18 +267,21 @@ type ClosingJournalIdsResponse struct {
 
 func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {
 	return AccountSlimResponse{
-		Id:                dto.Id,
-		SobId:             dto.SobId,
-		SuperiorAccountId: dto.SuperiorAccountId,
-		Title:             dto.Title,
-		RawAccountNumber:  dto.RawAccountNumber,
-		Level:             dto.Level,
-		IsLeaf:            dto.IsLeaf,
-		Class:             strconv.Itoa(dto.Class),
-		Group:             strconv.Itoa(dto.Group),
-		BalanceDirection:  dto.BalanceDirection,
-		CreatedAt:         dto.CreatedAt,
-		UpdatedAt:         dto.UpdatedAt,
+		Id:                             dto.Id,
+		SobId:                          dto.SobId,
+		SuperiorAccountId:              dto.SuperiorAccountId,
+		Title:                          dto.Title,
+		RawAccountNumber:               dto.RawAccountNumber,
+		Level:                          dto.Level,
+		IsLeaf:                         dto.IsLeaf,
+		Class:                          strconv.Itoa(dto.Class),
+		Group:                          strconv.Itoa(dto.Group),
+		BalanceDirection:               dto.BalanceDirection,
+		IsCashEquivalent:               dto.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  dto.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: dto.DefaultCashFlowItemIdForCredit,
+		CreatedAt:                      dto.CreatedAt,
+		UpdatedAt:                      dto.UpdatedAt,
 	}
 }
 
@@ -282,19 +292,22 @@ func accountDTOToDetailVO(dto query.Account) AccountDetailResponse {
 	}
 
 	return AccountDetailResponse{
-		Id:                  dto.Id,
-		SobId:               dto.SobId,
-		SuperiorAccountId:   dto.SuperiorAccountId,
-		Title:               dto.Title,
-		RawAccountNumber:    dto.RawAccountNumber,
-		Level:               dto.Level,
-		IsLeaf:              dto.IsLeaf,
-		Class:               strconv.Itoa(dto.Class),
-		Group:               strconv.Itoa(dto.Group),
-		BalanceDirection:    dto.BalanceDirection,
-		DimensionCategories: categories,
-		CreatedAt:           dto.CreatedAt,
-		UpdatedAt:           dto.UpdatedAt,
+		Id:                             dto.Id,
+		SobId:                          dto.SobId,
+		SuperiorAccountId:              dto.SuperiorAccountId,
+		Title:                          dto.Title,
+		RawAccountNumber:               dto.RawAccountNumber,
+		Level:                          dto.Level,
+		IsLeaf:                         dto.IsLeaf,
+		Class:                          strconv.Itoa(dto.Class),
+		Group:                          strconv.Itoa(dto.Group),
+		BalanceDirection:               dto.BalanceDirection,
+		IsCashEquivalent:               dto.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  dto.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: dto.DefaultCashFlowItemIdForCredit,
+		DimensionCategories:            categories,
+		CreatedAt:                      dto.CreatedAt,
+		UpdatedAt:                      dto.UpdatedAt,
 	}
 }
 
@@ -339,6 +352,7 @@ func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
 		Account:          accountDTOToDetailVO(dto.Account),
 		Text:             dto.Text,
 		Amount:           dto.Amount,
+		CashFlowItemId:   dto.CashFlowItemId,
 		DimensionOptions: options,
 		CreatedAt:        dto.CreatedAt,
 		UpdatedAt:        dto.UpdatedAt,
@@ -504,5 +518,27 @@ func batchPreCloseCheckDTOToVO(dto query.BatchPreCloseCheckResult) BatchPreClose
 			PeriodAmount:  dto.TrialBalance.PeriodAmount,
 			EndingAmount:  dto.TrialBalance.EndingAmount,
 		},
+	}
+}
+
+type CashFlowItemResponse struct {
+	Id        uuid.UUID `json:"id"`
+	SobId     uuid.UUID `json:"sobId"`
+	Code      string    `json:"code"`
+	Name      string    `json:"name"`
+	Category  string    `json:"category"`
+	Direction string    `json:"direction"`
+	Sequence  int       `json:"sequence"`
+}
+
+func cashFlowItemDTOToVO(dto query.CashFlowItem) CashFlowItemResponse {
+	return CashFlowItemResponse{
+		Id:        dto.Id,
+		SobId:     dto.SobId,
+		Code:      dto.Code,
+		Name:      dto.Name,
+		Category:  dto.Category,
+		Direction: dto.Direction,
+		Sequence:  dto.Sequence,
 	}
 }

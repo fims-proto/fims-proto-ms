@@ -137,6 +137,10 @@ definitions:
         type: string
       createdAt:
         type: string
+      defaultCashFlowItemIdForCredit:
+        type: string
+      defaultCashFlowItemIdForDebit:
+        type: string
       dimensionCategories:
         items:
           $ref: '#/definitions/http.DimensionCategoryResponse'
@@ -145,6 +149,8 @@ definitions:
         type: string
       id:
         type: string
+      isCashEquivalent:
+        type: boolean
       isLeaf:
         type: boolean
       level:
@@ -191,10 +197,16 @@ definitions:
         type: string
       createdAt:
         type: string
+      defaultCashFlowItemIdForCredit:
+        type: string
+      defaultCashFlowItemIdForDebit:
+        type: string
       group:
         type: string
       id:
         type: string
+      isCashEquivalent:
+        type: boolean
       isLeaf:
         type: boolean
       level:
@@ -221,6 +233,23 @@ definitions:
         $ref: '#/definitions/http.PreCloseCheckTrialBalanceResponse'
       unpostedJournals:
         $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
+    type: object
+  http.CashFlowItemResponse:
+    properties:
+      category:
+        type: string
+      code:
+        type: string
+      direction:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      sequence:
+        type: integer
+      sobId:
+        type: string
     type: object
   http.CategoryResponse:
     properties:
@@ -259,6 +288,8 @@ definitions:
         type: array
       group:
         type: string
+      isCashEquivalent:
+        type: boolean
       levelNumber:
         type: integer
       superiorRawAccountNumber:
@@ -453,6 +484,8 @@ definitions:
     properties:
       amount:
         type: number
+      cashFlowItemId:
+        type: string
       dimensionOptionIds:
         items:
           type: string
@@ -470,6 +503,8 @@ definitions:
         $ref: '#/definitions/http.AccountDetailResponse'
       amount:
         type: number
+      cashFlowItemId:
+        type: string
       createdAt:
         type: string
       dimensionOptions:
@@ -789,6 +824,8 @@ definitions:
         type: array
       group:
         type: string
+      isCashEquivalent:
+        type: boolean
       levelNumber:
         type: integer
       title:
@@ -1155,6 +1192,32 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - accounts
+  /sob/{sobId}/cash-flow-items:
+    get:
+      consumes:
+      - application/json
+      description: List all cash flow items for a Set of Books
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/http.CashFlowItemResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - cash-flow-items
   /sob/{sobId}/dimension/categories:
     get:
       parameters:

@@ -29,4 +29,6 @@ type GeneralLedgerReadModel interface {
 
 	ProfitAndLossLedgersHavingBalanceInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]Ledger, error)
 	LedgerByRawAccountNumberInPeriod(ctx context.Context, sobId uuid.UUID, rawAccountNumber string, periodId uuid.UUID) (*Ledger, error)
+
+	CashFlowItemsBySobId(ctx context.Context, sobId uuid.UUID) ([]CashFlowItem, error)
 }

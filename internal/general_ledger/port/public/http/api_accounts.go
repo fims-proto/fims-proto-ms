@@ -124,6 +124,7 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		Group:                    group,
 		SuperiorRawAccountNumber: req.SuperiorRawAccountNumber,
 		DimensionCategoryIds:     req.DimensionCategoryIds,
+		IsCashEquivalent:         req.IsCashEquivalent,
 	}
 
 	if err = h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
@@ -170,6 +171,7 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 		BalanceDirection:     req.BalanceDirection,
 		Group:                group,
 		DimensionCategoryIds: req.DimensionCategoryIds,
+		IsCashEquivalent:     req.IsCashEquivalent,
 	}
 	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)

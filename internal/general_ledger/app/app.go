@@ -20,6 +20,7 @@ type Queries struct {
 	PeriodPreCloseCheck        query.PeriodPreCloseCheckHandler
 	BatchPeriodPreCloseCheck   query.BatchPeriodPreCloseCheckHandler
 	ClosingJournalIdsByPeriod  query.ClosingJournalIdsByPeriodHandler
+	CashFlowItems              query.CashFlowItemsHandler
 }
 
 type Commands struct {
@@ -79,6 +80,7 @@ func (a *Application) Inject(
 		PeriodPreCloseCheck:        query.NewPeriodPreCloseCheckHandler(readModel),
 		BatchPeriodPreCloseCheck:   query.NewBatchPeriodPreCloseCheckHandler(readModel),
 		ClosingJournalIdsByPeriod:  query.NewClosingJournalIdsByPeriodHandler(readModel),
+		CashFlowItems:              query.NewCashFlowItemsHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),

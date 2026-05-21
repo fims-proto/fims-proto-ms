@@ -15,6 +15,7 @@ type JournalLine struct {
 	text               string
 	amount             decimal.Decimal
 	dimensionOptionIds []uuid.UUID
+	cashFlowItemId     *uuid.UUID
 }
 
 func NewJournalLine(
@@ -23,6 +24,7 @@ func NewJournalLine(
 	text string,
 	amount decimal.Decimal,
 	dimensionOptionIds []uuid.UUID,
+	cashFlowItemId *uuid.UUID,
 ) (*JournalLine, error) {
 	if id == uuid.Nil {
 		return nil, errors.NewInternalError(errors.SlugJournalLineEmptyId)
@@ -51,6 +53,7 @@ func NewJournalLine(
 		text:               text,
 		amount:             amount,
 		dimensionOptionIds: dimensionOptionIds,
+		cashFlowItemId:     cashFlowItemId,
 	}, nil
 }
 
@@ -76,4 +79,8 @@ func (i JournalLine) Amount() decimal.Decimal {
 
 func (i JournalLine) DimensionOptionIds() []uuid.UUID {
 	return i.dimensionOptionIds
+}
+
+func (i JournalLine) CashFlowItemId() *uuid.UUID {
+	return i.cashFlowItemId
 }

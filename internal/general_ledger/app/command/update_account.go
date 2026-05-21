@@ -20,6 +20,7 @@ type UpdateAccountCmd struct {
 	BalanceDirection     string
 	Group                int
 	DimensionCategoryIds []uuid.UUID
+	IsCashEquivalent     *bool
 }
 
 type UpdateAccountHandler struct {
@@ -95,6 +96,10 @@ func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd, 
 		// Callers should only set this field when they intend to update dimension bindings.
 		if cmd.DimensionCategoryIds != nil {
 			a.UpdateDimensionCategories(cmd.DimensionCategoryIds)
+		}
+
+		if cmd.IsCashEquivalent != nil {
+			a.UpdateCashEquivalent(*cmd.IsCashEquivalent)
 		}
 
 		return a, nil

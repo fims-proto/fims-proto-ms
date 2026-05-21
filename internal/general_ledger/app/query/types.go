@@ -19,6 +19,16 @@ const (
 	CheckStatusUndetermined CheckStatus = "UNDETERMINED"
 )
 
+type CashFlowItem struct {
+	Id        uuid.UUID
+	SobId     uuid.UUID
+	Code      string
+	Name      string
+	Category  string
+	Direction string
+	Sequence  int
+}
+
 type DimensionCategory struct {
 	Id   uuid.UUID
 	Name string
@@ -32,20 +42,23 @@ type DimensionOption struct {
 }
 
 type Account struct {
-	Id                   uuid.UUID
-	SobId                uuid.UUID
-	SuperiorAccountId    *uuid.UUID
-	Title                string
-	RawAccountNumber     string
-	Level                int
-	IsLeaf               bool
-	Class                int
-	Group                int
-	BalanceDirection     string
-	DimensionCategoryIds []uuid.UUID         // internal: used by enricher, not exposed in HTTP response
-	DimensionCategories  []DimensionCategory // populated by enricher on detail queries only
-	CreatedAt            time.Time
-	UpdatedAt            time.Time
+	Id                             uuid.UUID
+	SobId                          uuid.UUID
+	SuperiorAccountId              *uuid.UUID
+	Title                          string
+	RawAccountNumber               string
+	Level                          int
+	IsLeaf                         bool
+	Class                          int
+	Group                          int
+	BalanceDirection               string
+	IsCashEquivalent               bool
+	DefaultCashFlowItemIdForDebit  *uuid.UUID
+	DefaultCashFlowItemIdForCredit *uuid.UUID
+	DimensionCategoryIds           []uuid.UUID         // internal: used by enricher, not exposed in HTTP response
+	DimensionCategories            []DimensionCategory // populated by enricher on detail queries only
+	CreatedAt                      time.Time
+	UpdatedAt                      time.Time
 }
 
 type Period struct {
@@ -79,6 +92,7 @@ type JournalLine struct {
 	Account            Account
 	Text               string
 	Amount             decimal.Decimal
+	CashFlowItemId     *uuid.UUID
 	DimensionOptionIds []uuid.UUID       // internal: used by enricher, not exposed in HTTP response
 	DimensionOptions   []DimensionOption // populated by enricher on detail queries only
 	CreatedAt          time.Time

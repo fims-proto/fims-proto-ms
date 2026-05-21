@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/cash_flow_item"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -364,6 +365,18 @@ func (m mockRepo) ReadJournalById(context.Context, uuid.UUID) (*journal.Journal,
 }
 
 func (m mockRepo) DeleteJournalById(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
+func (m mockRepo) InitializeCashFlowItems(context.Context, []*cash_flow_item.CashFlowItem) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadCashFlowItemsBySobId(context.Context, uuid.UUID) ([]*cash_flow_item.CashFlowItem, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadExistingCashFlowItemIds(context.Context, uuid.UUID, []uuid.UUID) ([]uuid.UUID, error) {
 	panic("implement me")
 }
 

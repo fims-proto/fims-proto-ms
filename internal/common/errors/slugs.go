@@ -170,6 +170,8 @@ const (
 	SlugJournalLineDuplicateDimCategory  = "journalLine-duplicateDimensionCategory"
 	SlugJournalLineDisallowedDimCategory = "journalLine-disallowedDimensionCategory"
 	SlugJournalLineMissingDimCategory    = "journalLine-missingRequiredDimensionCategory"
+	SlugJournalLineMissingCashFlowItem   = "journalLine-missingCashFlowItem"
+	SlugJournalLineCashFlowItemNotFound  = "journalLine-cashFlowItemNotFound"
 )
 
 // Dimension
