@@ -4,7 +4,7 @@
 
 ## Decision
 
-Enforce exactly one report instance per (SoB, report class, accounting period) via a partial DB unique index on `(sob_id, class, period_id) WHERE template = false`. The generate operation becomes an idempotent upsert: if an instance already exists it is regenerated; otherwise it is created from the template.
+Enforce exactly one report instance per (SoB, report class, accounting period) via a partial DB unique index on `(sob_id, class, period_id) WHERE template = false`. The generate operation is idempotent: if an instance already exists it is returned unchanged; otherwise it is created from the latest template. Existing instances use explicit operations for later changes: `recalculate` preserves structure and recomputes amounts, while `regenerate` rebuilds from the latest template.
 
 ## Context
 
@@ -25,6 +25,8 @@ The original model allowed unlimited instances per template per period. This cre
 
 ## Consequences
 
-- `POST /sob/{sobId}/report/{reportId}/generate` is now idempotent per period.
+- `POST /sob/{sobId}/report/generate` is idempotent per period.
+- `POST /sob/{sobId}/report/{reportId}/recalculate` recomputes amounts without changing structure.
+- `POST /sob/{sobId}/report/{reportId}/regenerate` rebuilds an instance from the latest template.
 - Period closing (`ClosePeriodHandler`, `ClosePeriodsHandler`) triggers `GenerateForPeriod` for all report classes after the GL transaction commits.
 - A partial unique index `(sob_id, class, period_id) WHERE template = false` is added via migration.

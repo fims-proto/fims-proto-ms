@@ -4,166 +4,166 @@ import (
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/report/app/command"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 
 	"github.com/google/uuid"
 )
 
-// UpdateReportRequest represents the comprehensive update request for a report
 type UpdateReportRequest struct {
-	Title       *string                `json:"title,omitempty"`       // Optional: update report title
-	AmountTypes []string               `json:"amountTypes,omitempty"` // Optional: update amount types
-	Sections    []UpdateSectionRequest `json:"sections"`              // Required: complete section structure
+	Title   *string               `json:"title,omitempty"`
+	Columns []UpdateColumnRequest `json:"columns,omitempty"`
+	Rows    []UpdateRowRequest    `json:"rows"`
 }
 
-type UpdateSectionRequest struct {
-	Id       string                    `json:"id"`                 // Section ID
-	Title    *string                   `json:"title,omitempty"`    // Optional: update section title
-	Items    []UpdateReportItemRequest `json:"items"`              // Complete item list for this section
-	Sections []UpdateSectionRequest    `json:"sections,omitempty"` // Optional: nested sections
+type UpdateColumnRequest struct {
+	Id        *string `json:"id,omitempty"`
+	Label     string  `json:"label"`
+	ValueType string  `json:"valueType"`
 }
 
-type UpdateReportItemRequest struct {
-	// Identity
-	Id *string `json:"id,omitempty"` // Existing item ID, or null/omit for new item
-
-	// Content (required for new items, optional for updates to existing items)
-	Text             *string                      `json:"text,omitempty"`
-	Level            *int                         `json:"level,omitempty"`
-	SumFactor        *int                         `json:"sumFactor,omitempty"`
-	DisplaySumFactor *bool                        `json:"displaySumFactor,omitempty"`
-	DataSource       *string                      `json:"dataSource,omitempty"`
-	Formulas         []UpdateReportFormulaRequest `json:"formulas,omitempty"`
-	IsBreakdownItem  *bool                        `json:"isBreakdownItem,omitempty"`
-	IsAbleToAddChild *bool                        `json:"isAbleToAddChild,omitempty"`
+type UpdateRowRequest struct {
+	Id          *string                 `json:"id,omitempty"`
+	RowCode     string                  `json:"rowCode"`
+	Text        string                  `json:"text"`
+	LineNo      *int                    `json:"lineNo,omitempty"`
+	ShowLineNo  bool                    `json:"showLineNo"`
+	SumFactor   int                     `json:"sumFactor"`
+	CanEdit     *bool                   `json:"canEdit,omitempty"`
+	CanMove     *bool                   `json:"canMove,omitempty"`
+	CanAddChild *bool                   `json:"canAddChild,omitempty"`
+	Expression  UpdateExpressionRequest `json:"expression"`
+	Rows        []UpdateRowRequest      `json:"rows,omitempty"`
 }
 
-type UpdateReportFormulaRequest struct {
-	Id               *string `json:"id,omitempty"`
-	SumFactor        int     `json:"sumFactor" binding:"required"`
-	RawAccountNumber string  `json:"rawAccountNumber" binding:"required"`
-	Rule             string  `json:"rule" binding:"required"`
+type UpdateExpressionRequest struct {
+	Kind           string                                `json:"kind"`
+	LedgerAccounts []UpdateLedgerAccountReferenceRequest `json:"ledgerAccounts,omitempty"`
+	CashFlowItems  []UpdateCashFlowItemReferenceRequest  `json:"cashFlowItems,omitempty"`
+	RowReferences  []UpdateRowReferenceRequest           `json:"rowReferences,omitempty"`
 }
 
-// mapToCommand converts UpdateReportRequest to UpdateReportCmd
+type UpdateLedgerAccountReferenceRequest struct {
+	RawAccountNumber string    `json:"rawAccountNumber"`
+	AccountId        uuid.UUID `json:"accountId,omitempty"`
+	SumFactor        int       `json:"sumFactor"`
+	Measure          string    `json:"measure"`
+}
+
+type UpdateCashFlowItemReferenceRequest struct {
+	Code      string    `json:"code"`
+	ItemId    uuid.UUID `json:"itemId,omitempty"`
+	SumFactor int       `json:"sumFactor"`
+}
+
+type UpdateRowReferenceRequest struct {
+	RowCode   string `json:"rowCode"`
+	SumFactor int    `json:"sumFactor"`
+}
+
 func (r UpdateReportRequest) mapToCommand(reportId uuid.UUID, sobId uuid.UUID) (command.UpdateReportCmd, error) {
-	// Convert amount types
-	var amountTypes []amount_type.AmountType
-	for _, at := range r.AmountTypes {
-		amountType, err := amount_type.FromString(at)
+	columns := make([]command.UpdateReportCmdColumn, 0, len(r.Columns))
+	for _, columnReq := range r.Columns {
+		columnId, err := parseOptionalUUID(columnReq.Id, "columnId")
 		if err != nil {
 			return command.UpdateReportCmd{}, err
 		}
-		amountTypes = append(amountTypes, amountType)
+		columns = append(columns, command.UpdateReportCmdColumn{
+			ColumnId:  columnId,
+			Label:     columnReq.Label,
+			ValueType: columnReq.ValueType,
+		})
 	}
 
-	// Convert sections recursively
-	sections, err := convertSections(r.Sections, sobId)
+	rows, err := convertRows(r.Rows)
 	if err != nil {
 		return command.UpdateReportCmd{}, err
 	}
 
 	return command.UpdateReportCmd{
-		ReportId:    reportId,
-		SobId:       sobId,
-		Title:       r.Title,
-		AmountTypes: amountTypes,
-		Sections:    sections,
+		ReportId: reportId,
+		SobId:    sobId,
+		Title:    r.Title,
+		Columns:  columns,
+		Rows:     rows,
 	}, nil
 }
 
-// convertSections recursively converts sections and their nested sections
-func convertSections(sectionsReq []UpdateSectionRequest, sobId uuid.UUID) ([]command.UpdateReportCmdSection, error) {
-	var sections []command.UpdateReportCmdSection
-	for _, sectionReq := range sectionsReq {
-		sectionId, err := uuid.Parse(sectionReq.Id)
+func convertRows(reqs []UpdateRowRequest) ([]command.UpdateReportCmdRow, error) {
+	rows := make([]command.UpdateReportCmdRow, 0, len(reqs))
+	for _, rowReq := range reqs {
+		rowId, err := parseOptionalUUID(rowReq.Id, "rowId")
 		if err != nil {
-			return nil, fmt.Errorf("invalid sectionId: %s", sectionReq.Id)
+			return nil, err
 		}
-
-		// Convert items
-		var items []command.UpdateReportCmdItem
-		for _, itemReq := range sectionReq.Items {
-			itemData, err := itemReq.toUpdateItemData()
-			if err != nil {
-				return nil, err
-			}
-			items = append(items, itemData)
+		childRows, err := convertRows(rowReq.Rows)
+		if err != nil {
+			return nil, err
 		}
-
-		// Recursively convert nested sections
-		var nestedSections []command.UpdateReportCmdSection
-		if len(sectionReq.Sections) > 0 {
-			nestedSections, err = convertSections(sectionReq.Sections, sobId)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		sections = append(sections, command.UpdateReportCmdSection{
-			SectionId: sectionId,
-			Title:     sectionReq.Title,
-			Items:     items,
-			Sections:  nestedSections,
+		rows = append(rows, command.UpdateReportCmdRow{
+			RowId:       rowId,
+			RowCode:     rowReq.RowCode,
+			Text:        rowReq.Text,
+			LineNo:      rowReq.LineNo,
+			ShowLineNo:  rowReq.ShowLineNo,
+			SumFactor:   rowReq.SumFactor,
+			CanEdit:     rowReq.CanEdit,
+			CanMove:     rowReq.CanMove,
+			CanAddChild: rowReq.CanAddChild,
+			Expression: command.UpdateReportCmdExpression{
+				Kind:           rowReq.Expression.Kind,
+				LedgerAccounts: convertLedgerAccountRefs(rowReq.Expression.LedgerAccounts),
+				CashFlowItems:  convertCashFlowItemRefs(rowReq.Expression.CashFlowItems),
+				RowReferences:  convertRowRefs(rowReq.Expression.RowReferences),
+			},
+			Rows: childRows,
 		})
 	}
-
-	return sections, nil
+	return rows, nil
 }
 
-func (r UpdateReportItemRequest) toUpdateItemData() (command.UpdateReportCmdItem, error) {
-	var itemId *uuid.UUID
-	if r.Id != nil {
-		parsed, err := uuid.Parse(*r.Id)
-		if err != nil {
-			return command.UpdateReportCmdItem{}, fmt.Errorf("invalid itemId: %s", *r.Id)
-		}
-		itemId = &parsed
-	}
-
-	// Convert formulas
-	var formulas []command.UpdateReportCmdFormula
-	for _, f := range r.Formulas {
-		var formulaId *uuid.UUID
-		if f.Id != nil {
-			parsed, err := uuid.Parse(*f.Id)
-			if err != nil {
-				return command.UpdateReportCmdItem{}, fmt.Errorf("invalid formulaId: %s", *f.Id)
-			}
-			formulaId = &parsed
-		}
-		rule, err := formula_rule.FromString(f.Rule)
-		if err != nil {
-			return command.UpdateReportCmdItem{}, err
-		}
-		formulas = append(formulas, command.UpdateReportCmdFormula{
-			FormulaId:        formulaId,
-			SumFactor:        f.SumFactor,
-			RawAccountNumber: f.RawAccountNumber,
-			Rule:             rule,
+func convertLedgerAccountRefs(reqs []UpdateLedgerAccountReferenceRequest) []report.LedgerAccountReference {
+	refs := make([]report.LedgerAccountReference, 0, len(reqs))
+	for _, req := range reqs {
+		refs = append(refs, report.LedgerAccountReference{
+			RawAccountNumber: req.RawAccountNumber,
+			AccountId:        req.AccountId,
+			SumFactor:        req.SumFactor,
+			Measure:          req.Measure,
 		})
 	}
+	return refs
+}
 
-	var dataSource *data_source.DataSource
-	if r.DataSource != nil {
-		ds, err := data_source.FromString(*r.DataSource)
-		if err != nil {
-			return command.UpdateReportCmdItem{}, err
-		}
-		dataSource = &ds
+func convertCashFlowItemRefs(reqs []UpdateCashFlowItemReferenceRequest) []report.CashFlowItemReference {
+	refs := make([]report.CashFlowItemReference, 0, len(reqs))
+	for _, req := range reqs {
+		refs = append(refs, report.CashFlowItemReference{
+			Code:      req.Code,
+			ItemId:    req.ItemId,
+			SumFactor: req.SumFactor,
+		})
 	}
+	return refs
+}
 
-	return command.UpdateReportCmdItem{
-		ItemId:           itemId,
-		Text:             r.Text,
-		Level:            r.Level,
-		SumFactor:        r.SumFactor,
-		DisplaySumFactor: r.DisplaySumFactor,
-		DataSource:       dataSource,
-		Formulas:         formulas,
-		IsBreakdownItem:  r.IsBreakdownItem,
-		IsAbleToAddChild: r.IsAbleToAddChild,
-	}, nil
+func convertRowRefs(reqs []UpdateRowReferenceRequest) []report.RowReference {
+	refs := make([]report.RowReference, 0, len(reqs))
+	for _, req := range reqs {
+		refs = append(refs, report.RowReference{
+			RowCode:   req.RowCode,
+			SumFactor: req.SumFactor,
+		})
+	}
+	return refs
+}
+
+func parseOptionalUUID(value *string, field string) (uuid.UUID, error) {
+	if value == nil || *value == "" {
+		return uuid.Nil, nil
+	}
+	parsed, err := uuid.Parse(*value)
+	if err != nil {
+		return uuid.Nil, fmt.Errorf("invalid %s: %s", field, *value)
+	}
+	return parsed, nil
 }

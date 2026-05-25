@@ -166,29 +166,6 @@ definitions:
       updatedAt:
         type: string
     type: object
-  http.AccountResponse:
-    properties:
-      balanceDirection:
-        type: string
-      class:
-        type: integer
-      group:
-        type: integer
-      id:
-        type: string
-      isLeaf:
-        type: boolean
-      level:
-        type: integer
-      rawAccountNumber:
-        type: string
-      sobId:
-        type: string
-      superiorAccountId:
-        type: string
-      title:
-        type: string
-    type: object
   http.AccountSlimResponse:
     properties:
       balanceDirection:
@@ -234,6 +211,15 @@ definitions:
       unpostedJournals:
         $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
     type: object
+  http.CashFlowItemReferenceResponse:
+    properties:
+      code:
+        type: string
+      itemId:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
   http.CashFlowItemResponse:
     properties:
       category:
@@ -274,6 +260,17 @@ definitions:
   http.ClosingJournalResponse:
     properties:
       journalId:
+        type: string
+    type: object
+  http.ColumnResponse:
+    properties:
+      id:
+        type: string
+      label:
+        type: string
+      sequence:
+        type: integer
+      valueType:
         type: string
     type: object
   http.CreateAccountRequest:
@@ -368,22 +365,24 @@ definitions:
       name:
         type: string
     type: object
-  http.FormulaResponse:
+  http.ExpressionResponse:
     properties:
-      account:
-        $ref: '#/definitions/http.AccountResponse'
-      amounts:
+      cashFlowItems:
         items:
-          type: number
+          $ref: '#/definitions/http.CashFlowItemReferenceResponse'
         type: array
       id:
         type: string
-      rule:
+      kind:
         type: string
-      sequence:
-        type: integer
-      sumFactor:
-        type: integer
+      ledgerAccounts:
+        items:
+          $ref: '#/definitions/http.LedgerAccountReferenceResponse'
+        type: array
+      rowReferences:
+        items:
+          $ref: '#/definitions/http.RowReferenceResponse'
+        type: array
     type: object
   http.InitializeLedgersBalanceItemRequest:
     properties:
@@ -400,35 +399,6 @@ definitions:
         type: array
     required:
     - ledgers
-    type: object
-  http.ItemResponse:
-    properties:
-      amounts:
-        items:
-          type: number
-        type: array
-      dataSource:
-        type: string
-      displaySumFactor:
-        type: boolean
-      formulas:
-        items:
-          $ref: '#/definitions/http.FormulaResponse'
-        type: array
-      id:
-        type: string
-      isAbleToAddChild:
-        type: boolean
-      isBreakdownItem:
-        type: boolean
-      isEditable:
-        type: boolean
-      level:
-        type: integer
-      sumFactor:
-        type: integer
-      text:
-        type: string
     type: object
   http.JournalDetailResponse:
     properties:
@@ -563,6 +533,17 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  http.LedgerAccountReferenceResponse:
+    properties:
+      accountId:
+        type: string
+      measure:
+        type: string
+      rawAccountNumber:
+        type: string
+      sumFactor:
+        type: integer
     type: object
   http.LedgerDimensionOptionResponse:
     properties:
@@ -742,21 +723,21 @@ definitions:
     type: object
   http.ReportResponse:
     properties:
-      amountTypes:
-        items:
-          type: string
-        type: array
       class:
         type: string
+      columns:
+        items:
+          $ref: '#/definitions/http.ColumnResponse'
+        type: array
       createdAt:
         type: string
       id:
         type: string
       period:
         $ref: '#/definitions/internal_report_port_public_http.PeriodResponse'
-      sections:
+      rows:
         items:
-          $ref: '#/definitions/http.SectionResponse'
+          $ref: '#/definitions/http.RowResponse'
         type: array
       sobId:
         type: string
@@ -772,23 +753,44 @@ definitions:
       reviewer:
         type: string
     type: object
-  http.SectionResponse:
+  http.RowReferenceResponse:
+    properties:
+      rowCode:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
+  http.RowResponse:
     properties:
       amounts:
         items:
           type: number
         type: array
+      canAddChild:
+        type: boolean
+      canEdit:
+        type: boolean
+      canMove:
+        type: boolean
+      expression:
+        $ref: '#/definitions/http.ExpressionResponse'
       id:
         type: string
-      items:
+      lineNo:
+        type: integer
+      rowCode:
+        type: string
+      rows:
         items:
-          $ref: '#/definitions/http.ItemResponse'
+          $ref: '#/definitions/http.RowResponse'
         type: array
-      sections:
-        items:
-          $ref: '#/definitions/http.SectionResponse'
-        type: array
-      title:
+      sequence:
+        type: integer
+      showLineNo:
+        type: boolean
+      sumFactor:
+        type: integer
+      text:
         type: string
     type: object
   http.SobResponse:
@@ -831,12 +833,47 @@ definitions:
       title:
         type: string
     type: object
+  http.UpdateCashFlowItemReferenceRequest:
+    properties:
+      code:
+        type: string
+      itemId:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
   http.UpdateCategoryRequest:
     properties:
       name:
         type: string
     required:
     - name
+    type: object
+  http.UpdateColumnRequest:
+    properties:
+      id:
+        type: string
+      label:
+        type: string
+      valueType:
+        type: string
+    type: object
+  http.UpdateExpressionRequest:
+    properties:
+      cashFlowItems:
+        items:
+          $ref: '#/definitions/http.UpdateCashFlowItemReferenceRequest'
+        type: array
+      kind:
+        type: string
+      ledgerAccounts:
+        items:
+          $ref: '#/definitions/http.UpdateLedgerAccountReferenceRequest'
+        type: array
+      rowReferences:
+        items:
+          $ref: '#/definitions/http.UpdateRowReferenceRequest'
+        type: array
     type: object
   http.UpdateJournalRequest:
     properties:
@@ -851,6 +888,17 @@ definitions:
       updater:
         type: string
     type: object
+  http.UpdateLedgerAccountReferenceRequest:
+    properties:
+      accountId:
+        type: string
+      measure:
+        type: string
+      rawAccountNumber:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
   http.UpdateOptionRequest:
     properties:
       name:
@@ -858,80 +906,51 @@ definitions:
     required:
     - name
     type: object
-  http.UpdateReportFormulaRequest:
+  http.UpdateReportRequest:
     properties:
-      id:
+      columns:
+        items:
+          $ref: '#/definitions/http.UpdateColumnRequest'
+        type: array
+      rows:
+        items:
+          $ref: '#/definitions/http.UpdateRowRequest'
+        type: array
+      title:
         type: string
-      rawAccountNumber:
-        type: string
-      rule:
+    type: object
+  http.UpdateRowReferenceRequest:
+    properties:
+      rowCode:
         type: string
       sumFactor:
         type: integer
-    required:
-    - rawAccountNumber
-    - rule
-    - sumFactor
     type: object
-  http.UpdateReportItemRequest:
+  http.UpdateRowRequest:
     properties:
-      dataSource:
-        type: string
-      displaySumFactor:
+      canAddChild:
         type: boolean
-      formulas:
-        items:
-          $ref: '#/definitions/http.UpdateReportFormulaRequest'
-        type: array
+      canEdit:
+        type: boolean
+      canMove:
+        type: boolean
+      expression:
+        $ref: '#/definitions/http.UpdateExpressionRequest'
       id:
-        description: Identity
         type: string
-      isAbleToAddChild:
-        type: boolean
-      isBreakdownItem:
-        type: boolean
-      level:
+      lineNo:
         type: integer
+      rowCode:
+        type: string
+      rows:
+        items:
+          $ref: '#/definitions/http.UpdateRowRequest'
+        type: array
+      showLineNo:
+        type: boolean
       sumFactor:
         type: integer
       text:
-        description: Content (required for new items, optional for updates to existing
-          items)
-        type: string
-    type: object
-  http.UpdateReportRequest:
-    properties:
-      amountTypes:
-        description: 'Optional: update amount types'
-        items:
-          type: string
-        type: array
-      sections:
-        description: 'Required: complete section structure'
-        items:
-          $ref: '#/definitions/http.UpdateSectionRequest'
-        type: array
-      title:
-        description: 'Optional: update report title'
-        type: string
-    type: object
-  http.UpdateSectionRequest:
-    properties:
-      id:
-        description: Section ID
-        type: string
-      items:
-        description: Complete item list for this section
-        items:
-          $ref: '#/definitions/http.UpdateReportItemRequest'
-        type: array
-      sections:
-        description: 'Optional: nested sections'
-        items:
-          $ref: '#/definitions/http.UpdateSectionRequest'
-        type: array
-      title:
-        description: 'Optional: update section title'
         type: string
     type: object
   http.UpdateSobRequest:
@@ -2270,10 +2289,7 @@ paths:
       - periods
   /sob/{sobId}/report:
     get:
-      consumes:
-      - application/json
       description: Returns the report instance for a given SoB, class, and period.
-        Returns 404 if not yet generated.
       parameters:
       - description: Sob ID
         in: path
@@ -2281,9 +2297,6 @@ paths:
         required: true
         type: string
       - description: Report class
-        enum:
-        - balance_sheet
-        - income_statement
         in: query
         name: class
         required: true
@@ -2300,10 +2313,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
         "404":
           description: Not Found
         "500":
@@ -2317,9 +2326,7 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates report metadata, sections, and items. Supports add, update,
-        delete, and reorder operations in a single atomic transaction. Sections can
-        contain nested sections. Items are sequenced by their position in the array.
+      description: Updates report columns, row tree, and expressions.
       parameters:
       - description: Sob ID
         in: path
@@ -2350,14 +2357,12 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
-      summary: Update entire report structure
+      summary: Update report structure
       tags:
       - reports
-  /sob/{sobId}/report/{reportId}/regenerate:
+  /sob/{sobId}/report/{reportId}/recalculate:
     post:
-      consumes:
-      - application/json
-      description: Regenerate report
+      description: Recalculates amounts while preserving the existing report structure.
       parameters:
       - description: Sob ID
         in: path
@@ -2374,21 +2379,44 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Recalculate report amounts
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}/regenerate:
+    post:
+      description: Rebuilds an existing report instance from the latest template and
+        recalculates amounts.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report ID
+        in: path
+        name: reportId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Regenerate report instance
       tags:
       - reports
   /sob/{sobId}/report/generate:
     post:
-      description: Generates a report instance for the given SoB, class, and period.
-        If an instance already exists it is regenerated (amounts recalculated). Returns
-        the resulting report.
+      description: Creates a report instance from the latest template. If one already
+        exists, returns it unchanged.
       parameters:
       - description: Sob ID
         in: path
@@ -2396,9 +2424,6 @@ paths:
         required: true
         type: string
       - description: Report class
-        enum:
-        - balance_sheet
-        - income_statement
         in: query
         name: class
         required: true
@@ -2415,23 +2440,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
-      summary: Generate or regenerate a report instance
+      summary: Generate missing report instance
       tags:
       - reports
   /sob/{sobId}/report/template:
     get:
-      consumes:
-      - application/json
-      description: Returns the report template for a given SoB and class. Returns
-        404 if not found.
+      description: Returns the report template for a given SoB and class.
       parameters:
       - description: Sob ID
         in: path
@@ -2439,9 +2457,6 @@ paths:
         required: true
         type: string
       - description: Report class
-        enum:
-        - balance_sheet
-        - income_statement
         in: query
         name: class
         required: true
@@ -2453,10 +2468,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
         "404":
           description: Not Found
         "500":

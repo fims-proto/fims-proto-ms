@@ -1858,10 +1858,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/report": {
             "get": {
-                "description": "Returns the report instance for a given SoB, class, and period. Returns 404 if not yet generated.",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Returns the report instance for a given SoB, class, and period.",
                 "produces": [
                     "application/json"
                 ],
@@ -1878,10 +1875,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "enum": [
-                            "balance_sheet",
-                            "income_statement"
-                        ],
                         "type": "string",
                         "description": "Report class",
                         "name": "class",
@@ -1901,12 +1894,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/http.ReportResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
                     },
                     "404": {
@@ -1923,14 +1910,14 @@ const docTemplate = `{
         },
         "/sob/{sobId}/report/generate": {
             "post": {
-                "description": "Generates a report instance for the given SoB, class, and period. If an instance already exists it is regenerated (amounts recalculated). Returns the resulting report.",
+                "description": "Creates a report instance from the latest template. If one already exists, returns it unchanged.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "reports"
                 ],
-                "summary": "Generate or regenerate a report instance",
+                "summary": "Generate missing report instance",
                 "parameters": [
                     {
                         "type": "string",
@@ -1940,10 +1927,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "enum": [
-                            "balance_sheet",
-                            "income_statement"
-                        ],
                         "type": "string",
                         "description": "Report class",
                         "name": "class",
@@ -1965,12 +1948,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/http.ReportResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -1982,10 +1959,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/report/template": {
             "get": {
-                "description": "Returns the report template for a given SoB and class. Returns 404 if not found.",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Returns the report template for a given SoB and class.",
                 "produces": [
                     "application/json"
                 ],
@@ -2002,10 +1976,6 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "enum": [
-                            "balance_sheet",
-                            "income_statement"
-                        ],
                         "type": "string",
                         "description": "Report class",
                         "name": "class",
@@ -2018,12 +1988,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/http.ReportResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
                     },
                     "404": {
@@ -2040,7 +2004,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/report/{reportId}": {
             "patch": {
-                "description": "Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction. Sections can contain nested sections. Items are sequenced by their position in the array.",
+                "description": "Updates report columns, row tree, and expressions.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2050,7 +2014,7 @@ const docTemplate = `{
                 "tags": [
                     "reports"
                 ],
-                "summary": "Update entire report structure",
+                "summary": "Update report structure",
                 "parameters": [
                     {
                         "type": "string",
@@ -2095,18 +2059,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{reportId}/regenerate": {
+        "/sob/{sobId}/report/{reportId}/recalculate": {
             "post": {
-                "description": "Regenerate report",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Recalculates amounts while preserving the existing report structure.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "reports"
                 ],
+                "summary": "Recalculate report amounts",
                 "parameters": [
                     {
                         "type": "string",
@@ -2127,11 +2089,44 @@ const docTemplate = `{
                     "204": {
                         "description": "No Content"
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/internal_report_port_public_http.Error"
                         }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}/regenerate": {
+            "post": {
+                "description": "Rebuilds an existing report instance from the latest template and recalculates amounts.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Regenerate report instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -2707,41 +2702,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "class": {
-                    "type": "integer"
-                },
-                "group": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isLeaf": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "rawAccountNumber": {
-                    "type": "string"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
         "http.AccountSlimResponse": {
             "type": "object",
             "properties": {
@@ -2811,6 +2771,20 @@ const docTemplate = `{
                 }
             }
         },
+        "http.CashFlowItemReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "itemId": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
         "http.CashFlowItemResponse": {
             "type": "object",
             "properties": {
@@ -2872,6 +2846,23 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "journalId": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ColumnResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "sequence": {
+                    "type": "integer"
+                },
+                "valueType": {
                     "type": "string"
                 }
             }
@@ -3016,29 +3007,32 @@ const docTemplate = `{
                 }
             }
         },
-        "http.FormulaResponse": {
+        "http.ExpressionResponse": {
             "type": "object",
             "properties": {
-                "account": {
-                    "$ref": "#/definitions/http.AccountResponse"
-                },
-                "amounts": {
+                "cashFlowItems": {
                     "type": "array",
                     "items": {
-                        "type": "number"
+                        "$ref": "#/definitions/http.CashFlowItemReferenceResponse"
                     }
                 },
                 "id": {
                     "type": "string"
                 },
-                "rule": {
+                "kind": {
                     "type": "string"
                 },
-                "sequence": {
-                    "type": "integer"
+                "ledgerAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerAccountReferenceResponse"
+                    }
                 },
-                "sumFactor": {
-                    "type": "integer"
+                "rowReferences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.RowReferenceResponse"
+                    }
                 }
             }
         },
@@ -3064,50 +3058,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/http.InitializeLedgersBalanceItemRequest"
                     }
-                }
-            }
-        },
-        "http.ItemResponse": {
-            "type": "object",
-            "properties": {
-                "amounts": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
-                },
-                "dataSource": {
-                    "type": "string"
-                },
-                "displaySumFactor": {
-                    "type": "boolean"
-                },
-                "formulas": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.FormulaResponse"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isAbleToAddChild": {
-                    "type": "boolean"
-                },
-                "isBreakdownItem": {
-                    "type": "boolean"
-                },
-                "isEditable": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "sumFactor": {
-                    "type": "integer"
-                },
-                "text": {
-                    "type": "string"
                 }
             }
         },
@@ -3308,6 +3258,23 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "http.LedgerAccountReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "measure": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
                 }
             }
         },
@@ -3585,14 +3552,14 @@ const docTemplate = `{
         "http.ReportResponse": {
             "type": "object",
             "properties": {
-                "amountTypes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "class": {
                     "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.ColumnResponse"
+                    }
                 },
                 "createdAt": {
                     "type": "string"
@@ -3603,10 +3570,10 @@ const docTemplate = `{
                 "period": {
                     "$ref": "#/definitions/internal_report_port_public_http.PeriodResponse"
                 },
-                "sections": {
+                "rows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.SectionResponse"
+                        "$ref": "#/definitions/http.RowResponse"
                     }
                 },
                 "sobId": {
@@ -3631,7 +3598,18 @@ const docTemplate = `{
                 }
             }
         },
-        "http.SectionResponse": {
+        "http.RowReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "rowCode": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.RowResponse": {
             "type": "object",
             "properties": {
                 "amounts": {
@@ -3640,22 +3618,43 @@ const docTemplate = `{
                         "type": "number"
                     }
                 },
+                "canAddChild": {
+                    "type": "boolean"
+                },
+                "canEdit": {
+                    "type": "boolean"
+                },
+                "canMove": {
+                    "type": "boolean"
+                },
+                "expression": {
+                    "$ref": "#/definitions/http.ExpressionResponse"
+                },
                 "id": {
                     "type": "string"
                 },
-                "items": {
+                "lineNo": {
+                    "type": "integer"
+                },
+                "rowCode": {
+                    "type": "string"
+                },
+                "rows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.ItemResponse"
+                        "$ref": "#/definitions/http.RowResponse"
                     }
                 },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.SectionResponse"
-                    }
+                "sequence": {
+                    "type": "integer"
                 },
-                "title": {
+                "showLineNo": {
+                    "type": "boolean"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -3721,6 +3720,20 @@ const docTemplate = `{
                 }
             }
         },
+        "http.UpdateCashFlowItemReferenceRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "itemId": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
         "http.UpdateCategoryRequest": {
             "type": "object",
             "required": [
@@ -3729,6 +3742,46 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "http.UpdateColumnRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "valueType": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateExpressionRequest": {
+            "type": "object",
+            "properties": {
+                "cashFlowItems": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateCashFlowItemReferenceRequest"
+                    }
+                },
+                "kind": {
+                    "type": "string"
+                },
+                "ledgerAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateLedgerAccountReferenceRequest"
+                    }
+                },
+                "rowReferences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateRowReferenceRequest"
+                    }
                 }
             }
         },
@@ -3752,6 +3805,23 @@ const docTemplate = `{
                 }
             }
         },
+        "http.UpdateLedgerAccountReferenceRequest": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "measure": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
         "http.UpdateOptionRequest": {
             "type": "object",
             "required": [
@@ -3763,21 +3833,30 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateReportFormulaRequest": {
+        "http.UpdateReportRequest": {
             "type": "object",
-            "required": [
-                "rawAccountNumber",
-                "rule",
-                "sumFactor"
-            ],
             "properties": {
-                "id": {
-                    "type": "string"
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateColumnRequest"
+                    }
                 },
-                "rawAccountNumber": {
-                    "type": "string"
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateRowRequest"
+                    }
                 },
-                "rule": {
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateRowReferenceRequest": {
+            "type": "object",
+            "properties": {
+                "rowCode": {
                     "type": "string"
                 },
                 "sumFactor": {
@@ -3785,89 +3864,43 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateReportItemRequest": {
+        "http.UpdateRowRequest": {
             "type": "object",
             "properties": {
-                "dataSource": {
-                    "type": "string"
-                },
-                "displaySumFactor": {
+                "canAddChild": {
                     "type": "boolean"
                 },
-                "formulas": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateReportFormulaRequest"
-                    }
+                "canEdit": {
+                    "type": "boolean"
+                },
+                "canMove": {
+                    "type": "boolean"
+                },
+                "expression": {
+                    "$ref": "#/definitions/http.UpdateExpressionRequest"
                 },
                 "id": {
-                    "description": "Identity",
                     "type": "string"
                 },
-                "isAbleToAddChild": {
-                    "type": "boolean"
-                },
-                "isBreakdownItem": {
-                    "type": "boolean"
-                },
-                "level": {
+                "lineNo": {
                     "type": "integer"
+                },
+                "rowCode": {
+                    "type": "string"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateRowRequest"
+                    }
+                },
+                "showLineNo": {
+                    "type": "boolean"
                 },
                 "sumFactor": {
                     "type": "integer"
                 },
                 "text": {
-                    "description": "Content (required for new items, optional for updates to existing items)",
-                    "type": "string"
-                }
-            }
-        },
-        "http.UpdateReportRequest": {
-            "type": "object",
-            "properties": {
-                "amountTypes": {
-                    "description": "Optional: update amount types",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "sections": {
-                    "description": "Required: complete section structure",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateSectionRequest"
-                    }
-                },
-                "title": {
-                    "description": "Optional: update report title",
-                    "type": "string"
-                }
-            }
-        },
-        "http.UpdateSectionRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "description": "Section ID",
-                    "type": "string"
-                },
-                "items": {
-                    "description": "Complete item list for this section",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateReportItemRequest"
-                    }
-                },
-                "sections": {
-                    "description": "Optional: nested sections",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateSectionRequest"
-                    }
-                },
-                "title": {
-                    "description": "Optional: update section title",
                     "type": "string"
                 }
             }

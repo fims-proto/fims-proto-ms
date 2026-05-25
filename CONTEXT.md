@@ -57,11 +57,11 @@ Account number 003103. Accumulates the net P&L result across all months of the f
 
 ### Report Template (报表模板)
 
-Per-SoB structural configuration for a mandatory report type. Holds sections, items, and formula rules. No period association. Two templates exist per SoB after initialization: Balance Sheet (资产负债表) and Income Statement (利润表). Updated via `PATCH /sob/{sobId}/report/{reportId}`. Changes to a template do not cascade to existing instances — instances must be manually regenerated.
+Per-SoB structural configuration for a mandatory report type. Holds columns and a row tree; each row owns its expression and optional child rows. No period association. Three templates exist per SoB after initialization: Balance Sheet (资产负债表), Income Statement (利润表), and Cash Flow Statement (现金流量表). Updated via `PATCH /sob/{sobId}/report/{reportId}`. Changes to a template do not cascade to existing instances — instances must be manually regenerated.
 
 ### Report Instance (报表实例)
 
-A generated financial report for a specific accounting period. Exactly one instance exists per (SoB, class, period) — enforced by a DB partial unique index. Generation is idempotent: calling generate for a period that already has an instance regenerates it (recalculates amounts from current ledgers) rather than creating a duplicate. Automatically generated for all classes when a period is closed via `ClosePeriodHandler`. Accessible by natural key via `GET /sob/{sobId}/report/{class}/{period}` (YYYY-MM format); returns 404 if no instance has been generated for that period yet.
+A generated financial report for a specific accounting period. Exactly one instance exists per (SoB, class, period) — enforced by a DB partial unique index. Generation is idempotent: calling generate for a period that already has an instance returns the existing instance unchanged rather than creating a duplicate. `recalculate` preserves the instance structure and recomputes amounts; `regenerate` rebuilds the instance from the latest template and recomputes amounts. Instances are automatically generated for all classes when a period is closed via `ClosePeriodHandler`. Accessible by natural key via `GET /sob/{sobId}/report?class={class}&period={periodId}`; returns 404 if no instance has been generated for that period yet.
 
 ---
 

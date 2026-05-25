@@ -94,14 +94,15 @@ Balances are updated automatically when a journal is posted. Ledger data feeds d
 
 ### 3. Financial Reports (报表)
 
-Generates standard financial statements for a given period. Two report types are supported:
+Generates standard financial statements for a given period. Three report types are supported:
 
-| Report           | Chinese    | Amount Types Available                               |
-| ---------------- | ---------- | ---------------------------------------------------- |
-| Balance Sheet    | 资产负债表 | Year opening balance, Period ending balance          |
-| Income Statement | 利润表     | Period amount, Year-to-date amount, Last year amount |
+| Report              | Chinese    | Amount Types Available                               |
+| ------------------- | ---------- | ---------------------------------------------------- |
+| Balance Sheet       | 资产负债表 | Year opening balance, Period ending balance          |
+| Income Statement    | 利润表     | Period amount, Year-to-date amount, Last year amount |
+| Cash Flow Statement | 现金流量表 | Period amount, Year-to-date amount                   |
 
-Reports are built from a configurable section/item structure. **Standard templates are pre-shipped** with each SoB and can be customised. A report is generated (or re-generated) against a specific accounting period, pulling data from ledger balances.
+Reports are built from a configurable column/section/row/expression structure. **Standard templates are pre-shipped** with each SoB and can be customised. A report is generated against a specific accounting period, pulling data from ledger balances or cash-flow item tags. Existing instances can be recalculated in place, or regenerated from the latest template.
 
 ---
 
@@ -154,10 +155,10 @@ Manages user profiles. Authentication is handled externally (Ory Kratos). Role-b
 3. Close period 12.
 
 ### Reporting
-1. Select a report template (Balance Sheet or Income Statement).
+1. Select a report template (Balance Sheet, Income Statement, or Cash Flow Statement).
 2. Choose a target period.
-3. Generate the report — the system reads ledger balances and evaluates the report formula structure.
-4. Re-generate if ledger data changes after initial generation.
+3. Generate the report — the system reads ledger balances or cash-flow item tags and evaluates the report expression structure.
+4. Recalculate if ledger data changes after initial generation, or regenerate to rebuild from the latest template.
 
 ---
 

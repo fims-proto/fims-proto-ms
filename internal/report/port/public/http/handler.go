@@ -22,6 +22,7 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/report/template", h.ReadReportTemplateByClass)
 	r.GET("/sob/:sobId/report", h.ReadReportByClassAndPeriod)
 	r.POST("/sob/:sobId/report/generate", h.GenerateReport)
+	r.POST("/sob/:sobId/report/:reportId/recalculate", h.RecalculateReport)
 	r.POST("/sob/:sobId/report/:reportId/regenerate", h.RegenerateReport)
 	r.PATCH("/sob/:sobId/report/:reportId", h.UpdateReport)
 }

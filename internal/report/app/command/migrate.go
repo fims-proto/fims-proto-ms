@@ -12,7 +12,7 @@ type MigrationHandler struct {
 
 func NewMigrationHandler(repo domain.Repository) MigrationHandler {
 	if repo == nil {
-		panic("nil repo")
+		panic("nil repository")
 	}
 	return MigrationHandler{repo: repo}
 }

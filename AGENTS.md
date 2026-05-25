@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -249,22 +249,19 @@ Process:
 
 ### Report Generation (High Risk Area)
 
-File: `internal/report/domain/evaluator/evaluator.go`
+File: `internal/report/domain/generator/generator.go`
 
-Reports use explicit expression types:
+Reports use two data source types:
 
-- **ledger_accounts** - Aggregates explicit GL accounts according to each report column context.
-- **cash_flow_items** - Aggregates posted journal lines tagged with explicit cash flow items.
-- **rows_explicit** - Aggregates named row codes with factors.
-- **children_sum** - Aggregates direct child rows using each child's `sumFactor`.
-- **none** - Display-only rows with zero amount.
+- **Sum** - Aggregates ledger balances by account filters
+- **Formulas** - Four formula rules: `Net`, `Debit`, `Credit`, `Transaction`
 
 **Why high risk:**
-- Report numbers are generated from a template/expression tree, so bad row codes, factors, or column contexts can produce wrong financial figures without compile-time errors.
-- Balance Sheet, Income Statement, and Cash Flow Statement use different source semantics: ledger balances, period movements, YTD movements, opening balances, and ABS cash-flow line amounts.
-- Existing report instances support two separate operations: `recalculate` preserves structure and recomputes amounts; `regenerate` rebuilds from the latest template.
+- `ledgersCache` is a shared in-memory map across all formula evaluations — stale or incorrect entries produce wrong financial figures with no runtime error
+- Formula rules interact with `balance_direction` and `data_source` in non-obvious ways; bugs only surface in output numbers, not compile time
+- Balance sheet (`report-balanceSheet-imbalance`) and income statement (`report-incomeStatement-profitMismatch`) validations only catch end-to-end failures, not intermediate calculation errors
 
-**Any expression, aggregation, or column-context change MUST have unit tests.**
+**Any formula or aggregation changes MUST have unit tests.**
 
 ### Numbering Service
 
@@ -352,7 +349,7 @@ Grammar defined in `filterable.peg`. Generate parser with `make peg`.
 Focus on:
 
 - Domain logic: journal state transitions, business rule enforcement
-- Report evaluator: expression and column-context calculations
+- Report generator: formula calculations
 - Repository updates with transactions
 
 ### Integration Tests
@@ -386,7 +383,7 @@ Use these flows as integration test templates.
 **Critical Implementations**:
 
 - `internal/general_ledger/app/command/post_journal.go` - Posting logic
-- `internal/report/domain/evaluator/evaluator.go` - Report generation
+- `internal/report/domain/generator/generator.go` - Report generation
 - `internal/common/errors/gin_middleware.go` - Error translation
 
 **Dev-only**: `internal/devops/jwt_handler.go` — JWT utility registered at `/devops/` route only when `profile` starts with `"dev"` (controlled via `cmd/main.go`)

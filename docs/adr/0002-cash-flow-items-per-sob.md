@@ -23,5 +23,5 @@ This mirrors how accounts are handled: accounts are seeded per-SoB from the same
 - A `sob_id` column is required on the `cash_flow_items` table.
 - Journal line FKs reference the SoB-specific Cash Flow Item UUID (not a global code string).
 - At SoB creation, Cash Flow Items must be seeded before journal lines can reference them.
-- Report templates that reference Cash Flow Item codes resolve them to per-SoB UUIDs at generation time.
+- Report templates that reference Cash Flow Item codes resolve them to per-SoB UUIDs during template initialization or update.
 - When multi-standard support is added, SoB gains an `accounting_standard` field and the seeding logic branches on it — no schema migration needed.

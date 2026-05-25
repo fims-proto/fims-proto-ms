@@ -9,7 +9,6 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/class"
 
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -24,10 +23,7 @@ func NewReportPostgresRepository(dataSource datasource.DataSource) *ReportPostgr
 	if dataSource == nil {
 		panic("nil data source")
 	}
-
-	return &ReportPostgresRepository{
-		dataSource: dataSource,
-	}
+	return &ReportPostgresRepository{dataSource: dataSource}
 }
 
 func (r ReportPostgresRepository) Migrate(ctx context.Context) error {
@@ -35,9 +31,9 @@ func (r ReportPostgresRepository) Migrate(ctx context.Context) error {
 
 	return db.AutoMigrate(
 		&reportPO{},
-		&sectionPO{},
-		&itemPO{},
-		&formulaPO{},
+		&reportColumnPO{},
+		&reportRowPO{},
+		&reportExpressionPO{},
 	)
 }
 
@@ -47,9 +43,7 @@ func (r ReportPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx 
 
 func (r ReportPostgresRepository) CreateReports(ctx context.Context, reports []*report.Report) error {
 	db := r.dataSource.GetConnection(ctx)
-
 	pos := converter.BOsToPOs(reports, reportBOToPO)
-
 	return commonErrors.TranslateDBError(db.Create(pos).Error)
 }
 
@@ -60,10 +54,10 @@ func (r ReportPostgresRepository) UpdateReport(
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	// read report
 	po := reportPO{Id: reportId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("Sections.Items.Formulas.Account").
+		Preload("Columns").
+		Preload("Rows.Expression").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
@@ -73,155 +67,96 @@ func (r ReportPostgresRepository) UpdateReport(
 	if err != nil {
 		return err
 	}
-
-	// delegate update
 	updatedBO, err := updateFn(bo)
 	if err != nil {
 		return err
 	}
 
-	// save
-	// First, delete all existing associations to ensure orphaned records are removed
-	// This is necessary because GORM's FullSaveAssociations only upserts, it doesn't delete removed associations
-
-	// Step 1: Find all section IDs for this report
-	var sectionIds []uuid.UUID
-	if err = db.Model(&sectionPO{}).Where("report_id = ?", reportId).Pluck("id", &sectionIds).Error; err != nil {
-		return fmt.Errorf("failed to find section ids: %w", err)
+	if err = r.deleteReportAssociations(ctx, reportId); err != nil {
+		return err
 	}
 
-	// Step 2: Find all item IDs for these sections
-	var itemIds []uuid.UUID
-	if len(sectionIds) > 0 {
-		if err = db.Model(&itemPO{}).Where("section_id IN ?", sectionIds).Pluck("id", &itemIds).Error; err != nil {
-			return fmt.Errorf("failed to find item ids: %w", err)
-		}
-	}
-
-	// Step 3: Delete formulas associated with these items
-	if len(itemIds) > 0 {
-		if err = db.Where("item_id IN ?", itemIds).Delete(&formulaPO{}).Error; err != nil {
-			return fmt.Errorf("failed to delete formulas: %w", err)
-		}
-	}
-
-	// Step 4: Delete items associated with these sections
-	if len(sectionIds) > 0 {
-		if err = db.Where("section_id IN ?", sectionIds).Delete(&itemPO{}).Error; err != nil {
-			return fmt.Errorf("failed to delete items: %w", err)
-		}
-	}
-
-	// Step 5: Delete all sections for this report
-	if err = db.Where("report_id = ?", reportId).Delete(&sectionPO{}).Error; err != nil {
-		return fmt.Errorf("failed to delete sections: %w", err)
-	}
-
-	// Step 6: Save the updated report with all new associations
 	updatedPO := reportBOToPO(updatedBO)
 	return commonErrors.TranslateDBError(db.Session(&gorm.Session{FullSaveAssociations: true}).Save(&updatedPO).Error)
 }
 
-func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error) {
+func (r ReportPostgresRepository) deleteReportAssociations(ctx context.Context, reportId uuid.UUID) error {
 	db := r.dataSource.GetConnection(ctx)
 
+	var rowIds []uuid.UUID
+	if err := db.Model(&reportRowPO{}).Where("report_id = ?", reportId).Pluck("id", &rowIds).Error; err != nil {
+		return fmt.Errorf("failed to find report row ids: %w", err)
+	}
+
+	if len(rowIds) > 0 {
+		if err := db.Where("row_id IN ?", rowIds).Delete(&reportExpressionPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete report expressions: %w", err)
+		}
+		if err := db.Where("id IN ?", rowIds).Delete(&reportRowPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete report rows: %w", err)
+		}
+	}
+
+	if err := db.Where("report_id = ?", reportId).Delete(&reportColumnPO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete report columns: %w", err)
+	}
+
+	return nil
+}
+
+func (r ReportPostgresRepository) ReadReportById(ctx context.Context, reportId uuid.UUID) (*report.Report, error) {
+	db := r.dataSource.GetConnection(ctx)
 	po := reportPO{Id: reportId}
-	if err := db.Preload("Sections.Items.Formulas.Account").
-		Joins("Period").
+	if err := db.Preload("Columns").
+		Preload("Rows.Expression").
+		Preload("Period").
 		First(&po).Error; err != nil {
 		return nil, err
 	}
-
 	return reportPOToBO(&po)
 }
 
 func (r ReportPostgresRepository) ReadTemplatesBySobId(ctx context.Context, sobId uuid.UUID) ([]*report.Report, error) {
 	db := r.dataSource.GetConnection(ctx)
-
 	var pos []*reportPO
-	if err := db.Preload("Sections.Items.Formulas.Account").
+	if err := db.Preload("Columns").
+		Preload("Rows.Expression").
 		Where("sob_id = ? AND template = true", sobId).
 		Find(&pos).Error; err != nil {
 		return nil, err
 	}
-
-	return converter.POsToBOs(pos, func(po *reportPO) (*report.Report, error) {
-		return reportPOToBO(po)
-	})
+	return converter.POsToBOs(pos, reportPOToBO)
 }
 
-func (r ReportPostgresRepository) ReadTemplateBySobIdAndClass(ctx context.Context, sobId uuid.UUID, reportClass class.Class) (*report.Report, error) {
+func (r ReportPostgresRepository) ReadTemplateBySobIdAndClass(ctx context.Context, sobId uuid.UUID, reportClass string) (*report.Report, error) {
 	db := r.dataSource.GetConnection(ctx)
-
 	var po reportPO
-	err := db.Preload("Sections.Items.Formulas.Account").
-		Where("sob_id = ? AND template = true AND class = ?", sobId, reportClass.String()).
+	err := db.Preload("Columns").
+		Preload("Rows.Expression").
+		Where("sob_id = ? AND template = true AND class = ?", sobId, reportClass).
 		First(&po).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		return nil, err
 	}
-
 	return reportPOToBO(&po)
 }
 
-func (r ReportPostgresRepository) ReadInstanceBySobClassAndPeriod(
-	ctx context.Context,
-	sobId uuid.UUID,
-	reportClass class.Class,
-	periodId uuid.UUID,
-) (*report.Report, error) {
+func (r ReportPostgresRepository) ReadInstanceBySobClassAndPeriod(ctx context.Context, sobId uuid.UUID, reportClass string, periodId uuid.UUID) (*report.Report, error) {
 	db := r.dataSource.GetConnection(ctx)
-
 	var po reportPO
-	err := db.Preload("Sections.Items.Formulas.Account").
-		Joins("Period").
-		Where("reports.sob_id = ? AND reports.class = ? AND reports.period_id = ? AND reports.template = false", sobId, reportClass.String(), periodId).
+	err := db.Preload("Columns").
+		Preload("Rows.Expression").
+		Preload("Period").
+		Where("sob_id = ? AND class = ? AND period_id = ? AND template = false", sobId, reportClass, periodId).
 		First(&po).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, nil
+	}
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
 		return nil, err
 	}
-
 	return reportPOToBO(&po)
-}
-
-func (r ReportPostgresRepository) UpdateItem(
-	ctx context.Context,
-	itemId uuid.UUID,
-	updateFn func(i *report.Item) (*report.Item, error),
-) error {
-	db := r.dataSource.GetConnection(ctx)
-
-	// read item
-	po := itemPO{Id: itemId}
-	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("Formulas.Account").
-		First(&po).Error; err != nil {
-		return err
-	}
-
-	bo, err := itemPOToBO(&po)
-	if err != nil {
-		return err
-	}
-
-	// delegate update
-	updatedBO, err := updateFn(bo)
-	if err != nil {
-		return err
-	}
-
-	// save
-	// use the section id from the original po
-	updatedPO := itemBOToPO(updatedBO, po.SectionId)
-	// delete formulas first
-	if err = db.Where("item_id = ?", updatedPO.Id).Delete(&formulaPO{}).Error; err != nil {
-		return fmt.Errorf("failed to delete formulas: %w", err)
-	}
-	return db.Save(&updatedPO).Error
 }

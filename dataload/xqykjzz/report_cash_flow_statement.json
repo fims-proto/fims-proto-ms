@@ -1,0 +1,464 @@
+{
+  "title": "现金流量表",
+  "class": "cash_flow_statement",
+  "columns": [
+    {
+      "label": "本年累计金额",
+      "valueType": "year_to_date_amount"
+    },
+    {
+      "label": "本月金额",
+      "valueType": "period_amount"
+    }
+  ],
+  "rows": [
+    {
+      "rowCode": "CFS_OPERATING_NET",
+      "text": "经营活动产生的现金流量净额",
+      "lineNo": 7,
+      "showLineNo": true,
+      "sumFactor": 1,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": true,
+      "expression": {
+        "kind": "children_sum"
+      },
+      "rows": [
+        {
+          "rowCode": "CFS_OP_01",
+          "text": "销售产成品、商品、提供劳务收到的现金",
+          "lineNo": 1,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "OP_01",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_OP_02",
+          "text": "收到其他与经营活动有关的现金",
+          "lineNo": 2,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "OP_02",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_OP_03",
+          "text": "购买原材料、商品、接受劳务支付的现金",
+          "lineNo": 3,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "OP_03",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_OP_04",
+          "text": "支付的职工薪酬",
+          "lineNo": 4,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "OP_04",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_OP_05",
+          "text": "支付的税费",
+          "lineNo": 5,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "OP_05",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_OP_06",
+          "text": "支付其他与经营活动有关的现金",
+          "lineNo": 6,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "OP_06",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        }
+      ]
+    },
+    {
+      "rowCode": "CFS_INVESTING_NET",
+      "text": "投资活动产生的现金流量净额",
+      "lineNo": 13,
+      "showLineNo": true,
+      "sumFactor": 1,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": true,
+      "expression": {
+        "kind": "children_sum"
+      },
+      "rows": [
+        {
+          "rowCode": "CFS_INV_01",
+          "text": "收回短期投资、长期债券投资和长期股权投资收到的现金",
+          "lineNo": 8,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "INV_01",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_INV_02",
+          "text": "取得投资收益收到的现金",
+          "lineNo": 9,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "INV_02",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_INV_03",
+          "text": "处置固定资产、无形资产和其他非流动资产收回的现金净额",
+          "lineNo": 10,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "INV_03",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_INV_04",
+          "text": "短期投资、长期债券投资和长期股权投资支付的现金",
+          "lineNo": 11,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "INV_04",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_INV_05",
+          "text": "购建固定资产、无形资产和其他非流动资产支付的现金",
+          "lineNo": 12,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "INV_05",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        }
+      ]
+    },
+    {
+      "rowCode": "CFS_FINANCING_NET",
+      "text": "筹资活动产生的现金流量净额",
+      "lineNo": 19,
+      "showLineNo": true,
+      "sumFactor": 1,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": true,
+      "expression": {
+        "kind": "children_sum"
+      },
+      "rows": [
+        {
+          "rowCode": "CFS_FIN_01",
+          "text": "取得借款收到的现金",
+          "lineNo": 14,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "FIN_01",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_FIN_02",
+          "text": "吸收投资者投资收到的现金",
+          "lineNo": 15,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "FIN_02",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_FIN_03",
+          "text": "偿还借款本金支付的现金",
+          "lineNo": 16,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "FIN_03",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_FIN_04",
+          "text": "偿还借款利息支付的现金",
+          "lineNo": 17,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "FIN_04",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        },
+        {
+          "rowCode": "CFS_FIN_05",
+          "text": "分配利润支付的现金",
+          "lineNo": 18,
+          "showLineNo": true,
+          "sumFactor": -1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "cash_flow_items",
+            "cashFlowItems": [
+              {
+                "code": "FIN_05",
+                "sumFactor": 1
+              }
+            ]
+          },
+          "rows": []
+        }
+      ]
+    },
+    {
+      "rowCode": "CFS_NET_INCREASE",
+      "text": "现金及现金等价物净增加额",
+      "lineNo": 20,
+      "showLineNo": true,
+      "sumFactor": 0,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": false,
+      "expression": {
+        "kind": "rows_explicit",
+        "rowReferences": [
+          {
+            "rowCode": "CFS_OPERATING_NET",
+            "sumFactor": 1
+          },
+          {
+            "rowCode": "CFS_INVESTING_NET",
+            "sumFactor": 1
+          },
+          {
+            "rowCode": "CFS_FINANCING_NET",
+            "sumFactor": 1
+          }
+        ]
+      },
+      "rows": []
+    },
+    {
+      "rowCode": "CFS_OPENING_CASH",
+      "text": "期初现金余额",
+      "lineNo": 21,
+      "showLineNo": true,
+      "sumFactor": 0,
+      "canEdit": true,
+      "canMove": false,
+      "canAddChild": false,
+      "expression": {
+        "kind": "ledger_accounts",
+        "ledgerAccounts": [
+          {
+            "rawAccountNumber": "001001",
+            "sumFactor": 1,
+            "measure": "opening_balance"
+          },
+          {
+            "rawAccountNumber": "001002",
+            "sumFactor": 1,
+            "measure": "opening_balance"
+          },
+          {
+            "rawAccountNumber": "001012",
+            "sumFactor": 1,
+            "measure": "opening_balance"
+          }
+        ]
+      },
+      "rows": []
+    },
+    {
+      "rowCode": "CFS_ENDING_CASH",
+      "text": "期末现金余额",
+      "lineNo": 22,
+      "showLineNo": true,
+      "sumFactor": 0,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": false,
+      "expression": {
+        "kind": "rows_explicit",
+        "rowReferences": [
+          {
+            "rowCode": "CFS_OPENING_CASH",
+            "sumFactor": 1
+          },
+          {
+            "rowCode": "CFS_NET_INCREASE",
+            "sumFactor": 1
+          }
+        ]
+      },
+      "rows": []
+    }
+  ]
+}

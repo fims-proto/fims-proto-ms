@@ -3,9 +3,8 @@ package app
 import (
 	"github/fims-proto/fims-proto-ms/internal/report/app/command"
 	"github/fims-proto/fims-proto-ms/internal/report/app/query"
-	"github/fims-proto/fims-proto-ms/internal/report/app/service"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
-	domainService "github/fims-proto/fims-proto-ms/internal/report/domain/service"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
 )
 
 type Queries struct {
@@ -20,6 +19,7 @@ type Commands struct {
 
 	Generate          command.GenerateHandler
 	GenerateForPeriod command.GenerateForPeriodHandler
+	Recalculate       command.RecalculateHandler
 	Regenerate        command.RegenerateHandler
 
 	UpdateReport command.UpdateReportHandler
@@ -39,8 +39,7 @@ func NewApplication() Application {
 func (a *Application) Inject(
 	repo domain.Repository,
 	readModel query.ReportReadModel,
-	generalLedgerService domainService.GeneralLedgerService,
-	sobService service.SobService,
+	generalLedgerService service.GeneralLedgerService,
 ) {
 	a.Queries = Queries{
 		PagingReports:          query.NewPagingReportsHandler(readModel),
@@ -53,9 +52,10 @@ func (a *Application) Inject(
 
 		Generate:          command.NewGenerateHandler(repo, generalLedgerService),
 		GenerateForPeriod: command.NewGenerateForPeriodHandler(repo, generalLedgerService),
+		Recalculate:       command.NewRecalculateHandler(repo, generalLedgerService),
 		Regenerate:        command.NewRegenerateHandler(repo, generalLedgerService),
 
-		UpdateReport: command.NewUpdateReportHandler(repo, generalLedgerService, sobService),
+		UpdateReport: command.NewUpdateReportHandler(repo, generalLedgerService),
 
 		Migrate: command.NewMigrationHandler(repo),
 	}

@@ -5,17 +5,10 @@ import (
 	"fmt"
 
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/generator"
+	"github/fims-proto/fims-proto-ms/internal/report/domain/evaluator"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/validator"
-
-	"github.com/google/uuid"
 )
-
-type RegenerateReportCmd struct {
-	ReportId uuid.UUID
-}
 
 type RegenerateHandler struct {
 	repo                 domain.Repository
@@ -26,35 +19,34 @@ func NewRegenerateHandler(repo domain.Repository, generalLedgerService service.G
 	if repo == nil {
 		panic("nil repository")
 	}
-
 	if generalLedgerService == nil {
 		panic("nil general ledger service")
 	}
-
-	return RegenerateHandler{
-		repo:                 repo,
-		generalLedgerService: generalLedgerService,
-	}
+	return RegenerateHandler{repo: repo, generalLedgerService: generalLedgerService}
 }
 
 func (h RegenerateHandler) Handle(ctx context.Context, cmd RegenerateReportCmd) error {
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		return h.regenerate(txCtx, cmd)
-	})
-}
-
-func (h RegenerateHandler) regenerate(ctx context.Context, cmd RegenerateReportCmd) error {
-	return h.repo.UpdateReport(
-		ctx,
-		cmd.ReportId,
-		func(r *report.Report) (*report.Report, error) {
-			v := validator.NewValidatorFactory(r.Class())
-			g := generator.NewGenerator(r, h.generalLedgerService, v)
-			if err := g.Regenerate(ctx); err != nil {
+		return h.repo.UpdateReport(txCtx, cmd.ReportId, func(existing *report.Report) (*report.Report, error) {
+			if existing.Template() {
+				return nil, fmt.Errorf("report template cannot be regenerated")
+			}
+			tmpl, err := h.repo.ReadTemplateBySobIdAndClass(txCtx, existing.SobId(), existing.Class())
+			if err != nil {
+				return nil, fmt.Errorf("failed to read report template: %w", err)
+			}
+			if tmpl == nil {
+				return nil, fmt.Errorf("report template %s not found", existing.Class())
+			}
+			rebuilt, err := tmpl.Instantiate(existing.Id(), existing.PeriodId(), existing.Title())
+			if err != nil {
+				return nil, err
+			}
+			ev := evaluator.New(rebuilt, h.generalLedgerService)
+			if err = ev.Regenerate(txCtx); err != nil {
 				return nil, fmt.Errorf("failed to regenerate report: %w", err)
 			}
-
-			return g.Report(), nil
-		},
-	)
+			return ev.Report(), nil
+		})
+	})
 }

@@ -1,34 +1,66 @@
 package command
 
-type InitializeCmdReport struct {
-	Title       string                 `json:"title"`
-	Class       string                 `json:"class"`
-	AmountTypes []string               `json:"amountTypes"`
-	Sections    []InitializeCmdSection `json:"sections"`
+import (
+	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
+
+	"github.com/google/uuid"
+)
+
+type InitializeCmd struct {
+	SobId uuid.UUID
 }
 
-type InitializeCmdSection struct {
-	Title       string                 `json:"title"`
-	SectionType string                 `json:"sectionType"`
-	Sections    []InitializeCmdSection `json:"sections"`
-	Items       []InitializeCmdItem    `json:"items"`
+type GenerateReportCmd struct {
+	SobId        uuid.UUID
+	Class        string
+	FiscalYear   int
+	PeriodNumber int
 }
 
-type InitializeCmdItem struct {
-	Text             string                 `json:"text"`
-	Level            int                    `json:"level"`
-	ItemType         string                 `json:"itemType"`
-	SumFactor        int                    `json:"sumFactor"`
-	DisplaySumFactor bool                   `json:"displaySumFactor"`
-	DataSource       string                 `json:"dataSource"`
-	Formulas         []InitializeCmdFormula `json:"formulas"`
-	IsEditable       bool                   `json:"isEditable"`
-	IsBreakdownItem  bool                   `json:"isBreakdownItem"`
-	IsAbleToAddChild bool                   `json:"isAbleToAddChild"`
+type GenerateForPeriodCmd struct {
+	SobId    uuid.UUID
+	PeriodId uuid.UUID
 }
 
-type InitializeCmdFormula struct {
-	RawAccountNumber string `json:"rawAccountNumber"`
-	SumFactor        int    `json:"sumFactor"`
-	Rule             string `json:"rule"`
+type RecalculateReportCmd struct {
+	ReportId uuid.UUID
+}
+
+type RegenerateReportCmd struct {
+	ReportId uuid.UUID
+}
+
+type UpdateReportCmd struct {
+	ReportId uuid.UUID
+	SobId    uuid.UUID
+	Title    *string
+	Columns  []UpdateReportCmdColumn
+	Rows     []UpdateReportCmdRow
+}
+
+type UpdateReportCmdColumn struct {
+	ColumnId  uuid.UUID
+	Label     string
+	ValueType string
+}
+
+type UpdateReportCmdRow struct {
+	RowId       uuid.UUID
+	RowCode     string
+	Text        string
+	LineNo      *int
+	ShowLineNo  bool
+	SumFactor   int
+	CanEdit     *bool
+	CanMove     *bool
+	CanAddChild *bool
+	Expression  UpdateReportCmdExpression
+	Rows        []UpdateReportCmdRow
+}
+
+type UpdateReportCmdExpression struct {
+	Kind           string
+	LedgerAccounts []report.LedgerAccountReference
+	CashFlowItems  []report.CashFlowItemReference
+	RowReferences  []report.RowReference
 }
