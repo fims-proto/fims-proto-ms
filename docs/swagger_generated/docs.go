@@ -2004,7 +2004,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/report/{reportId}": {
             "patch": {
-                "description": "Updates report columns, row tree, and expressions.",
+                "description": "Updates report title, row tree, and expressions.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2031,7 +2031,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Complete report structure",
+                        "description": "Report update payload",
                         "name": "UpdateReportRequest",
                         "in": "body",
                         "required": true,
@@ -3627,11 +3627,17 @@ const docTemplate = `{
                 "canMove": {
                     "type": "boolean"
                 },
+                "displaySumFactor": {
+                    "type": "boolean"
+                },
                 "expression": {
                     "$ref": "#/definitions/http.ExpressionResponse"
                 },
                 "id": {
                     "type": "string"
+                },
+                "indent": {
+                    "type": "integer"
                 },
                 "lineNo": {
                     "type": "integer"
@@ -3745,20 +3751,6 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateColumnRequest": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "string"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "valueType": {
-                    "type": "string"
-                }
-            }
-        },
         "http.UpdateExpressionRequest": {
             "type": "object",
             "properties": {
@@ -3836,12 +3828,6 @@ const docTemplate = `{
         "http.UpdateReportRequest": {
             "type": "object",
             "properties": {
-                "columns": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateColumnRequest"
-                    }
-                },
                 "rows": {
                     "type": "array",
                     "items": {
@@ -3876,11 +3862,17 @@ const docTemplate = `{
                 "canMove": {
                     "type": "boolean"
                 },
+                "displaySumFactor": {
+                    "type": "boolean"
+                },
                 "expression": {
                     "$ref": "#/definitions/http.UpdateExpressionRequest"
                 },
                 "id": {
                     "type": "string"
+                },
+                "indent": {
+                    "type": "integer"
                 },
                 "lineNo": {
                     "type": "integer"

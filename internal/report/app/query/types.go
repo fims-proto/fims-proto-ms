@@ -29,19 +29,21 @@ type Column struct {
 }
 
 type Row struct {
-	Id          uuid.UUID
-	RowCode     string
-	Text        string
-	Sequence    int
-	LineNo      *int
-	ShowLineNo  bool
-	SumFactor   int
-	CanEdit     bool
-	CanMove     bool
-	CanAddChild bool
-	Expression  Expression
-	Rows        []Row
-	Amounts     []decimal.Decimal
+	Id               uuid.UUID
+	RowCode          string
+	Text             string
+	Sequence         int
+	LineNo           *int
+	ShowLineNo       bool
+	SumFactor        int
+	DisplaySumFactor bool
+	Indent           int
+	CanEdit          bool
+	CanMove          bool
+	CanAddChild      bool
+	Expression       Expression
+	Rows             []Row
+	Amounts          []decimal.Decimal
 }
 
 type Expression struct {

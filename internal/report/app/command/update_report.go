@@ -126,20 +126,11 @@ func applyCmdRefs(rows []UpdateReportCmdRow, accountIds map[string]uuid.UUID, ca
 }
 
 func commandToUpdateParams(cmd UpdateReportCmd) (report.UpdateParams, error) {
-	columns := make([]report.UpdateColumnParams, 0, len(cmd.Columns))
-	for _, c := range cmd.Columns {
-		columns = append(columns, report.UpdateColumnParams{
-			ColumnId:  c.ColumnId,
-			Label:     c.Label,
-			ValueType: c.ValueType,
-		})
-	}
-
 	rows, err := commandRowsToParams(cmd.Rows)
 	if err != nil {
 		return report.UpdateParams{}, err
 	}
-	return report.UpdateParams{Title: cmd.Title, Columns: columns, Rows: rows}, nil
+	return report.UpdateParams{Title: cmd.Title, Rows: rows}, nil
 }
 
 func commandRowsToParams(cmds []UpdateReportCmdRow) ([]report.UpdateRowParams, error) {
@@ -154,17 +145,19 @@ func commandRowsToParams(cmds []UpdateReportCmdRow) ([]report.UpdateRowParams, e
 			return nil, err
 		}
 		rows = append(rows, report.UpdateRowParams{
-			RowId:       rowCmd.RowId,
-			RowCode:     rowCmd.RowCode,
-			Text:        rowCmd.Text,
-			LineNo:      rowCmd.LineNo,
-			ShowLineNo:  rowCmd.ShowLineNo,
-			SumFactor:   rowCmd.SumFactor,
-			CanEdit:     rowCmd.CanEdit,
-			CanMove:     rowCmd.CanMove,
-			CanAddChild: rowCmd.CanAddChild,
-			Expression:  expr,
-			Rows:        childRows,
+			RowId:            rowCmd.RowId,
+			RowCode:          rowCmd.RowCode,
+			Text:             rowCmd.Text,
+			LineNo:           rowCmd.LineNo,
+			ShowLineNo:       rowCmd.ShowLineNo,
+			SumFactor:        rowCmd.SumFactor,
+			DisplaySumFactor: rowCmd.DisplaySumFactor,
+			Indent:           rowCmd.Indent,
+			CanEdit:          rowCmd.CanEdit,
+			CanMove:          rowCmd.CanMove,
+			CanAddChild:      rowCmd.CanAddChild,
+			Expression:       expr,
+			Rows:             childRows,
 		})
 	}
 	return rows, nil

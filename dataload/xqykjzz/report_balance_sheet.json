@@ -24,6 +24,7 @@
       "expression": {
         "kind": "children_sum"
       },
+      "indent": 0,
       "rows": [
         {
           "rowCode": "BS_016",
@@ -37,6 +38,7 @@
           "expression": {
             "kind": "children_sum"
           },
+          "indent": 0,
           "rows": [
             {
               "rowCode": "BS_001",
@@ -49,6 +51,7 @@
               "expression": {
                 "kind": "none"
               },
+              "indent": 0,
               "rows": []
             },
             {
@@ -80,6 +83,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -101,6 +105,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -122,6 +127,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -143,6 +149,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -164,6 +171,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -185,6 +193,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -206,6 +215,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -227,6 +237,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -308,6 +319,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": [
                 {
                   "rowCode": "BS_011",
@@ -333,6 +345,7 @@
                       }
                     ]
                   },
+                  "indent": 2,
                   "rows": []
                 },
                 {
@@ -369,6 +382,7 @@
                       }
                     ]
                   },
+                  "indent": 2,
                   "rows": []
                 },
                 {
@@ -395,6 +409,7 @@
                       }
                     ]
                   },
+                  "indent": 2,
                   "rows": []
                 },
                 {
@@ -416,6 +431,7 @@
                       }
                     ]
                   },
+                  "indent": 2,
                   "rows": []
                 }
               ]
@@ -433,6 +449,7 @@
                 "kind": "ledger_accounts",
                 "ledgerAccounts": []
               },
+              "indent": 1,
               "rows": []
             }
           ]
@@ -449,6 +466,7 @@
           "expression": {
             "kind": "children_sum"
           },
+          "indent": 0,
           "rows": [
             {
               "rowCode": "BS_017",
@@ -461,6 +479,7 @@
               "expression": {
                 "kind": "none"
               },
+              "indent": 0,
               "rows": []
             },
             {
@@ -482,6 +501,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -503,6 +523,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -524,6 +545,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -532,6 +554,7 @@
               "lineNo": 21,
               "showLineNo": true,
               "sumFactor": -1,
+              "displaySumFactor": true,
               "canEdit": true,
               "canMove": false,
               "canAddChild": true,
@@ -545,6 +568,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -571,6 +595,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -592,6 +617,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -613,6 +639,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -634,6 +661,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -660,6 +688,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -686,6 +715,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -707,6 +737,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -728,6 +759,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -749,6 +781,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             }
           ]
@@ -767,6 +800,7 @@
       "expression": {
         "kind": "children_sum"
       },
+      "indent": 0,
       "rows": [
         {
           "rowCode": "BS_051",
@@ -780,6 +814,7 @@
           "expression": {
             "kind": "children_sum"
           },
+          "indent": 0,
           "rows": [
             {
               "rowCode": "BS_044",
@@ -793,6 +828,7 @@
               "expression": {
                 "kind": "children_sum"
               },
+              "indent": 0,
               "rows": [
                 {
                   "rowCode": "BS_033",
@@ -805,6 +841,7 @@
                   "expression": {
                     "kind": "none"
                   },
+                  "indent": 0,
                   "rows": []
                 },
                 {
@@ -826,6 +863,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -847,6 +885,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -868,6 +907,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -889,6 +929,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -910,6 +951,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -931,6 +973,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -952,6 +995,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -973,6 +1017,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -994,6 +1039,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -1009,6 +1055,7 @@
                     "kind": "ledger_accounts",
                     "ledgerAccounts": []
                   },
+                  "indent": 1,
                   "rows": []
                 }
               ]
@@ -1025,6 +1072,7 @@
               "expression": {
                 "kind": "children_sum"
               },
+              "indent": 0,
               "rows": [
                 {
                   "rowCode": "BS_045",
@@ -1037,6 +1085,7 @@
                   "expression": {
                     "kind": "none"
                   },
+                  "indent": 0,
                   "rows": []
                 },
                 {
@@ -1058,6 +1107,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -1079,6 +1129,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -1100,6 +1151,7 @@
                       }
                     ]
                   },
+                  "indent": 1,
                   "rows": []
                 },
                 {
@@ -1115,6 +1167,7 @@
                     "kind": "ledger_accounts",
                     "ledgerAccounts": []
                   },
+                  "indent": 1,
                   "rows": []
                 }
               ]
@@ -1133,6 +1186,7 @@
           "expression": {
             "kind": "children_sum"
           },
+          "indent": 0,
           "rows": [
             {
               "rowCode": "BS_052",
@@ -1145,6 +1199,7 @@
               "expression": {
                 "kind": "none"
               },
+              "indent": 0,
               "rows": []
             },
             {
@@ -1166,6 +1221,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -1187,6 +1243,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -1208,6 +1265,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             },
             {
@@ -1234,6 +1292,7 @@
                   }
                 ]
               },
+              "indent": 1,
               "rows": []
             }
           ]

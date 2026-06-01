@@ -41,19 +41,21 @@ type ColumnResponse struct {
 }
 
 type RowResponse struct {
-	Id          uuid.UUID          `json:"id,omitempty"`
-	RowCode     string             `json:"rowCode"`
-	Text        string             `json:"text"`
-	Sequence    int                `json:"sequence"`
-	LineNo      *int               `json:"lineNo,omitempty"`
-	ShowLineNo  bool               `json:"showLineNo"`
-	SumFactor   int                `json:"sumFactor"`
-	CanEdit     bool               `json:"canEdit"`
-	CanMove     bool               `json:"canMove"`
-	CanAddChild bool               `json:"canAddChild"`
-	Expression  ExpressionResponse `json:"expression"`
-	Rows        []RowResponse      `json:"rows,omitempty"`
-	Amounts     []decimal.Decimal  `json:"amounts,omitempty"`
+	Id               uuid.UUID          `json:"id,omitempty"`
+	RowCode          string             `json:"rowCode"`
+	Text             string             `json:"text"`
+	Sequence         int                `json:"sequence"`
+	LineNo           *int               `json:"lineNo,omitempty"`
+	ShowLineNo       bool               `json:"showLineNo"`
+	SumFactor        int                `json:"sumFactor"`
+	DisplaySumFactor bool               `json:"displaySumFactor"`
+	Indent           int                `json:"indent"`
+	CanEdit          bool               `json:"canEdit"`
+	CanMove          bool               `json:"canMove"`
+	CanAddChild      bool               `json:"canAddChild"`
+	Expression       ExpressionResponse `json:"expression"`
+	Rows             []RowResponse      `json:"rows,omitempty"`
+	Amounts          []decimal.Decimal  `json:"amounts,omitempty"`
 }
 
 type ExpressionResponse struct {
@@ -110,19 +112,21 @@ func columnDTOToVO(dto query.Column) ColumnResponse {
 
 func rowDTOToVO(dto query.Row) RowResponse {
 	return RowResponse{
-		Id:          dto.Id,
-		RowCode:     dto.RowCode,
-		Text:        dto.Text,
-		Sequence:    dto.Sequence,
-		LineNo:      dto.LineNo,
-		ShowLineNo:  dto.ShowLineNo,
-		SumFactor:   dto.SumFactor,
-		CanEdit:     dto.CanEdit,
-		CanMove:     dto.CanMove,
-		CanAddChild: dto.CanAddChild,
-		Expression:  expressionDTOToVO(dto.Expression),
-		Rows:        converter.DTOsToVOs(dto.Rows, rowDTOToVO),
-		Amounts:     dto.Amounts,
+		Id:               dto.Id,
+		RowCode:          dto.RowCode,
+		Text:             dto.Text,
+		Sequence:         dto.Sequence,
+		LineNo:           dto.LineNo,
+		ShowLineNo:       dto.ShowLineNo,
+		SumFactor:        dto.SumFactor,
+		DisplaySumFactor: dto.DisplaySumFactor,
+		Indent:           dto.Indent,
+		CanEdit:          dto.CanEdit,
+		CanMove:          dto.CanMove,
+		CanAddChild:      dto.CanAddChild,
+		Expression:       expressionDTOToVO(dto.Expression),
+		Rows:             converter.DTOsToVOs(dto.Rows, rowDTOToVO),
+		Amounts:          dto.Amounts,
 	}
 }
 

@@ -21,7 +21,16 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var sobId = uuid.New()
+var (
+	sobId              = uuid.New()
+	op01CashFlowItemId = uuid.New()
+	op06CashFlowItemId = uuid.New()
+)
+
+var sampleCashFlowItemIdsByCode = map[string]uuid.UUID{
+	"OP_01": op01CashFlowItemId,
+	"OP_06": op06CashFlowItemId,
+}
 
 var sampleAccountEntries = []accountEntry{
 	{
@@ -61,13 +70,14 @@ var sampleAccountEntries = []accountEntry{
 		balanceDirection: "debit",
 	},
 	{
-		number:           "006602",
-		level:            1,
-		title:            "管理费用",
-		superiorNumber:   "",
-		class:            5,
-		group:            501,
-		balanceDirection: "not_defined",
+		number:                          "006602",
+		level:                           1,
+		title:                           "管理费用",
+		superiorNumber:                  "",
+		class:                           5,
+		group:                           501,
+		balanceDirection:                "not_defined",
+		defaultCashFlowItemCodeForDebit: "OP_06",
 	},
 	{
 		number:           "006602000001",
@@ -96,6 +106,16 @@ var sampleAccountEntries = []accountEntry{
 		group:            503,
 		balanceDirection: "not_defined",
 	},
+	{
+		number:                           "005001",
+		level:                            1,
+		title:                            "主营业务收入",
+		superiorNumber:                   "",
+		class:                            5,
+		group:                            501,
+		balanceDirection:                 "credit",
+		defaultCashFlowItemCodeForCredit: "OP_01",
+	},
 }
 
 func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
@@ -105,8 +125,9 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 		sobService service.SobService
 	}
 	type args struct {
-		sobId          uuid.UUID
-		accountEntries []accountEntry
+		sobId                 uuid.UUID
+		accountEntries        []accountEntry
+		cashFlowItemIdsByCode map[string]uuid.UUID
 	}
 	tests := []struct {
 		name       string
@@ -122,8 +143,9 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 				sobService: mockSobService{},
 			},
 			args: args{
-				sobId:          sobId,
-				accountEntries: sampleAccountEntries,
+				sobId:                 sobId,
+				accountEntries:        sampleAccountEntries,
+				cashFlowItemIdsByCode: sampleCashFlowItemIdsByCode,
 			},
 			wantNumber: map[string]string{
 				"库存现金":   "001001",
@@ -134,18 +156,19 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 				"办公费":    "006602000001",
 				"办公室租金":  "006602000001000001",
 				"文具费用":   "006602000001000002",
+				"主营业务收入": "005001",
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries)
+			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.cashFlowItemIdsByCode)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("prepareAccounts() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			assert.Equal(t, 8, len(got))
+			assert.Equal(t, 9, len(got))
 			for _, acc := range got {
 				switch acc.Title() {
 				case "库存现金":
@@ -154,6 +177,8 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 					assert.EqualValues(t, []int{1001}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.True(t, acc.IsLeaf())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForDebit())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForCredit())
 				case "银行存款":
 					assert.Equal(t, tt.wantNumber["银行存款"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
@@ -178,6 +203,8 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 					assert.EqualValues(t, []int{6602}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.False(t, acc.IsLeaf())
+					assert.Equal(t, op06CashFlowItemId, *acc.DefaultCashFlowItemIdForDebit())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForCredit())
 				case "办公费":
 					assert.Equal(t, tt.wantNumber["办公费"], acc.RawAccountNumber())
 					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
@@ -196,10 +223,39 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 					assert.EqualValues(t, []int{6602, 1, 2}, hierarchy)
 					assert.Equal(t, 3, acc.Level())
 					assert.True(t, acc.IsLeaf())
+				case "主营业务收入":
+					assert.Equal(t, tt.wantNumber["主营业务收入"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{5001}, hierarchy)
+					assert.Equal(t, 1, acc.Level())
+					assert.True(t, acc.IsLeaf())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForDebit())
+					assert.Equal(t, op01CashFlowItemId, *acc.DefaultCashFlowItemIdForCredit())
 				}
 			}
 		})
 	}
+}
+
+func TestAccountDataLoadHandler_prepareAccounts_UnknownDefaultCashFlowItemCode(t *testing.T) {
+	t.Parallel()
+
+	entries := []accountEntry{
+		{
+			number:                          "006602",
+			level:                           1,
+			title:                           "管理费用",
+			superiorNumber:                  "",
+			class:                           5,
+			group:                           501,
+			balanceDirection:                "not_defined",
+			defaultCashFlowItemCodeForDebit: "UNKNOWN",
+		},
+	}
+
+	_, err := prepareAccounts(sobId, entries, sampleCashFlowItemIdsByCode)
+
+	assert.ErrorContains(t, err, "cash flow item code UNKNOWN not found")
 }
 
 type mockRepo struct{}

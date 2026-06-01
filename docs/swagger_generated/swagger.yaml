@@ -772,10 +772,14 @@ definitions:
         type: boolean
       canMove:
         type: boolean
+      displaySumFactor:
+        type: boolean
       expression:
         $ref: '#/definitions/http.ExpressionResponse'
       id:
         type: string
+      indent:
+        type: integer
       lineNo:
         type: integer
       rowCode:
@@ -849,15 +853,6 @@ definitions:
     required:
     - name
     type: object
-  http.UpdateColumnRequest:
-    properties:
-      id:
-        type: string
-      label:
-        type: string
-      valueType:
-        type: string
-    type: object
   http.UpdateExpressionRequest:
     properties:
       cashFlowItems:
@@ -908,10 +903,6 @@ definitions:
     type: object
   http.UpdateReportRequest:
     properties:
-      columns:
-        items:
-          $ref: '#/definitions/http.UpdateColumnRequest'
-        type: array
       rows:
         items:
           $ref: '#/definitions/http.UpdateRowRequest'
@@ -934,10 +925,14 @@ definitions:
         type: boolean
       canMove:
         type: boolean
+      displaySumFactor:
+        type: boolean
       expression:
         $ref: '#/definitions/http.UpdateExpressionRequest'
       id:
         type: string
+      indent:
+        type: integer
       lineNo:
         type: integer
       rowCode:
@@ -2326,7 +2321,7 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates report columns, row tree, and expressions.
+      description: Updates report title, row tree, and expressions.
       parameters:
       - description: Sob ID
         in: path
@@ -2338,7 +2333,7 @@ paths:
         name: reportId
         required: true
         type: string
-      - description: Complete report structure
+      - description: Report update payload
         in: body
         name: UpdateReportRequest
         required: true

@@ -171,12 +171,12 @@ func (h Handler) RegenerateReport(c *gin.Context) {
 //
 //	@Tags			reports
 //	@Summary		Update report structure
-//	@Description	Updates report columns, row tree, and expressions.
+//	@Description	Updates report title, row tree, and expressions.
 //	@Accept			application/json
 //	@Produce		application/json
 //	@Param			sobId				path	string				true	"Sob ID"
 //	@Param			reportId			path	string				true	"Report ID"
-//	@Param			UpdateReportRequest	body	UpdateReportRequest	true	"Complete report structure"
+//	@Param			UpdateReportRequest	body	UpdateReportRequest	true	"Report update payload"
 //	@Success		204
 //	@Failure		400	{object}	Error
 //	@Failure		500	{object}	Error

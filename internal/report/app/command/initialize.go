@@ -83,16 +83,18 @@ type initializeColumn struct {
 }
 
 type initializeRow struct {
-	RowCode     string               `json:"rowCode"`
-	Text        string               `json:"text"`
-	LineNo      *int                 `json:"lineNo"`
-	ShowLineNo  bool                 `json:"showLineNo"`
-	SumFactor   int                  `json:"sumFactor"`
-	CanEdit     *bool                `json:"canEdit"`
-	CanMove     *bool                `json:"canMove"`
-	CanAddChild *bool                `json:"canAddChild"`
-	Expression  initializeExpression `json:"expression"`
-	Rows        []initializeRow      `json:"rows"`
+	RowCode          string               `json:"rowCode"`
+	Text             string               `json:"text"`
+	LineNo           *int                 `json:"lineNo"`
+	ShowLineNo       bool                 `json:"showLineNo"`
+	SumFactor        int                  `json:"sumFactor"`
+	DisplaySumFactor bool                 `json:"displaySumFactor"`
+	Indent           int                  `json:"indent"`
+	CanEdit          *bool                `json:"canEdit"`
+	CanMove          *bool                `json:"canMove"`
+	CanAddChild      *bool                `json:"canAddChild"`
+	Expression       initializeExpression `json:"expression"`
+	Rows             []initializeRow      `json:"rows"`
 }
 
 type initializeExpression struct {
@@ -209,7 +211,7 @@ func convertRows(cmds []initializeRow) ([]*report.Row, error) {
 		if err != nil {
 			return nil, err
 		}
-		row, err := report.NewRow(uuid.New(), cmd.RowCode, cmd.Text, i+1, cmd.LineNo, cmd.ShowLineNo, cmd.SumFactor, canEdit, canMove, canAddChild, expr, childRows, nil)
+		row, err := report.NewRow(uuid.New(), cmd.RowCode, cmd.Text, i+1, cmd.LineNo, cmd.ShowLineNo, cmd.SumFactor, cmd.DisplaySumFactor, cmd.Indent, canEdit, canMove, canAddChild, expr, childRows, nil)
 		if err != nil {
 			return nil, err
 		}

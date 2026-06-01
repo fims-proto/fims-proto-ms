@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
@@ -18,14 +19,16 @@ import (
 )
 
 type accountEntry struct {
-	number           string
-	level            int
-	title            string
-	superiorNumber   string
-	class            int
-	group            int
-	balanceDirection string
-	isCashEquivalent bool
+	number                           string
+	level                            int
+	title                            string
+	superiorNumber                   string
+	class                            int
+	group                            int
+	balanceDirection                 string
+	isCashEquivalent                 bool
+	defaultCashFlowItemCodeForDebit  string
+	defaultCashFlowItemCodeForCredit string
 }
 
 func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repository) error {
@@ -35,8 +38,18 @@ func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repos
 		return err
 	}
 
+	cashFlowItems, err := repo.ReadCashFlowItemsBySobId(ctx, sob.Id)
+	if err != nil {
+		return fmt.Errorf("could not read cash flow items: %w", err)
+	}
+
+	cashFlowItemIdsByCode := make(map[string]uuid.UUID, len(cashFlowItems))
+	for _, item := range cashFlowItems {
+		cashFlowItemIdsByCode[item.Code()] = item.Id()
+	}
+
 	// 2. prepare accounts
-	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries)
+	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries, cashFlowItemIdsByCode)
 	if err != nil {
 		return err
 	}
@@ -73,6 +86,9 @@ func readFromCSV() ([]accountEntry, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not read file: %w", err)
 		}
+		if len(line) < 8 {
+			return nil, fmt.Errorf("invalid account csv row with %d columns", len(line))
+		}
 		level, err := strconv.Atoi(line[3])
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert level to number: %w", err)
@@ -90,22 +106,35 @@ func readFromCSV() ([]accountEntry, error) {
 			balanceDirection = balance_direction.NotDefined.String()
 		}
 		isCashEquivalent := line[7] == "true" || line[7] == "1"
+		var defaultCashFlowItemCodeForDebit, defaultCashFlowItemCodeForCredit string
+		if len(line) > 8 {
+			defaultCashFlowItemCodeForDebit = strings.TrimSpace(line[8])
+		}
+		if len(line) > 9 {
+			defaultCashFlowItemCodeForCredit = strings.TrimSpace(line[9])
+		}
 		entries = append(entries, accountEntry{
-			number:           line[2],
-			level:            level,
-			title:            line[4],
-			superiorNumber:   line[5],
-			class:            classId,
-			group:            groupId,
-			balanceDirection: balanceDirection,
-			isCashEquivalent: isCashEquivalent,
+			number:                           line[2],
+			level:                            level,
+			title:                            line[4],
+			superiorNumber:                   line[5],
+			class:                            classId,
+			group:                            groupId,
+			balanceDirection:                 balanceDirection,
+			isCashEquivalent:                 isCashEquivalent,
+			defaultCashFlowItemCodeForDebit:  defaultCashFlowItemCodeForDebit,
+			defaultCashFlowItemCodeForCredit: defaultCashFlowItemCodeForCredit,
 		})
 	}
 
 	return entries, nil
 }
 
-func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry) ([]*account.Account, error) {
+func prepareAccounts(
+	sobId uuid.UUID,
+	accountEntries []accountEntry,
+	cashFlowItemIdsByCode map[string]uuid.UUID,
+) ([]*account.Account, error) {
 	// Build a set of superior account numbers for quick lookup (O(1) instead of binary search)
 	superiorNumbers := make(map[string]bool)
 	for _, entry := range accountEntries {
@@ -181,6 +210,21 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry) ([]*account
 				if err != nil {
 					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
 				}
+				defaultDebitItemId, err := resolveDefaultCashFlowItemId(
+					entry.defaultCashFlowItemCodeForDebit,
+					cashFlowItemIdsByCode,
+				)
+				if err != nil {
+					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
+				}
+				defaultCreditItemId, err := resolveDefaultCashFlowItemId(
+					entry.defaultCashFlowItemCodeForCredit,
+					cashFlowItemIdsByCode,
+				)
+				if err != nil {
+					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
+				}
+				domainAccount.UpdateDefaultCashFlowItems(defaultDebitItemId, defaultCreditItemId)
 
 				// Store using entry.number (the raw account number from CSV)
 				preparedAccounts[entry.number] = domainAccount
@@ -199,4 +243,17 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry) ([]*account
 		return nil, fmt.Errorf("prepared accounts size (%d) doesn't equal to CSV entries size (%d)", len(accounts), len(accountEntries))
 	}
 	return accounts, nil
+}
+
+func resolveDefaultCashFlowItemId(code string, cashFlowItemIdsByCode map[string]uuid.UUID) (*uuid.UUID, error) {
+	if code == "" {
+		return nil, nil
+	}
+
+	id, ok := cashFlowItemIdsByCode[code]
+	if !ok {
+		return nil, fmt.Errorf("cash flow item code %s not found", code)
+	}
+
+	return &id, nil
 }

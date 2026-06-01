@@ -10,29 +10,24 @@ import (
 )
 
 type UpdateReportRequest struct {
-	Title   *string               `json:"title,omitempty"`
-	Columns []UpdateColumnRequest `json:"columns,omitempty"`
-	Rows    []UpdateRowRequest    `json:"rows"`
-}
-
-type UpdateColumnRequest struct {
-	Id        *string `json:"id,omitempty"`
-	Label     string  `json:"label"`
-	ValueType string  `json:"valueType"`
+	Title *string            `json:"title,omitempty"`
+	Rows  []UpdateRowRequest `json:"rows"`
 }
 
 type UpdateRowRequest struct {
-	Id          *string                 `json:"id,omitempty"`
-	RowCode     string                  `json:"rowCode"`
-	Text        string                  `json:"text"`
-	LineNo      *int                    `json:"lineNo,omitempty"`
-	ShowLineNo  bool                    `json:"showLineNo"`
-	SumFactor   int                     `json:"sumFactor"`
-	CanEdit     *bool                   `json:"canEdit,omitempty"`
-	CanMove     *bool                   `json:"canMove,omitempty"`
-	CanAddChild *bool                   `json:"canAddChild,omitempty"`
-	Expression  UpdateExpressionRequest `json:"expression"`
-	Rows        []UpdateRowRequest      `json:"rows,omitempty"`
+	Id               *string                 `json:"id,omitempty"`
+	RowCode          string                  `json:"rowCode"`
+	Text             string                  `json:"text"`
+	LineNo           *int                    `json:"lineNo,omitempty"`
+	ShowLineNo       bool                    `json:"showLineNo"`
+	SumFactor        int                     `json:"sumFactor"`
+	DisplaySumFactor bool                    `json:"displaySumFactor"`
+	Indent           int                     `json:"indent"`
+	CanEdit          *bool                   `json:"canEdit,omitempty"`
+	CanMove          *bool                   `json:"canMove,omitempty"`
+	CanAddChild      *bool                   `json:"canAddChild,omitempty"`
+	Expression       UpdateExpressionRequest `json:"expression"`
+	Rows             []UpdateRowRequest      `json:"rows,omitempty"`
 }
 
 type UpdateExpressionRequest struct {
@@ -61,19 +56,6 @@ type UpdateRowReferenceRequest struct {
 }
 
 func (r UpdateReportRequest) mapToCommand(reportId uuid.UUID, sobId uuid.UUID) (command.UpdateReportCmd, error) {
-	columns := make([]command.UpdateReportCmdColumn, 0, len(r.Columns))
-	for _, columnReq := range r.Columns {
-		columnId, err := parseOptionalUUID(columnReq.Id, "columnId")
-		if err != nil {
-			return command.UpdateReportCmd{}, err
-		}
-		columns = append(columns, command.UpdateReportCmdColumn{
-			ColumnId:  columnId,
-			Label:     columnReq.Label,
-			ValueType: columnReq.ValueType,
-		})
-	}
-
 	rows, err := convertRows(r.Rows)
 	if err != nil {
 		return command.UpdateReportCmd{}, err
@@ -83,7 +65,6 @@ func (r UpdateReportRequest) mapToCommand(reportId uuid.UUID, sobId uuid.UUID) (
 		ReportId: reportId,
 		SobId:    sobId,
 		Title:    r.Title,
-		Columns:  columns,
 		Rows:     rows,
 	}, nil
 }
@@ -100,15 +81,17 @@ func convertRows(reqs []UpdateRowRequest) ([]command.UpdateReportCmdRow, error) 
 			return nil, err
 		}
 		rows = append(rows, command.UpdateReportCmdRow{
-			RowId:       rowId,
-			RowCode:     rowReq.RowCode,
-			Text:        rowReq.Text,
-			LineNo:      rowReq.LineNo,
-			ShowLineNo:  rowReq.ShowLineNo,
-			SumFactor:   rowReq.SumFactor,
-			CanEdit:     rowReq.CanEdit,
-			CanMove:     rowReq.CanMove,
-			CanAddChild: rowReq.CanAddChild,
+			RowId:            rowId,
+			RowCode:          rowReq.RowCode,
+			Text:             rowReq.Text,
+			LineNo:           rowReq.LineNo,
+			ShowLineNo:       rowReq.ShowLineNo,
+			SumFactor:        rowReq.SumFactor,
+			DisplaySumFactor: rowReq.DisplaySumFactor,
+			Indent:           rowReq.Indent,
+			CanEdit:          rowReq.CanEdit,
+			CanMove:          rowReq.CanMove,
+			CanAddChild:      rowReq.CanAddChild,
 			Expression: command.UpdateReportCmdExpression{
 				Kind:           rowReq.Expression.Kind,
 				LedgerAccounts: convertLedgerAccountRefs(rowReq.Expression.LedgerAccounts),

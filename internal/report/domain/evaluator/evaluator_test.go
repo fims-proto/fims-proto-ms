@@ -183,7 +183,7 @@ func newLedgerRow(t *testing.T, code string, text string, sumFactor int, account
 		{AccountId: accountId, SumFactor: 1, Measure: measure},
 	}, nil, nil)
 	require.NoError(t, err)
-	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, sumFactor, true, true, false, expr, nil, nil)
+	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, sumFactor, false, 0, true, true, false, expr, nil, nil)
 	require.NoError(t, err)
 	return row
 }
@@ -194,7 +194,7 @@ func newCashFlowRow(t *testing.T, code string, text string, sumFactor int, itemI
 		{ItemId: itemId, SumFactor: 1},
 	}, nil)
 	require.NoError(t, err)
-	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, sumFactor, true, true, false, expr, nil, nil)
+	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, sumFactor, false, 0, true, true, false, expr, nil, nil)
 	require.NoError(t, err)
 	return row
 }
@@ -203,7 +203,7 @@ func newChildrenSumRow(t *testing.T, code string, text string, rows ...*report.R
 	t.Helper()
 	expr, err := report.NewExpression(uuid.New(), report.ExpressionChildrenSum, nil, nil, nil)
 	require.NoError(t, err)
-	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, 1, true, true, true, expr, rows, nil)
+	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, 1, false, 0, true, true, true, expr, rows, nil)
 	require.NoError(t, err)
 	return row
 }
@@ -212,7 +212,7 @@ func newRowsExplicitRow(t *testing.T, code string, text string, refs []report.Ro
 	t.Helper()
 	expr, err := report.NewExpression(uuid.New(), report.ExpressionRowsExplicit, nil, nil, refs)
 	require.NoError(t, err)
-	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, 0, true, true, false, expr, nil, nil)
+	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, 0, false, 0, true, true, false, expr, nil, nil)
 	require.NoError(t, err)
 	return row
 }
@@ -221,7 +221,7 @@ func newNoneRow(t *testing.T, code string, text string, sumFactor int, rows ...*
 	t.Helper()
 	expr, err := report.NewExpression(uuid.New(), report.ExpressionNone, nil, nil, nil)
 	require.NoError(t, err)
-	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, sumFactor, true, true, true, expr, rows, nil)
+	row, err := report.NewRow(uuid.New(), code, text, 1, nil, true, sumFactor, false, 0, true, true, true, expr, rows, nil)
 	require.NoError(t, err)
 	return row
 }

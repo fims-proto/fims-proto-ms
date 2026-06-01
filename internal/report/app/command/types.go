@@ -34,28 +34,23 @@ type UpdateReportCmd struct {
 	ReportId uuid.UUID
 	SobId    uuid.UUID
 	Title    *string
-	Columns  []UpdateReportCmdColumn
 	Rows     []UpdateReportCmdRow
 }
 
-type UpdateReportCmdColumn struct {
-	ColumnId  uuid.UUID
-	Label     string
-	ValueType string
-}
-
 type UpdateReportCmdRow struct {
-	RowId       uuid.UUID
-	RowCode     string
-	Text        string
-	LineNo      *int
-	ShowLineNo  bool
-	SumFactor   int
-	CanEdit     *bool
-	CanMove     *bool
-	CanAddChild *bool
-	Expression  UpdateReportCmdExpression
-	Rows        []UpdateReportCmdRow
+	RowId            uuid.UUID
+	RowCode          string
+	Text             string
+	LineNo           *int
+	ShowLineNo       bool
+	SumFactor        int
+	DisplaySumFactor bool
+	Indent           int
+	CanEdit          *bool
+	CanMove          *bool
+	CanAddChild      *bool
+	Expression       UpdateReportCmdExpression
+	Rows             []UpdateReportCmdRow
 }
 
 type UpdateReportCmdExpression struct {

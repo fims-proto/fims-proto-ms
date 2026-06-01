@@ -7,29 +7,24 @@ import (
 )
 
 type UpdateParams struct {
-	Title   *string
-	Columns []UpdateColumnParams
-	Rows    []UpdateRowParams
-}
-
-type UpdateColumnParams struct {
-	ColumnId  uuid.UUID
-	Label     string
-	ValueType string
+	Title *string
+	Rows  []UpdateRowParams
 }
 
 type UpdateRowParams struct {
-	RowId       uuid.UUID
-	RowCode     string
-	Text        string
-	LineNo      *int
-	ShowLineNo  bool
-	SumFactor   int
-	CanEdit     *bool
-	CanMove     *bool
-	CanAddChild *bool
-	Expression  *Expression
-	Rows        []UpdateRowParams
+	RowId            uuid.UUID
+	RowCode          string
+	Text             string
+	LineNo           *int
+	ShowLineNo       bool
+	SumFactor        int
+	DisplaySumFactor bool
+	Indent           int
+	CanEdit          *bool
+	CanMove          *bool
+	CanAddChild      *bool
+	Expression       *Expression
+	Rows             []UpdateRowParams
 }
 
 func rebuildRows(current []*Row, desired []UpdateRowParams) ([]*Row, error) {
@@ -111,6 +106,8 @@ func rebuildRows(current []*Row, desired []UpdateRowParams) ([]*Row, error) {
 			desiredRow.LineNo,
 			desiredRow.ShowLineNo,
 			desiredRow.SumFactor,
+			desiredRow.DisplaySumFactor,
+			desiredRow.Indent,
 			canEdit,
 			canMove,
 			canAddChild,

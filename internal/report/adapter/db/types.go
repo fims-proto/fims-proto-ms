@@ -45,21 +45,23 @@ type reportColumnPO struct {
 }
 
 type reportRowPO struct {
-	Id          uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	ReportId    uuid.UUID  `gorm:"type:uuid"`
-	ParentRowId *uuid.UUID `gorm:"type:uuid"`
-	RowCode     string
-	Text        string
-	Sequence    int
-	LineNo      *int
-	ShowLineNo  bool
-	SumFactor   int
-	CanEdit     bool
-	CanMove     bool
-	CanAddChild bool
-	Amounts     pgtype.TextArray    `gorm:"type:text[]"`
-	Expression  *reportExpressionPO `gorm:"foreignKey:RowId"`
-	Rows        []*reportRowPO      `gorm:"foreignKey:ParentRowId"`
+	Id               uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	ReportId         uuid.UUID  `gorm:"type:uuid"`
+	ParentRowId      *uuid.UUID `gorm:"type:uuid"`
+	RowCode          string
+	Text             string
+	Sequence         int
+	LineNo           *int
+	ShowLineNo       bool
+	SumFactor        int
+	DisplaySumFactor bool `gorm:"not null;default:false"`
+	Indent           int
+	CanEdit          bool
+	CanMove          bool
+	CanAddChild      bool
+	Amounts          pgtype.TextArray    `gorm:"type:text[]"`
+	Expression       *reportExpressionPO `gorm:"foreignKey:RowId"`
+	Rows             []*reportRowPO      `gorm:"foreignKey:ParentRowId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
@@ -143,21 +145,23 @@ func rowBOToPO(bo *report.Row, reportId uuid.UUID, parentRowId uuid.UUID) *repor
 		panic(fmt.Errorf("failed to convert row amounts: %w", err))
 	}
 	return &reportRowPO{
-		Id:          bo.Id(),
-		ReportId:    reportId,
-		ParentRowId: converter.UUIDToPtr(parentRowId),
-		RowCode:     bo.RowCode(),
-		Text:        bo.Text(),
-		Sequence:    bo.Sequence(),
-		LineNo:      bo.LineNo(),
-		ShowLineNo:  bo.ShowLineNo(),
-		SumFactor:   bo.SumFactor(),
-		CanEdit:     bo.CanEdit(),
-		CanMove:     bo.CanMove(),
-		CanAddChild: bo.CanAddChild(),
-		Amounts:     amounts,
-		Expression:  expressionBOToPO(bo.Expression(), bo.Id()),
-		Rows:        rows,
+		Id:               bo.Id(),
+		ReportId:         reportId,
+		ParentRowId:      converter.UUIDToPtr(parentRowId),
+		RowCode:          bo.RowCode(),
+		Text:             bo.Text(),
+		Sequence:         bo.Sequence(),
+		LineNo:           bo.LineNo(),
+		ShowLineNo:       bo.ShowLineNo(),
+		SumFactor:        bo.SumFactor(),
+		DisplaySumFactor: bo.DisplaySumFactor(),
+		Indent:           bo.Indent(),
+		CanEdit:          bo.CanEdit(),
+		CanMove:          bo.CanMove(),
+		CanAddChild:      bo.CanAddChild(),
+		Amounts:          amounts,
+		Expression:       expressionBOToPO(bo.Expression(), bo.Id()),
+		Rows:             rows,
 	}
 }
 
@@ -203,7 +207,7 @@ func rowPOToBO(po *reportRowPO) (*report.Row, error) {
 	if err != nil {
 		return nil, err
 	}
-	return report.NewRow(po.Id, po.RowCode, po.Text, po.Sequence, po.LineNo, po.ShowLineNo, po.SumFactor, po.CanEdit, po.CanMove, po.CanAddChild, expr, rows, amounts)
+	return report.NewRow(po.Id, po.RowCode, po.Text, po.Sequence, po.LineNo, po.ShowLineNo, po.SumFactor, po.DisplaySumFactor, po.Indent, po.CanEdit, po.CanMove, po.CanAddChild, expr, rows, amounts)
 }
 
 func expressionPOToBO(po *reportExpressionPO) (*report.Expression, error) {
@@ -251,19 +255,21 @@ func rowPOToDTO(po *reportRowPO) query.Row {
 		panic(fmt.Errorf("failed to convert row amounts: %w", err))
 	}
 	return query.Row{
-		Id:          po.Id,
-		RowCode:     po.RowCode,
-		Text:        po.Text,
-		Sequence:    po.Sequence,
-		LineNo:      po.LineNo,
-		ShowLineNo:  po.ShowLineNo,
-		SumFactor:   po.SumFactor,
-		CanEdit:     po.CanEdit,
-		CanMove:     po.CanMove,
-		CanAddChild: po.CanAddChild,
-		Expression:  expressionPOToDTO(po.Expression),
-		Rows:        converter.POsToDTOs(po.Rows, rowPOToDTO),
-		Amounts:     amounts,
+		Id:               po.Id,
+		RowCode:          po.RowCode,
+		Text:             po.Text,
+		Sequence:         po.Sequence,
+		LineNo:           po.LineNo,
+		ShowLineNo:       po.ShowLineNo,
+		SumFactor:        po.SumFactor,
+		DisplaySumFactor: po.DisplaySumFactor,
+		Indent:           po.Indent,
+		CanEdit:          po.CanEdit,
+		CanMove:          po.CanMove,
+		CanAddChild:      po.CanAddChild,
+		Expression:       expressionPOToDTO(po.Expression),
+		Rows:             converter.POsToDTOs(po.Rows, rowPOToDTO),
+		Amounts:          amounts,
 	}
 }
 

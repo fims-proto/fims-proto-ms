@@ -78,19 +78,21 @@ type Column struct {
 }
 
 type Row struct {
-	id          uuid.UUID
-	rowCode     string
-	text        string
-	sequence    int
-	lineNo      *int
-	showLineNo  bool
-	sumFactor   int
-	canEdit     bool
-	canMove     bool
-	canAddChild bool
-	expression  *Expression
-	rows        []*Row
-	amounts     []decimal.Decimal
+	id               uuid.UUID
+	rowCode          string
+	text             string
+	sequence         int
+	lineNo           *int
+	showLineNo       bool
+	sumFactor        int
+	displaySumFactor bool
+	indent           int
+	canEdit          bool
+	canMove          bool
+	canAddChild      bool
+	expression       *Expression
+	rows             []*Row
+	amounts          []decimal.Decimal
 }
 
 type Expression struct {
@@ -190,6 +192,8 @@ func NewRow(
 	lineNo *int,
 	showLineNo bool,
 	sumFactor int,
+	displaySumFactor bool,
+	indent int,
 	canEdit bool,
 	canMove bool,
 	canAddChild bool,
@@ -216,19 +220,21 @@ func NewRow(
 		return nil, fmt.Errorf("row expression is required")
 	}
 	return &Row{
-		id:          id,
-		rowCode:     rowCode,
-		text:        text,
-		sequence:    sequence,
-		lineNo:      lineNo,
-		showLineNo:  showLineNo,
-		sumFactor:   sumFactor,
-		canEdit:     canEdit,
-		canMove:     canMove,
-		canAddChild: canAddChild,
-		expression:  expression,
-		rows:        rows,
-		amounts:     amounts,
+		id:               id,
+		rowCode:          rowCode,
+		text:             text,
+		sequence:         sequence,
+		lineNo:           lineNo,
+		showLineNo:       showLineNo,
+		sumFactor:        sumFactor,
+		displaySumFactor: displaySumFactor,
+		indent:           indent,
+		canEdit:          canEdit,
+		canMove:          canMove,
+		canAddChild:      canAddChild,
+		expression:       expression,
+		rows:             rows,
+		amounts:          amounts,
 	}, nil
 }
 
@@ -297,21 +303,6 @@ func (r *Report) UpdateStructure(params UpdateParams) error {
 	if params.Title != nil {
 		r.title = *params.Title
 	}
-	if len(params.Columns) > 0 {
-		columns := make([]*Column, 0, len(params.Columns))
-		for i, c := range params.Columns {
-			columnId := c.ColumnId
-			if columnId == uuid.Nil {
-				columnId = uuid.New()
-			}
-			col, err := NewColumn(columnId, c.Label, c.ValueType, i+1)
-			if err != nil {
-				return err
-			}
-			columns = append(columns, col)
-		}
-		r.columns = columns
-	}
 	if params.Rows != nil {
 		rows, err := rebuildRows(r.rows, params.Rows)
 		if err != nil {
@@ -343,6 +334,8 @@ func (r *Row) Sequence() int                        { return r.sequence }
 func (r *Row) LineNo() *int                         { return r.lineNo }
 func (r *Row) ShowLineNo() bool                     { return r.showLineNo }
 func (r *Row) SumFactor() int                       { return r.sumFactor }
+func (r *Row) DisplaySumFactor() bool               { return r.displaySumFactor }
+func (r *Row) Indent() int                          { return r.indent }
 func (r *Row) CanEdit() bool                        { return r.canEdit }
 func (r *Row) CanMove() bool                        { return r.canMove }
 func (r *Row) CanAddChild() bool                    { return r.canAddChild }
@@ -375,6 +368,8 @@ func (r *Row) copy() *Row {
 		copyIntPtr(r.lineNo),
 		r.showLineNo,
 		r.sumFactor,
+		r.displaySumFactor,
+		r.indent,
 		r.canEdit,
 		r.canMove,
 		r.canAddChild,
