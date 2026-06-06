@@ -1,6 +1,7 @@
 package db
 
 import (
+	"encoding/json"
 	"fmt"
 	"maps"
 	"slices"
@@ -17,402 +18,283 @@ import (
 )
 
 type reportPO struct {
-	Id          uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	SobId       uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_PeriodId_Title"`
-	PeriodId    *uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_PeriodId_Title"`
-	Title       string     `gorm:"uniqueIndex:UQ_Reports_SobId_PeriodId_Title"`
-	Template    bool
-	Class       string
-	AmountTypes pgtype.TextArray `gorm:"type:text[]"`
-	Sections    []*sectionPO     `gorm:"foreignKey:ReportId"`
+	Id       uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	SobId    uuid.UUID  `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_Class_PeriodId,where:template = false"`
+	PeriodId *uuid.UUID `gorm:"type:uuid;uniqueIndex:UQ_Reports_SobId_Class_PeriodId,where:template = false"`
+	Title    string
+	Template bool
+	Class    string `gorm:"uniqueIndex:UQ_Reports_SobId_Class_PeriodId,where:template = false"`
 
-	Period *periodPO `gorm:"foreignKey:PeriodId"`
-
-	CreatedAt time.Time `gorm:"<-:create"`
-	UpdatedAt time.Time
-}
-
-type sectionPO struct {
-	Id          uuid.UUID  `gorm:"type:uuid;primaryKey"`
-	ReportId    uuid.UUID  `gorm:"type:uuid"`
-	SectionId   *uuid.UUID `gorm:"type:uuid"`
-	Title       string
-	Sequence    int
-	SectionType string
-	Amounts     pgtype.TextArray `gorm:"type:text[]"`
-	Sections    []*sectionPO     `gorm:"foreignKey:SectionId"`
-	Items       []*itemPO        `gorm:"foreignKey:SectionId"`
+	Columns []*reportColumnPO `gorm:"foreignKey:ReportId"`
+	Rows    []*reportRowPO    `gorm:"foreignKey:ReportId"`
+	Period  *periodPO         `gorm:"foreignKey:PeriodId"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
 }
 
-type itemPO struct {
-	Id               uuid.UUID `gorm:"type:uuid;primaryKey"`
-	SectionId        uuid.UUID `gorm:"type:uuid"`
-	Text             string
-	Level            int
-	Sequence         int
-	ItemType         string
-	SumFactor        int
-	DisplaySumFactor bool
-	DataSource       string
-	Formulas         []*formulaPO     `gorm:"foreignKey:ItemId"`
-	Amounts          pgtype.TextArray `gorm:"type:text[]"`
-	IsEditable       bool
-	IsBreakdownItem  bool
-	IsAbleToAddChild bool
-
-	CreatedAt time.Time `gorm:"<-:create"`
-	UpdatedAt time.Time
-}
-
-type formulaPO struct {
+type reportColumnPO struct {
 	Id        uuid.UUID `gorm:"type:uuid;primaryKey"`
-	ItemId    uuid.UUID `gorm:"type:uuid"`
-	AccountId uuid.UUID `gorm:"type:uuid"`
-	Sequence  int       // sequence within the parent
-	SumFactor int
-	Rule      string
-	Amounts   pgtype.TextArray `gorm:"type:text[]"`
-
-	Account accountPO `gorm:"foreignKey:AccountId"`
+	ReportId  uuid.UUID `gorm:"type:uuid"`
+	Label     string
+	ValueType string
+	Sequence  int
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time
 }
 
-// table names
+type reportRowPO struct {
+	Id               uuid.UUID  `gorm:"type:uuid;primaryKey"`
+	ReportId         uuid.UUID  `gorm:"type:uuid"`
+	ParentRowId      *uuid.UUID `gorm:"type:uuid"`
+	RowCode          string
+	Text             string
+	Sequence         int
+	LineNo           *int
+	ShowLineNo       bool
+	SumFactor        int
+	DisplaySumFactor bool `gorm:"not null;default:false"`
+	Indent           int
+	CanEdit          bool
+	CanMove          bool
+	CanAddChild      bool
+	Amounts          pgtype.TextArray    `gorm:"type:text[]"`
+	Expression       *reportExpressionPO `gorm:"foreignKey:RowId"`
+	Rows             []*reportRowPO      `gorm:"foreignKey:ParentRowId"`
 
-func (r reportPO) TableName() string {
-	return "a_reports"
+	CreatedAt time.Time `gorm:"<-:create"`
+	UpdatedAt time.Time
 }
 
-func (s sectionPO) TableName() string {
-	return "a_sections"
+type reportExpressionPO struct {
+	Id                 uuid.UUID `gorm:"type:uuid;primaryKey"`
+	RowId              uuid.UUID `gorm:"type:uuid;uniqueIndex"`
+	Kind               string
+	LedgerAccountsJSON string `gorm:"type:jsonb"`
+	CashFlowItemsJSON  string `gorm:"type:jsonb"`
+	RowReferencesJSON  string `gorm:"type:jsonb"`
+
+	CreatedAt time.Time `gorm:"<-:create"`
+	UpdatedAt time.Time
 }
 
-func (i itemPO) TableName() string {
-	return "a_items"
+type periodPO struct {
+	Id           uuid.UUID `gorm:"type:uuid;primaryKey"`
+	SobId        uuid.UUID `gorm:"type:uuid"`
+	FiscalYear   int
+	PeriodNumber int
 }
-
-func (f formulaPO) TableName() string {
-	return "a_formulas"
-}
-
-// schema
 
 func (r reportPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return r.TableName(), nil
+		return "reports", nil
 	}
-	if strings.EqualFold(entity, "sections") {
-		return "Sections", nil
+	if strings.EqualFold(entity, "columns") {
+		return "Columns", nil
+	}
+	if strings.EqualFold(entity, "rows") {
+		return "Rows", nil
 	}
 	if strings.EqualFold(entity, "period") {
 		return "Period", nil
 	}
-	return "", fmt.Errorf("reportPO doesn't have association named %s", entity)
+	return "", fmt.Errorf("reportPO does not have association named %s", entity)
 }
-
-func (s sectionPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return s.TableName(), nil
-	}
-	if strings.EqualFold(entity, "sections") {
-		return "Sections", nil
-	}
-	if strings.EqualFold(entity, "items") {
-		return "Items", nil
-	}
-	return "", fmt.Errorf("sectionPO doesn't have association named %s", entity)
-}
-
-func (i itemPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return i.TableName(), nil
-	}
-	if strings.EqualFold(entity, "formulas") {
-		return "Formulas", nil
-	}
-	return "", fmt.Errorf("itemPO doesn't have association named %s", entity)
-}
-
-func (f formulaPO) ResolveAssociation(entity string) (string, error) {
-	if entity == "" {
-		return f.TableName(), nil
-	}
-	if strings.EqualFold(entity, "account") {
-		return "Account", nil
-	}
-	return "", fmt.Errorf("formulaPO doesn't have association named %s", entity)
-}
-
-// mappers
 
 func reportBOToPO(bo *report.Report) *reportPO {
-	var sectionPOs []*sectionPO
-	for _, section := range bo.Sections() {
-		sectionPOs = append(sectionPOs, sectionBOToPO(section, bo.Id(), uuid.Nil))
+	var columns []*reportColumnPO
+	for _, column := range bo.Columns() {
+		columns = append(columns, columnBOToPO(column, bo.Id()))
 	}
 
-	var amountTypes []string
-	for _, amountType := range bo.AmountTypes() {
-		amountTypes = append(amountTypes, amountType.String())
+	var rows []*reportRowPO
+	for _, row := range bo.Rows() {
+		rows = append(rows, rowBOToPO(row, bo.Id(), uuid.Nil))
 	}
 
-	var textArray pgtype.TextArray
-	if err := textArray.Set(amountTypes); err != nil {
-		panic(fmt.Errorf("failed to convert []string to TextArray: %w", err))
-	}
-
-	po := &reportPO{
-		Id:          bo.Id(),
-		SobId:       bo.SobId(),
-		PeriodId:    converter.UUIDToPtr(bo.PeriodId()),
-		Title:       bo.Title(),
-		Template:    bo.Template(),
-		Class:       bo.Class().String(),
-		AmountTypes: textArray,
-		Sections:    sectionPOs,
-	}
-	return po
-}
-
-func sectionBOToPO(bo *report.Section, reportId uuid.UUID, sectionId uuid.UUID) *sectionPO {
-	var subSections []*sectionPO
-	for _, subSection := range bo.Sections() {
-		subSections = append(subSections, sectionBOToPO(subSection, reportId, bo.Id()))
-	}
-
-	var items []*itemPO
-	for _, item := range bo.Items() {
-		items = append(items, itemBOToPO(item, bo.Id()))
-	}
-
-	amounts, err := decimalArrayToTextArray(bo.Amounts())
-	if err != nil {
-		panic(fmt.Errorf("failed to convert []decimal.Decimal to TextArray: %w", err))
-	}
-
-	return &sectionPO{
-		Id:          bo.Id(),
-		ReportId:    reportId,
-		SectionId:   converter.UUIDToPtr(sectionId),
-		Title:       bo.Title(),
-		Sequence:    bo.Sequence(),
-		SectionType: bo.SectionType().String(),
-		Amounts:     amounts,
-		Sections:    subSections,
-		Items:       items,
+	return &reportPO{
+		Id:       bo.Id(),
+		SobId:    bo.SobId(),
+		PeriodId: converter.UUIDToPtr(bo.PeriodId()),
+		Title:    bo.Title(),
+		Template: bo.Template(),
+		Class:    bo.Class(),
+		Columns:  columns,
+		Rows:     rows,
 	}
 }
 
-func itemBOToPO(bo *report.Item, sectionId uuid.UUID) *itemPO {
-	var formulas []*formulaPO
-	for _, formula := range bo.Formulas() {
-		formulas = append(formulas, formulaBOToPO(formula, bo.Id()))
+func columnBOToPO(bo *report.Column, reportId uuid.UUID) *reportColumnPO {
+	return &reportColumnPO{
+		Id:        bo.Id(),
+		ReportId:  reportId,
+		Label:     bo.Label(),
+		ValueType: bo.ValueType(),
+		Sequence:  bo.Sequence(),
 	}
+}
 
+func rowBOToPO(bo *report.Row, reportId uuid.UUID, parentRowId uuid.UUID) *reportRowPO {
+	var rows []*reportRowPO
+	for _, row := range bo.Rows() {
+		rows = append(rows, rowBOToPO(row, reportId, bo.Id()))
+	}
 	amounts, err := decimalArrayToTextArray(bo.Amounts())
 	if err != nil {
-		panic(fmt.Errorf("failed to convert []decimal.Decimal to TextArray: %w", err))
+		panic(fmt.Errorf("failed to convert row amounts: %w", err))
 	}
-
-	return &itemPO{
+	return &reportRowPO{
 		Id:               bo.Id(),
-		SectionId:        sectionId,
+		ReportId:         reportId,
+		ParentRowId:      converter.UUIDToPtr(parentRowId),
+		RowCode:          bo.RowCode(),
 		Text:             bo.Text(),
-		Level:            bo.Level(),
 		Sequence:         bo.Sequence(),
-		ItemType:         bo.ItemType().String(),
+		LineNo:           bo.LineNo(),
+		ShowLineNo:       bo.ShowLineNo(),
 		SumFactor:        bo.SumFactor(),
 		DisplaySumFactor: bo.DisplaySumFactor(),
-		DataSource:       bo.DataSource().String(),
-		Formulas:         formulas,
+		Indent:           bo.Indent(),
+		CanEdit:          bo.CanEdit(),
+		CanMove:          bo.CanMove(),
+		CanAddChild:      bo.CanAddChild(),
 		Amounts:          amounts,
-		IsEditable:       bo.IsEditable(),
-		IsBreakdownItem:  bo.IsBreakdownItem(),
-		IsAbleToAddChild: bo.IsAbleToAddChild(),
+		Expression:       expressionBOToPO(bo.Expression(), bo.Id()),
+		Rows:             rows,
 	}
 }
 
-func formulaBOToPO(bo *report.Formula, itemId uuid.UUID) *formulaPO {
-	amounts, err := decimalArrayToTextArray(bo.Amounts())
-	if err != nil {
-		panic(fmt.Errorf("failed to convert []decimal.Decimal to TextArray: %w", err))
-	}
-
-	return &formulaPO{
-		Id:        bo.Id(),
-		ItemId:    itemId,
-		Sequence:  bo.Sequence(),
-		AccountId: bo.AccountId(),
-		SumFactor: bo.SumFactor(),
-		Rule:      bo.Rule().String(),
-		Amounts:   amounts,
+func expressionBOToPO(bo *report.Expression, rowId uuid.UUID) *reportExpressionPO {
+	return &reportExpressionPO{
+		Id:                 bo.Id(),
+		RowId:              rowId,
+		Kind:               bo.Kind(),
+		LedgerAccountsJSON: mustMarshalJSON(bo.LedgerAccounts()),
+		CashFlowItemsJSON:  mustMarshalJSON(bo.CashFlowItems()),
+		RowReferencesJSON:  mustMarshalJSON(bo.RowReferences()),
 	}
 }
 
 func reportPOToBO(po *reportPO) (*report.Report, error) {
-	// restore the section structure
 	restructureAndSort(po)
 
-	var amountTypes []string
-	if err := po.AmountTypes.AssignTo(&amountTypes); err != nil {
-		return nil, fmt.Errorf("failed to assign TextArray to []string: %w", err)
-	}
-
-	sections, err := converter.POsToBOs(po.Sections, sectionPOToBO)
+	columns, err := converter.POsToBOs(po.Columns, columnPOToBO)
 	if err != nil {
 		return nil, err
 	}
-
-	return report.New(
-		po.Id,
-		po.SobId,
-		converter.UUIDFromPtr(po.PeriodId),
-		po.Title,
-		po.Template,
-		po.Class,
-		amountTypes,
-		sections,
-	)
+	rows, err := converter.POsToBOs(po.Rows, rowPOToBO)
+	if err != nil {
+		return nil, err
+	}
+	return report.New(po.Id, po.SobId, converter.UUIDFromPtr(po.PeriodId), po.Title, po.Template, po.Class, columns, rows)
 }
 
-func sectionPOToBO(po *sectionPO) (*report.Section, error) {
-	subSections, err := converter.POsToBOs(po.Sections, sectionPOToBO)
+func columnPOToBO(po *reportColumnPO) (*report.Column, error) {
+	return report.NewColumn(po.Id, po.Label, po.ValueType, po.Sequence)
+}
+
+func rowPOToBO(po *reportRowPO) (*report.Row, error) {
+	expr, err := expressionPOToBO(po.Expression)
 	if err != nil {
 		return nil, err
 	}
-
-	items, err := converter.POsToBOs(po.Items, itemPOToBO)
+	rows, err := converter.POsToBOs(po.Rows, rowPOToBO)
 	if err != nil {
 		return nil, err
 	}
-
 	amounts, err := textArrayToDecimalArray(po.Amounts)
 	if err != nil {
 		return nil, err
 	}
-
-	return report.NewSection(
-		po.Id,
-		po.Title,
-		po.Sequence,
-		po.SectionType,
-		amounts,
-		subSections,
-		items,
-	)
+	return report.NewRow(po.Id, po.RowCode, po.Text, po.Sequence, po.LineNo, po.ShowLineNo, po.SumFactor, po.DisplaySumFactor, po.Indent, po.CanEdit, po.CanMove, po.CanAddChild, expr, rows, amounts)
 }
 
-func itemPOToBO(po *itemPO) (*report.Item, error) {
-	formulas, err := converter.POsToBOs(po.Formulas, formulaPOToBO)
-	if err != nil {
+func expressionPOToBO(po *reportExpressionPO) (*report.Expression, error) {
+	if po == nil {
+		return report.NewExpression(uuid.New(), report.ExpressionNone, nil, nil, nil)
+	}
+	var ledgerAccounts []report.LedgerAccountReference
+	var cashFlowItems []report.CashFlowItemReference
+	var rowReferences []report.RowReference
+	if err := json.Unmarshal([]byte(defaultJSON(po.LedgerAccountsJSON)), &ledgerAccounts); err != nil {
 		return nil, err
 	}
-
-	amounts, err := textArrayToDecimalArray(po.Amounts)
-	if err != nil {
+	if err := json.Unmarshal([]byte(defaultJSON(po.CashFlowItemsJSON)), &cashFlowItems); err != nil {
 		return nil, err
 	}
-
-	return report.NewItem(po.Id, po.Text, po.Level, po.Sequence, po.ItemType, po.SumFactor, po.DisplaySumFactor, po.DataSource, formulas, amounts, po.IsEditable, po.IsBreakdownItem, po.IsAbleToAddChild)
-}
-
-func formulaPOToBO(po *formulaPO) (*report.Formula, error) {
-	amounts, err := textArrayToDecimalArray(po.Amounts)
-	if err != nil {
+	if err := json.Unmarshal([]byte(defaultJSON(po.RowReferencesJSON)), &rowReferences); err != nil {
 		return nil, err
 	}
-
-	return report.NewFormula(
-		po.Id,
-		po.Sequence,
-		po.AccountId,
-		po.SumFactor,
-		po.Rule,
-		amounts,
-	)
+	return report.NewExpression(po.Id, po.Kind, ledgerAccounts, cashFlowItems, rowReferences)
 }
 
 func reportPOToDTO(po reportPO) query.Report {
-	// restore the section structure
 	restructureAndSort(&po)
-
-	var amountTypes []string
-	if err := po.AmountTypes.AssignTo(&amountTypes); err != nil {
-		panic(fmt.Errorf("failed to assign TextArray to []string: %w", err))
-	}
-
 	return query.Report{
-		Id:          po.Id,
-		SobId:       po.SobId,
-		Period:      periodPOToDTO(po.Period),
-		Title:       po.Title,
-		Template:    po.Template,
-		Class:       po.Class,
-		AmountTypes: amountTypes,
-		Sections:    converter.POsToDTOs(po.Sections, sectionPOToDTO),
-		CreatedAt:   po.CreatedAt,
-		UpdatedAt:   po.UpdatedAt,
+		Id:        po.Id,
+		SobId:     po.SobId,
+		Period:    periodPOToDTO(po.Period),
+		Title:     po.Title,
+		Template:  po.Template,
+		Class:     po.Class,
+		Columns:   converter.POsToDTOs(po.Columns, columnPOToDTO),
+		Rows:      converter.POsToDTOs(po.Rows, rowPOToDTO),
+		CreatedAt: po.CreatedAt,
+		UpdatedAt: po.UpdatedAt,
 	}
 }
 
-func sectionPOToDTO(po *sectionPO) query.Section {
-	amounts, err := textArrayToDecimalArray(po.Amounts)
-	if err != nil {
-		panic(fmt.Errorf("failed to assign TextArray to []decimal.Decimal: %w", err))
-	}
-
-	return query.Section{
-		Id:          po.Id,
-		Title:       po.Title,
-		Sequence:    po.Sequence,
-		SectionType: po.SectionType,
-		Amounts:     amounts,
-		Sections:    converter.POsToDTOs(po.Sections, sectionPOToDTO),
-		Items:       converter.POsToDTOs(po.Items, itemPOToDTO),
-	}
+func columnPOToDTO(po *reportColumnPO) query.Column {
+	return query.Column{Id: po.Id, Label: po.Label, ValueType: po.ValueType, Sequence: po.Sequence}
 }
 
-func itemPOToDTO(po *itemPO) query.Item {
+func rowPOToDTO(po *reportRowPO) query.Row {
 	amounts, err := textArrayToDecimalArray(po.Amounts)
 	if err != nil {
-		panic(fmt.Errorf("failed to assign TextArray to []decimal.Decimal: %w", err))
+		panic(fmt.Errorf("failed to convert row amounts: %w", err))
 	}
-
-	return query.Item{
+	return query.Row{
 		Id:               po.Id,
+		RowCode:          po.RowCode,
 		Text:             po.Text,
-		Level:            po.Level,
 		Sequence:         po.Sequence,
-		ItemType:         po.ItemType,
+		LineNo:           po.LineNo,
+		ShowLineNo:       po.ShowLineNo,
 		SumFactor:        po.SumFactor,
 		DisplaySumFactor: po.DisplaySumFactor,
-		DataSource:       po.DataSource,
-		Formulas:         converter.POsToDTOs(po.Formulas, formulaPOToDTO),
+		Indent:           po.Indent,
+		CanEdit:          po.CanEdit,
+		CanMove:          po.CanMove,
+		CanAddChild:      po.CanAddChild,
+		Expression:       expressionPOToDTO(po.Expression),
+		Rows:             converter.POsToDTOs(po.Rows, rowPOToDTO),
 		Amounts:          amounts,
-		IsEditable:       po.IsEditable,
-		IsBreakdownItem:  po.IsBreakdownItem,
-		IsAbleToAddChild: po.IsAbleToAddChild,
 	}
 }
 
-func formulaPOToDTO(po *formulaPO) query.Formula {
-	amounts, err := textArrayToDecimalArray(po.Amounts)
-	if err != nil {
-		panic(fmt.Errorf("failed to assign TextArray to []decimal.Decimal: %w", err))
+func expressionPOToDTO(po *reportExpressionPO) query.Expression {
+	if po == nil {
+		return query.Expression{Kind: report.ExpressionNone}
 	}
-
-	return query.Formula{
-		Id:        po.Id,
-		Sequence:  po.Sequence,
-		Account:   accountPOToDTO(po.Account),
-		SumFactor: po.SumFactor,
-		Rule:      po.Rule,
-		Amounts:   amounts,
+	var ledgerAccounts []query.LedgerAccountReference
+	var cashFlowItems []query.CashFlowItemReference
+	var rowReferences []query.RowReference
+	if err := json.Unmarshal([]byte(defaultJSON(po.LedgerAccountsJSON)), &ledgerAccounts); err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal([]byte(defaultJSON(po.CashFlowItemsJSON)), &cashFlowItems); err != nil {
+		panic(err)
+	}
+	if err := json.Unmarshal([]byte(defaultJSON(po.RowReferencesJSON)), &rowReferences); err != nil {
+		panic(err)
+	}
+	return query.Expression{
+		Id:             po.Id,
+		Kind:           po.Kind,
+		LedgerAccounts: ledgerAccounts,
+		CashFlowItems:  cashFlowItems,
+		RowReferences:  rowReferences,
 	}
 }
 
@@ -420,79 +302,39 @@ func periodPOToDTO(po *periodPO) *query.Period {
 	if po == nil {
 		return nil
 	}
-	return &query.Period{
-		FiscalYear:   po.FiscalYear,
-		PeriodNumber: po.PeriodNumber,
-	}
+	return &query.Period{FiscalYear: po.FiscalYear, PeriodNumber: po.PeriodNumber}
 }
 
-func accountPOToDTO(po accountPO) query.Account {
-	var superiorAccountId *uuid.UUID
-	if po.SuperiorAccountId != uuid.Nil {
-		superiorAccountId = &po.SuperiorAccountId
-	}
-
-	return query.Account{
-		Id:                po.Id,
-		SobId:             po.SobId,
-		SuperiorAccountId: superiorAccountId,
-		Title:             po.Title,
-		AccountNumber:     po.AccountNumber,
-		Level:             po.Level,
-		IsLeaf:            po.IsLeaf,
-		Class:             po.Class,
-		Group:             po.Group,
-		BalanceDirection:  po.BalanceDirection,
-	}
-}
-
-// restructureAndSort restores the correct sections level, and sort sections, items and formulas based on Sequence fields
-// since sectionPO has both reportId and sectionId field, a subsection can have both of the fields.
-// this could cause the reportPO having a flat section list (subsection is not nested in the higher level section), since sections is retrieved by foreign key reportId
 func restructureAndSort(r *reportPO) {
-	// restructure sections first
-	sectionMap := make(map[uuid.UUID]*sectionPO)
-	for _, section := range r.Sections {
-		sectionMap[section.Id] = section
+	rowMap := make(map[uuid.UUID]*reportRowPO)
+	for _, row := range r.Rows {
+		row.Rows = nil
+		rowMap[row.Id] = row
 	}
-
-	// assign subsections
-	for _, section := range r.Sections {
-		if section.SectionId != nil {
-			if parentSection, ok := sectionMap[*section.SectionId]; ok {
-				parentSection.Sections = append(parentSection.Sections, section)
+	for _, row := range r.Rows {
+		if row.ParentRowId != nil {
+			if parent, ok := rowMap[*row.ParentRowId]; ok {
+				parent.Rows = append(parent.Rows, row)
 			}
 		}
 	}
-
-	// overwrite sections in report
-	r.Sections = nil
-	for section := range maps.Values(sectionMap) {
-		if section.SectionId == nil {
-			r.Sections = append(r.Sections, section)
+	r.Rows = nil
+	for row := range maps.Values(rowMap) {
+		if row.ParentRowId == nil {
+			r.Rows = append(r.Rows, row)
 		}
 	}
-
-	// sort
-	for _, section := range r.Sections {
-		sortRecursive(section)
+	for _, row := range r.Rows {
+		sortRowsRecursive(row)
 	}
-	slices.SortFunc(r.Sections, func(a, b *sectionPO) int { return a.Sequence - b.Sequence })
+	slices.SortFunc(r.Columns, func(a, b *reportColumnPO) int { return a.Sequence - b.Sequence })
+	slices.SortFunc(r.Rows, func(a, b *reportRowPO) int { return a.Sequence - b.Sequence })
 }
 
-func sortRecursive(s *sectionPO) {
-	// formulas
-	for _, item := range s.Items {
-		slices.SortFunc(item.Formulas, func(a, b *formulaPO) int { return a.Sequence - b.Sequence })
-	}
-
-	// items
-	slices.SortFunc(s.Items, func(a, b *itemPO) int { return a.Sequence - b.Sequence })
-
-	// sub sections
-	slices.SortFunc(s.Sections, func(a, b *sectionPO) int { return a.Sequence - b.Sequence })
-	for _, subSection := range s.Sections {
-		sortRecursive(subSection)
+func sortRowsRecursive(row *reportRowPO) {
+	slices.SortFunc(row.Rows, func(a, b *reportRowPO) int { return a.Sequence - b.Sequence })
+	for _, child := range row.Rows {
+		sortRowsRecursive(child)
 	}
 }
 
@@ -505,20 +347,17 @@ func decimalArrayToTextArray(decimalArray []decimal.Decimal) (pgtype.TextArray, 
 	if err := textArray.Set(tempStrs); err != nil {
 		return pgtype.TextArray{}, err
 	}
-
 	return textArray, nil
 }
 
 func textArrayToDecimalArray(textArray pgtype.TextArray) ([]decimal.Decimal, error) {
 	if textArray.Status != pgtype.Present {
-		// null or undefined value
 		return nil, nil
 	}
 	var tempStrs []string
 	if err := textArray.AssignTo(&tempStrs); err != nil {
 		return nil, err
 	}
-
 	var decimalArray []decimal.Decimal
 	for _, str := range tempStrs {
 		d, err := decimal.NewFromString(str)
@@ -527,6 +366,20 @@ func textArrayToDecimalArray(textArray pgtype.TextArray) ([]decimal.Decimal, err
 		}
 		decimalArray = append(decimalArray, d)
 	}
-
 	return decimalArray, nil
+}
+
+func mustMarshalJSON(v any) string {
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		panic(err)
+	}
+	return string(bytes)
+}
+
+func defaultJSON(value string) string {
+	if value == "" {
+		return "[]"
+	}
+	return value
 }

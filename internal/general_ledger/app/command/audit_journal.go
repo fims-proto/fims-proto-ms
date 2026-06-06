@@ -11,7 +11,7 @@ import (
 
 type AuditJournalCmd struct {
 	JournalId uuid.UUID
-	Auditor   uuid.UUID
+	Auditor   string
 }
 
 type AuditJournalHandler struct {

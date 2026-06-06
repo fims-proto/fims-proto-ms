@@ -9,26 +9,27 @@ import (
 	"github.com/google/uuid"
 )
 
-type PagingLedgerEntriesHandler struct {
+type LedgerEntriesHandler struct {
 	readModel            GeneralLedgerReadModel
 	periodRangeValidator periodRangeValidator
 }
 
-func NewPagingLedgerEntriesHandler(readModel GeneralLedgerReadModel) PagingLedgerEntriesHandler {
+func NewLedgerEntriesHandler(readModel GeneralLedgerReadModel) LedgerEntriesHandler {
 	if readModel == nil {
 		panic("nil read model")
 	}
-	return PagingLedgerEntriesHandler{
+	return LedgerEntriesHandler{
 		readModel:            readModel,
 		periodRangeValidator: newPeriodRangeValidator(readModel),
 	}
 }
 
-func (h PagingLedgerEntriesHandler) Handle(
+func (h LedgerEntriesHandler) Handle(
 	ctx context.Context,
-	sobId, accountId uuid.UUID,
-	auxiliaryAccountId *uuid.UUID,
+	sobId uuid.UUID,
+	accountId *uuid.UUID,
 	fromPeriod, toPeriod string,
+	dimensionOptionId *uuid.UUID,
 	pageRequest data.PageRequest,
 ) (data.Page[LedgerEntry], error) {
 	// Validate period continuity
@@ -42,11 +43,11 @@ func (h PagingLedgerEntriesHandler) Handle(
 		ctx,
 		sobId,
 		accountId,
-		auxiliaryAccountId,
 		fromFiscalYear,
 		fromPeriodNumber,
 		toFiscalYear,
 		toPeriodNumber,
+		dimensionOptionId,
 		pageRequest,
 	)
 	if err != nil {

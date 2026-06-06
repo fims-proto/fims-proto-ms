@@ -1,0 +1,6 @@
+version: "2"
+
+linters:
+  exclusions:
+    paths:
+      - internal/common/data/filterable/filterable_ast\.go

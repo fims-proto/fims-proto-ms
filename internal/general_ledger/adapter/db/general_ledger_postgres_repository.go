@@ -11,19 +11,14 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/cash_flow_item"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	"github.com/google/uuid"
-	"github.com/shopspring/decimal"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -46,15 +41,14 @@ func (r GeneralLedgerPostgresRepository) Migrate(ctx context.Context) error {
 	db := r.dataSource.GetConnection(ctx)
 
 	return db.AutoMigrate(
+		&cashFlowItemPO{},
 		&accountPO{},
-		&auxiliaryCategoryPO{},
-		&auxiliaryAccountPO{},
+		&accountDimensionCategoryPO{},
 		&periodPO{},
-		&ledgerEntryPO{},
 		&ledgerPO{},
-		&auxiliaryLedgerPO{},
 		&journalPO{},
 		&journalLinePO{},
+		&journalLineDimensionOptionPO{},
 	)
 }
 
@@ -76,39 +70,14 @@ func (r GeneralLedgerPostgresRepository) InitialAccounts(ctx context.Context, ac
 
 	// create all
 	pos := converter.BOsToPOs(accounts, accountBOToPO)
-	if err := db.Omit("AuxiliaryCategories").CreateInBatches(&pos, 100).Error; err != nil {
-		return err
-	}
-
-	// save associations
-	for _, po := range pos {
-		if len(po.AuxiliaryCategories) > 0 {
-			if err := db.Model(&po).Omit("AuxiliaryCategories.*").Association("AuxiliaryCategories").Replace(po.AuxiliaryCategories); err != nil {
-				return fmt.Errorf("failed to save auxiliary category associations for account %s: %w", po.AccountNumber, err)
-			}
-		}
-	}
-
-	return nil
+	return db.CreateInBatches(&pos, 100).Error
 }
 
 func (r GeneralLedgerPostgresRepository) CreateAccount(ctx context.Context, a *account.Account) error {
 	db := r.dataSource.GetConnection(ctx)
 
 	po := accountBOToPO(a)
-
-	if err := db.Omit("AuxiliaryCategories").Create(&po).Error; err != nil {
-		return err
-	}
-
-	// save associations
-	if len(po.AuxiliaryCategories) > 0 {
-		if err := db.Model(&po).Omit("AuxiliaryCategories.*").Association("AuxiliaryCategories").Replace(po.AuxiliaryCategories); err != nil {
-			return fmt.Errorf("failed to save auxiliary category associations: %w", err)
-		}
-	}
-
-	return nil
+	return commonErrors.TranslateDBError(db.Create(&po).Error)
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateAccount(
@@ -120,7 +89,7 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(
 
 	po := accountPO{Id: accountId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("AuxiliaryCategories").
+		Preload("DimensionCategories").
 		First(&po).Error; err != nil {
 		return err
 	}
@@ -135,14 +104,21 @@ func (r GeneralLedgerPostgresRepository) UpdateAccount(
 		return fmt.Errorf("failed to update account: %w", err)
 	}
 
-	po = accountBOToPO(updatedBO)
+	updatedPO := accountBOToPO(updatedBO)
 
-	if err = db.Omit("AuxiliaryCategories").Save(&po).Error; err != nil {
+	if err = db.Save(&updatedPO).Error; err != nil {
 		return err
 	}
 
-	if err = db.Model(&po).Omit("AuxiliaryCategories.*").Association("AuxiliaryCategories").Replace(po.AuxiliaryCategories); err != nil {
-		return fmt.Errorf("failed to update auxiliary category associations: %w", err)
+	// Replace dimension category associations: delete old rows, insert new ones.
+	if err = db.Where("account_id = ?", accountId).Delete(&accountDimensionCategoryPO{}).Error; err != nil {
+		return fmt.Errorf("failed to clear account dimension categories: %w", err)
+	}
+
+	if len(updatedPO.DimensionCategories) > 0 {
+		if err = db.Create(&updatedPO.DimensionCategories).Error; err != nil {
+			return fmt.Errorf("failed to save account dimension categories: %w", err)
+		}
 	}
 
 	return nil
@@ -159,48 +135,49 @@ func (r GeneralLedgerPostgresRepository) ReadAllAccounts(ctx context.Context, so
 	return converter.POsToBOs(accountPOs, accountPOToBO)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAccountByNumber(ctx context.Context, sobId uuid.UUID, accountNumber string) (*account.Account, error) {
+func (r GeneralLedgerPostgresRepository) ReadAccountByRawNumber(ctx context.Context, sobId uuid.UUID, rawNumber string) (*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
 
 	var po accountPO
-	if err := db.Where(accountPO{SobId: sobId, AccountNumber: accountNumber}).First(&po).Error; err != nil {
+	if err := db.Where(accountPO{SobId: sobId, RawAccountNumber: rawNumber}).First(&po).Error; err != nil {
 		return nil, err
 	}
 
 	return accountPOToBO(po)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Context, sobId uuid.UUID, accountNumbers []string) ([]*account.Account, error) {
+func (r GeneralLedgerPostgresRepository) ReadAccountsByRawNumbers(ctx context.Context, sobId uuid.UUID, rawNumbers []string) ([]*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	// unique account numbers
-	accountNumbers = utils.Unique(accountNumbers)
+	// unique raw numbers
+	rawNumbers = utils.Unique(rawNumbers)
 
-	if len(accountNumbers) == 0 {
+	if len(rawNumbers) == 0 {
 		return nil, nil
 	}
 
 	var pos []accountPO
-	if err := db.Where("sob_id = ? AND account_number IN ?", sobId, accountNumbers).
-		Preload("AuxiliaryCategories").Find(&pos).Error; err != nil {
+	if err := db.Where("sob_id = ? AND raw_account_number IN ?", sobId, rawNumbers).
+		Preload("DimensionCategories").
+		Find(&pos).Error; err != nil {
 		return nil, err
 	}
 
-	if len(pos) != len(accountNumbers) {
-		return nil, fmt.Errorf("not all accounts found for sob %s and account numbers %v", sobId, accountNumbers)
+	if len(pos) != len(rawNumbers) {
+		return nil, fmt.Errorf("not all accounts found for sob %s and raw numbers %v", sobId, rawNumbers)
 	}
 
 	// check if all keys are found
-	for _, accountNumber := range accountNumbers {
+	for _, rawNumber := range rawNumbers {
 		found := false
 		for _, po := range pos {
-			if po.AccountNumber == accountNumber {
+			if po.RawAccountNumber == rawNumber {
 				found = true
 				break
 			}
 		}
 		if !found {
-			return nil, fmt.Errorf("account with number %s not found for sob %s", accountNumber, sobId)
+			return nil, fmt.Errorf("account with raw number %s not found for sob %s", rawNumber, sobId)
 		}
 	}
 
@@ -210,12 +187,12 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsByNumbers(ctx context.Conte
 func (r GeneralLedgerPostgresRepository) ReadSuperiorAccountsById(ctx context.Context, accountId uuid.UUID) ([]*account.Account, error) {
 	rawSql := `WITH RECURSIVE res AS (
 		   SELECT *
-		   FROM a_accounts
+		   FROM accounts
 		   WHERE id = ?
 		   UNION
-		   SELECT a_accounts.*
+		   SELECT accounts.*
 		   FROM res
-		   JOIN a_accounts ON a_accounts.id = res.superior_account_id
+		   JOIN accounts ON accounts.id = res.superior_account_id
 		)
 		SELECT *
 		FROM res
@@ -276,7 +253,7 @@ func (r GeneralLedgerPostgresRepository) ReadAccountsWithSuperiorsByIds(
 			var ok bool
 			sa, ok = superiorAccountMap[*po.SuperiorAccountId]
 			if !ok {
-				return nil, fmt.Errorf("superior account not found for %s", po.AccountNumber)
+				return nil, fmt.Errorf("superior account not found for %s", po.RawAccountNumber)
 			}
 		}
 		a, err := accountPOToBOWithSuperior(po, sa)
@@ -324,17 +301,10 @@ func (r GeneralLedgerPostgresRepository) CreatePeriodIfNotExists(ctx context.Con
 
 	po := periodBOToPO(*p)
 
-	if po.IsCurrent {
-		// make sure only 1 current period in one sob
-		_, err = r.ReadCurrentPeriod(ctx, po.SobId)
-		if err == nil {
-			return nil, false, commonErrors.NewSlugError("period-duplicatedCurrent")
-		} else if !errors.Is(err, commonErrors.ErrRecordNotFound()) {
-			return nil, false, fmt.Errorf("failed to check current period: %w", err)
-		}
+	if saveErr := db.Save(&po).Error; saveErr != nil {
+		return nil, false, commonErrors.TranslateDBError(saveErr)
 	}
-
-	return p, true, db.Save(&po).Error
+	return p, true, nil
 }
 
 func (r GeneralLedgerPostgresRepository) UpdatePeriod(
@@ -418,10 +388,18 @@ func (r GeneralLedgerPostgresRepository) ReadFirstPeriod(ctx context.Context, so
 	return nil, err
 }
 
-func (r GeneralLedgerPostgresRepository) CreateLedgerEntries(ctx context.Context, entries []*ledger_entry.LedgerEntry) error {
+func (r GeneralLedgerPostgresRepository) ReadPeriodById(ctx context.Context, sobId, periodId uuid.UUID) (*period.Period, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.CreateInBatches(new(converter.BOsToPOs(entries, ledgerEntryBOToPOForCreate)), 100).Error
+	var po periodPO
+	err := db.Where(periodPO{Id: periodId, SobId: sobId}).First(&po).Error
+	if err == nil {
+		return periodPOToBO(po)
+	}
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, commonErrors.ErrRecordNotFound()
+	}
+	return nil, err
 }
 
 func (r GeneralLedgerPostgresRepository) CreateLedgers(ctx context.Context, ledgers []*ledger.Ledger) error {
@@ -490,6 +468,88 @@ func (r GeneralLedgerPostgresRepository) ExistsProfitAndLossLedgersHavingBalance
 	return count > 0, err
 }
 
+func (r GeneralLedgerPostgresRepository) ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(
+	ctx context.Context,
+	sobId uuid.UUID,
+	rawAccountNumber string,
+	periodId uuid.UUID,
+) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&ledgerPO{}).
+		Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		Where("ending_amount <> 0").
+		InnerJoins("Account", db.Where(accountPO{RawAccountNumber: rawAccountNumber})).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
+func (r GeneralLedgerPostgresRepository) ReadProfitAndLossLedgersHavingBalanceInPeriod(
+	ctx context.Context,
+	sobId, periodId uuid.UUID,
+) ([]*ledger.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var ledgerPOs []ledgerPO
+	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		Where("ending_amount <> 0").
+		InnerJoins("Account", db.Where(accountPO{Class: int(class.ProfitsAndLosses), IsLeaf: true})).
+		Find(&ledgerPOs).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*ledger.Ledger, 0, len(ledgerPOs))
+	for _, po := range ledgerPOs {
+		bo, err := ledgerPOToBO(po)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, bo)
+	}
+	return result, nil
+}
+
+func (r GeneralLedgerPostgresRepository) ReadLedgerByRawAccountNumberInPeriod(
+	ctx context.Context,
+	sobId uuid.UUID,
+	rawAccountNumber string,
+	periodId uuid.UUID,
+) (*ledger.Ledger, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var po ledgerPO
+	err := db.Where(ledgerPO{SobId: sobId, PeriodId: periodId}).
+		InnerJoins("Account", db.Where(accountPO{RawAccountNumber: rawAccountNumber})).
+		First(&po).
+		Error
+	if err != nil {
+		return nil, err
+	}
+
+	return ledgerPOToBO(po)
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsClosingJournalInPeriod(
+	ctx context.Context,
+	sobId, periodId uuid.UUID,
+	journalType journal.JournalType,
+) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&journalPO{}).
+		Where("sob_id = ? AND period_id = ? AND journal_type = ?", sobId, periodId, string(journalType)).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
 func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx context.Context, sobId, periodId uuid.UUID) ([]*ledger.Ledger, error) {
 	db := r.dataSource.GetConnection(ctx)
 
@@ -506,7 +566,19 @@ func (r GeneralLedgerPostgresRepository) ReadFirstLevelLedgersInPeriod(ctx conte
 func (r GeneralLedgerPostgresRepository) CreateJournal(ctx context.Context, j *journal.Journal) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Create(new(journalBOToPO(*j))).Error
+	return commonErrors.TranslateDBError(db.Create(new(journalBOToPO(*j))).Error)
+}
+
+func (r GeneralLedgerPostgresRepository) ExistsJournalById(ctx context.Context, sobId, journalId uuid.UUID) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&journalPO{}).
+		Where("id = ? AND sob_id = ?", journalId, sobId).
+		Count(&count).
+		Error
+
+	return count > 0, err
 }
 
 func (r GeneralLedgerPostgresRepository) UpdateJournalHeader(
@@ -518,8 +590,8 @@ func (r GeneralLedgerPostgresRepository) UpdateJournalHeader(
 
 	po := journalPO{Id: journalId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("JournalLines.Account.AuxiliaryCategories").
-		Preload("JournalLines.AuxiliaryAccounts.Category").
+		Preload("JournalLines.Account").
+		Preload("JournalLines.DimensionOptions").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
@@ -550,18 +622,11 @@ func (r GeneralLedgerPostgresRepository) UpdateEntireJournal(
 
 	po := journalPO{Id: journalId}
 	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Preload("JournalLines.Account.AuxiliaryCategories").
-		Preload("JournalLines.AuxiliaryAccounts.Category").
+		Preload("JournalLines.Account").
+		Preload("JournalLines.DimensionOptions").
 		Preload("Period").
 		First(&po).Error; err != nil {
 		return err
-	}
-
-	// remove existing link between journal line and auxiliary account
-	for _, item := range po.JournalLines {
-		if err := db.Model(&item).Association("AuxiliaryAccounts").Clear(); err != nil {
-			return fmt.Errorf("failed to remove journal line auxiliary account associations: %w", err)
-		}
 	}
 
 	bo, err := journalPOToBO(po)
@@ -576,7 +641,16 @@ func (r GeneralLedgerPostgresRepository) UpdateEntireJournal(
 
 	po = journalBOToPO(*updatedBO)
 
-	// remove existing journal lines
+	// remove existing journal lines and their dimension option associations
+	var existingLineIds []uuid.UUID
+	if err = db.Model(&journalLinePO{}).Select("id").Where("journal_id = ?", po.Id).Find(&existingLineIds).Error; err != nil {
+		return fmt.Errorf("failed to query journal line ids: %w", err)
+	}
+	if len(existingLineIds) > 0 {
+		if err = db.Where("journal_line_id IN ?", existingLineIds).Delete(&journalLineDimensionOptionPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete journal line dimension options: %w", err)
+		}
+	}
 	if err = db.Where("journal_id = ?", po.Id).Delete(&journalLinePO{}).Error; err != nil {
 		return fmt.Errorf("failed to delete journal lines: %w", err)
 	}
@@ -596,240 +670,191 @@ func (r GeneralLedgerPostgresRepository) ExistsJournalsNotPostedInPeriod(ctx con
 	return count > 0, err
 }
 
-func (r GeneralLedgerPostgresRepository) CreateAuxiliaryCategories(ctx context.Context, categories []*auxiliary_category.AuxiliaryCategory) error {
+func (r GeneralLedgerPostgresRepository) ReadAccountById(ctx context.Context, accountId uuid.UUID) (*account.Account, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.CreateInBatches(new(converter.BOsToPOs(categories, auxiliaryCategoryBOToPO)), 100).Error
-}
-
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoryByKey(ctx context.Context, sobId uuid.UUID, key string) (*auxiliary_category.AuxiliaryCategory, error) {
-	db := r.dataSource.GetConnection(ctx)
-
-	var po auxiliaryCategoryPO
-	if err := db.Where(auxiliaryCategoryPO{SobId: sobId, Key: key}).First(&po).Error; err != nil {
+	var po accountPO
+	if err := db.Preload("DimensionCategories").First(&po, "id = ?", accountId).Error; err != nil {
 		return nil, err
 	}
 
-	return auxiliaryCategoryPOToBO(po)
+	return accountPOToBO(po)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryCategoriesByKeys(ctx context.Context, sobId uuid.UUID, keys []string) ([]*auxiliary_category.AuxiliaryCategory, error) {
+func (r GeneralLedgerPostgresRepository) ExistsChildAccountsByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	// unique keys
-	keys = utils.Unique(keys)
+	var count int64
+	err := db.Model(&accountPO{}).
+		Where("superior_account_id = ?", accountId).
+		Count(&count).
+		Error
 
-	if len(keys) == 0 {
-		return nil, nil
-	}
-
-	var pos []auxiliaryCategoryPO
-	if err := db.Where("sob_id = ? AND key IN ?", sobId, keys).Find(&pos).Error; err != nil {
-		return nil, err
-	}
-
-	if len(pos) != len(keys) {
-		return nil, fmt.Errorf("not all auxiliary categories found for sob %s and keys %v", sobId, keys)
-	}
-
-	// check if all keys are found
-	for _, key := range keys {
-		found := false
-		for _, po := range pos {
-			if po.Key == key {
-				found = true
-				break
-			}
-		}
-		if !found {
-			return nil, fmt.Errorf("auxiliary category with key %s not found for sob %s", key, sobId)
-		}
-	}
-
-	return converter.POsToBOs(pos, auxiliaryCategoryPOToBO)
+	return count > 0, err
 }
 
-func (r GeneralLedgerPostgresRepository) CreateAuxiliaryAccounts(ctx context.Context, accounts []*auxiliary_account.AuxiliaryAccount) error {
+func (r GeneralLedgerPostgresRepository) ExistsJournalLinesByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Omit("Category").CreateInBatches(new(converter.BOsToPOs(accounts, auxiliaryAccountBOToPO)), 100).Error
+	var count int64
+	err := db.Model(&journalLinePO{}).
+		Where("account_id = ?", accountId).
+		Count(&count).
+		Error
+
+	return count > 0, err
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryAccountsByPairs(
+func (r GeneralLedgerPostgresRepository) ExistsLedgerWithOpeningBalanceByAccountId(ctx context.Context, accountId uuid.UUID) (bool, error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	var count int64
+	err := db.Model(&ledgerPO{}).
+		Where("account_id = ? AND opening_amount <> 0", accountId).
+		Count(&count).
+		Error
+
+	return count > 0, err
+}
+
+func (r GeneralLedgerPostgresRepository) DeleteLedgersByAccountId(ctx context.Context, accountId uuid.UUID) error {
+	db := r.dataSource.GetConnection(ctx)
+	return db.Where("account_id = ?", accountId).Delete(&ledgerPO{}).Error
+}
+
+func (r GeneralLedgerPostgresRepository) DeleteAccount(ctx context.Context, accountId uuid.UUID) error {
+	db := r.dataSource.GetConnection(ctx)
+
+	if err := db.Where("account_id = ?", accountId).Delete(&accountDimensionCategoryPO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete account dimension categories: %w", err)
+	}
+
+	return db.Where("id = ?", accountId).Delete(&accountPO{}).Error
+}
+
+func (r GeneralLedgerPostgresRepository) ReadJournalById(
 	ctx context.Context,
-	sobId uuid.UUID,
-	pairs []auxiliary_account.AuxiliaryPair,
-) ([]*auxiliary_account.AuxiliaryAccount, error) {
+	journalId uuid.UUID,
+) (*journal.Journal, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	if len(pairs) == 0 {
-		return nil, nil
-	}
-
-	dbOr := db.Session(&gorm.Session{NewDB: true})
-	for _, pair := range pairs {
-		dbOr = dbOr.Or(`"Category"."key" = ? AND "a_auxiliary_accounts"."key" = ?`, pair.CategoryKey, pair.AccountKey)
-	}
-
-	var auxiliaryAccountPOs []auxiliaryAccountPO
-	if err := db.InnerJoins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).
-		Where(dbOr).
-		Find(&auxiliaryAccountPOs).Error; err != nil {
+	po := journalPO{Id: journalId}
+	if err := db.
+		Preload("JournalLines.Account").
+		Preload("JournalLines.DimensionOptions").
+		Preload("Period").
+		First(&po).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, commonErrors.ErrRecordNotFound()
+		}
 		return nil, err
 	}
 
-	return converter.POsToBOs(auxiliaryAccountPOs, auxiliaryAccountPOToBO)
+	return journalPOToBO(po)
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAllAuxiliaryAccounts(ctx context.Context, sobId uuid.UUID) (
-	[]*auxiliary_account.AuxiliaryAccount,
-	error,
-) {
-	db := r.dataSource.GetConnection(ctx)
-
-	var auxiliaryAccountPOs []auxiliaryAccountPO
-	if err := db.InnerJoins("Category", db.Where(&auxiliaryCategoryPO{SobId: sobId})).Find(&auxiliaryAccountPOs).Error; err != nil {
-		return nil, err
-	}
-
-	return converter.POsToBOs(auxiliaryAccountPOs, auxiliaryAccountPOToBO)
-}
-
-func (r GeneralLedgerPostgresRepository) CreateAuxiliaryLedgers(ctx context.Context, ledgers []*auxiliary_ledger.AuxiliaryLedger) error {
-	db := r.dataSource.GetConnection(ctx)
-
-	return db.Omit("AuxiliaryAccount", "AuxiliaryCategory", "Account").CreateInBatches(new(converter.BOsToPOs(ledgers, auxiliaryLedgerBOToPO)), 100).Error
-}
-
-func (r GeneralLedgerPostgresRepository) UpsertAuxiliaryLedgersByPeriodAndAccounts(
+func (r GeneralLedgerPostgresRepository) DeleteJournalById(
 	ctx context.Context,
-	sobId uuid.UUID,
-	periodId uuid.UUID,
-	requiredKeys []domain.AuxiliaryLedgerKey,
-	applyFn func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error),
+	journalId uuid.UUID,
 ) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	tuples := make([][]uuid.UUID, 0, len(requiredKeys))
-	for _, key := range requiredKeys {
-		tuples = append(tuples, []uuid.UUID{key.AccountId, key.AuxiliaryCategoryId, key.AuxiliaryAccountId})
+	// Step 1: collect line IDs (needed for FK cascade on dimension options)
+	var lineIds []uuid.UUID
+	if err := db.Model(&journalLinePO{}).
+		Select("id").
+		Where("journal_id = ?", journalId).
+		Find(&lineIds).Error; err != nil {
+		return fmt.Errorf("failed to query journal line ids: %w", err)
 	}
 
-	// Lock and fetch existing auxiliary ledgers using composite key matching
-	var auxiliaryLedgerPOs []auxiliaryLedgerPO
-	if err := db.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("sob_id = ? AND period_id = ? AND (account_id, auxiliary_category_id, auxiliary_account_id) IN ?",
-			sobId, periodId, tuples).
-		Find(&auxiliaryLedgerPOs).Error; err != nil {
-		return err
-	}
-
-	existingLedgers, err := converter.POsToBOs(auxiliaryLedgerPOs, auxiliaryLedgerPOToBO)
-	if err != nil {
-		return fmt.Errorf("failed to convert auxiliary ledgers: %w", err)
-	}
-
-	existingMap := make(map[domain.AuxiliaryLedgerKey]*auxiliary_ledger.AuxiliaryLedger)
-	for _, auxiliaryLedger := range existingLedgers {
-		key := domain.AuxiliaryLedgerKey{
-			AccountId:           auxiliaryLedger.AccountId(),
-			AuxiliaryCategoryId: auxiliaryLedger.AuxiliaryCategoryId(),
-			AuxiliaryAccountId:  auxiliaryLedger.AuxiliaryAccountId(),
-		}
-		existingMap[key] = auxiliaryLedger
-	}
-
-	var toCreate []*auxiliary_ledger.AuxiliaryLedger
-	var toUpdate []*auxiliary_ledger.AuxiliaryLedger
-
-	for _, key := range requiredKeys {
-		if existing, found := existingMap[key]; found {
-			toUpdate = append(toUpdate, existing)
-		} else {
-			newLedger, err := auxiliary_ledger.New(
-				uuid.New(),
-				sobId,
-				periodId,
-				key.AccountId,
-				key.AuxiliaryCategoryId,
-				key.AuxiliaryAccountId,
-				decimal.Zero, // openingAmount
-				decimal.Zero, // periodAmount
-				decimal.Zero, // periodDebit
-				decimal.Zero, // periodCredit
-				decimal.Zero, // endingAmount
-			)
-			if err != nil {
-				return fmt.Errorf("failed to create auxiliary ledger: %w", err)
-			}
-			toCreate = append(toCreate, newLedger)
+	// Step 2: delete dimension option join rows
+	if len(lineIds) > 0 {
+		if err := db.Where("journal_line_id IN ?", lineIds).
+			Delete(&journalLineDimensionOptionPO{}).Error; err != nil {
+			return fmt.Errorf("failed to delete journal line dimension options: %w", err)
 		}
 	}
 
-	if len(toUpdate) > 0 {
-		updated, err := applyFn(toUpdate)
-		if err != nil {
-			return fmt.Errorf("failed to apply changes to auxiliary ledgers: %w", err)
-		}
-
-		if err := db.Save(new(converter.BOsToPOs(updated, auxiliaryLedgerBOToPO))).Error; err != nil {
-			return err
-		}
+	// Step 3: delete journal lines
+	if err := db.Where("journal_id = ?", journalId).
+		Delete(&journalLinePO{}).Error; err != nil {
+		return fmt.Errorf("failed to delete journal lines: %w", err)
 	}
 
-	if len(toCreate) > 0 {
-		created, err := applyFn(toCreate)
-		if err != nil {
-			return fmt.Errorf("failed to apply changes to new auxiliary ledgers: %w", err)
-		}
-
-		if err := db.CreateInBatches(new(converter.BOsToPOs(created, auxiliaryLedgerBOToPO)), 100).Error; err != nil {
-			return err
-		}
+	// Step 4: delete journal header (with RowsAffected guard for concurrent deletion)
+	result := db.Where("id = ?", journalId).Delete(&journalPO{})
+	if result.Error != nil {
+		return fmt.Errorf("failed to delete journal: %w", result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return commonErrors.ErrRecordNotFound()
 	}
 
 	return nil
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByPeriod(ctx context.Context, periodId uuid.UUID) (
-	[]*auxiliary_ledger.AuxiliaryLedger,
-	error,
-) {
-	db := r.dataSource.GetConnection(ctx)
-
-	var auxiliaryLedgerPOs []auxiliaryLedgerPO
-	if err := db.
-		Where(auxiliaryLedgerPO{PeriodId: periodId}).
-		InnerJoins("AuxiliaryAccount").
-		InnerJoins("AuxiliaryAccount.Category").
-		InnerJoins("AuxiliaryCategory").
-		InnerJoins("Account").
-		Find(&auxiliaryLedgerPOs).
-		Error; err != nil {
-		return nil, err
+func (r GeneralLedgerPostgresRepository) InitializeCashFlowItems(ctx context.Context, items []*cash_flow_item.CashFlowItem) error {
+	if len(items) == 0 {
+		return errors.New("empty CashFlowItem list")
 	}
 
-	return converter.POsToBOs(auxiliaryLedgerPOs, auxiliaryLedgerPOToBO)
+	db := r.dataSource.GetConnection(ctx)
+
+	if err := db.Where("sob_id = ?", items[0].SobId()).Delete(&cashFlowItemPO{}).Error; err != nil {
+		return fmt.Errorf("failed to initialize cash flow items: %w", err)
+	}
+
+	pos := make([]cashFlowItemPO, len(items))
+	for i, item := range items {
+		pos[i] = cashFlowItemPO{
+			Id:        item.Id(),
+			SobId:     item.SobId(),
+			Code:      item.Code(),
+			Name:      item.Name(),
+			Category:  item.Category().String(),
+			Direction: item.Direction().String(),
+			Sequence:  item.Sequence(),
+		}
+	}
+
+	return db.CreateInBatches(&pos, 100).Error
 }
 
-func (r GeneralLedgerPostgresRepository) ReadAuxiliaryLedgersByAccountAndPeriod(
-	ctx context.Context,
-	accountId uuid.UUID,
-	periodId uuid.UUID,
-) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+func (r GeneralLedgerPostgresRepository) ReadCashFlowItemsBySobId(ctx context.Context, sobId uuid.UUID) ([]*cash_flow_item.CashFlowItem, error) {
 	db := r.dataSource.GetConnection(ctx)
 
-	var auxiliaryLedgerPOs []auxiliaryLedgerPO
-	if err := db.
-		Where("account_id = ? AND period_id = ?", accountId, periodId).
-		InnerJoins("AuxiliaryAccount").
-		InnerJoins("AuxiliaryAccount.Category").
-		InnerJoins("AuxiliaryCategory").
-		InnerJoins("Account").
-		Find(&auxiliaryLedgerPOs).
-		Error; err != nil {
+	var pos []cashFlowItemPO
+	if err := db.Where("sob_id = ?", sobId).Order("sequence asc").Find(&pos).Error; err != nil {
 		return nil, err
 	}
 
-	return converter.POsToBOs(auxiliaryLedgerPOs, auxiliaryLedgerPOToBO)
+	items := make([]*cash_flow_item.CashFlowItem, 0, len(pos))
+	for _, po := range pos {
+		item, err := cash_flow_item.New(po.Id, po.SobId, po.Code, po.Name, po.Category, po.Direction, po.Sequence)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load cash flow item %s: %w", po.Code, err)
+		}
+		items = append(items, item)
+	}
+
+	return items, nil
+}
+
+func (r GeneralLedgerPostgresRepository) ReadExistingCashFlowItemIds(ctx context.Context, sobId uuid.UUID, ids []uuid.UUID) ([]uuid.UUID, error) {
+	if len(ids) == 0 {
+		return nil, nil
+	}
+
+	db := r.dataSource.GetConnection(ctx)
+
+	var found []uuid.UUID
+	if err := db.Model(&cashFlowItemPO{}).
+		Select("id").
+		Where("sob_id = ? AND id IN ?", sobId, ids).
+		Find(&found).Error; err != nil {
+		return nil, err
+	}
+
+	return found, nil
 }

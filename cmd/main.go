@@ -13,8 +13,15 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/common/log"
 	"github/fims-proto/fims-proto-ms/internal/devops"
+	dimensionAdapter "github/fims-proto/fims-proto-ms/internal/dimension/adapter/db"
+	dimensionApp "github/fims-proto/fims-proto-ms/internal/dimension/app"
+	dimensionPrivateHttpPort "github/fims-proto/fims-proto-ms/internal/dimension/port/private/http"
+	dimensionIntraPort "github/fims-proto/fims-proto-ms/internal/dimension/port/private/intraprocess"
+	dimensionPublicHttpPort "github/fims-proto/fims-proto-ms/internal/dimension/port/public/http"
 	generalLedgerAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/db"
+	generalLedgerDimensionAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/dimension"
 	generalLedgerNumberingAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/numbering"
+	generalLedgerReportAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/report"
 	generalLedgerSobAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/sob"
 	generalLedgerUserAdapter "github/fims-proto/fims-proto-ms/internal/general_ledger/adapter/user"
 	generalLedgerApp "github/fims-proto/fims-proto-ms/internal/general_ledger/app"
@@ -74,6 +81,8 @@ func main() {
 	reportReadRepository := reportAdapter.NewReportPostgresReadRepository(dataSource)
 	numberingRepository := numberingAdapter.NewNumberingPostgresRepository(dataSource)
 	userRepository := userAdapter.NewUserPostgresRepository(dataSource)
+	dimensionRepository := dimensionAdapter.NewDimensionPostgresRepository(dataSource)
+	dimensionReadRepository := dimensionAdapter.NewDimensionPostgresReadRepository(dataSource)
 
 	// application - will be passed by reference, in order to make injection work
 	sobApplication := sobApp.NewApplication()
@@ -81,6 +90,7 @@ func main() {
 	numberingApplication := numberingApp.NewApplication()
 	reportApplication := reportApp.NewApplication()
 	userApplication := userApp.NewApplication()
+	dimensionApplication := dimensionApp.NewApplication()
 
 	// intra process interfaces
 	sobInterface := sobIntraPort.NewSobInterface(&sobApplication)
@@ -88,6 +98,7 @@ func main() {
 	numberingInterface := numberingIntraPort.NewNumberingInterface(&numberingApplication)
 	reportInterface := reportIntraPort.NewReportInterface(&reportApplication)
 	userInterface := userIntraPort.NewUserInterface(&userApplication)
+	dimensionInterface := dimensionIntraPort.NewDimensionInterface(&dimensionApplication)
 
 	// application dependencies injection
 	generalLedgerServiceForSob := sobGeneralLedgerAdapter.NewIntraProcessAdapter(generalLedgerInterface)
@@ -99,15 +110,21 @@ func main() {
 		reportServiceForSob,
 	)
 
+	dimensionApplication.Inject(dimensionRepository, dimensionReadRepository)
+
 	sobServiceForGeneralLedger := generalLedgerSobAdapter.NewIntraProcessAdapter(sobInterface)
 	numberingServiceForGeneralLedger := generalLedgerNumberingAdapter.NewIntraProcessAdapter(numberingInterface)
 	userServiceForGeneralLedger := generalLedgerUserAdapter.NewIntraProcessAdapter(userInterface)
+	dimensionServiceForGeneralLedger := generalLedgerDimensionAdapter.NewIntraProcessAdapter(dimensionInterface)
+	reportServiceForGeneralLedger := generalLedgerReportAdapter.NewIntraProcessAdapter(reportInterface)
 	generalLedgerApplication.Inject(
 		generalLedgerRepository,
 		generalLedgerReadRepository,
 		sobServiceForGeneralLedger,
 		numberingServiceForGeneralLedger,
 		userServiceForGeneralLedger,
+		dimensionServiceForGeneralLedger,
+		reportServiceForGeneralLedger,
 	)
 
 	reportApplication.Inject(
@@ -138,11 +155,12 @@ func main() {
 	publicApiRouter := router.Group("/api/v1")
 	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
 	generalLedgerPublicHttpPort.InitRouter(
-		generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication),
+		generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication, localizer),
 		publicApiRouter,
 	)
 	reportPublicHttpPort.InitRouter(reportPublicHttpPort.NewHandler(&reportApplication), publicApiRouter)
 	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
+	dimensionPublicHttpPort.InitRouter(dimensionPublicHttpPort.NewHandler(&dimensionApplication), publicApiRouter)
 
 	// private http API, should have different authentication method then public API
 	privateApiRouter := router.Group("/internal")
@@ -154,6 +172,7 @@ func main() {
 	)
 	reportPrivateHttpPort.InitRouter(reportPrivateHttpPort.NewHandler(&reportApplication), privateApiRouter)
 	userPrivateHttpPort.InitRouter(userPrivateHttpPort.NewHandler(&userApplication), privateApiRouter)
+	dimensionPrivateHttpPort.InitRouter(dimensionPrivateHttpPort.NewHandler(&dimensionApplication), privateApiRouter)
 
 	if strings.HasPrefix(config.GetString("profile"), "dev") {
 		// gin-swagger

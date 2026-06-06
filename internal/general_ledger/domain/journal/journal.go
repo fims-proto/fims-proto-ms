@@ -2,7 +2,6 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal/journal_type"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
@@ -15,15 +14,16 @@ type Journal struct {
 	sobId              uuid.UUID
 	periodId           uuid.UUID
 	period             *period.Period
-	journalType        journal_type.JournalType
 	headerText         string
 	documentNumber     string
+	journalType        JournalType
+	referenceJournalId uuid.UUID
 	attachmentQuantity int
 	amount             decimal.Decimal
-	creator            uuid.UUID
-	reviewer           uuid.UUID
-	auditor            uuid.UUID
-	poster             uuid.UUID
+	creator            string
+	reviewer           string
+	auditor            string
+	poster             string
 	isReviewed         bool
 	isAudited          bool
 	isPosted           bool
@@ -35,14 +35,15 @@ func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	period *period.Period,
-	journalType string,
 	headerText string,
 	documentNumber string,
+	journalType JournalType,
+	referenceJournalId uuid.UUID,
 	attachmentQuantity int,
-	creator uuid.UUID,
-	reviewer uuid.UUID,
-	auditor uuid.UUID,
-	poster uuid.UUID,
+	creator string,
+	reviewer string,
+	auditor string,
+	poster string,
 	isReviewed bool,
 	isAudited bool,
 	isPosted bool,
@@ -50,60 +51,67 @@ func New(
 	journalLines []*JournalLine,
 ) (*Journal, error) {
 	if id == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyId")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
+		return nil, errors.NewInternalError(errors.SlugEmptySobId)
 	}
 
 	if period == nil {
-		return nil, errors.NewSlugError("journal-emptyPeriod")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyPeriod)
 	}
 
 	if period.Id() == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyPeriodId")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyPeriodId)
 	}
 
 	if headerText == "" {
-		return nil, errors.NewSlugError("journal-emptyHeaderText")
-	}
-
-	jt, err := journal_type.FromString(journalType)
-	if err != nil {
-		return nil, err
+		return nil, errors.NewInvalidInputError(errors.SlugJournalEmptyHeaderText)
 	}
 
 	if documentNumber == "" {
-		return nil, errors.NewSlugError("journal-emptyNumber")
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyNumber)
 	}
 
 	if attachmentQuantity < 0 {
-		return nil, errors.NewSlugError("journal-invalidAttachmentQuantity")
+		return nil, errors.NewInvalidInputError(errors.SlugJournalInvalidAttachmentQty)
 	}
 
-	if creator == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyCreator")
+	if isEmptyUser(creator) {
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyCreator)
 	}
 
-	if isReviewed && reviewer == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyReviewer")
+	if isReviewed && isEmptyUser(reviewer) {
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyReviewer)
 	}
 
-	if isAudited && auditor == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyAuditor")
+	if isAudited && isEmptyUser(auditor) {
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyAuditor)
 	}
 
-	if isPosted && poster == uuid.Nil {
-		return nil, errors.NewSlugError("journal-emptyPoster")
+	if isPosted && isEmptyUser(poster) {
+		return nil, errors.NewInternalError(errors.SlugJournalEmptyPoster)
 	}
 
 	if isPosted && (!isReviewed || !isAudited) {
-		return nil, errors.NewSlugError("journal-invalidPostStatus")
+		return nil, errors.NewInternalError(errors.SlugJournalInvalidPostStatus)
 	}
 
 	if transactionDate.IsZero() {
-		return nil, errors.NewSlugError("journal-zeroTransactionDate")
+		return nil, errors.NewInternalError(errors.SlugJournalZeroTransactionDate)
+	}
+
+	if !journalType.IsValid() {
+		return nil, errors.NewInternalError(errors.SlugJournalInvalidJournalType)
+	}
+
+	if journalType.RequiresReferenceJournal() && referenceJournalId == uuid.Nil {
+		return nil, errors.NewInternalError(errors.SlugJournalMissingReferenceId)
+	}
+
+	if !journalType.RequiresReferenceJournal() && referenceJournalId != uuid.Nil {
+		return nil, errors.NewInternalError(errors.SlugJournalUnexpectedReferenceId)
 	}
 
 	totalVal, err := sumJournalLines(journalLines)
@@ -117,8 +125,9 @@ func New(
 		periodId:           period.Id(),
 		period:             period,
 		headerText:         headerText,
-		journalType:        jt,
 		documentNumber:     documentNumber,
+		journalType:        journalType,
+		referenceJournalId: referenceJournalId,
 		attachmentQuantity: attachmentQuantity,
 		amount:             totalVal,
 		creator:            creator,
@@ -153,12 +162,16 @@ func (j *Journal) HeaderText() string {
 	return j.headerText
 }
 
-func (j *Journal) JournalType() journal_type.JournalType {
+func (j *Journal) DocumentNumber() string {
+	return j.documentNumber
+}
+
+func (j *Journal) JournalType() JournalType {
 	return j.journalType
 }
 
-func (j *Journal) DocumentNumber() string {
-	return j.documentNumber
+func (j *Journal) ReferenceJournalId() uuid.UUID {
+	return j.referenceJournalId
 }
 
 func (j *Journal) AttachmentQuantity() int {
@@ -169,19 +182,19 @@ func (j *Journal) Amount() decimal.Decimal {
 	return j.amount
 }
 
-func (j *Journal) Creator() uuid.UUID {
+func (j *Journal) Creator() string {
 	return j.creator
 }
 
-func (j *Journal) Reviewer() uuid.UUID {
+func (j *Journal) Reviewer() string {
 	return j.reviewer
 }
 
-func (j *Journal) Auditor() uuid.UUID {
+func (j *Journal) Auditor() string {
 	return j.auditor
 }
 
-func (j *Journal) Poster() uuid.UUID {
+func (j *Journal) Poster() string {
 	return j.poster
 }
 

@@ -4,54 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/report/domain"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/report"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/amount_type"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/data_source"
-	"github/fims-proto/fims-proto-ms/internal/report/domain/report/formula_rule"
 	"github/fims-proto/fims-proto-ms/internal/report/domain/service"
 
 	"github.com/google/uuid"
 )
-
-type UpdateReportCmd struct {
-	ReportId    uuid.UUID
-	SobId       uuid.UUID
-	Title       *string
-	AmountTypes []amount_type.AmountType
-	Sections    []UpdateReportCmdSection
-}
-
-type UpdateReportCmdSection struct {
-	SectionId uuid.UUID
-	Title     *string
-	Items     []UpdateReportCmdItem // Complete desired item list
-	Sections  []UpdateReportCmdSection
-}
-
-type UpdateReportCmdItem struct {
-	// Nil ID means create new item
-	ItemId *uuid.UUID
-
-	// Item content (for new items or updates)
-	Text             *string
-	Level            *int
-	SumFactor        *int
-	DisplaySumFactor *bool
-	DataSource       *data_source.DataSource
-	Formulas         []UpdateReportCmdFormula
-	IsBreakdownItem  *bool
-	IsAbleToAddChild *bool
-}
-
-type UpdateReportCmdFormula struct {
-	FormulaId     *uuid.UUID
-	SumFactor     int
-	AccountNumber string
-	AccountId     uuid.UUID // Resolved from AccountNumber
-	Rule          formula_rule.FormulaRule
-}
 
 type UpdateReportHandler struct {
 	repo                 domain.Repository
@@ -60,171 +18,147 @@ type UpdateReportHandler struct {
 
 func NewUpdateReportHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService) UpdateReportHandler {
 	if repo == nil {
-		panic("nil repo")
+		panic("nil repository")
 	}
-
 	if generalLedgerService == nil {
 		panic("nil general ledger service")
 	}
-
-	return UpdateReportHandler{
-		repo:                 repo,
-		generalLedgerService: generalLedgerService,
-	}
+	return UpdateReportHandler{repo: repo, generalLedgerService: generalLedgerService}
 }
 
 func (h UpdateReportHandler) Handle(ctx context.Context, cmd UpdateReportCmd) error {
-	err := h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		if err := h.resolveExpressionReferences(txCtx, cmd.SobId, cmd.Rows); err != nil {
+			return err
+		}
 		return h.repo.UpdateReport(txCtx, cmd.ReportId, func(r *report.Report) (*report.Report, error) {
-			// Resolve account numbers to account IDs for formulas
-			if err := h.resolveAccountIds(txCtx, cmd.SobId, &cmd); err != nil {
-				return nil, err
-			}
-
-			// Convert command to domain params
-			params := h.cmdToParams(cmd)
-
-			// Apply comprehensive update via domain method
-			err := r.UpdateReportStructure(params)
+			params, err := commandToUpdateParams(cmd)
 			if err != nil {
 				return nil, err
 			}
-
+			if err = r.UpdateStructure(params); err != nil {
+				return nil, err
+			}
 			return r, nil
 		})
 	})
-
-	return err
 }
 
-func (h UpdateReportHandler) resolveAccountIds(ctx context.Context, sobId uuid.UUID, cmd *UpdateReportCmd) error {
-	// Collect all account numbers that need resolution (recursively)
-	accountNumbers := h.collectAccountNumbers(cmd.Sections)
+func (h UpdateReportHandler) resolveExpressionReferences(ctx context.Context, sobId uuid.UUID, rows []UpdateReportCmdRow) error {
+	accountNumbers := make(map[string]struct{})
+	cashFlowCodes := make(map[string]struct{})
+	collectCmdRefs(rows, accountNumbers, cashFlowCodes)
 
-	// Batch resolve all account numbers
+	accountIds := map[string]uuid.UUID{}
 	if len(accountNumbers) > 0 {
-		accountIds, err := h.generalLedgerService.ReadAccountIdsByNumbers(ctx, sobId, accountNumbers)
-		if err != nil {
-			return fmt.Errorf("failed to read account ids by numbers: %w", err)
+		var rawAccountNumbers []string
+		for rawNumber := range accountNumbers {
+			rawAccountNumbers = append(rawAccountNumbers, rawNumber)
 		}
+		var err error
+		accountIds, err = h.generalLedgerService.ReadAccountIdsByRawNumbers(ctx, sobId, rawAccountNumbers)
+		if err != nil {
+			return fmt.Errorf("failed to resolve account ids: %w", err)
+		}
+	}
 
-		// Update all formulas with resolved account IDs (recursively)
-		if err := h.updateFormulaAccountIds(cmd.Sections, accountIds); err != nil {
+	cashFlowItemIds := map[string]uuid.UUID{}
+	if len(cashFlowCodes) > 0 {
+		var codes []string
+		for code := range cashFlowCodes {
+			codes = append(codes, code)
+		}
+		var err error
+		cashFlowItemIds, err = h.generalLedgerService.ReadCashFlowItemIdsByCodes(ctx, sobId, codes)
+		if err != nil {
+			return fmt.Errorf("failed to resolve cash flow item ids: %w", err)
+		}
+	}
+
+	return applyCmdRefs(rows, accountIds, cashFlowItemIds)
+}
+
+func collectCmdRefs(rows []UpdateReportCmdRow, accountNumbers map[string]struct{}, cashFlowCodes map[string]struct{}) {
+	for ri := range rows {
+		for _, ref := range rows[ri].Expression.LedgerAccounts {
+			if ref.RawAccountNumber != "" {
+				accountNumbers[ref.RawAccountNumber] = struct{}{}
+			}
+		}
+		for _, ref := range rows[ri].Expression.CashFlowItems {
+			if ref.Code != "" {
+				cashFlowCodes[ref.Code] = struct{}{}
+			}
+		}
+		collectCmdRefs(rows[ri].Rows, accountNumbers, cashFlowCodes)
+	}
+}
+
+func applyCmdRefs(rows []UpdateReportCmdRow, accountIds map[string]uuid.UUID, cashFlowItemIds map[string]uuid.UUID) error {
+	for ri := range rows {
+		for li := range rows[ri].Expression.LedgerAccounts {
+			ref := &rows[ri].Expression.LedgerAccounts[li]
+			if ref.RawAccountNumber == "" {
+				continue
+			}
+			id, ok := accountIds[ref.RawAccountNumber]
+			if !ok {
+				return fmt.Errorf("account %s not found", ref.RawAccountNumber)
+			}
+			ref.AccountId = id
+		}
+		for ci := range rows[ri].Expression.CashFlowItems {
+			ref := &rows[ri].Expression.CashFlowItems[ci]
+			if ref.Code == "" {
+				continue
+			}
+			id, ok := cashFlowItemIds[ref.Code]
+			if !ok {
+				return fmt.Errorf("cash flow item %s not found", ref.Code)
+			}
+			ref.ItemId = id
+		}
+		if err := applyCmdRefs(rows[ri].Rows, accountIds, cashFlowItemIds); err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
-// collectAccountNumbers recursively collects all unique account numbers from sections
-func (h UpdateReportHandler) collectAccountNumbers(sections []UpdateReportCmdSection) []string {
-	accountNumbersSet := make(map[string]bool)
-	h.collectAccountNumbersRecursive(sections, accountNumbersSet)
-
-	// Convert set to slice
-	var accountNumbers []string
-	for accountNumber := range accountNumbersSet {
-		accountNumbers = append(accountNumbers, accountNumber)
+func commandToUpdateParams(cmd UpdateReportCmd) (report.UpdateParams, error) {
+	rows, err := commandRowsToParams(cmd.Rows)
+	if err != nil {
+		return report.UpdateParams{}, err
 	}
-	return accountNumbers
+	return report.UpdateParams{Title: cmd.Title, Rows: rows}, nil
 }
 
-func (h UpdateReportHandler) collectAccountNumbersRecursive(sections []UpdateReportCmdSection, accountNumbersSet map[string]bool) {
-	for i := range sections {
-		// Collect from items
-		for j := range sections[i].Items {
-			item := &sections[i].Items[j]
-			for k := range item.Formulas {
-				accountNumbersSet[item.Formulas[k].AccountNumber] = true
-			}
+func commandRowsToParams(cmds []UpdateReportCmdRow) ([]report.UpdateRowParams, error) {
+	rows := make([]report.UpdateRowParams, 0, len(cmds))
+	for _, rowCmd := range cmds {
+		expr, err := report.NewExpression(uuid.New(), rowCmd.Expression.Kind, rowCmd.Expression.LedgerAccounts, rowCmd.Expression.CashFlowItems, rowCmd.Expression.RowReferences)
+		if err != nil {
+			return nil, err
 		}
-		// Recursively collect from nested sections
-		if len(sections[i].Sections) > 0 {
-			h.collectAccountNumbersRecursive(sections[i].Sections, accountNumbersSet)
+		childRows, err := commandRowsToParams(rowCmd.Rows)
+		if err != nil {
+			return nil, err
 		}
-	}
-}
-
-// updateFormulaAccountIds recursively updates formula account IDs in all sections
-func (h UpdateReportHandler) updateFormulaAccountIds(sections []UpdateReportCmdSection, accountIds map[string]uuid.UUID) error {
-	for i := range sections {
-		// Update items in this section
-		for j := range sections[i].Items {
-			item := &sections[i].Items[j]
-			for k := range item.Formulas {
-				formula := &item.Formulas[k]
-				accountId, ok := accountIds[formula.AccountNumber]
-				if !ok {
-					return errors.NewSlugError("account-notFound", map[string]interface{}{
-						"accountNumber": formula.AccountNumber,
-					})
-				}
-				formula.AccountId = accountId
-			}
-		}
-		// Recursively update nested sections
-		if len(sections[i].Sections) > 0 {
-			if err := h.updateFormulaAccountIds(sections[i].Sections, accountIds); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
-}
-
-func (h UpdateReportHandler) cmdToParams(cmd UpdateReportCmd) report.UpdateReportParams {
-	sections := h.convertSections(cmd.Sections)
-
-	return report.UpdateReportParams{
-		Title:       cmd.Title,
-		AmountTypes: cmd.AmountTypes,
-		Sections:    sections,
-	}
-}
-
-// convertSections recursively converts command sections to domain params
-func (h UpdateReportHandler) convertSections(sectionsCmd []UpdateReportCmdSection) []report.UpdateReportParamsSection {
-	var sections []report.UpdateReportParamsSection
-	for _, sectionCmd := range sectionsCmd {
-		var items []report.UpdateReportParamsItem
-		for _, itemCmd := range sectionCmd.Items {
-			var formulas []report.UpdateReportParamsFormula
-			for _, formulaCmd := range itemCmd.Formulas {
-				formulas = append(formulas, report.UpdateReportParamsFormula{
-					FormulaId: formulaCmd.FormulaId,
-					SumFactor: formulaCmd.SumFactor,
-					AccountId: formulaCmd.AccountId,
-					Rule:      formulaCmd.Rule,
-				})
-			}
-
-			items = append(items, report.UpdateReportParamsItem{
-				ItemId:           itemCmd.ItemId,
-				Text:             itemCmd.Text,
-				Level:            itemCmd.Level,
-				SumFactor:        itemCmd.SumFactor,
-				DisplaySumFactor: itemCmd.DisplaySumFactor,
-				DataSource:       itemCmd.DataSource,
-				Formulas:         formulas,
-				IsBreakdownItem:  itemCmd.IsBreakdownItem,
-				IsAbleToAddChild: itemCmd.IsAbleToAddChild,
-			})
-		}
-
-		// Recursively convert nested sections
-		var nestedSections []report.UpdateReportParamsSection
-		if len(sectionCmd.Sections) > 0 {
-			nestedSections = h.convertSections(sectionCmd.Sections)
-		}
-
-		sections = append(sections, report.UpdateReportParamsSection{
-			SectionId: sectionCmd.SectionId,
-			Title:     sectionCmd.Title,
-			Items:     items,
-			Sections:  nestedSections,
+		rows = append(rows, report.UpdateRowParams{
+			RowId:            rowCmd.RowId,
+			RowCode:          rowCmd.RowCode,
+			Text:             rowCmd.Text,
+			LineNo:           rowCmd.LineNo,
+			ShowLineNo:       rowCmd.ShowLineNo,
+			SumFactor:        rowCmd.SumFactor,
+			DisplaySumFactor: rowCmd.DisplaySumFactor,
+			Indent:           rowCmd.Indent,
+			CanEdit:          rowCmd.CanEdit,
+			CanMove:          rowCmd.CanMove,
+			CanAddChild:      rowCmd.CanAddChild,
+			Expression:       expr,
+			Rows:             childRows,
 		})
 	}
-
-	return sections
+	return rows, nil
 }

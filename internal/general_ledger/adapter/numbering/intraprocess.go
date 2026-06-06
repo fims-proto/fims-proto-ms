@@ -18,13 +18,12 @@ func NewIntraProcessAdapter(numberingInterface numberingPort.NumberingInterface)
 	return IntraProcessAdapter{numberingInterface: numberingInterface}
 }
 
-func (i IntraProcessAdapter) GenerateIdentifier(ctx context.Context, periodId uuid.UUID, journalType string) (string, error) {
+func (i IntraProcessAdapter) GenerateIdentifier(ctx context.Context, periodId uuid.UUID) (string, error) {
 	cmd := command.GenerateNextIdentifierCmd{
 		IdentifierId:         uuid.New(),
 		TargetBusinessObject: "journal",
 		ObjectsToMatch: map[string]string{
-			"journal_type": journalType,
-			"period_id":    periodId.String(),
+			"period_id": periodId.String(),
 		},
 	}
 
@@ -36,10 +35,6 @@ func (i IntraProcessAdapter) CreateIdentifierConfigurationForJournal(ctx context
 		IdentifierConfigurationId: uuid.New(),
 		TargetBusinessObject:      "journal",
 		PropertyMatchers: []struct{ Name, Value string }{
-			{
-				Name:  "journal_type",
-				Value: "general_journal",
-			},
 			{
 				Name:  "period_id",
 				Value: periodId.String(),

@@ -1,6 +1,8 @@
 package http
 
 import (
+	"encoding/json"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
@@ -9,73 +11,87 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Title                 string   `json:"title"`
-	LevelNumber           int      `json:"levelNumber"`
-	SuperiorAccountNumber string   `json:"superiorAccountNumber,omitempty"`
-	BalanceDirection      string   `json:"balanceDirection"`
-	Class                 string   `json:"class,omitempty"`
-	Group                 string   `json:"group,omitempty"`
-	CategoryKeys          []string `json:"categoryKeys,omitempty"`
+	Title                          string      `json:"title"`
+	LevelNumber                    int         `json:"levelNumber"`
+	SuperiorRawAccountNumber       string      `json:"superiorRawAccountNumber,omitempty"`
+	BalanceDirection               string      `json:"balanceDirection"`
+	Class                          string      `json:"class,omitempty"`
+	Group                          string      `json:"group,omitempty"`
+	DimensionCategoryIds           []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	IsCashEquivalent               bool        `json:"isCashEquivalent"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID  `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID  `json:"defaultCashFlowItemIdForCredit,omitempty"`
 }
 
 type UpdateAccountRequest struct {
-	Title            string   `json:"title,omitempty"`
-	LevelNumber      int      `json:"levelNumber,omitempty"`
-	BalanceDirection string   `json:"balanceDirection,omitempty"`
-	Group            string   `json:"group"`
-	CategoryKeys     []string `json:"categoryKeys,omitempty"`
+	Title                          string      `json:"title,omitempty"`
+	LevelNumber                    int         `json:"levelNumber,omitempty"`
+	BalanceDirection               string      `json:"balanceDirection,omitempty"`
+	Group                          string      `json:"group"`
+	DimensionCategoryIds           []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	IsCashEquivalent               *bool       `json:"isCashEquivalent,omitempty"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID  `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID  `json:"defaultCashFlowItemIdForCredit,omitempty"`
+	UpdateDefaultCashFlowItems     bool        `json:"-" swaggerignore:"true"`
 }
 
-type CreateAuxiliaryCategoryRequest struct {
-	Key   string `json:"key"`
-	Title string `json:"title"`
-}
+// UnmarshalJSON detects whether cash flow item fields were explicitly present in the JSON body (even as null),
+// so the update handler can distinguish "omitted = don't touch" from "null = clear the value".
+func (r *UpdateAccountRequest) UnmarshalJSON(data []byte) error {
+	type alias UpdateAccountRequest
+	var decoded alias
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return err
+	}
 
-type CreateAuxiliaryAccountRequest struct {
-	Key         string `json:"key"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	*r = UpdateAccountRequest(decoded)
+	_, debitProvided := raw["defaultCashFlowItemIdForDebit"]
+	_, creditProvided := raw["defaultCashFlowItemIdForCredit"]
+	r.UpdateDefaultCashFlowItems = debitProvided || creditProvided
+	return nil
 }
 
 type CreateJournalRequest struct {
 	HeaderText         string                           `json:"headerText"`
+	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            string                           `json:"creator"`
-	JournalType        string                           `json:"journalType"`
-	TransactionDate    transaction_date.TransactionDate `json:"transactionDate"`
+	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	JournalLines       []JournalLineRequest             `json:"journalLines"`
 }
 
 type JournalLineRequest struct {
-	Id                uuid.UUID              `json:"id"`
-	AccountNumber     string                 `json:"accountNumber"`
-	AuxiliaryAccounts []AuxiliaryItemRequest `json:"auxiliaryAccounts"`
-	Text              string                 `json:"text"`
-	Amount            decimal.Decimal        `json:"amount"`
-}
-
-type AuxiliaryItemRequest struct {
-	CategoryKey string `json:"categoryKey"`
-	AccountKey  string `json:"accountKey"`
+	Id                 uuid.UUID       `json:"id"`
+	RawAccountNumber   string          `json:"rawAccountNumber"`
+	Text               string          `json:"text"`
+	Amount             decimal.Decimal `json:"amount"`
+	CashFlowItemId     *uuid.UUID      `json:"cashFlowItemId,omitempty"`
+	DimensionOptionIds []uuid.UUID     `json:"dimensionOptionIds,omitempty"`
 }
 
 type AuditJournalRequest struct {
-	Auditor uuid.UUID `json:"auditor"`
+	Auditor string `json:"auditor"`
 }
 
 type ReviewJournalRequest struct {
-	Reviewer uuid.UUID `json:"reviewer"`
+	Reviewer string `json:"reviewer"`
 }
 
 type PostJournalRequest struct {
-	Poster uuid.UUID `json:"poster"`
+	Poster string `json:"poster"`
 }
 
 type UpdateJournalRequest struct {
 	HeaderText      string                           `json:"headerText"`
-	TransactionDate transaction_date.TransactionDate `json:"transactionDate"`
+	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
 	JournalLines    []JournalLineRequest             `json:"journalLines"`
-	Updater         uuid.UUID                        `json:"updater"`
+	Updater         string                           `json:"updater"`
 }
 
 type InitializeLedgersBalanceRequest struct {
@@ -83,27 +99,20 @@ type InitializeLedgersBalanceRequest struct {
 }
 
 type InitializeLedgersBalanceItemRequest struct {
-	AccountNumber  string          `json:"accountNumber"`
-	OpeningBalance decimal.Decimal `json:"openingBalance"`
+	RawAccountNumber string          `json:"rawAccountNumber"`
+	OpeningBalance   decimal.Decimal `json:"openingBalance"`
 }
 
 // mapper
 
 func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
-	var auxiliaryItemCmds []command.AuxiliaryItemCmd
-	for _, auxiliaryAccount := range r.AuxiliaryAccounts {
-		auxiliaryItemCmds = append(auxiliaryItemCmds, command.AuxiliaryItemCmd{
-			CategoryKey: auxiliaryAccount.CategoryKey,
-			AccountKey:  auxiliaryAccount.AccountKey,
-		})
-	}
-
 	return command.JournalLineCmd{
-		Id:                r.Id,
-		Text:              r.Text,
-		AccountNumber:     r.AccountNumber,
-		AuxiliaryAccounts: auxiliaryItemCmds,
-		Amount:            r.Amount,
+		Id:                 r.Id,
+		Text:               r.Text,
+		RawAccountNumber:   r.RawAccountNumber,
+		Amount:             r.Amount,
+		CashFlowItemId:     r.CashFlowItemId,
+		DimensionOptionIds: r.DimensionOptionIds,
 	}
 }
 
@@ -112,14 +121,26 @@ func (r CreateJournalRequest) mapToCommand(sobId uuid.UUID) command.CreateJourna
 	for _, item := range r.JournalLines {
 		itemCmd = append(itemCmd, item.mapToCommand())
 	}
+
+	journalType := r.JournalType
+	if journalType == "" {
+		journalType = "GENERAL"
+	}
+
+	var referenceJournalId uuid.UUID
+	if r.ReferenceJournalId != nil {
+		referenceJournalId = *r.ReferenceJournalId
+	}
+
 	return command.CreateJournalCmd{
 		JournalId:          uuid.New(),
 		SobId:              sobId,
 		HeaderText:         r.HeaderText,
-		JournalType:        r.JournalType,
+		JournalType:        journalType,
+		ReferenceJournalId: referenceJournalId,
 		AttachmentQuantity: r.AttachmentQuantity,
 		JournalLines:       itemCmd,
-		Creator:            uuid.MustParse(r.Creator),
+		Creator:            r.Creator,
 		TransactionDate:    r.TransactionDate,
 	}
 }
@@ -128,8 +149,8 @@ func (r InitializeLedgersBalanceRequest) mapToCommand(sobId uuid.UUID) command.I
 	var itemCmd []command.InitializeLedgersBalanceItemCmd
 	for _, l := range r.Ledgers {
 		itemCmd = append(itemCmd, command.InitializeLedgersBalanceItemCmd{
-			AccountNumber:  l.AccountNumber,
-			OpeningBalance: l.OpeningBalance,
+			RawAccountNumber: l.RawAccountNumber,
+			OpeningBalance:   l.OpeningBalance,
 		})
 	}
 

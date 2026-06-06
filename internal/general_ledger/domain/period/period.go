@@ -43,19 +43,19 @@ func NewByAllFields(
 	isCurrent bool,
 ) (*Period, error) {
 	if id == uuid.Nil {
-		return nil, errors.NewSlugError("period-emptyId")
+		return nil, errors.NewInternalError(errors.SlugPeriodEmptyId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.NewSlugError("emptySobId")
+		return nil, errors.NewInternalError(errors.SlugEmptySobId)
 	}
 
 	if fiscalYear < 1970 || fiscalYear > 9999 {
-		return nil, errors.NewSlugError("period-invalidFiscalYear", fiscalYear)
+		return nil, errors.NewInvalidInputError(errors.SlugPeriodInvalidFiscalYear, fiscalYear)
 	}
 
 	if periodNumber < 1 || periodNumber > 12 {
-		return nil, errors.NewSlugError("period-invalidPeriodNumber", periodNumber)
+		return nil, errors.NewInvalidInputError(errors.SlugPeriodInvalidPeriodNumber, periodNumber)
 	}
 
 	return &Period{

@@ -1,7 +1,7 @@
 meta {
   name: create journal
   type: http
-  seq: 10
+  seq: 21
 }
 
 post {
@@ -18,224 +18,223 @@ script:pre-request {
   const testSamples = [
       {
           summary: "1 - 收到投资款",
-          date: "2023-01-08",
+          date: "2026-12-08",
           items: [
               {
-                  account: "100201",
+                  account: "001002000001",
                   amount: 500000
               },
               {
-                  account: "300101",
+                  account: "003001000001",
                   amount: -300000
               },
               {
-                  account: "300102",
+                  account: "003001000002",
                   amount: -200000
               }
           ]
       },
       {
           summary: "2 - 提取备用金",
-          date: "2023-01-09",
+          date: "2026-12-09",
           items: [
               {
-                  account: "1001",
+                  account: "001001",
                   amount: 100000
               },
               {
-                  account: "100201",
+                  account: "001002000001",
                   amount: -100000
               }
           ]
       },
       {
           summary: "3 - 报销费用",
-          date: "2023-01-10",
+          date: "2026-12-10",
           items: [
               {
-                  account: "560201",
+                  account: "005602000001",
                   amount: 1000
               },
               {
-                  account: "1001",
+                  account: "001001",
                   amount: -1000
               }
           ]
       },
       {
           summary: "4 - 支付店庆花篮费",
-          date: "2023-01-11",
+          date: "2026-12-11",
           items: [
               {
-                  account: "560202",
+                  account: "005602000002",
                   amount: 500
               },
               {
-                  account: "100201",
+                  account: "001002000001",
                   amount: -500
               }
           ]
       },
       {
           summary: "5 - 报销办公用品",
-          date: "2023-01-12",
+          date: "2026-12-12",
           items: [
               {
-                  account: "560201",
+                  account: "005602000001",
                   amount: 600
               },
               {
-                  account: "1001",
+                  account: "001001",
                   amount: -600
               }
           ]
       },
       {
           summary: "6 - 购买电脑",
-          date: "2023-01-13",
+          date: "2026-12-13",
           items: [
               {
-                  account: "160101",
+                  account: "001601000001",
                   amount: 18500
               },
               {
-                  account: "100201",
+                  account: "001002000001",
                   amount: -18500
               }
           ]
       },
       {
           summary: "7 - 购买品牌使用费三年",
-          date: "2023-01-14",
+          date: "2026-12-14",
           items: [
               {
-                  account: "170101",
+                  account: "001701000001",
                   amount: 36000
               },
               {
-                  account: "100201",
+                  account: "001002000001",
                   amount: -36000
               }
           ]
       },
       {
           summary: "8 - 支付房租两年",
-          date: "2023-01-15",
+          date: "2026-12-15",
           items: [
               {
-                  account: "180101",
+                  account: "001801000001",
                   amount: 60000
               },
               {
-                  account: "100201",
+                  account: "001002000001",
                   amount: -60000
               }
           ]
       },
       {
           summary: "9 - 计提一月工资",
-          date: "2023-01-31",
+          date: "2026-12-30",
           items: [
               {
-                  account: "560203",
+                  account: "005602000003",
                   amount: 10000
               },
               {
-                  account: "221101",
+                  account: "002211000001",
                   amount: -10000
               }
           ]
       },
       {
           summary: "10 - 摊销品牌使用费",
-          date: "2023-01-31",
+          date: "2026-12-30",
           items: [
               {
-                  account: "560204",
+                  account: "005602000004",
                   amount: 1000
               },
               {
-                  account: "1702",
+                  account: "001702",
                   amount: -1000
               }
           ]
       },
       {
           summary: "11 - 摊销房租",
-          date: "2023-01-31",
+          date: "2026-12-30",
           items: [
               {
-                  account: "560205",
+                  account: "005602000005",
                   amount: 2500
               },
               {
-                  account: "180101",
+                  account: "001801000001",
                   amount: -2500
               }
           ]
       },
-      {
-          summary: "12 - 结转损益",
-          date: "2023-01-31",
-          items: [
-              {
-                  account: "3103",
-                  amount: 15600
-              },
-              {
-                  account: "560201",
-                  amount: -1000
-              },
-              {
-                  account: "560202",
-                  amount: -500
-              },
-              {
-                  account: "560201",
-                  amount: -600
-              },
-              {
-                  account: "560203",
-                  amount: -10000
-              },
-              {
-                  account: "560204",
-                  amount: -1000
-              },
-              {
-                  account: "560205",
-                  amount: -2500
-              }
-          ]
-      }
+  //     {
+  //         summary: "12 - 结转损益",
+  //         date: "2026-12-30",
+  //         items: [
+  //             {
+  //                 account: "003103",
+  //                 amount: 15600
+  //             },
+  //             {
+  //                 account: "005602000001",
+  //                 amount: -1000
+  //             },
+  //             {
+  //                 account: "005602000002",
+  //                 amount: -500
+  //             },
+  //             {
+  //                 account: "005602000001",
+  //                 amount: -600
+  //             },
+  //             {
+  //                 account: "005602000003",
+  //                 amount: -10000
+  //             },
+  //             {
+  //                 account: "005602000004",
+  //                 amount: -1000
+  //             },
+  //             {
+  //                 account: "005602000005",
+  //                 amount: -2500
+  //             }
+  //         ]
+  //     }
   ]
-
+  
   let sampleJournals = bru.getVar("sample_journals")
-
+  
   if(!sampleJournals || sampleJournals.length == 0) {
       sampleJournals = testSamples
   }
-
+  
   let currentSampleJournal = sampleJournals.shift()
   bru.setVar("sample_journals", sampleJournals)
-
-
+  
+  
   // build current payload
   const payload = {
-      "journalType": "general_journal",
       "headerText": currentSampleJournal.summary,
       "attachmentQuantity": 0,
       "journalLines": [],
       "creator": bru.getCollectionVar("user_1"),
       "transactionDate": currentSampleJournal.date
   }
-
+  
   currentSampleJournal.items.forEach(sampleItem => payload.journalLines.push({
       "text": currentSampleJournal.summary,
-      "accountNumber": sampleItem.account,
+      "rawAccountNumber": sampleItem.account,
       "amount": sampleItem.amount
   }))
-
+  
   bru.setVar("current_journal_payload", JSON.stringify(payload))
 }
 
@@ -246,18 +245,18 @@ tests {
   }
   journalIds.push(res.getBody().id)
   bru.setVar("journal_ids", journalIds)
-
+  
   // let jsonData = pm.response.json()
   // pm.collectionVariables.set("journal_1_item_1", jsonData.journalLines[0].id)
   // pm.collectionVariables.set("journal_1_item_2", jsonData.journalLines[1].id)
-
+  
   const sampleJournals = bru.getVar("sample_journals")
   if (sampleJournals && sampleJournals.length > 0){
       bru.setNextRequest("create journal")
   }
-
+  
   test("Create journal", function () {
       expect(res.getStatus()).to.equal(201)
   })
-
+  
 }

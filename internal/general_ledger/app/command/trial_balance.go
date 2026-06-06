@@ -29,13 +29,13 @@ func trialBalance(ctx context.Context, repo domain.Repository, sobId, periodId u
 
 	// Trial balance: sum of all signed amounts should be zero (debits = credits)
 	if !totalOpeningAmount.IsZero() {
-		return commonErrors.NewSlugError("period-close-openingBalanceUnequal")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseOpeningUnequal)
 	}
 	if !totalPeriodAmount.IsZero() {
-		return commonErrors.NewSlugError("period-close-periodBalanceUnequal")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodClosePeriodUnequal)
 	}
 	if !totalEndingAmount.IsZero() {
-		return commonErrors.NewSlugError("period-close-endingBalanceUnequal")
+		return commonErrors.NewInvalidInputError(commonErrors.SlugPeriodCloseEndingUnequal)
 	}
 
 	return nil

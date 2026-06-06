@@ -16,17 +16,16 @@ type Error struct {
 }
 
 type ReportResponse struct {
-	Id          uuid.UUID         `json:"id,omitempty"`
-	SobId       uuid.UUID         `json:"sobId,omitempty"`
-	Period      *PeriodResponse   `json:"period,omitempty"`
-	Title       string            `json:"title,omitempty"`
-	Template    bool              `json:"template"`
-	Class       string            `json:"class"`
-	AmountTypes []string          `json:"amountTypes"`
-	Sections    []SectionResponse `json:"sections"`
-
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	Id        uuid.UUID        `json:"id,omitempty"`
+	SobId     uuid.UUID        `json:"sobId,omitempty"`
+	Period    *PeriodResponse  `json:"period,omitempty"`
+	Title     string           `json:"title,omitempty"`
+	Template  bool             `json:"template"`
+	Class     string           `json:"class"`
+	Columns   []ColumnResponse `json:"columns"`
+	Rows      []RowResponse    `json:"rows"`
+	CreatedAt time.Time        `json:"createdAt"`
+	UpdatedAt time.Time        `json:"updatedAt"`
 }
 
 type PeriodResponse struct {
@@ -34,120 +33,69 @@ type PeriodResponse struct {
 	PeriodNumber int `json:"periodNumber"`
 }
 
-type SectionResponse struct {
-	Id       uuid.UUID         `json:"id,omitempty"`
-	Title    string            `json:"title,omitempty"`
-	Amounts  []decimal.Decimal `json:"amounts,omitempty"`
-	Sections []SectionResponse `json:"sections,omitempty"`
-	Items    []ItemResponse    `json:"items,omitempty"`
+type ColumnResponse struct {
+	Id        uuid.UUID `json:"id,omitempty"`
+	Label     string    `json:"label"`
+	ValueType string    `json:"valueType"`
+	Sequence  int       `json:"sequence"`
 }
 
-type ItemResponse struct {
-	Id               uuid.UUID         `json:"id,omitempty"`
-	Text             string            `json:"text"`
-	Level            int               `json:"level"`
-	SumFactor        int               `json:"sumFactor"`
-	DisplaySumFactor bool              `json:"displaySumFactor,omitempty"`
-	DataSource       string            `json:"dataSource"`
-	Formulas         []FormulaResponse `json:"formulas,omitempty"`
-	Amounts          []decimal.Decimal `json:"amounts,omitempty"`
-	IsEditable       bool              `json:"isEditable,omitempty"`
-	IsBreakdownItem  bool              `json:"isBreakdownItem,omitempty"`
-	IsAbleToAddChild bool              `json:"isAbleToAddChild,omitempty"`
+type RowResponse struct {
+	Id               uuid.UUID          `json:"id,omitempty"`
+	RowCode          string             `json:"rowCode"`
+	Text             string             `json:"text"`
+	Sequence         int                `json:"sequence"`
+	LineNo           *int               `json:"lineNo,omitempty"`
+	ShowLineNo       bool               `json:"showLineNo"`
+	SumFactor        int                `json:"sumFactor"`
+	DisplaySumFactor bool               `json:"displaySumFactor"`
+	Indent           int                `json:"indent"`
+	CanEdit          bool               `json:"canEdit"`
+	CanMove          bool               `json:"canMove"`
+	CanAddChild      bool               `json:"canAddChild"`
+	Expression       ExpressionResponse `json:"expression"`
+	Rows             []RowResponse      `json:"rows,omitempty"`
+	Amounts          []decimal.Decimal  `json:"amounts,omitempty"`
 }
 
-type FormulaResponse struct {
-	Id        uuid.UUID         `json:"id"`
-	Sequence  int               `json:"sequence"`
-	Account   AccountResponse   `json:"account"`
-	SumFactor int               `json:"sumFactor"`
-	Rule      string            `json:"rule"`
-	Amounts   []decimal.Decimal `json:"amounts,omitempty"`
+type ExpressionResponse struct {
+	Id             uuid.UUID                        `json:"id,omitempty"`
+	Kind           string                           `json:"kind"`
+	LedgerAccounts []LedgerAccountReferenceResponse `json:"ledgerAccounts,omitempty"`
+	CashFlowItems  []CashFlowItemReferenceResponse  `json:"cashFlowItems,omitempty"`
+	RowReferences  []RowReferenceResponse           `json:"rowReferences,omitempty"`
 }
 
-type AccountResponse struct {
-	Id                uuid.UUID  `json:"id,omitempty"`
-	SobId             uuid.UUID  `json:"sobId,omitempty"`
-	SuperiorAccountId *uuid.UUID `json:"superiorAccountId,omitempty"`
-	Title             string     `json:"title"`
-	AccountNumber     string     `json:"accountNumber"`
-	Level             int        `json:"level"`
-	IsLeaf            bool       `json:"isLeaf"`
-	Class             int        `json:"class"`
-	Group             int        `json:"group"`
-	BalanceDirection  string     `json:"balanceDirection"`
+type LedgerAccountReferenceResponse struct {
+	RawAccountNumber string    `json:"rawAccountNumber"`
+	AccountId        uuid.UUID `json:"accountId,omitempty"`
+	SumFactor        int       `json:"sumFactor"`
+	Measure          string    `json:"measure"`
 }
 
-type AddItemResponse struct {
-	ItemId uuid.UUID `json:"itemId"`
+type CashFlowItemReferenceResponse struct {
+	Code      string    `json:"code"`
+	ItemId    uuid.UUID `json:"itemId,omitempty"`
+	SumFactor int       `json:"sumFactor"`
 }
 
-// mappers
+type RowReferenceResponse struct {
+	RowCode   string `json:"rowCode"`
+	SumFactor int    `json:"sumFactor"`
+}
 
 func reportDTOToVO(dto query.Report) ReportResponse {
 	return ReportResponse{
-		Id:          dto.Id,
-		SobId:       dto.SobId,
-		Period:      periodDTOToVO(dto.Period),
-		Title:       dto.Title,
-		Template:    dto.Template,
-		Class:       dto.Class,
-		AmountTypes: dto.AmountTypes,
-		Sections:    converter.DTOsToVOs(dto.Sections, sectionDTOToVO),
-		CreatedAt:   dto.CreatedAt,
-		UpdatedAt:   dto.UpdatedAt,
-	}
-}
-
-func sectionDTOToVO(dto query.Section) SectionResponse {
-	return SectionResponse{
-		Id:       dto.Id,
-		Title:    dto.Title,
-		Amounts:  dto.Amounts,
-		Sections: converter.DTOsToVOs(dto.Sections, sectionDTOToVO),
-		Items:    converter.DTOsToVOs(dto.Items, itemDTOToVO),
-	}
-}
-
-func itemDTOToVO(dto query.Item) ItemResponse {
-	return ItemResponse{
-		Id:               dto.Id,
-		Text:             dto.Text,
-		Level:            dto.Level,
-		SumFactor:        dto.SumFactor,
-		DisplaySumFactor: dto.DisplaySumFactor,
-		DataSource:       dto.DataSource,
-		Formulas:         converter.DTOsToVOs(dto.Formulas, formulaDTOToVO),
-		Amounts:          dto.Amounts,
-		IsEditable:       dto.IsEditable,
-		IsBreakdownItem:  dto.IsBreakdownItem,
-		IsAbleToAddChild: dto.IsAbleToAddChild,
-	}
-}
-
-func formulaDTOToVO(dto query.Formula) FormulaResponse {
-	return FormulaResponse{
 		Id:        dto.Id,
-		Sequence:  dto.Sequence,
-		Account:   accountDTOToVO(dto.Account),
-		SumFactor: dto.SumFactor,
-		Rule:      dto.Rule,
-		Amounts:   dto.Amounts,
-	}
-}
-
-func accountDTOToVO(dto query.Account) AccountResponse {
-	return AccountResponse{
-		Id:                dto.Id,
-		SobId:             dto.SobId,
-		SuperiorAccountId: dto.SuperiorAccountId,
-		Title:             dto.Title,
-		AccountNumber:     dto.AccountNumber,
-		Level:             dto.Level,
-		IsLeaf:            dto.IsLeaf,
-		Class:             dto.Class,
-		Group:             dto.Group,
-		BalanceDirection:  dto.BalanceDirection,
+		SobId:     dto.SobId,
+		Period:    periodDTOToVO(dto.Period),
+		Title:     dto.Title,
+		Template:  dto.Template,
+		Class:     dto.Class,
+		Columns:   converter.DTOsToVOs(dto.Columns, columnDTOToVO),
+		Rows:      converter.DTOsToVOs(dto.Rows, rowDTOToVO),
+		CreatedAt: dto.CreatedAt,
+		UpdatedAt: dto.UpdatedAt,
 	}
 }
 
@@ -155,8 +103,56 @@ func periodDTOToVO(dto *query.Period) *PeriodResponse {
 	if dto == nil {
 		return nil
 	}
-	return &PeriodResponse{
-		FiscalYear:   dto.FiscalYear,
-		PeriodNumber: dto.PeriodNumber,
+	return &PeriodResponse{FiscalYear: dto.FiscalYear, PeriodNumber: dto.PeriodNumber}
+}
+
+func columnDTOToVO(dto query.Column) ColumnResponse {
+	return ColumnResponse{Id: dto.Id, Label: dto.Label, ValueType: dto.ValueType, Sequence: dto.Sequence}
+}
+
+func rowDTOToVO(dto query.Row) RowResponse {
+	return RowResponse{
+		Id:               dto.Id,
+		RowCode:          dto.RowCode,
+		Text:             dto.Text,
+		Sequence:         dto.Sequence,
+		LineNo:           dto.LineNo,
+		ShowLineNo:       dto.ShowLineNo,
+		SumFactor:        dto.SumFactor,
+		DisplaySumFactor: dto.DisplaySumFactor,
+		Indent:           dto.Indent,
+		CanEdit:          dto.CanEdit,
+		CanMove:          dto.CanMove,
+		CanAddChild:      dto.CanAddChild,
+		Expression:       expressionDTOToVO(dto.Expression),
+		Rows:             converter.DTOsToVOs(dto.Rows, rowDTOToVO),
+		Amounts:          dto.Amounts,
 	}
+}
+
+func expressionDTOToVO(dto query.Expression) ExpressionResponse {
+	return ExpressionResponse{
+		Id:             dto.Id,
+		Kind:           dto.Kind,
+		LedgerAccounts: converter.DTOsToVOs(dto.LedgerAccounts, ledgerAccountRefDTOToVO),
+		CashFlowItems:  converter.DTOsToVOs(dto.CashFlowItems, cashFlowItemRefDTOToVO),
+		RowReferences:  converter.DTOsToVOs(dto.RowReferences, rowRefDTOToVO),
+	}
+}
+
+func ledgerAccountRefDTOToVO(dto query.LedgerAccountReference) LedgerAccountReferenceResponse {
+	return LedgerAccountReferenceResponse{
+		RawAccountNumber: dto.RawAccountNumber,
+		AccountId:        dto.AccountId,
+		SumFactor:        dto.SumFactor,
+		Measure:          dto.Measure,
+	}
+}
+
+func cashFlowItemRefDTOToVO(dto query.CashFlowItemReference) CashFlowItemReferenceResponse {
+	return CashFlowItemReferenceResponse{Code: dto.Code, ItemId: dto.ItemId, SumFactor: dto.SumFactor}
+}
+
+func rowRefDTOToVO(dto query.RowReference) RowReferenceResponse {
+	return RowReferenceResponse{RowCode: dto.RowCode, SumFactor: dto.SumFactor}
 }

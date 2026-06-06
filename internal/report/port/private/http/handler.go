@@ -29,7 +29,6 @@ func (h Handler) Migrate(c *gin.Context) {
 	c.Status(http.StatusNoContent)
 }
 
-// Initialize TODO internal test
 func (h Handler) Initialize(c *gin.Context) {
 	if err := h.app.Commands.Initialize.Handle(c, command.InitializeCmd{SobId: uuid.MustParse(c.Query("sobId"))}); err != nil {
 		_ = c.Error(err)

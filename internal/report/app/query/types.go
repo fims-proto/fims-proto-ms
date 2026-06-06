@@ -8,68 +8,71 @@ import (
 )
 
 type Report struct {
-	Id          uuid.UUID
-	SobId       uuid.UUID
-	Period      *Period
-	Title       string
-	Template    bool
-	Class       string
-	AmountTypes []string
-	Sections    []Section
+	Id       uuid.UUID
+	SobId    uuid.UUID
+	Period   *Period
+	Title    string
+	Template bool
+	Class    string
+	Columns  []Column
+	Rows     []Row
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
 
-type Section struct {
-	Id          uuid.UUID
-	Title       string
-	Sequence    int
-	SectionType string
-	Amounts     []decimal.Decimal
-	Sections    []Section
-	Items       []Item
+type Column struct {
+	Id        uuid.UUID
+	Label     string
+	ValueType string
+	Sequence  int
 }
 
-type Item struct {
+type Row struct {
 	Id               uuid.UUID
+	RowCode          string
 	Text             string
-	Level            int
 	Sequence         int
-	ItemType         string
+	LineNo           *int
+	ShowLineNo       bool
 	SumFactor        int
 	DisplaySumFactor bool
-	DataSource       string
-	Formulas         []Formula
+	Indent           int
+	CanEdit          bool
+	CanMove          bool
+	CanAddChild      bool
+	Expression       Expression
+	Rows             []Row
 	Amounts          []decimal.Decimal
-	IsEditable       bool
-	IsBreakdownItem  bool
-	IsAbleToAddChild bool
 }
 
-type Formula struct {
-	Id        uuid.UUID
-	Sequence  int
-	Account   Account
+type Expression struct {
+	Id             uuid.UUID
+	Kind           string
+	LedgerAccounts []LedgerAccountReference
+	CashFlowItems  []CashFlowItemReference
+	RowReferences  []RowReference
+}
+
+type LedgerAccountReference struct {
+	RawAccountNumber string
+	AccountId        uuid.UUID
+	SumFactor        int
+	Measure          string
+}
+
+type CashFlowItemReference struct {
+	Code      string
+	ItemId    uuid.UUID
 	SumFactor int
-	Rule      string
-	Amounts   []decimal.Decimal
+}
+
+type RowReference struct {
+	RowCode   string
+	SumFactor int
 }
 
 type Period struct {
 	FiscalYear   int
 	PeriodNumber int
-}
-
-type Account struct {
-	Id                uuid.UUID
-	SobId             uuid.UUID
-	SuperiorAccountId *uuid.UUID
-	Title             string
-	AccountNumber     string
-	Level             int
-	IsLeaf            bool
-	Class             int
-	Group             int
-	BalanceDirection  string
 }

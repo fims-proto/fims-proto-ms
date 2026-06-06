@@ -1,47 +1,47 @@
 package http
 
 import (
+	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Handler struct {
-	app *app.Application
+	app       *app.Application
+	localizer localization.Localizer
 }
 
-func NewHandler(app *app.Application) Handler {
+func NewHandler(app *app.Application, localizer localization.Localizer) Handler {
 	if app == nil {
 		panic("nil application")
 	}
-	return Handler{app: app}
+	return Handler{app: app, localizer: localizer}
 }
 
 func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.GET("/sob/:sobId/account-classes", h.ReadAccountClasses)
-	r.GET("/sob/:sobId/accounts", h.ReadAccounts)
-	r.GET("/sob/:sobId/search-accounts", h.SearchAccounts)
+	r.GET("/sob/:sobId/accounts", h.ReadAllAccounts)
 	r.GET("/sob/:sobId/account/:accountId", h.ReadAccountById)
 	r.POST("/sob/:sobId/accounts", h.CreateAccount)
 	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)
+	r.DELETE("/sob/:sobId/account/:accountId", h.DeleteAccount)
 
-	r.GET("/sob/:sobId/auxiliaries", h.ReadPagingAuxiliaryCategories)
-	r.GET("/sob/:sobId/auxiliary/:categoryKey", h.ReadAuxiliaryCategoryByKey)
-	r.POST("/sob/:sobId/auxiliaries", h.CreateAuxiliaryCategory)
-	r.GET("/sob/:sobId/auxiliary/:categoryKey/accounts", h.ReadPagingAuxiliaryAccounts)
-	r.POST("/sob/:sobId/auxiliary/:categoryKey/accounts", h.CreateAuxiliaryAccount)
+	r.GET("/sob/:sobId/cash-flow-items", h.ReadCashFlowItems)
 
 	r.GET("/sob/:sobId/first-period/ledgers", h.ReadFirstPeriodLedgers)
 	r.POST("/sob/:sobId/ledgers/initialize", h.InitializeLedgers)
-	r.GET("/sob/:sobId/ledger/:accountId", h.ReadLedgerSummary)
-	r.GET("/sob/:sobId/ledger/:accountId/entries", h.ReadLedgerEntries)
-	r.GET("/sob/:sobId/ledger/:accountId/auxiliary", h.ReadAuxiliaryLedgerSummary)
-	r.GET("/sob/:sobId/periods", h.ReadPeriods)
-	r.GET("/sob/:sobId/periods/current", h.ReadSobCurrentPeriod)
 	r.GET("/sob/:sobId/ledgers", h.ReadLedgersByPeriodRange)
-	r.POST("/sob/:sobId/period/:periodId/close", h.ClosePeriod)
+	r.GET("/sob/:sobId/ledgers/transactions", h.ReadLedgerTransactions)
+	r.GET("/sob/:sobId/ledgers/dimension-category/:dimensionCategoryId/options", h.ReadLedgerByDimensionCategory)
 
-	r.GET("/sob/:sobId/journals", h.ReadAllJournals)
+	r.GET("/sob/:sobId/periods", h.ReadPeriods)
+	r.GET("/sob/:sobId/period/:periodId/pre-close-check", h.PreCloseCheck)
+	r.POST("/sob/:sobId/period/:periodId/close", h.ClosePeriod)
+	r.GET("/sob/:sobId/periods/batch-pre-close-check", h.BatchPreCloseCheck)
+	r.POST("/sob/:sobId/periods/batch-close", h.ClosePeriods)
+
+	r.GET("/sob/:sobId/journals", h.SearchJournals)
 	r.GET("/sob/:sobId/journal/:journalId", h.ReadJournalById)
 	r.POST("/sob/:sobId/journals", h.CreateJournal)
 	r.PATCH("/sob/:sobId/journal/:journalId", h.UpdateJournal)
@@ -50,4 +50,8 @@ func InitRouter(h Handler, r *gin.RouterGroup) {
 	r.POST("/sob/:sobId/journal/:journalId/review", h.ReviewJournal)
 	r.POST("/sob/:sobId/journal/:journalId/cancel-review", h.CancelReviewJournal)
 	r.POST("/sob/:sobId/journal/:journalId/post", h.PostJournal)
+	r.DELETE("/sob/:sobId/journal/:journalId", h.DeleteSystemJournal)
+	r.POST("/sob/:sobId/journals/monthly-closing-journal", h.CreateMonthlyClosingJournal)
+	r.POST("/sob/:sobId/journals/year-end-closing-journal", h.CreateYearEndClosingJournal)
+	r.GET("/sob/:sobId/journals/closing-journal", h.GetClosingJournal)
 }

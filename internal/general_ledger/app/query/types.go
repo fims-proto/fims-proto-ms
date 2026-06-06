@@ -11,41 +11,54 @@ import (
 	"github.com/google/uuid"
 )
 
-type Account struct {
-	Id                  uuid.UUID
-	SobId               uuid.UUID
-	SuperiorAccountId   *uuid.UUID
-	Title               string
-	AccountNumber       string
-	NumberHierarchy     []int
-	Level               int
-	IsLeaf              bool
-	Class               int
-	Group               int
-	BalanceDirection    string
-	AuxiliaryCategories []AuxiliaryCategory
-	CreatedAt           time.Time
-	UpdatedAt           time.Time
+type CheckStatus string
+
+const (
+	CheckStatusPassed       CheckStatus = "PASSED"
+	CheckStatusFailed       CheckStatus = "FAILED"
+	CheckStatusUndetermined CheckStatus = "UNDETERMINED"
+)
+
+type CashFlowItem struct {
+	Id        uuid.UUID
+	SobId     uuid.UUID
+	Code      string
+	Name      string
+	Category  string
+	Direction string
+	Sequence  int
 }
 
-type AuxiliaryCategory struct {
+type DimensionCategory struct {
+	Id   uuid.UUID
+	Name string
+}
+
+type DimensionOption struct {
 	Id         uuid.UUID
-	SobId      uuid.UUID
-	Key        string
-	Title      string
-	IsStandard bool
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	Name       string
+	CategoryId uuid.UUID
+	Category   DimensionCategory
 }
 
-type AuxiliaryAccount struct {
-	Id          uuid.UUID
-	Category    AuxiliaryCategory
-	Key         string
-	Title       string
-	Description string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+type Account struct {
+	Id                             uuid.UUID
+	SobId                          uuid.UUID
+	SuperiorAccountId              *uuid.UUID
+	Title                          string
+	RawAccountNumber               string
+	Level                          int
+	IsLeaf                         bool
+	Class                          int
+	Group                          int
+	BalanceDirection               string
+	IsCashEquivalent               bool
+	DefaultCashFlowItemIdForDebit  *uuid.UUID
+	DefaultCashFlowItemIdForCredit *uuid.UUID
+	DimensionCategoryIds           []uuid.UUID         // internal: used by enricher, not exposed in HTTP response
+	DimensionCategories            []DimensionCategory // populated by enricher on detail queries only
+	CreatedAt                      time.Time
+	UpdatedAt                      time.Time
 }
 
 type Period struct {
@@ -74,39 +87,26 @@ type Ledger struct {
 	UpdatedAt     time.Time
 }
 
-type AuxiliaryLedger struct {
-	Id                uuid.UUID
-	SobId             uuid.UUID
-	PeriodId          uuid.UUID
-	Account           Account
-	AuxiliaryCategory AuxiliaryCategory
-	AuxiliaryAccount  AuxiliaryAccount
-	OpeningAmount     decimal.Decimal
-	PeriodAmount      decimal.Decimal
-	PeriodDebit       decimal.Decimal
-	PeriodCredit      decimal.Decimal
-	EndingAmount      decimal.Decimal
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
-}
-
 type JournalLine struct {
-	Id                uuid.UUID
-	Account           Account
-	AuxiliaryAccounts []AuxiliaryAccount
-	Text              string
-	Amount            decimal.Decimal
-	CreatedAt         time.Time
-	UpdatedAt         time.Time
+	Id                 uuid.UUID
+	Account            Account
+	Text               string
+	Amount             decimal.Decimal
+	CashFlowItemId     *uuid.UUID
+	DimensionOptionIds []uuid.UUID       // internal: used by enricher, not exposed in HTTP response
+	DimensionOptions   []DimensionOption // populated by enricher on detail queries only
+	CreatedAt          time.Time
+	UpdatedAt          time.Time
 }
 
 type Journal struct {
 	SobId              uuid.UUID
 	Id                 uuid.UUID
 	Period             Period
-	JournalType        string
 	HeaderText         string
 	DocumentNumber     string
+	JournalType        string
+	ReferenceJournalId *uuid.UUID
 	AttachmentQuantity int
 	Amount             decimal.Decimal
 	Creator            *User
@@ -135,4 +135,62 @@ type LedgerEntry struct {
 	Amount          decimal.Decimal
 	CreatedAt       time.Time
 	UpdatedAt       time.Time
+}
+
+type LedgerDimensionSummaryItem struct {
+	DimensionOptionId   uuid.UUID
+	DimensionOptionName string
+	OpeningAmount       decimal.Decimal
+	PeriodDebit         decimal.Decimal
+	PeriodCredit        decimal.Decimal
+	PeriodAmount        decimal.Decimal
+	EndingAmount        decimal.Decimal
+}
+
+type PreCloseCheckJournal struct {
+	Id              uuid.UUID
+	DocumentNumber  string
+	HeaderText      string
+	Amount          decimal.Decimal
+	TransactionDate transaction_date.TransactionDate
+	IsReviewed      bool
+	IsAudited       bool
+}
+
+type PreCloseCheckUnpostedJournals struct {
+	Status   CheckStatus
+	Count    int
+	Journals []PreCloseCheckJournal
+}
+
+type PreCloseCheckPnLAccount struct {
+	RawAccountNumber string
+	AccountTitle     string
+	EndingAmount     decimal.Decimal
+}
+
+type PreCloseCheckPnLBalance struct {
+	Status   CheckStatus
+	Accounts []PreCloseCheckPnLAccount
+}
+
+type PreCloseCheckTrialBalance struct {
+	Status        CheckStatus
+	OpeningAmount decimal.Decimal
+	PeriodAmount  decimal.Decimal
+	EndingAmount  decimal.Decimal
+}
+
+type PreCloseCheckCurrentYearProfitAccount struct {
+	Status           CheckStatus
+	RawAccountNumber string
+	AccountTitle     string
+	EndingAmount     decimal.Decimal
+}
+
+type PreCloseCheck struct {
+	UnpostedJournals         PreCloseCheckUnpostedJournals
+	ProfitAndLossBalance     PreCloseCheckPnLBalance
+	TrialBalance             PreCloseCheckTrialBalance
+	CurrentYearProfitAccount PreCloseCheckCurrentYearProfitAccount
 }

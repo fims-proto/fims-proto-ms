@@ -47,6 +47,11 @@ func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error 
 			return fmt.Errorf("failed to read sob: %w", err)
 		}
 
+		// seed cash flow items before accounts (account init resolves default CF item IDs)
+		if err = initializeCashFlowItems(txCtx, sob.Id, h.repo); err != nil {
+			return fmt.Errorf("failed to create cash flow items: %w", err)
+		}
+
 		// create all accounts
 		if err = initializeAccounts(txCtx, sob, h.repo); err != nil {
 			return fmt.Errorf("failed to create accounts: %w", err)

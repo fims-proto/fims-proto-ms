@@ -2,7 +2,8 @@ package user
 
 import (
 	"encoding/json"
-	"errors"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/google/uuid"
 )
@@ -14,7 +15,7 @@ type User struct {
 
 func New(id uuid.UUID, traits json.RawMessage) (*User, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("empty user id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugUserEmptyId)
 	}
 
 	return &User{

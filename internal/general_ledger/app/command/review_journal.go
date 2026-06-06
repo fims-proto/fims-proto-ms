@@ -12,7 +12,7 @@ import (
 
 type ReviewJournalCmd struct {
 	JournalId uuid.UUID
-	Reviewer  uuid.UUID
+	Reviewer  string
 }
 
 type ReviewJournalHandler struct {

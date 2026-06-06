@@ -85,11 +85,44 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                            "$ref": "#/definitions/http.AccountDetailResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete account",
+                "tags": [
+                    "accounts"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID",
+                        "name": "accountId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -175,7 +208,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                                "$ref": "#/definitions/http.AccountSlimResponse"
                             }
                         }
                     },
@@ -220,7 +253,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
+                            "$ref": "#/definitions/http.AccountDetailResponse"
                         }
                     },
                     "500": {
@@ -232,9 +265,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/auxiliaries": {
+        "/sob/{sobId}/cash-flow-items": {
             "get": {
-                "description": "List all auxiliary categories",
+                "description": "List all cash flow items for a Set of Books",
                 "consumes": [
                     "application/json"
                 ],
@@ -242,7 +275,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auxiliary accounts"
+                    "cash-flow-items"
                 ],
                 "parameters": [
                     {
@@ -251,41 +284,16 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/http.CashFlowItemResponse"
+                            }
                         }
                     },
                     "500": {
@@ -295,18 +303,37 @@ const docTemplate = `{
                         }
                     }
                 }
+            }
+        },
+        "/sob/{sobId}/dimension/categories": {
+            "get": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Search dimension categories",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse"
+                        }
+                    }
+                }
             },
             "post": {
-                "description": "Create auxiliary category",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
-                    "auxiliary accounts"
+                    "dimension"
                 ],
+                "summary": "Create a dimension category",
                 "parameters": [
                     {
                         "type": "string",
@@ -316,46 +343,28 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Create auxiliary category request",
-                        "name": "CreateAuxiliaryCategoryRequest",
+                        "description": "Create category request",
+                        "name": "CreateCategoryRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CreateAuxiliaryCategoryRequest"
+                            "$ref": "#/definitions/http.CreateCategoryRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
                     }
                 }
             }
         },
-        "/sob/{sobId}/auxiliary/{categoryKey}": {
+        "/sob/{sobId}/dimension/category/{categoryId}": {
             "get": {
-                "description": "Get an auxiliary category by key",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
-                    "auxiliary accounts"
+                    "dimension"
                 ],
+                "summary": "Get a dimension category by ID",
                 "parameters": [
                     {
                         "type": "string",
@@ -366,8 +375,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Category Key",
-                        "name": "categoryKey",
+                        "description": "Category ID",
+                        "name": "categoryId",
                         "in": "path",
                         "required": true
                     }
@@ -376,33 +385,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                            "$ref": "#/definitions/http.CategoryResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found"
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
                     }
                 }
-            }
-        },
-        "/sob/{sobId}/auxiliary/{categoryKey}/accounts": {
-            "get": {
-                "description": "List all auxiliary accounts",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
+            },
+            "delete": {
                 "tags": [
-                    "auxiliary accounts"
+                    "dimension"
                 ],
+                "summary": "Delete a dimension category",
                 "parameters": [
                     {
                         "type": "string",
@@ -413,66 +408,170 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Category Key",
-                        "name": "categoryKey",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Update a dimension category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
                     },
                     {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
+                        "description": "Update category request",
+                        "name": "UpdateCategoryRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateCategoryRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/dimension/category/{categoryId}/option/{optionId}": {
+            "delete": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Delete a dimension option",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            },
+            "patch": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Update a dimension option",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Option ID",
+                        "name": "optionId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update option request",
+                        "name": "UpdateOptionRequest",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/http.UpdateOptionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/dimension/category/{categoryId}/options": {
+            "get": {
+                "tags": [
+                    "dimension"
+                ],
+                "summary": "Search dimension options within a category",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Category ID",
+                        "name": "categoryId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse"
                         }
                     }
                 }
             },
             "post": {
-                "description": "Create auxiliary account",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
-                    "auxiliary accounts"
+                    "dimension"
                 ],
+                "summary": "Create a dimension option within a category",
                 "parameters": [
                     {
                         "type": "string",
@@ -483,36 +582,24 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Category Key",
-                        "name": "categoryKey",
+                        "description": "Category ID",
+                        "name": "categoryId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Create auxiliary account request",
-                        "name": "CreateAuxiliaryAccountRequest",
+                        "description": "Create option request",
+                        "name": "CreateOptionRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/http.CreateAuxiliaryAccountRequest"
+                            "$ref": "#/definitions/http.CreateOptionRequest"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
-                        }
                     }
                 }
             }
@@ -586,11 +673,57 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.JournalResponse"
+                            "$ref": "#/definitions/http.JournalDetailResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete a CLOSING or YEARLY_CLOSING journal and reverse its ledger posts.",
+                "tags": [
+                    "journals"
+                ],
+                "summary": "Delete system journal",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Journal ID",
+                        "name": "journalId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -981,7 +1114,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse"
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalSlimResponse"
                         }
                     },
                     "500": {
@@ -1025,7 +1158,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/http.JournalResponse"
+                            "$ref": "#/definitions/http.JournalDetailResponse"
                         }
                     },
                     "400": {
@@ -1043,9 +1176,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledger/{accountId}": {
+        "/sob/{sobId}/journals/closing-journal": {
             "get": {
-                "description": "Get aggregated ledger summary for a single account across a period range",
+                "description": "Get both monthly and year-end closing journal IDs for a given period",
                 "consumes": [
                     "application/json"
                 ],
@@ -1053,7 +1186,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ledgers"
+                    "journals"
                 ],
                 "parameters": [
                     {
@@ -1065,22 +1198,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "From period (YYYY-MM)",
-                        "name": "fromPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "To period (YYYY-MM)",
-                        "name": "toPeriod",
+                        "description": "Period in YYYY-MM format",
+                        "name": "period",
                         "in": "query",
                         "required": true
                     }
@@ -1089,7 +1208,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/http.LedgerSummaryResponse"
+                            "$ref": "#/definitions/http.ClosingJournalIdsResponse"
                         }
                     },
                     "400": {
@@ -1097,9 +1216,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1110,9 +1226,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledger/{accountId}/auxiliary": {
-            "get": {
-                "description": "Get aggregated auxiliary ledger summary grouped by auxiliary account for a specific category",
+        "/sob/{sobId}/journals/monthly-closing-journal": {
+            "post": {
+                "description": "Generate and post monthly closing journal that reverses all leaf P\u0026L account balances to zero and transfers the net result to the Current Year Profit account",
                 "consumes": [
                     "application/json"
                 ],
@@ -1120,7 +1236,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ledgers"
+                    "journals"
                 ],
                 "parameters": [
                     {
@@ -1129,69 +1245,13 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Category key (e.g., customer, project)",
-                        "name": "categoryKey",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "From period (YYYY-MM)",
-                        "name": "fromPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "To period (YYYY-MM)",
-                        "name": "toPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse"
+                            "$ref": "#/definitions/http.ClosingJournalResponse"
                         }
                     },
                     "400": {
@@ -1199,9 +1259,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1212,9 +1269,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/ledger/{accountId}/entries": {
-            "get": {
-                "description": "Get detailed ledger entries for a single account across a period range",
+        "/sob/{sobId}/journals/year-end-closing-journal": {
+            "post": {
+                "description": "Generate and post year-end closing journal that transfers the Current Year Profit account balance to Retained Earnings. Only callable in period 12 (year-end) after monthly closing is complete",
                 "consumes": [
                     "application/json"
                 ],
@@ -1222,7 +1279,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "ledgers"
+                    "journals"
                 ],
                 "parameters": [
                     {
@@ -1231,68 +1288,13 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Account ID",
-                        "name": "accountId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "From period (YYYY-MM)",
-                        "name": "fromPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "To period (YYYY-MM)",
-                        "name": "toPeriod",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Auxiliary Account ID (optional)",
-                        "name": "auxiliaryAccountId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "text eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "OK",
+                    "201": {
+                        "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse"
+                            "$ref": "#/definitions/http.ClosingJournalResponse"
                         }
                     },
                     "400": {
@@ -1300,9 +1302,6 @@ const docTemplate = `{
                         "schema": {
                             "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1315,7 +1314,7 @@ const docTemplate = `{
         },
         "/sob/{sobId}/ledgers": {
             "get": {
-                "description": "List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period.",
+                "description": "List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period. When dimensionOptionId is provided, only accounts that have journal lines tagged with that dimension option are returned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1346,16 +1345,117 @@ const docTemplate = `{
                         "name": "toPeriod",
                         "in": "query",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dimension Option ID (optional filter)",
+                        "name": "dimensionOptionId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/http.LedgerResponse"
-                            }
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/ledgers/dimension-category/{dimensionCategoryId}/options": {
+            "get": {
+                "description": "Get total amounts from journal lines for a specific dimension category across a period range, grouped by dimension option. When accountId is provided, results are scoped to that account only; otherwise all accounts are aggregated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dimension Category ID",
+                        "name": "dimensionCategoryId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID (optional — omit to aggregate all accounts)",
+                        "name": "accountId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "From period (YYYY-MM)",
+                        "name": "fromPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To period (YYYY-MM)",
+                        "name": "toPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse"
                         }
                     },
                     "400": {
@@ -1422,6 +1522,106 @@ const docTemplate = `{
                 }
             }
         },
+        "/sob/{sobId}/ledgers/transactions": {
+            "get": {
+                "description": "Get detailed ledger transaction entries across a period range. At least one of accountId or dimensionOptionId must be provided. When both are provided, entries matching both filters are returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ledgers"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "From period (YYYY-MM)",
+                        "name": "fromPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "To period (YYYY-MM)",
+                        "name": "toPeriod",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Account ID (optional filter — must provide at least one of accountId or dimensionOptionId)",
+                        "name": "accountId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Dimension Option ID (optional filter — must provide at least one of accountId or dimensionOptionId)",
+                        "name": "dimensionOptionId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "page number",
+                        "name": "$page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 40,
+                        "description": "page size",
+                        "name": "$size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "updatedAt desc,createdAt",
+                        "description": "sort on field(s)",
+                        "name": "$sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "example": "text eq 'something' and amount lt 10",
+                        "description": "filter on field(s)",
+                        "name": "$filter",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/sob/{sobId}/period/{periodId}/close": {
             "post": {
                 "description": "Close period",
@@ -1451,8 +1651,58 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
+                    "200": {
+                        "description": "Period closed but report generation failed",
+                        "schema": {
+                            "$ref": "#/definitions/http.PeriodCloseWarningResponse"
+                        }
+                    },
                     "204": {
                         "description": "No Content"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/period/{periodId}/pre-close-check": {
+            "get": {
+                "description": "Validate period against closing conditions and return detailed results for each check",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "periods"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period ID",
+                        "name": "periodId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.PreCloseCheckResponse"
+                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1503,9 +1753,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/periods/current": {
-            "get": {
-                "description": "Current period",
+        "/sob/{sobId}/periods/batch-close": {
+            "post": {
+                "description": "Sequentially close all periods from the current period to the target period (inclusive) in a single atomic transaction. For each period, automatically creates monthly and year-end closing journals before closing. Rolls back entirely if any period fails validation.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1522,13 +1772,29 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Target period in YYYY-MM format",
+                        "name": "targetPeriod",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Periods closed but report generation failed",
                         "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                            "$ref": "#/definitions/http.PeriodCloseWarningResponse"
+                        }
+                    },
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     },
                     "500": {
@@ -1540,9 +1806,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{reportId}": {
+        "/sob/{sobId}/periods/batch-pre-close-check": {
             "get": {
-                "description": "Show report by sob and id",
+                "description": "Validate from the current period to the target period. Checks for unposted journals and trial balance in each existing period. P\u0026L and CYP checks are omitted because auto-transfer handles them during batch close.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1550,7 +1816,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "reports"
+                    "periods"
                 ],
                 "parameters": [
                     {
@@ -1562,9 +1828,64 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Report ID",
-                        "name": "reportId",
+                        "description": "Target period in YYYY-MM format",
+                        "name": "targetPeriod",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.BatchPreCloseCheckResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report": {
+            "get": {
+                "description": "Returns the report instance for a given SoB, class, and period.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Get report instance by class and period",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
                         "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report class",
+                        "name": "class",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period (YYYY-MM)",
+                        "name": "period",
+                        "in": "query",
                         "required": true
                     }
                 ],
@@ -1585,9 +1906,105 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
+            }
+        },
+        "/sob/{sobId}/report/generate": {
+            "post": {
+                "description": "Creates a report instance from the latest template. If one already exists, returns it unchanged.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Generate missing report instance",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report class",
+                        "name": "class",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Period (YYYY-MM)",
+                        "name": "period",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/template": {
+            "get": {
+                "description": "Returns the report template for a given SoB and class.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "reports"
+                ],
+                "summary": "Get report template by class",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Sob ID",
+                        "name": "sobId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report class",
+                        "name": "class",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/http.ReportResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/internal_report_port_public_http.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/sob/{sobId}/report/{reportId}": {
             "patch": {
-                "description": "Updates report metadata, sections, and items. Supports add, update, delete, and reorder operations in a single atomic transaction. Sections can contain nested sections. Items are sequenced by their position in the array.",
+                "description": "Updates report title, row tree, and expressions.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1597,7 +2014,7 @@ const docTemplate = `{
                 "tags": [
                     "reports"
                 ],
-                "summary": "Update entire report structure",
+                "summary": "Update report structure",
                 "parameters": [
                     {
                         "type": "string",
@@ -1614,7 +2031,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Complete report structure",
+                        "description": "Report update payload",
                         "name": "UpdateReportRequest",
                         "in": "body",
                         "required": true,
@@ -1642,18 +2059,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/sob/{sobId}/report/{reportId}/generate": {
+        "/sob/{sobId}/report/{reportId}/recalculate": {
             "post": {
-                "description": "Generate report",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Recalculates amounts while preserving the existing report structure.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "reports"
                 ],
+                "summary": "Recalculate report amounts",
                 "parameters": [
                     {
                         "type": "string",
@@ -1663,27 +2078,16 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Generate report request",
-                        "name": "GenerateReportRequest",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/http.GenerateReportRequest"
-                        }
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/http.ReportResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
+                    "204": {
+                        "description": "No Content"
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1696,16 +2100,14 @@ const docTemplate = `{
         },
         "/sob/{sobId}/report/{reportId}/regenerate": {
             "post": {
-                "description": "Regenerate report",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Rebuilds an existing report instance from the latest template and recalculates amounts.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "reports"
                 ],
+                "summary": "Regenerate report instance",
                 "parameters": [
                     {
                         "type": "string",
@@ -1713,17 +2115,18 @@ const docTemplate = `{
                         "name": "sobId",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Report ID",
+                        "name": "reportId",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "204": {
                         "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
                     },
                     "500": {
                         "description": "Internal Server Error",
@@ -1793,71 +2196,6 @@ const docTemplate = `{
                         "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/internal_report_port_public_http.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/sob/{sobId}/search-accounts": {
-            "get": {
-                "description": "Search accounts with filters",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "accounts"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Sob ID",
-                        "name": "sobId",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "page number",
-                        "name": "$page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 40,
-                        "description": "page size",
-                        "name": "$size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "updatedAt desc,createdAt",
-                        "description": "sort on field(s)",
-                        "name": "$sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "example": "title eq 'something' and amount lt 10",
-                        "description": "filter on field(s)",
-                        "name": "$filter",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/internal_general_ledger_port_public_http.Error"
                         }
                     }
                 }
@@ -2110,13 +2448,13 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
+                        "$ref": "#/definitions/http.CategoryResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2133,13 +2471,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalSlimResponse": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
+                        "$ref": "#/definitions/http.JournalSlimResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2156,36 +2494,13 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse": {
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse": {
             "type": "object",
             "properties": {
                 "content": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.AuxiliaryLedgerSummaryResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.JournalResponse"
+                        "$ref": "#/definitions/http.LedgerDimensionOptionResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2209,6 +2524,52 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/http.LedgerEntryResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.LedgerResponse"
+                    }
+                },
+                "numberOfElements": {
+                    "type": "integer"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pageSize": {
+                    "type": "integer"
+                },
+                "totalPage": {
+                    "type": "integer"
+                }
+            }
+        },
+        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.OptionResponse"
                     }
                 },
                 "numberOfElements": {
@@ -2271,43 +2632,6 @@ const docTemplate = `{
                 }
             }
         },
-        "github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
-                    }
-                },
-                "numberOfElements": {
-                    "type": "integer"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pageSize": {
-                    "type": "integer"
-                },
-                "totalPage": {
-                    "type": "integer"
-                }
-            }
-        },
-        "github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate": {
-            "type": "object",
-            "properties": {
-                "day": {
-                    "type": "integer"
-                },
-                "month": {
-                    "type": "integer"
-                },
-                "year": {
-                    "type": "integer"
-                }
-            }
-        },
         "http.AccountClass": {
             "type": "object",
             "properties": {
@@ -2322,6 +2646,112 @@ const docTemplate = `{
                 }
             }
         },
+        "http.AccountDetailResponse": {
+            "type": "object",
+            "properties": {
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
+                "dimensionCategories": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.DimensionCategoryResponse"
+                    }
+                },
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.AccountSlimResponse": {
+            "type": "object",
+            "properties": {
+                "balanceDirection": {
+                    "type": "string"
+                },
+                "class": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
+                "group": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
+                },
+                "isLeaf": {
+                    "type": "boolean"
+                },
+                "level": {
+                    "type": "integer"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "superiorAccountId": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "http.AuditJournalRequest": {
             "type": "object",
             "properties": {
@@ -2330,33 +2760,58 @@ const docTemplate = `{
                 }
             }
         },
-        "http.AuxiliaryAccountResponse": {
+        "http.BatchPreCloseCheckResponse": {
+            "type": "object",
+            "properties": {
+                "trialBalance": {
+                    "$ref": "#/definitions/http.PreCloseCheckTrialBalanceResponse"
+                },
+                "unpostedJournals": {
+                    "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
+                }
+            }
+        },
+        "http.CashFlowItemReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "itemId": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.CashFlowItemResponse": {
             "type": "object",
             "properties": {
                 "category": {
-                    "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                },
-                "createdAt": {
                     "type": "string"
                 },
-                "description": {
+                "code": {
+                    "type": "string"
+                },
+                "direction": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "key": {
+                "name": {
                     "type": "string"
                 },
-                "title": {
-                    "type": "string"
+                "sequence": {
+                    "type": "integer"
                 },
-                "updatedAt": {
+                "sobId": {
                     "type": "string"
                 }
             }
         },
-        "http.AuxiliaryCategoryResponse": {
+        "http.CategoryResponse": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2365,57 +2820,50 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "isStandard": {
-                    "type": "boolean"
-                },
-                "key": {
+                "name": {
                     "type": "string"
                 },
                 "sobId": {
                     "type": "string"
                 },
-                "title": {
-                    "type": "string"
-                },
                 "updatedAt": {
                     "type": "string"
                 }
             }
         },
-        "http.AuxiliaryItemRequest": {
+        "http.ClosingJournalIdsResponse": {
             "type": "object",
             "properties": {
-                "accountKey": {
+                "monthlyClosingJournalId": {
                     "type": "string"
                 },
-                "categoryKey": {
+                "yearEndClosingJournalId": {
                     "type": "string"
                 }
             }
         },
-        "http.AuxiliaryLedgerSummaryResponse": {
+        "http.ClosingJournalResponse": {
             "type": "object",
             "properties": {
-                "auxiliaryAccountId": {
+                "journalId": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ColumnResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
                     "type": "string"
                 },
-                "auxiliaryAccountTitle": {
+                "label": {
                     "type": "string"
                 },
-                "endingAmount": {
-                    "type": "number"
+                "sequence": {
+                    "type": "integer"
                 },
-                "openingAmount": {
-                    "type": "number"
-                },
-                "periodAmount": {
-                    "type": "number"
-                },
-                "periodCredit": {
-                    "type": "number"
-                },
-                "periodDebit": {
-                    "type": "number"
+                "valueType": {
+                    "type": "string"
                 }
             }
         },
@@ -2425,22 +2873,31 @@ const docTemplate = `{
                 "balanceDirection": {
                     "type": "string"
                 },
-                "categoryKeys": {
+                "class": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
+                "dimensionCategoryIds": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "class": {
-                    "type": "string"
-                },
                 "group": {
                     "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
                 },
                 "levelNumber": {
                     "type": "integer"
                 },
-                "superiorAccountNumber": {
+                "superiorRawAccountNumber": {
                     "type": "string"
                 },
                 "title": {
@@ -2448,27 +2905,13 @@ const docTemplate = `{
                 }
             }
         },
-        "http.CreateAuxiliaryAccountRequest": {
+        "http.CreateCategoryRequest": {
             "type": "object",
+            "required": [
+                "name"
+            ],
             "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "key": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.CreateAuxiliaryCategoryRequest": {
-            "type": "object",
-            "properties": {
-                "key": {
-                    "type": "string"
-                },
-                "title": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -2492,10 +2935,30 @@ const docTemplate = `{
                     }
                 },
                 "journalType": {
+                    "type": "string",
+                    "enum": [
+                        "GENERAL",
+                        "ADJUSTING",
+                        "REVERSING",
+                        "CLOSING"
+                    ]
+                },
+                "referenceJournalId": {
                     "type": "string"
                 },
                 "transactionDate": {
-                    "$ref": "#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate"
+                    "type": "string"
+                }
+            }
+        },
+        "http.CreateOptionRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         },
@@ -2525,60 +2988,68 @@ const docTemplate = `{
                 }
             }
         },
-        "http.FormulaResponse": {
+        "http.DimensionCategoryResponse": {
             "type": "object",
             "properties": {
-                "account": {
-                    "$ref": "#/definitions/internal_report_port_public_http.AccountResponse"
+                "id": {
+                    "type": "string"
                 },
-                "amounts": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.DimensionOptionResponse": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/http.DimensionCategoryResponse"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.ExpressionResponse": {
+            "type": "object",
+            "properties": {
+                "cashFlowItems": {
                     "type": "array",
                     "items": {
-                        "type": "number"
+                        "$ref": "#/definitions/http.CashFlowItemReferenceResponse"
                     }
                 },
                 "id": {
                     "type": "string"
                 },
-                "rule": {
+                "kind": {
                     "type": "string"
                 },
-                "sequence": {
-                    "type": "integer"
-                },
-                "sumFactor": {
-                    "type": "integer"
-                }
-            }
-        },
-        "http.GenerateReportRequest": {
-            "type": "object",
-            "properties": {
-                "amountTypes": {
+                "ledgerAccounts": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/http.LedgerAccountReferenceResponse"
                     }
                 },
-                "periodFiscalYear": {
-                    "type": "integer"
-                },
-                "periodNumber": {
-                    "type": "integer"
-                },
-                "title": {
-                    "type": "string"
+                "rowReferences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.RowReferenceResponse"
+                    }
                 }
             }
         },
         "http.InitializeLedgersBalanceItemRequest": {
             "type": "object",
             "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
                 "openingBalance": {
                     "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 }
             }
         },
@@ -2596,103 +3067,7 @@ const docTemplate = `{
                 }
             }
         },
-        "http.ItemResponse": {
-            "type": "object",
-            "properties": {
-                "amounts": {
-                    "type": "array",
-                    "items": {
-                        "type": "number"
-                    }
-                },
-                "dataSource": {
-                    "type": "string"
-                },
-                "displaySumFactor": {
-                    "type": "boolean"
-                },
-                "formulas": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.FormulaResponse"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isAbleToAddChild": {
-                    "type": "boolean"
-                },
-                "isBreakdownItem": {
-                    "type": "boolean"
-                },
-                "isEditable": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "sumFactor": {
-                    "type": "integer"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.JournalLineRequest": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "amount": {
-                    "type": "number"
-                },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryItemRequest"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.JournalLineResponse": {
-            "type": "object",
-            "properties": {
-                "account": {
-                    "$ref": "#/definitions/internal_general_ledger_port_public_http.AccountResponse"
-                },
-                "amount": {
-                    "type": "number"
-                },
-                "auxiliaryAccounts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryAccountResponse"
-                    }
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "http.JournalResponse": {
+        "http.JournalDetailResponse": {
             "type": "object",
             "properties": {
                 "amount": {
@@ -2735,13 +3110,22 @@ const docTemplate = `{
                     }
                 },
                 "journalType": {
-                    "type": "string"
+                    "type": "string",
+                    "enum": [
+                        "GENERAL",
+                        "ADJUSTING",
+                        "REVERSING",
+                        "CLOSING"
+                    ]
                 },
                 "period": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
                 },
                 "poster": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "referenceJournalId": {
+                    "type": "string"
                 },
                 "reviewer": {
                     "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
@@ -2754,6 +3138,172 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "http.JournalLineRequest": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "cashFlowItemId": {
+                    "type": "string"
+                },
+                "dimensionOptionIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.JournalLineResponse": {
+            "type": "object",
+            "properties": {
+                "account": {
+                    "$ref": "#/definitions/http.AccountDetailResponse"
+                },
+                "amount": {
+                    "type": "number"
+                },
+                "cashFlowItemId": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "dimensionOptions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.DimensionOptionResponse"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.JournalSlimResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "attachmentQuantity": {
+                    "type": "integer"
+                },
+                "auditor": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "creator": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAudited": {
+                    "type": "boolean"
+                },
+                "isPosted": {
+                    "type": "boolean"
+                },
+                "isReviewed": {
+                    "type": "boolean"
+                },
+                "journalType": {
+                    "type": "string",
+                    "enum": [
+                        "GENERAL",
+                        "ADJUSTING",
+                        "REVERSING",
+                        "CLOSING"
+                    ]
+                },
+                "period": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.PeriodResponse"
+                },
+                "poster": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "referenceJournalId": {
+                    "type": "string"
+                },
+                "reviewer": {
+                    "$ref": "#/definitions/internal_general_ledger_port_public_http.UserResponse"
+                },
+                "sobId": {
+                    "type": "string"
+                },
+                "transactionDate": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.LedgerAccountReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "measure": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.LedgerDimensionOptionResponse": {
+            "type": "object",
+            "properties": {
+                "dimensionOption": {
+                    "$ref": "#/definitions/http.DimensionOptionResponse"
+                },
+                "endingAmount": {
+                    "type": "number"
+                },
+                "openingAmount": {
+                    "type": "number"
+                },
+                "periodAmount": {
+                    "type": "number"
+                },
+                "periodCredit": {
+                    "type": "number"
+                },
+                "periodDebit": {
+                    "type": "number"
                 }
             }
         },
@@ -2795,9 +3345,6 @@ const docTemplate = `{
                 "accountId": {
                     "type": "string"
                 },
-                "accountNumber": {
-                    "type": "string"
-                },
                 "accountTitle": {
                     "type": "string"
                 },
@@ -2822,6 +3369,9 @@ const docTemplate = `{
                 "periodDebit": {
                     "type": "number"
                 },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
                 "sobId": {
                     "type": "string"
                 },
@@ -2830,26 +3380,23 @@ const docTemplate = `{
                 }
             }
         },
-        "http.LedgerSummaryResponse": {
+        "http.OptionResponse": {
             "type": "object",
             "properties": {
-                "accountId": {
+                "categoryId": {
                     "type": "string"
                 },
-                "endingAmount": {
-                    "type": "number"
+                "createdAt": {
+                    "type": "string"
                 },
-                "openingAmount": {
-                    "type": "number"
+                "id": {
+                    "type": "string"
                 },
-                "periodAmount": {
-                    "type": "number"
+                "name": {
+                    "type": "string"
                 },
-                "periodCredit": {
-                    "type": "number"
-                },
-                "periodDebit": {
-                    "type": "number"
+                "updatedAt": {
+                    "type": "string"
                 }
             }
         },
@@ -2867,6 +3414,17 @@ const docTemplate = `{
                 }
             }
         },
+        "http.PeriodCloseWarningResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                }
+            }
+        },
         "http.PostJournalRequest": {
             "type": "object",
             "properties": {
@@ -2875,17 +3433,139 @@ const docTemplate = `{
                 }
             }
         },
+        "http.PreCloseCheckCurrentYearProfitAccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountTitle": {
+                    "type": "string"
+                },
+                "endingAmount": {
+                    "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckJournalResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "number"
+                },
+                "documentNumber": {
+                    "type": "string"
+                },
+                "headerText": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isAudited": {
+                    "type": "boolean"
+                },
+                "isReviewed": {
+                    "type": "boolean"
+                },
+                "transactionDate": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckPnLAccountResponse": {
+            "type": "object",
+            "properties": {
+                "accountTitle": {
+                    "type": "string"
+                },
+                "endingAmount": {
+                    "type": "number"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckPnLBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.PreCloseCheckPnLAccountResponse"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckResponse": {
+            "type": "object",
+            "properties": {
+                "currentYearProfitAccount": {
+                    "$ref": "#/definitions/http.PreCloseCheckCurrentYearProfitAccountResponse"
+                },
+                "profitAndLossBalance": {
+                    "$ref": "#/definitions/http.PreCloseCheckPnLBalanceResponse"
+                },
+                "trialBalance": {
+                    "$ref": "#/definitions/http.PreCloseCheckTrialBalanceResponse"
+                },
+                "unpostedJournals": {
+                    "$ref": "#/definitions/http.PreCloseCheckUnpostedJournalsResponse"
+                }
+            }
+        },
+        "http.PreCloseCheckTrialBalanceResponse": {
+            "type": "object",
+            "properties": {
+                "endingAmount": {
+                    "type": "number"
+                },
+                "openingAmount": {
+                    "type": "number"
+                },
+                "periodAmount": {
+                    "type": "number"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.PreCloseCheckUnpostedJournalsResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "journals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.PreCloseCheckJournalResponse"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "http.ReportResponse": {
             "type": "object",
             "properties": {
-                "amountTypes": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "class": {
                     "type": "string"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.ColumnResponse"
+                    }
                 },
                 "createdAt": {
                     "type": "string"
@@ -2896,10 +3576,10 @@ const docTemplate = `{
                 "period": {
                     "$ref": "#/definitions/internal_report_port_public_http.PeriodResponse"
                 },
-                "sections": {
+                "rows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.SectionResponse"
+                        "$ref": "#/definitions/http.RowResponse"
                     }
                 },
                 "sobId": {
@@ -2924,7 +3604,18 @@ const docTemplate = `{
                 }
             }
         },
-        "http.SectionResponse": {
+        "http.RowReferenceResponse": {
+            "type": "object",
+            "properties": {
+                "rowCode": {
+                    "type": "string"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.RowResponse": {
             "type": "object",
             "properties": {
                 "amounts": {
@@ -2933,22 +3624,49 @@ const docTemplate = `{
                         "type": "number"
                     }
                 },
+                "canAddChild": {
+                    "type": "boolean"
+                },
+                "canEdit": {
+                    "type": "boolean"
+                },
+                "canMove": {
+                    "type": "boolean"
+                },
+                "displaySumFactor": {
+                    "type": "boolean"
+                },
+                "expression": {
+                    "$ref": "#/definitions/http.ExpressionResponse"
+                },
                 "id": {
                     "type": "string"
                 },
-                "items": {
+                "indent": {
+                    "type": "integer"
+                },
+                "lineNo": {
+                    "type": "integer"
+                },
+                "rowCode": {
+                    "type": "string"
+                },
+                "rows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.ItemResponse"
+                        "$ref": "#/definitions/http.RowResponse"
                     }
                 },
-                "sections": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.SectionResponse"
-                    }
+                "sequence": {
+                    "type": "integer"
                 },
-                "title": {
+                "showLineNo": {
+                    "type": "boolean"
+                },
+                "sumFactor": {
+                    "type": "integer"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -2994,7 +3712,13 @@ const docTemplate = `{
                 "balanceDirection": {
                     "type": "string"
                 },
-                "categoryKeys": {
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
+                "dimensionCategoryIds": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -3002,6 +3726,9 @@ const docTemplate = `{
                 },
                 "group": {
                     "type": "string"
+                },
+                "isCashEquivalent": {
+                    "type": "boolean"
                 },
                 "levelNumber": {
                     "type": "integer"
@@ -3011,24 +3738,13 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateJournalRequest": {
-            "type": "object"
-        },
-        "http.UpdateReportFormulaRequest": {
+        "http.UpdateCashFlowItemReferenceRequest": {
             "type": "object",
-            "required": [
-                "accountNumber",
-                "rule",
-                "sumFactor"
-            ],
             "properties": {
-                "accountNumber": {
+                "code": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "string"
-                },
-                "rule": {
+                "itemId": {
                     "type": "string"
                 },
                 "sumFactor": {
@@ -3036,39 +3752,87 @@ const docTemplate = `{
                 }
             }
         },
-        "http.UpdateReportItemRequest": {
+        "http.UpdateCategoryRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateExpressionRequest": {
             "type": "object",
             "properties": {
-                "dataSource": {
-                    "type": "string"
-                },
-                "displaySumFactor": {
-                    "type": "boolean"
-                },
-                "formulas": {
+                "cashFlowItems": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.UpdateReportFormulaRequest"
+                        "$ref": "#/definitions/http.UpdateCashFlowItemReferenceRequest"
                     }
                 },
-                "id": {
-                    "description": "Identity",
+                "kind": {
                     "type": "string"
                 },
-                "isAbleToAddChild": {
-                    "type": "boolean"
+                "ledgerAccounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateLedgerAccountReferenceRequest"
+                    }
                 },
-                "isBreakdownItem": {
-                    "type": "boolean"
+                "rowReferences": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.UpdateRowReferenceRequest"
+                    }
+                }
+            }
+        },
+        "http.UpdateJournalRequest": {
+            "type": "object",
+            "properties": {
+                "headerText": {
+                    "type": "string"
                 },
-                "level": {
-                    "type": "integer"
+                "journalLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/http.JournalLineRequest"
+                    }
+                },
+                "transactionDate": {
+                    "type": "string"
+                },
+                "updater": {
+                    "type": "string"
+                }
+            }
+        },
+        "http.UpdateLedgerAccountReferenceRequest": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "string"
+                },
+                "measure": {
+                    "type": "string"
+                },
+                "rawAccountNumber": {
+                    "type": "string"
                 },
                 "sumFactor": {
                     "type": "integer"
-                },
-                "text": {
-                    "description": "Content (required for new items, optional for updates to existing items)",
+                }
+            }
+        },
+        "http.UpdateOptionRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }
@@ -3076,49 +3840,71 @@ const docTemplate = `{
         "http.UpdateReportRequest": {
             "type": "object",
             "properties": {
-                "amountTypes": {
-                    "description": "Optional: update amount types",
+                "rows": {
                     "type": "array",
                     "items": {
-                        "type": "string"
-                    }
-                },
-                "sections": {
-                    "description": "Required: complete section structure",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateSectionRequest"
+                        "$ref": "#/definitions/http.UpdateRowRequest"
                     }
                 },
                 "title": {
-                    "description": "Optional: update report title",
                     "type": "string"
                 }
             }
         },
-        "http.UpdateSectionRequest": {
+        "http.UpdateRowReferenceRequest": {
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "Section ID",
+                "rowCode": {
                     "type": "string"
                 },
-                "items": {
-                    "description": "Complete item list for this section",
+                "sumFactor": {
+                    "type": "integer"
+                }
+            }
+        },
+        "http.UpdateRowRequest": {
+            "type": "object",
+            "properties": {
+                "canAddChild": {
+                    "type": "boolean"
+                },
+                "canEdit": {
+                    "type": "boolean"
+                },
+                "canMove": {
+                    "type": "boolean"
+                },
+                "displaySumFactor": {
+                    "type": "boolean"
+                },
+                "expression": {
+                    "$ref": "#/definitions/http.UpdateExpressionRequest"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "indent": {
+                    "type": "integer"
+                },
+                "lineNo": {
+                    "type": "integer"
+                },
+                "rowCode": {
+                    "type": "string"
+                },
+                "rows": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/http.UpdateReportItemRequest"
+                        "$ref": "#/definitions/http.UpdateRowRequest"
                     }
                 },
-                "sections": {
-                    "description": "Optional: nested sections",
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.UpdateSectionRequest"
-                    }
+                "showLineNo": {
+                    "type": "boolean"
                 },
-                "title": {
-                    "description": "Optional: update section title",
+                "sumFactor": {
+                    "type": "integer"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -3144,59 +3930,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "traits": {
-                    "type": "string"
-                }
-            }
-        },
-        "internal_general_ledger_port_public_http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "auxiliaryCategories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/http.AuxiliaryCategoryResponse"
-                    }
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "class": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "group": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isLeaf": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "numberHierarchy": {
-                    "type": "array",
-                    "items": {
-                        "type": "integer"
-                    }
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -3248,41 +3981,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "traits": {}
-            }
-        },
-        "internal_report_port_public_http.AccountResponse": {
-            "type": "object",
-            "properties": {
-                "accountNumber": {
-                    "type": "string"
-                },
-                "balanceDirection": {
-                    "type": "string"
-                },
-                "class": {
-                    "type": "integer"
-                },
-                "group": {
-                    "type": "integer"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "isLeaf": {
-                    "type": "boolean"
-                },
-                "level": {
-                    "type": "integer"
-                },
-                "sobId": {
-                    "type": "string"
-                },
-                "superiorAccountId": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
             }
         },
         "internal_report_port_public_http.Error": {

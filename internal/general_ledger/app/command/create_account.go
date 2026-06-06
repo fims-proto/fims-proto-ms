@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -17,15 +18,18 @@ import (
 )
 
 type CreateAccountCmd struct {
-	AccountId             uuid.UUID
-	SobId                 uuid.UUID
-	Title                 string
-	LevelNumber           int
-	SuperiorAccountNumber string
-	BalanceDirection      string
-	Class                 int
-	Group                 int
-	CategoryKeys          []string
+	AccountId                      uuid.UUID
+	SobId                          uuid.UUID
+	Title                          string
+	LevelNumber                    int
+	SuperiorRawAccountNumber       string
+	BalanceDirection               string
+	Class                          int
+	Group                          int
+	DimensionCategoryIds           []uuid.UUID
+	IsCashEquivalent               bool
+	DefaultCashFlowItemIdForDebit  *uuid.UUID
+	DefaultCashFlowItemIdForCredit *uuid.UUID
 }
 
 type CreateAccountHandler struct {
@@ -53,43 +57,59 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 	accountGroup := class.Group(cmd.Group)
 	superiorAccountId := uuid.Nil
 	level := 1
-	numberHierarchy := []int{cmd.LevelNumber}
+	superiorRaw := ""
 
 	sob, err := h.sobService.ReadById(ctx, cmd.SobId)
 	if err != nil {
 		return fmt.Errorf("failed to read sob: %w", err)
 	}
 
-	if err := class.Validate(accountClass, accountGroup); err != nil {
+	if err = class.Validate(accountClass, accountGroup); err != nil {
 		return fmt.Errorf("invalid class or group: %w", err)
 	}
 
-	if cmd.SuperiorAccountNumber != "" {
-		superiorAccount, err := h.repo.ReadAccountByNumber(ctx, cmd.SobId, cmd.SuperiorAccountNumber)
+	if cmd.SuperiorRawAccountNumber != "" {
+		superiorAccount, err := h.repo.ReadAccountByRawNumber(ctx, cmd.SobId, cmd.SuperiorRawAccountNumber)
 		if err != nil {
 			return err
 		}
 
 		if superiorAccount.Class() != accountClass {
-			return fmt.Errorf("class %s does not match superior account's class %s", accountClass, superiorAccount.Class())
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountClassMismatch, accountClass, superiorAccount.Class())
 		}
 
 		if superiorAccount.Group() != accountGroup {
-			return fmt.Errorf("group %s does not match superior account's group %s", accountGroup, superiorAccount.Group())
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountGroupMismatch, accountGroup, superiorAccount.Group())
 		}
 
 		if superiorAccount.Level()+1 > len(sob.AccountsCodeLength) {
-			return fmt.Errorf("level %d exceeds limit %d", superiorAccount.Level()+1, len(sob.AccountsCodeLength))
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountLevelExceedsLimit, superiorAccount.Level()+1, len(sob.AccountsCodeLength))
 		}
 
 		superiorAccountId = superiorAccount.Id()
 		level = superiorAccount.Level() + 1
-		numberHierarchy = append(superiorAccount.NumberHierarchy(), cmd.LevelNumber)
+		superiorRaw = superiorAccount.RawAccountNumber()
 	}
 
-	categories, err := h.repo.ReadAuxiliaryCategoriesByKeys(ctx, cmd.SobId, cmd.CategoryKeys)
-	if err != nil {
-		return fmt.Errorf("failed to read auxiliary categories: %w", err)
+	// Validate: levelNumber string length must not exceed code length for this level
+	levelNumberStr := fmt.Sprintf("%d", cmd.LevelNumber)
+	codeLength := sob.AccountsCodeLength[level-1]
+	if len(levelNumberStr) > codeLength {
+		return commonErrors.NewInvalidInputError(commonErrors.SlugAccountCodeLengthExceeded, cmd.LevelNumber, len(levelNumberStr), codeLength, level)
+	}
+
+	if cmd.IsCashEquivalent {
+		cmd.DefaultCashFlowItemIdForDebit = nil
+		cmd.DefaultCashFlowItemIdForCredit = nil
+	}
+	if err = validateDefaultCashFlowItemIds(
+		ctx,
+		h.repo,
+		cmd.SobId,
+		cmd.DefaultCashFlowItemIdForDebit,
+		cmd.DefaultCashFlowItemIdForCredit,
+	); err != nil {
+		return err
 	}
 
 	newAccount, err := account.New(
@@ -97,22 +117,24 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		cmd.SobId,
 		superiorAccountId,
 		cmd.Title,
-		numberHierarchy,
-		sob.AccountsCodeLength,
+		superiorRaw,
+		cmd.LevelNumber,
 		level,
 		true,
 		cmd.Class,
 		cmd.Group,
 		cmd.BalanceDirection,
-		categories,
+		cmd.DimensionCategoryIds,
+		cmd.IsCashEquivalent,
 	)
 	if err != nil {
 		return fmt.Errorf("failed to create new account: %w", err)
 	}
+	newAccount.UpdateDefaultCashFlowItems(cmd.DefaultCashFlowItemIdForDebit, cmd.DefaultCashFlowItemIdForCredit)
 
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		// create account
-		if err := h.createAccount(txCtx, superiorAccountId, newAccount); err != nil {
+		if err = h.createAccount(txCtx, superiorAccountId, newAccount); err != nil {
 			return err
 		}
 

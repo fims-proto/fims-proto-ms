@@ -8,15 +8,19 @@ import (
 )
 
 type Queries struct {
-	PagingReports query.PagingReportsHandler
-	ReportById    query.ReportByIdHandler
+	PagingReports          query.PagingReportsHandler
+	ReportById             query.ReportByIdHandler
+	ReportByClassAndPeriod query.ReportByClassAndPeriodHandler
+	ReportTemplateByClass  query.ReportTemplateByClassHandler
 }
 
 type Commands struct {
 	Initialize command.InitializeHandler
 
-	Generate   command.GenerateHandler
-	Regenerate command.RegenerateHandler
+	Generate          command.GenerateHandler
+	GenerateForPeriod command.GenerateForPeriodHandler
+	Recalculate       command.RecalculateHandler
+	Regenerate        command.RegenerateHandler
 
 	UpdateReport command.UpdateReportHandler
 
@@ -38,14 +42,18 @@ func (a *Application) Inject(
 	generalLedgerService service.GeneralLedgerService,
 ) {
 	a.Queries = Queries{
-		PagingReports: query.NewPagingReportsHandler(readModel),
-		ReportById:    query.NewReportByIdHandler(readModel),
+		PagingReports:          query.NewPagingReportsHandler(readModel),
+		ReportById:             query.NewReportByIdHandler(readModel),
+		ReportByClassAndPeriod: query.NewReportByClassAndPeriodHandler(readModel),
+		ReportTemplateByClass:  query.NewReportTemplateByClassHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize: command.NewInitializeHandler(repo, generalLedgerService),
 
-		Generate:   command.NewGenerateHandler(repo, generalLedgerService),
-		Regenerate: command.NewRegenerateHandler(repo, generalLedgerService),
+		Generate:          command.NewGenerateHandler(repo, generalLedgerService),
+		GenerateForPeriod: command.NewGenerateForPeriodHandler(repo, generalLedgerService),
+		Recalculate:       command.NewRecalculateHandler(repo, generalLedgerService),
+		Regenerate:        command.NewRegenerateHandler(repo, generalLedgerService),
 
 		UpdateReport: command.NewUpdateReportHandler(repo, generalLedgerService),
 

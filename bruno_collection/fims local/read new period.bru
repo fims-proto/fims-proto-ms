@@ -1,19 +1,22 @@
 meta {
   name: read new period
   type: http
-  seq: 23
+  seq: 34
 }
 
 get {
-  url: {{base_path}}/sob/{{sob}}/periods/current
+  url: {{base_path}}/sob/{{sob}}/periods
   body: none
   auth: none
 }
 
 tests {
-  test("Read current period 200", function () {
+  test("Read periods 200", function () {
       expect(res.getStatus()).to.equal(200);
-  })
+  });
   
-  bru.setVar("current_period", res.body.id)
+  const current = res.body.find(p => p.isCurrent)
+  
+  bru.setVar("current_period_id", current.id)
+  bru.setVar("current_period", `${current.fiscalYear}-${current.periodNumber}..padEnd(2, '0')`)
 }

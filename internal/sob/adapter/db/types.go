@@ -24,17 +24,11 @@ type sobPO struct {
 	UpdatedAt time.Time
 }
 
-// table names
-
-func (s sobPO) TableName() string {
-	return "a_sobs"
-}
-
 // schemas
 
 func (s sobPO) ResolveAssociation(entity string) (string, error) {
 	if entity == "" {
-		return s.TableName(), nil
+		return "sobs", nil
 	}
 	return "", fmt.Errorf("sobPO doesn't have association named %s", entity)
 }

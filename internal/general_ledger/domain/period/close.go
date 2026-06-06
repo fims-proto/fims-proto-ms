@@ -4,11 +4,11 @@ import "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 func (p *Period) Close() error {
 	if p.isClosed {
-		return errors.NewSlugError("period-close-closed")
+		return errors.NewInvalidInputError(errors.SlugPeriodCloseClosed)
 	}
 
 	if !p.isCurrent {
-		return errors.NewSlugError("period-close-isNotCurrent")
+		return errors.NewInvalidInputError(errors.SlugPeriodCloseIsNotCurrent)
 	}
 
 	p.isClosed = true

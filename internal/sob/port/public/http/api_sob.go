@@ -6,25 +6,13 @@ import (
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 
-	"github/fims-proto/fims-proto-ms/internal/sob/app"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-type Handler struct {
-	app *app.Application
-}
-
-func NewHandler(app *app.Application) Handler {
-	if app == nil {
-		panic("nil application")
-	}
-	return Handler{app: app}
-}
-
-// ReadAllSobs godoc
+// SearchSobs godoc
 //
 //	@Text			List all sobs
 //	@Description	List all sobs
@@ -34,7 +22,7 @@ func NewHandler(app *app.Application) Handler {
 //	@Success		200	{object}	data.PageResponse[SobResponse]
 //	@Failure		500	{object}	Error
 //	@Router			/sobs [get]
-func (h Handler) ReadAllSobs(c *gin.Context) {
+func (h Handler) SearchSobs(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.Sob], error) {
@@ -131,11 +119,4 @@ func (h Handler) UpdateSob(c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusNoContent)
-}
-
-func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sobs", h.ReadAllSobs)
-	r.GET("/sobs/:sobId", h.ReadSobById)
-	r.PATCH("/sobs/:sobId", h.UpdateSob)
-	r.POST("/sobs", h.CreateSob)
 }

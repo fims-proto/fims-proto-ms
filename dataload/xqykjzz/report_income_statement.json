@@ -1,372 +1,611 @@
 {
   "title": "利润表",
   "class": "income_statement",
-  "amountTypes": [
-    "year_to_date_amount",
-    "period_amount"
-  ],
-  "sections": [
+  "columns": [
     {
-      "title": "项目",
-      "items": [
+      "label": "本年累计金额",
+      "valueType": "year_to_date_amount"
+    },
+    {
+      "label": "本月金额",
+      "valueType": "period_amount"
+    }
+  ],
+  "rows": [
+    {
+      "rowCode": "IS_032",
+      "text": "四、净利润（亏损以\"-\"号填列）",
+      "lineNo": 32,
+      "showLineNo": true,
+      "sumFactor": 1,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": true,
+      "expression": {
+        "kind": "children_sum"
+      },
+      "indent": 0,
+      "rows": [
         {
-          "text": "一、营业收入",
-          "level": 1,
-          "sumFactor": 1,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5001",
-              "sumFactor": 1,
-              "rule": "transaction"
-            },
-            {
-              "accountNumber": "5051",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "营业成本",
-          "level": 1,
-          "sumFactor": -1,
-          "displaySumFactor": true,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5401",
-              "sumFactor": 1,
-              "rule": "transaction"
-            },
-            {
-              "accountNumber": "5402",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "营业税金及附加",
-          "level": 1,
-          "sumFactor": -1,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5403",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "消费税",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "营业税",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "城市维护建设税",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "资源税",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "土地增值税",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "城镇土地使用税、房产税、车船税、印花税",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "教育费附加、矿产资源补偿费、排污费",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "销售费用",
-          "level": 1,
-          "sumFactor": -1,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5601",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "商品维修费",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "广告费和业务宣传费",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "管理费用",
-          "level": 1,
-          "sumFactor": -1,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5602",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "开办费",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "业务招待费",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "研究费用",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "财务费用",
-          "level": 1,
-          "sumFactor": -1,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5603",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "利息费用（收入以\"-\"号填列）",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "投资收益（损失以\"-\"号填列）",
-          "level": 1,
-          "sumFactor": 1,
-          "displaySumFactor": true,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5111",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "二、营业利润（亏损以\"-\"号填列）",
-          "level": 1,
-          "itemType": "operating_profit",
-          "sumFactor": 0,
-          "dataSource": "sum",
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "营业外收入",
-          "level": 1,
-          "sumFactor": 1,
-          "displaySumFactor": true,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5301",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "政府补助",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "营业外支出",
-          "level": 1,
-          "sumFactor": -1,
-          "displaySumFactor": true,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5711",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "坏账损失",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "无法收回的长期债券投资损失",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "无法收回的长期股权投资损失",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "自然灾害等不可抗力因素造成的损失",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
-          "text": "税收滞纳金",
-          "level": 2,
-          "sumFactor": 0,
-          "dataSource": "formulas",
-          "formulas": [],
-          "isEditable": true,
-          "isBreakdownItem": true
-        },
-        {
+          "rowCode": "IS_030",
           "text": "三、利润总额（亏损以\"-\"号填列）",
-          "level": 1,
-          "itemType": "total_profit",
-          "sumFactor": 0,
-          "dataSource": "sum",
-          "isAbleToAddChild": true
+          "lineNo": 30,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": true,
+          "expression": {
+            "kind": "children_sum"
+          },
+          "indent": 0,
+          "rows": [
+            {
+              "rowCode": "IS_021",
+              "text": "二、营业利润（亏损以\"-\"号填列）",
+              "lineNo": 21,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": false,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "children_sum"
+              },
+              "indent": 0,
+              "rows": [
+                {
+                  "rowCode": "IS_001",
+                  "text": "一、营业收入",
+                  "lineNo": 1,
+                  "showLineNo": true,
+                  "sumFactor": 1,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005001",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      },
+                      {
+                        "rawAccountNumber": "005051",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 0,
+                  "rows": []
+                },
+                {
+                  "rowCode": "IS_002",
+                  "text": "营业成本",
+                  "lineNo": 2,
+                  "showLineNo": true,
+                  "sumFactor": -1,
+                  "displaySumFactor": true,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005401",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      },
+                      {
+                        "rawAccountNumber": "005402",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
+                },
+                {
+                  "rowCode": "IS_003",
+                  "text": "营业税金及附加",
+                  "lineNo": 3,
+                  "showLineNo": true,
+                  "sumFactor": -1,
+                  "displaySumFactor": true,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005403",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": [
+                    {
+                      "rowCode": "IS_004",
+                      "text": "消费税",
+                      "lineNo": 4,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_005",
+                      "text": "营业税",
+                      "lineNo": 5,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_006",
+                      "text": "城市维护建设税",
+                      "lineNo": 6,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_007",
+                      "text": "资源税",
+                      "lineNo": 7,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_008",
+                      "text": "土地增值税",
+                      "lineNo": 8,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_009",
+                      "text": "城镇土地使用税、房产税、车船税、印花税",
+                      "lineNo": 9,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_010",
+                      "text": "教育费附加、矿产资源补偿费、排污费",
+                      "lineNo": 10,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    }
+                  ]
+                },
+                {
+                  "rowCode": "IS_011",
+                  "text": "销售费用",
+                  "lineNo": 11,
+                  "showLineNo": true,
+                  "sumFactor": -1,
+                  "displaySumFactor": true,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005601",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": [
+                    {
+                      "rowCode": "IS_012",
+                      "text": "商品维修费",
+                      "lineNo": 12,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_013",
+                      "text": "广告费和业务宣传费",
+                      "lineNo": 13,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    }
+                  ]
+                },
+                {
+                  "rowCode": "IS_014",
+                  "text": "管理费用",
+                  "lineNo": 14,
+                  "showLineNo": true,
+                  "sumFactor": -1,
+                  "displaySumFactor": true,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005602",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": [
+                    {
+                      "rowCode": "IS_015",
+                      "text": "开办费",
+                      "lineNo": 15,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_016",
+                      "text": "业务招待费",
+                      "lineNo": 16,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    },
+                    {
+                      "rowCode": "IS_017",
+                      "text": "研究费用",
+                      "lineNo": 17,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    }
+                  ]
+                },
+                {
+                  "rowCode": "IS_018",
+                  "text": "财务费用",
+                  "lineNo": 18,
+                  "showLineNo": true,
+                  "sumFactor": -1,
+                  "displaySumFactor": true,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005603",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": [
+                    {
+                      "rowCode": "IS_019",
+                      "text": "利息费用（收入以\"-\"号填列）",
+                      "lineNo": 19,
+                      "showLineNo": true,
+                      "sumFactor": 0,
+                      "canEdit": true,
+                      "canMove": false,
+                      "canAddChild": false,
+                      "expression": {
+                        "kind": "ledger_accounts",
+                        "ledgerAccounts": []
+                      },
+                      "indent": 2,
+                      "rows": []
+                    }
+                  ]
+                },
+                {
+                  "rowCode": "IS_020",
+                  "text": "投资收益（损失以\"-\"号填列）",
+                  "lineNo": 20,
+                  "showLineNo": true,
+                  "sumFactor": 1,
+                  "displaySumFactor": true,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "005111",
+                        "sumFactor": 1,
+                        "measure": "transaction"
+                      }
+                    ]
+                  },
+                  "indent": 0,
+                  "rows": []
+                }
+              ]
+            },
+            {
+              "rowCode": "IS_022",
+              "text": "营业外收入",
+              "lineNo": 22,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "displaySumFactor": true,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "005301",
+                    "sumFactor": 1,
+                    "measure": "transaction"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": [
+                {
+                  "rowCode": "IS_023",
+                  "text": "政府补助",
+                  "lineNo": 23,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 2,
+                  "rows": []
+                }
+              ]
+            },
+            {
+              "rowCode": "IS_024",
+              "text": "营业外支出",
+              "lineNo": 24,
+              "showLineNo": true,
+              "sumFactor": -1,
+              "displaySumFactor": true,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "005711",
+                    "sumFactor": 1,
+                    "measure": "transaction"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": [
+                {
+                  "rowCode": "IS_025",
+                  "text": "坏账损失",
+                  "lineNo": 25,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 2,
+                  "rows": []
+                },
+                {
+                  "rowCode": "IS_026",
+                  "text": "无法收回的长期债券投资损失",
+                  "lineNo": 26,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 2,
+                  "rows": []
+                },
+                {
+                  "rowCode": "IS_027",
+                  "text": "无法收回的长期股权投资损失",
+                  "lineNo": 27,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 2,
+                  "rows": []
+                },
+                {
+                  "rowCode": "IS_028",
+                  "text": "自然灾害等不可抗力因素造成的损失",
+                  "lineNo": 28,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 2,
+                  "rows": []
+                },
+                {
+                  "rowCode": "IS_029",
+                  "text": "税收滞纳金",
+                  "lineNo": 29,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 2,
+                  "rows": []
+                }
+              ]
+            }
+          ]
         },
         {
+          "rowCode": "IS_031",
           "text": "所得税费用",
-          "level": 1,
+          "lineNo": 31,
+          "showLineNo": true,
           "sumFactor": -1,
           "displaySumFactor": true,
-          "dataSource": "formulas",
-          "formulas": [
-            {
-              "accountNumber": "5801",
-              "sumFactor": 1,
-              "rule": "transaction"
-            }
-          ],
-          "isEditable": true,
-          "isAbleToAddChild": true
-        },
-        {
-          "text": "四、净利润（亏损以\"-\"号填列）",
-          "level": 1,
-          "itemType": "net_profit",
-          "sumFactor": 0,
-          "dataSource": "sum"
+          "canEdit": true,
+          "canMove": false,
+          "canAddChild": true,
+          "expression": {
+            "kind": "ledger_accounts",
+            "ledgerAccounts": [
+              {
+                "rawAccountNumber": "005801",
+                "sumFactor": 1,
+                "measure": "transaction"
+              }
+            ]
+          },
+          "indent": 1,
+          "rows": []
         }
       ]
     }

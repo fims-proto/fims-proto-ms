@@ -1,892 +1,1301 @@
 {
   "title": "资产负债表",
   "class": "balance_sheet",
-  "amountTypes": [
-    "year_opening_balance",
-    "period_ending_balance"
-  ],
-  "sections": [
+  "columns": [
     {
-      "title": "资产",
-      "sectionType": "assets",
-      "sections": [
+      "label": "期末余额",
+      "valueType": "period_ending_balance"
+    },
+    {
+      "label": "年初余额",
+      "valueType": "year_opening_balance"
+    }
+  ],
+  "rows": [
+    {
+      "rowCode": "BS_032",
+      "text": "资产总计",
+      "lineNo": 32,
+      "showLineNo": true,
+      "sumFactor": 1,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": false,
+      "expression": {
+        "kind": "children_sum"
+      },
+      "indent": 0,
+      "rows": [
         {
-          "title": "流动资产",
-          "items": [
+          "rowCode": "BS_016",
+          "text": "流动资产合计",
+          "lineNo": 16,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": true,
+          "expression": {
+            "kind": "children_sum"
+          },
+          "indent": 0,
+          "rows": [
             {
+              "rowCode": "BS_001",
               "text": "流动资产：",
-              "level": 1,
-              "dataSource": "none"
+              "showLineNo": false,
+              "sumFactor": 0,
+              "canEdit": false,
+              "canMove": false,
+              "canAddChild": false,
+              "expression": {
+                "kind": "none"
+              },
+              "indent": 0,
+              "rows": []
             },
             {
+              "rowCode": "BS_002",
               "text": "货币资金",
-              "level": 2,
+              "lineNo": 2,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1001",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1002",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1012",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001001",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001002",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001012",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_003",
               "text": "短期投资",
-              "level": 2,
+              "lineNo": 3,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1101",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001101",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_004",
               "text": "应收票据",
-              "level": 2,
+              "lineNo": 4,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1121",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001121",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_005",
               "text": "应收账款",
-              "level": 2,
+              "lineNo": 5,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1122",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001122",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_006",
               "text": "预付账款",
-              "level": 2,
+              "lineNo": 6,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1123",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001123",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_007",
               "text": "应收股利",
-              "level": 2,
+              "lineNo": 7,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1131",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001131",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_008",
               "text": "应收利息",
-              "level": 2,
+              "lineNo": 8,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1132",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001132",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_009",
               "text": "其他应收款",
-              "level": 2,
+              "lineNo": 9,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1221",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001221",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_010",
               "text": "存货",
-              "level": 2,
+              "lineNo": 10,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001401",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001402",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001403",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001404",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001405",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001407",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001408",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001411",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001421",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "004001",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "004101",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "004401",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "004403",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": [
                 {
-                  "accountNumber": "1401",
-                  "sumFactor": 1,
-                  "rule": "net"
+                  "rowCode": "BS_011",
+                  "text": "原材料",
+                  "lineNo": 11,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "001403",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      },
+                      {
+                        "rawAccountNumber": "001404",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 2,
+                  "rows": []
                 },
                 {
-                  "accountNumber": "1402",
-                  "sumFactor": 1,
-                  "rule": "net"
+                  "rowCode": "BS_012",
+                  "text": "在产品",
+                  "lineNo": 12,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "004001",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      },
+                      {
+                        "rawAccountNumber": "004101",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      },
+                      {
+                        "rawAccountNumber": "004401",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      },
+                      {
+                        "rawAccountNumber": "004403",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 2,
+                  "rows": []
                 },
                 {
-                  "accountNumber": "1403",
-                  "sumFactor": 1,
-                  "rule": "net"
+                  "rowCode": "BS_013",
+                  "text": "库存商品",
+                  "lineNo": 13,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "001405",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      },
+                      {
+                        "rawAccountNumber": "001407",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 2,
+                  "rows": []
                 },
                 {
-                  "accountNumber": "1404",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1405",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1407",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1408",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1411",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1421",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4001",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4101",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4401",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4403",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "原材料",
-              "level": 3,
-              "sumFactor": 0,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1403",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1404",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isBreakdownItem": true
-            },
-            {
-              "text": "在产品",
-              "level": 3,
-              "sumFactor": 0,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "4001",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4101",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4401",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "4403",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isBreakdownItem": true
-            },
-            {
-              "text": "库存商品",
-              "level": 3,
-              "sumFactor": 0,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1405",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1407",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isBreakdownItem": true
-            },
-            {
-              "text": "周转材料",
-              "level": 3,
-              "sumFactor": 0,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1411",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isBreakdownItem": true
-            },
-            {
-              "text": "其他流动资产",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "流动资产合计",
-              "level": 1,
-              "dataSource": "sum"
-            }
-          ]
-        },
-        {
-          "title": "非流动资产",
-          "items": [
-            {
-              "text": "非流动资产：",
-              "level": 1,
-              "dataSource": "none"
-            },
-            {
-              "text": "长期债券投资",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1501",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "长期股权投资",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1511",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "固定资产原价",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1601",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "累计折旧",
-              "level": 2,
-              "sumFactor": -1,
-              "displaySumFactor": true,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1602",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "固定资产账面价值",
-              "level": 2,
-              "sumFactor": 0,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1601",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1602",
-                  "sumFactor": -1,
-                  "rule": "net"
+                  "rowCode": "BS_014",
+                  "text": "周转材料",
+                  "lineNo": 14,
+                  "showLineNo": true,
+                  "sumFactor": 0,
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "001411",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 2,
+                  "rows": []
                 }
               ]
             },
             {
-              "text": "在建工程",
-              "level": 2,
+              "rowCode": "BS_015",
+              "text": "其他流动资产",
+              "lineNo": 15,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1604",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "工程物资",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1605",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "固定资产清理",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1606",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "生产性生物资产",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1621",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1622",
-                  "sumFactor": -1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "无形资产",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1701",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "1702",
-                  "sumFactor": -1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "开发支出",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "4301",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "长期待摊费用",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1801",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "其他非流动资产",
-              "level": 2,
-              "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "1901",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "非流动资产合计",
-              "level": 1,
-              "dataSource": "sum"
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": []
+              },
+              "indent": 1,
+              "rows": []
             }
           ]
-        }
-      ],
-      "items": [
+        },
         {
-          "text": "资产总计",
-          "level": 1,
-          "dataSource": "sum"
+          "rowCode": "BS_031",
+          "text": "非流动资产合计",
+          "lineNo": 31,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": true,
+          "expression": {
+            "kind": "children_sum"
+          },
+          "indent": 0,
+          "rows": [
+            {
+              "rowCode": "BS_017",
+              "text": "非流动资产：",
+              "showLineNo": false,
+              "sumFactor": 0,
+              "canEdit": false,
+              "canMove": false,
+              "canAddChild": false,
+              "expression": {
+                "kind": "none"
+              },
+              "indent": 0,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_018",
+              "text": "长期债券投资",
+              "lineNo": 18,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001501",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_019",
+              "text": "长期股权投资",
+              "lineNo": 19,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001511",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_020",
+              "text": "固定资产原价",
+              "lineNo": 20,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001601",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_021",
+              "text": "累计折旧",
+              "lineNo": 21,
+              "showLineNo": true,
+              "sumFactor": -1,
+              "displaySumFactor": true,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001602",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_022",
+              "text": "固定资产账面价值",
+              "lineNo": 22,
+              "showLineNo": true,
+              "sumFactor": 0,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": false,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001601",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001602",
+                    "sumFactor": -1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_023",
+              "text": "在建工程",
+              "lineNo": 23,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001604",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_024",
+              "text": "工程物资",
+              "lineNo": 24,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001605",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_025",
+              "text": "固定资产清理",
+              "lineNo": 25,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001606",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_026",
+              "text": "生产性生物资产",
+              "lineNo": 26,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001621",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001622",
+                    "sumFactor": -1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_027",
+              "text": "无形资产",
+              "lineNo": 27,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001701",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "001702",
+                    "sumFactor": -1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_028",
+              "text": "开发支出",
+              "lineNo": 28,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "004301",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_029",
+              "text": "长期待摊费用",
+              "lineNo": 29,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001801",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            },
+            {
+              "rowCode": "BS_030",
+              "text": "其他非流动资产",
+              "lineNo": 30,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "001901",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
+            }
+          ]
         }
       ]
     },
     {
-      "title": "负债和所有者权益",
-      "sections": [
+      "rowCode": "BS_058",
+      "text": "负债和所有者权益总计",
+      "lineNo": 58,
+      "showLineNo": true,
+      "sumFactor": 1,
+      "canEdit": false,
+      "canMove": false,
+      "canAddChild": false,
+      "expression": {
+        "kind": "children_sum"
+      },
+      "indent": 0,
+      "rows": [
         {
-          "title": "负债",
-          "sectionType": "liabilities",
-          "sections": [
+          "rowCode": "BS_051",
+          "text": "负债合计",
+          "lineNo": 51,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": false,
+          "expression": {
+            "kind": "children_sum"
+          },
+          "indent": 0,
+          "rows": [
             {
-              "title": "流动负债",
-              "items": [
+              "rowCode": "BS_044",
+              "text": "流动负债合计",
+              "lineNo": 44,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": false,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "children_sum"
+              },
+              "indent": 0,
+              "rows": [
                 {
+                  "rowCode": "BS_033",
                   "text": "流动负债：",
-                  "level": 1,
-                  "dataSource": "none"
+                  "showLineNo": false,
+                  "sumFactor": 0,
+                  "canEdit": false,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "none"
+                  },
+                  "indent": 0,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_034",
                   "text": "短期借款",
-                  "level": 2,
+                  "lineNo": 34,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2001",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002001",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_035",
                   "text": "应付票据",
-                  "level": 2,
+                  "lineNo": 35,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2201",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002201",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_036",
                   "text": "应付账款",
-                  "level": 2,
+                  "lineNo": 36,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2202",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002202",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_037",
                   "text": "预收账款",
-                  "level": 2,
+                  "lineNo": 37,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2203",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002203",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_038",
                   "text": "应付职工薪酬",
-                  "level": 2,
+                  "lineNo": 38,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2211",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002211",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_039",
                   "text": "应交税费",
-                  "level": 2,
+                  "lineNo": 39,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2221",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002221",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_040",
                   "text": "应付利息",
-                  "level": 2,
+                  "lineNo": 40,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2231",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002231",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_041",
                   "text": "应付利润",
-                  "level": 2,
+                  "lineNo": 41,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2232",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002232",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_042",
                   "text": "其他应付款",
-                  "level": 2,
+                  "lineNo": 42,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2241",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002241",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_043",
                   "text": "其他流动负债",
-                  "level": 2,
+                  "lineNo": 43,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [],
-                  "isEditable": true
-                },
-                {
-                  "text": "流动负债合计",
-                  "level": 1,
-                  "dataSource": "sum"
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 1,
+                  "rows": []
                 }
               ]
             },
             {
-              "title": "非流动负债",
-              "items": [
+              "rowCode": "BS_050",
+              "text": "非流动负债合计",
+              "lineNo": 50,
+              "showLineNo": true,
+              "sumFactor": 1,
+              "canEdit": false,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "children_sum"
+              },
+              "indent": 0,
+              "rows": [
                 {
+                  "rowCode": "BS_045",
                   "text": "非流动负债：",
-                  "level": 1,
-                  "dataSource": "none"
+                  "showLineNo": false,
+                  "sumFactor": 0,
+                  "canEdit": false,
+                  "canMove": false,
+                  "canAddChild": false,
+                  "expression": {
+                    "kind": "none"
+                  },
+                  "indent": 0,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_046",
                   "text": "长期借款",
-                  "level": 2,
+                  "lineNo": 46,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2501",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002501",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_047",
                   "text": "长期应付款",
-                  "level": 2,
+                  "lineNo": 47,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2701",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002701",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_048",
                   "text": "递延收益",
-                  "level": 2,
+                  "lineNo": 48,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [
-                    {
-                      "accountNumber": "2401",
-                      "sumFactor": 1,
-                      "rule": "net"
-                    }
-                  ],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": [
+                      {
+                        "rawAccountNumber": "002401",
+                        "sumFactor": 1,
+                        "measure": "net"
+                      }
+                    ]
+                  },
+                  "indent": 1,
+                  "rows": []
                 },
                 {
+                  "rowCode": "BS_049",
                   "text": "其他非流动负债",
-                  "level": 2,
+                  "lineNo": 49,
+                  "showLineNo": true,
                   "sumFactor": 1,
-                  "dataSource": "formulas",
-                  "formulas": [],
-                  "isEditable": true,
-                  "isAbleToAddChild": true
-                },
-                {
-                  "text": "非流动负债合计",
-                  "level": 1,
-                  "dataSource": "sum"
+                  "canEdit": true,
+                  "canMove": false,
+                  "canAddChild": true,
+                  "expression": {
+                    "kind": "ledger_accounts",
+                    "ledgerAccounts": []
+                  },
+                  "indent": 1,
+                  "rows": []
                 }
               ]
-            }
-          ],
-          "items": [
-            {
-              "text": "负债合计",
-              "level": 1,
-              "dataSource": "sum"
             }
           ]
         },
         {
-          "title": "所有者权益",
-          "sectionType": "equity",
-          "items": [
+          "rowCode": "BS_057",
+          "text": "所有者权益合计",
+          "lineNo": 57,
+          "showLineNo": true,
+          "sumFactor": 1,
+          "canEdit": false,
+          "canMove": false,
+          "canAddChild": true,
+          "expression": {
+            "kind": "children_sum"
+          },
+          "indent": 0,
+          "rows": [
             {
+              "rowCode": "BS_052",
               "text": "所有者权益：",
-              "level": 1,
-              "dataSource": "none"
+              "showLineNo": false,
+              "sumFactor": 0,
+              "canEdit": false,
+              "canMove": false,
+              "canAddChild": false,
+              "expression": {
+                "kind": "none"
+              },
+              "indent": 0,
+              "rows": []
             },
             {
+              "rowCode": "BS_053",
               "text": "实收资本（或股本）",
-              "level": 2,
+              "lineNo": 53,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "3001",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "003001",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_054",
               "text": "资本公积",
-              "level": 2,
+              "lineNo": 54,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "3002",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "003002",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_055",
               "text": "盈余公积",
-              "level": 2,
+              "lineNo": 55,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "3101",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "003101",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             },
             {
+              "rowCode": "BS_056",
               "text": "未分配利润",
-              "level": 2,
+              "lineNo": 56,
+              "showLineNo": true,
               "sumFactor": 1,
-              "dataSource": "formulas",
-              "formulas": [
-                {
-                  "accountNumber": "3103",
-                  "sumFactor": 1,
-                  "rule": "net"
-                },
-                {
-                  "accountNumber": "3104",
-                  "sumFactor": 1,
-                  "rule": "net"
-                }
-              ],
-              "isEditable": true,
-              "isAbleToAddChild": true
-            },
-            {
-              "text": "所有者权益合计",
-              "level": 1,
-              "dataSource": "sum"
+              "canEdit": true,
+              "canMove": false,
+              "canAddChild": true,
+              "expression": {
+                "kind": "ledger_accounts",
+                "ledgerAccounts": [
+                  {
+                    "rawAccountNumber": "003103",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  },
+                  {
+                    "rawAccountNumber": "003104",
+                    "sumFactor": 1,
+                    "measure": "net"
+                  }
+                ]
+              },
+              "indent": 1,
+              "rows": []
             }
           ]
-        }
-      ],
-      "items": [
-        {
-          "text": "负债和所有者权益总计",
-          "level": 1,
-          "dataSource": "sum"
         }
       ]
     }

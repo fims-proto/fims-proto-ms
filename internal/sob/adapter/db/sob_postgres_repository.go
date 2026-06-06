@@ -6,6 +6,7 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
 	"github/fims-proto/fims-proto-ms/internal/sob/domain/sob"
 
@@ -39,7 +40,7 @@ func (r SobPostgresRepository) EnableTx(ctx context.Context, txFn func(txCtx con
 func (r SobPostgresRepository) CreateSob(ctx context.Context, sob *sob.Sob) error {
 	db := r.dataSource.GetConnection(ctx)
 
-	return db.Create(new(sobBOToPO(*sob))).Error
+	return commonErrors.TranslateDBError(db.Create(new(sobBOToPO(*sob))).Error)
 }
 
 func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, updateFn func(s *sob.Sob) (*sob.Sob, error)) error {
@@ -61,7 +62,7 @@ func (r SobPostgresRepository) UpdateSob(ctx context.Context, sobId uuid.UUID, u
 	}
 
 	po = sobBOToPO(*updatedBO)
-	return db.Save(&po).Error
+	return commonErrors.TranslateDBError(db.Save(&po).Error)
 }
 
 // Queries

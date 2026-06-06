@@ -1,6 +1,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
@@ -11,7 +12,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// ReadAllJournals godoc
+// SearchJournals godoc
 //
 //	@Text			List all journals by sob
 //	@Description	List all journals by sob with pagination
@@ -23,16 +24,16 @@ import (
 //	@Param			$size	query		int		false	"page size"			default(40)
 //	@Param			$sort	query		string	false	"sort on field(s)"	example(updatedAt desc,createdAt)
 //	@Param			$filter	query		string	false	"filter on field(s)"
-//	@Success		200		{object}	data.PageResponse[JournalResponse]
+//	@Success		200		{object}	data.PageResponse[JournalSlimResponse]
 //	@Failure		500		{object}	Error
 //	@Router			/sob/{sobId}/journals [get]
-func (h Handler) ReadAllJournals(c *gin.Context) {
+func (h Handler) SearchJournals(c *gin.Context) {
 	data.PagingResponseProcessor(
 		c,
 		func(pageRequest data.PageRequest) (data.Page[query.Journal], error) {
 			return h.app.Queries.PagingJournals.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
 		},
-		journalDTOToVO,
+		journalDTOToSlimVO,
 	)
 }
 
@@ -45,7 +46,7 @@ func (h Handler) ReadAllJournals(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			sobId		path		string	true	"Sob ID"
 //	@Param			journalId	path		string	true	"Journal ID"
-//	@Success		200			{object}	JournalResponse
+//	@Success		200			{object}	JournalDetailResponse
 //	@Failure		404
 //	@Failure		500	{object}	Error
 //	@Router			/sob/{sobId}/journal/{journalId} [get]
@@ -59,7 +60,7 @@ func (h Handler) ReadJournalById(c *gin.Context) {
 		c.Status(http.StatusNotFound)
 		return
 	}
-	c.JSON(http.StatusOK, journalDTOToVO(j))
+	c.JSON(http.StatusOK, journalDTOToDetailVO(j))
 }
 
 // CreateJournal godoc
@@ -71,7 +72,7 @@ func (h Handler) ReadJournalById(c *gin.Context) {
 //	@Produce		application/json
 //	@Param			sobId					path		string					true	"Sob ID"
 //	@Param			CreateJournalRequest	body		CreateJournalRequest	true	"Create journal request"
-//	@Success		201						{object}	JournalResponse
+//	@Success		201						{object}	JournalDetailResponse
 //	@Failure		400						{object}	Error
 //	@Failure		500						{object}	Error
 //	@Router			/sob/{sobId}/journals [post]
@@ -91,7 +92,7 @@ func (h Handler) CreateJournal(c *gin.Context) {
 		_ = c.Error(err)
 		return
 	}
-	c.JSON(http.StatusCreated, journalDTOToVO(createdJournal))
+	c.JSON(http.StatusCreated, journalDTOToDetailVO(createdJournal))
 }
 
 // UpdateJournal godoc
@@ -282,6 +283,113 @@ func (h Handler) PostJournal(c *gin.Context) {
 		Poster:    req.Poster,
 	}
 	if err := h.app.Commands.PostJournal.Handle(c, cmd); err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.Status(http.StatusNoContent)
+}
+
+// CreateMonthlyClosingJournal godoc
+//
+//	@Text			Create monthly closing journal
+//	@Description	Generate and post monthly closing journal that reverses all leaf P&L account balances to zero and transfers the net result to the Current Year Profit account
+//	@Tags			journals
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Success		201		{object}	ClosingJournalResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/journals/monthly-closing-journal [post]
+func (h Handler) CreateMonthlyClosingJournal(c *gin.Context) {
+	sobId := uuid.MustParse(c.Param("sobId"))
+	journalId, err := h.app.Commands.CreateMonthlyClosingJournal.Handle(c,
+		command.CreateMonthlyClosingJournalCmd{SobId: sobId},
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+}
+
+// CreateYearEndClosingJournal godoc
+//
+//	@Text			Create year-end closing journal
+//	@Description	Generate and post year-end closing journal that transfers the Current Year Profit account balance to Retained Earnings. Only callable in period 12 (year-end) after monthly closing is complete
+//	@Tags			journals
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Success		201		{object}	ClosingJournalResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/journals/year-end-closing-journal [post]
+func (h Handler) CreateYearEndClosingJournal(c *gin.Context) {
+	sobId := uuid.MustParse(c.Param("sobId"))
+	journalId, err := h.app.Commands.CreateYearEndClosingJournal.Handle(c,
+		command.CreateYearEndClosingJournalCmd{SobId: sobId},
+	)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+}
+
+// GetClosingJournal godoc
+//
+//	@Text			Get closing journals by period
+//	@Description	Get both monthly and year-end closing journal IDs for a given period
+//	@Tags			journals
+//	@Accept			application/json
+//	@Produce		application/json
+//	@Param			sobId	path		string	true	"Sob ID"
+//	@Param			period	query		string	true	"Period in YYYY-MM format"
+//	@Success		200		{object}	ClosingJournalIdsResponse
+//	@Failure		400		{object}	Error
+//	@Failure		500		{object}	Error
+//	@Router			/sob/{sobId}/journals/closing-journal [get]
+func (h Handler) GetClosingJournal(c *gin.Context) {
+	sobId := uuid.MustParse(c.Param("sobId"))
+
+	periodStr := c.Query("period")
+	var fiscalYear, periodNumber int
+	if _, err := fmt.Sscanf(periodStr, "%d-%d", &fiscalYear, &periodNumber); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period format, expected YYYY-MM"})
+		return
+	}
+
+	result, err := h.app.Queries.ClosingJournalIdsByPeriod.Handle(c, sobId, fiscalYear, periodNumber)
+	if err != nil {
+		_ = c.Error(err)
+		return
+	}
+
+	c.JSON(http.StatusOK, ClosingJournalIdsResponse{
+		MonthlyClosingJournalId: result.MonthlyClosingJournalId,
+		YearEndClosingJournalId: result.YearEndClosingJournalId,
+	})
+}
+
+// DeleteSystemJournal godoc
+//
+//	@Tags			journals
+//	@Summary		Delete system journal
+//	@Description	Delete a CLOSING or YEARLY_CLOSING journal and reverse its ledger posts.
+//	@Param			sobId		path	string	true	"Sob ID"
+//	@Param			journalId	path	string	true	"Journal ID"
+//	@Success		204
+//	@Failure		404	{object}	Error
+//	@Failure		422	{object}	Error
+//	@Failure		500	{object}	Error
+//	@Router			/sob/{sobId}/journal/{journalId} [delete]
+func (h Handler) DeleteSystemJournal(c *gin.Context) {
+	cmd := command.DeleteSystemJournalCmd{
+		SobId:     uuid.MustParse(c.Param("sobId")),
+		JournalId: uuid.MustParse(c.Param("journalId")),
+	}
+	if err := h.app.Commands.DeleteSystemJournal.Handle(c, cmd); err != nil {
 		_ = c.Error(err)
 		return
 	}

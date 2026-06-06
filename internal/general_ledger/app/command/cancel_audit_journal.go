@@ -12,7 +12,7 @@ import (
 
 type CancelAuditJournalCmd struct {
 	JournalId uuid.UUID
-	Auditor   uuid.UUID
+	Auditor   string
 }
 
 type CancelAuditJournalHandler struct {

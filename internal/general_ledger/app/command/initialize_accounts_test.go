@@ -4,11 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_ledger"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger_entry"
-
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/cash_flow_item"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/journal"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/ledger"
@@ -25,11 +21,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var sobId = uuid.New()
+var (
+	sobId              = uuid.New()
+	op01CashFlowItemId = uuid.New()
+	op06CashFlowItemId = uuid.New()
+)
+
+var sampleCashFlowItemIdsByCode = map[string]uuid.UUID{
+	"OP_01": op01CashFlowItemId,
+	"OP_06": op06CashFlowItemId,
+}
 
 var sampleAccountEntries = []accountEntry{
 	{
-		number:           "1001",
+		number:           "001001",
 		level:            1,
 		title:            "库存现金",
 		superiorNumber:   "",
@@ -38,7 +43,7 @@ var sampleAccountEntries = []accountEntry{
 		balanceDirection: "debit",
 	},
 	{
-		number:           "1002",
+		number:           "001002",
 		level:            1,
 		title:            "银行存款",
 		superiorNumber:   "",
@@ -47,58 +52,69 @@ var sampleAccountEntries = []accountEntry{
 		balanceDirection: "debit",
 	},
 	{
-		number:           "1002001",
+		number:           "001002000001",
 		level:            2,
 		title:            "中国银行存款",
-		superiorNumber:   "1002",
+		superiorNumber:   "001002",
 		class:            1,
 		group:            101,
 		balanceDirection: "debit",
 	},
 	{
-		number:           "1002002",
+		number:           "001002000002",
 		level:            2,
 		title:            "招商银行存款",
-		superiorNumber:   "1002",
+		superiorNumber:   "001002",
 		class:            1,
 		group:            101,
 		balanceDirection: "debit",
 	},
 	{
-		number:           "6602",
-		level:            1,
-		title:            "管理费用",
-		superiorNumber:   "",
-		class:            5,
-		group:            501,
-		balanceDirection: "not_defined",
+		number:                          "006602",
+		level:                           1,
+		title:                           "管理费用",
+		superiorNumber:                  "",
+		class:                           5,
+		group:                           501,
+		balanceDirection:                "not_defined",
+		defaultCashFlowItemCodeForDebit: "OP_06",
 	},
 	{
-		number:           "6602001",
+		number:           "006602000001",
 		level:            2,
 		title:            "办公费",
-		superiorNumber:   "6602",
+		superiorNumber:   "006602",
 		class:            5,
 		group:            503,
 		balanceDirection: "not_defined",
 	},
 	{
-		number:           "6602001001",
+		number:           "006602000001000001",
 		level:            3,
 		title:            "办公室租金",
-		superiorNumber:   "6602001",
+		superiorNumber:   "006602000001",
 		class:            5,
 		group:            503,
 		balanceDirection: "not_defined",
 	},
 	{
-		number:           "6602001002",
+		number:           "006602000001000002",
 		level:            3,
 		title:            "文具费用",
-		superiorNumber:   "6602001",
+		superiorNumber:   "006602000001",
 		class:            5,
 		group:            503,
 		balanceDirection: "not_defined",
+	},
+	{
+		number:                           "005001",
+		level:                            1,
+		title:                            "主营业务收入",
+		superiorNumber:                   "",
+		class:                            5,
+		group:                            501,
+		balanceDirection:                 "credit",
+		defaultCashFlowItemCodeForCredit: "OP_01",
 	},
 }
 
@@ -109,9 +125,9 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 		sobService service.SobService
 	}
 	type args struct {
-		sobId            uuid.UUID
-		accountEntries   []accountEntry
-		codeLengthLimits []int
+		sobId                 uuid.UUID
+		accountEntries        []accountEntry
+		cashFlowItemIdsByCode map[string]uuid.UUID
 	}
 	tests := []struct {
 		name       string
@@ -127,130 +143,122 @@ func TestAccountDataLoadHandler_prepareAccounts(t *testing.T) {
 				sobService: mockSobService{},
 			},
 			args: args{
-				sobId:            sobId,
-				accountEntries:   sampleAccountEntries,
-				codeLengthLimits: []int{4, 3, 3},
+				sobId:                 sobId,
+				accountEntries:        sampleAccountEntries,
+				cashFlowItemIdsByCode: sampleCashFlowItemIdsByCode,
 			},
 			wantNumber: map[string]string{
-				"库存现金":   "1001",
-				"银行存款":   "1002",
-				"中国银行存款": "1002001",
-				"招商银行存款": "1002002",
-				"管理费用":   "6602",
-				"办公费":    "6602001",
-				"办公室租金":  "6602001001",
-				"文具费用":   "6602001002",
-			},
-			wantErr: false,
-		},
-		{
-			name: "shorter_code_length_success",
-			fields: fields{
-				repo:       mockRepo{},
-				sobService: mockSobService{},
-			},
-			args: args{
-				sobId:            sobId,
-				accountEntries:   sampleAccountEntries,
-				codeLengthLimits: []int{4, 2, 2},
-			},
-			wantNumber: map[string]string{
-				"库存现金":   "1001",
-				"银行存款":   "1002",
-				"中国银行存款": "100201",
-				"招商银行存款": "100202",
-				"管理费用":   "6602",
-				"办公费":    "660201",
-				"办公室租金":  "66020101",
-				"文具费用":   "66020102",
-			},
-			wantErr: false,
-		},
-		{
-			name: "longer_code_length_success",
-			fields: fields{
-				repo:       mockRepo{},
-				sobService: mockSobService{},
-			},
-			args: args{
-				sobId:            sobId,
-				accountEntries:   sampleAccountEntries,
-				codeLengthLimits: []int{4, 4, 4},
-			},
-			wantNumber: map[string]string{
-				"库存现金":   "1001",
-				"银行存款":   "1002",
-				"中国银行存款": "10020001",
-				"招商银行存款": "10020002",
-				"管理费用":   "6602",
-				"办公费":    "66020001",
-				"办公室租金":  "660200010001",
-				"文具费用":   "660200010002",
+				"库存现金":   "001001",
+				"银行存款":   "001002",
+				"中国银行存款": "001002000001",
+				"招商银行存款": "001002000002",
+				"管理费用":   "006602",
+				"办公费":    "006602000001",
+				"办公室租金":  "006602000001000001",
+				"文具费用":   "006602000001000002",
+				"主营业务收入": "005001",
 			},
 			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.codeLengthLimits)
+			got, err := prepareAccounts(tt.args.sobId, tt.args.accountEntries, tt.args.cashFlowItemIdsByCode)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("prepareAccounts() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			assert.Equal(t, 8, len(got))
+			assert.Equal(t, 9, len(got))
 			for _, acc := range got {
 				switch acc.Title() {
 				case "库存现金":
-					assert.Equal(t, tt.wantNumber["库存现金"], acc.AccountNumber())
-					assert.EqualValues(t, []int{1001}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["库存现金"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{1001}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.True(t, acc.IsLeaf())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForDebit())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForCredit())
 				case "银行存款":
-					assert.Equal(t, tt.wantNumber["银行存款"], acc.AccountNumber())
-					assert.EqualValues(t, []int{1002}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["银行存款"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{1002}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.False(t, acc.IsLeaf())
 				case "中国银行存款":
-					assert.Equal(t, tt.wantNumber["中国银行存款"], acc.AccountNumber())
-					assert.EqualValues(t, []int{1002, 1}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["中国银行存款"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{1002, 1}, hierarchy)
 					assert.Equal(t, 2, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "招商银行存款":
-					assert.Equal(t, tt.wantNumber["招商银行存款"], acc.AccountNumber())
-					assert.EqualValues(t, []int{1002, 2}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["招商银行存款"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{1002, 2}, hierarchy)
 					assert.Equal(t, 2, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "管理费用":
-					assert.Equal(t, tt.wantNumber["管理费用"], acc.AccountNumber())
-					assert.EqualValues(t, []int{6602}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["管理费用"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{6602}, hierarchy)
 					assert.Equal(t, 1, acc.Level())
 					assert.False(t, acc.IsLeaf())
+					assert.Equal(t, op06CashFlowItemId, *acc.DefaultCashFlowItemIdForDebit())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForCredit())
 				case "办公费":
-					assert.Equal(t, tt.wantNumber["办公费"], acc.AccountNumber())
-					assert.EqualValues(t, []int{6602, 1}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["办公费"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{6602, 1}, hierarchy)
 					assert.Equal(t, 2, acc.Level())
 					assert.False(t, acc.IsLeaf())
 				case "办公室租金":
-					assert.Equal(t, tt.wantNumber["办公室租金"], acc.AccountNumber())
-					assert.EqualValues(t, []int{6602, 1, 1}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["办公室租金"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{6602, 1, 1}, hierarchy)
 					assert.Equal(t, 3, acc.Level())
 					assert.True(t, acc.IsLeaf())
 				case "文具费用":
-					assert.Equal(t, tt.wantNumber["文具费用"], acc.AccountNumber())
-					assert.EqualValues(t, []int{6602, 1, 2}, acc.NumberHierarchy())
+					assert.Equal(t, tt.wantNumber["文具费用"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{6602, 1, 2}, hierarchy)
 					assert.Equal(t, 3, acc.Level())
 					assert.True(t, acc.IsLeaf())
+				case "主营业务收入":
+					assert.Equal(t, tt.wantNumber["主营业务收入"], acc.RawAccountNumber())
+					hierarchy, _ := account.HierarchyFromRaw(acc.RawAccountNumber())
+					assert.EqualValues(t, []int{5001}, hierarchy)
+					assert.Equal(t, 1, acc.Level())
+					assert.True(t, acc.IsLeaf())
+					assert.Nil(t, acc.DefaultCashFlowItemIdForDebit())
+					assert.Equal(t, op01CashFlowItemId, *acc.DefaultCashFlowItemIdForCredit())
 				}
 			}
 		})
 	}
 }
 
-type mockRepo struct{}
+func TestAccountDataLoadHandler_prepareAccounts_UnknownDefaultCashFlowItemCode(t *testing.T) {
+	t.Parallel()
 
-func (m mockRepo) ReadAuxiliaryAccountsByPairs(context.Context, uuid.UUID, []auxiliary_account.AuxiliaryPair) ([]*auxiliary_account.AuxiliaryAccount, error) {
-	panic("implement me")
+	entries := []accountEntry{
+		{
+			number:                          "006602",
+			level:                           1,
+			title:                           "管理费用",
+			superiorNumber:                  "",
+			class:                           5,
+			group:                           501,
+			balanceDirection:                "not_defined",
+			defaultCashFlowItemCodeForDebit: "UNKNOWN",
+		},
+	}
+
+	_, err := prepareAccounts(sobId, entries, sampleCashFlowItemIdsByCode)
+
+	assert.ErrorContains(t, err, "cash flow item code UNKNOWN not found")
 }
+
+type mockRepo struct{}
 
 func (m mockRepo) Migrate(context.Context) error {
 	panic("implement me")
@@ -276,6 +284,14 @@ func (m mockRepo) ReadAccountsByNumbers(context.Context, uuid.UUID, []string) ([
 	panic("implement me")
 }
 
+func (m mockRepo) ReadAccountByRawNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadAccountsByRawNumbers(context.Context, uuid.UUID, []string) ([]*account.Account, error) {
+	panic("implement me")
+}
+
 func (m mockRepo) ReadSuperiorAccountsById(context.Context, uuid.UUID) ([]*account.Account, error) {
 	panic("implement me")
 }
@@ -289,6 +305,10 @@ func (m mockRepo) UpdatePeriod(context.Context, uuid.UUID, func(p *period.Period
 }
 
 func (m mockRepo) ReadCurrentPeriod(context.Context, uuid.UUID) (*period.Period, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadPeriodById(context.Context, uuid.UUID, uuid.UUID) (*period.Period, error) {
 	panic("implement me")
 }
 
@@ -316,11 +336,11 @@ func (m mockRepo) ExistsProfitAndLossLedgersHavingBalanceInPeriod(context.Contex
 	panic("implement me")
 }
 
-func (m mockRepo) CreateJournal(context.Context, *journal.Journal) error {
+func (m mockRepo) ExistsLedgerHavingBalanceByRawAccountNumberInPeriod(context.Context, uuid.UUID, string, uuid.UUID) (bool, error) {
 	panic("implement me")
 }
 
-func (m mockRepo) CreateLedgerEntries(context.Context, []*ledger_entry.LedgerEntry) error {
+func (m mockRepo) CreateJournal(context.Context, *journal.Journal) error {
 	panic("implement me")
 }
 
@@ -336,31 +356,7 @@ func (m mockRepo) ExistsJournalsNotPostedInPeriod(context.Context, uuid.UUID, uu
 	panic("implement me")
 }
 
-func (m mockRepo) CreateAuxiliaryCategories(context.Context, []*auxiliary_category.AuxiliaryCategory) error {
-	panic("implement me")
-}
-
-func (m mockRepo) CreateAuxiliaryAccounts(context.Context, []*auxiliary_account.AuxiliaryAccount) error {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAllAuxiliaryAccounts(context.Context, uuid.UUID) ([]*auxiliary_account.AuxiliaryAccount, error) {
-	panic("implement me")
-}
-
-func (m mockRepo) CreateAuxiliaryLedgers(context.Context, []*auxiliary_ledger.AuxiliaryLedger) error {
-	panic("implement me")
-}
-
-func (m mockRepo) UpsertAuxiliaryLedgersByPeriodAndAccounts(context.Context, uuid.UUID, uuid.UUID, []domain.AuxiliaryLedgerKey, func(auxiliaryLedgers []*auxiliary_ledger.AuxiliaryLedger) ([]*auxiliary_ledger.AuxiliaryLedger, error)) error {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAuxiliaryLedgersByPeriod(context.Context, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
-	panic("implement me")
-}
-
-func (m mockRepo) ReadAuxiliaryLedgersByAccountAndPeriod(context.Context, uuid.UUID, uuid.UUID) ([]*auxiliary_ledger.AuxiliaryLedger, error) {
+func (m mockRepo) ExistsJournalById(context.Context, uuid.UUID, uuid.UUID) (bool, error) {
 	panic("implement me")
 }
 
@@ -380,15 +376,63 @@ func (m mockRepo) CreateAccount(context.Context, *account.Account) error {
 	panic("implement me")
 }
 
+func (m mockRepo) DeleteAccount(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
+func (m mockRepo) DeleteLedgersByAccountId(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
 func (m mockRepo) ReadAccountByNumber(context.Context, uuid.UUID, string) (*account.Account, error) {
 	panic("implement me")
 }
 
-func (m mockRepo) ReadAuxiliaryCategoryByKey(context.Context, uuid.UUID, string) (*auxiliary_category.AuxiliaryCategory, error) {
+func (m mockRepo) ReadAccountById(context.Context, uuid.UUID) (*account.Account, error) {
 	panic("implement me")
 }
 
-func (m mockRepo) ReadAuxiliaryCategoriesByKeys(context.Context, uuid.UUID, []string) ([]*auxiliary_category.AuxiliaryCategory, error) {
+func (m mockRepo) ExistsChildAccountsByAccountId(context.Context, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsJournalLinesByAccountId(context.Context, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsLedgerWithOpeningBalanceByAccountId(context.Context, uuid.UUID) (bool, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadProfitAndLossLedgersHavingBalanceInPeriod(context.Context, uuid.UUID, uuid.UUID) ([]*ledger.Ledger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadLedgerByRawAccountNumberInPeriod(context.Context, uuid.UUID, string, uuid.UUID) (*ledger.Ledger, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ExistsClosingJournalInPeriod(context.Context, uuid.UUID, uuid.UUID, journal.JournalType) (bool, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadJournalById(context.Context, uuid.UUID) (*journal.Journal, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) DeleteJournalById(context.Context, uuid.UUID) error {
+	panic("implement me")
+}
+
+func (m mockRepo) InitializeCashFlowItems(context.Context, []*cash_flow_item.CashFlowItem) error {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadCashFlowItemsBySobId(context.Context, uuid.UUID) ([]*cash_flow_item.CashFlowItem, error) {
+	panic("implement me")
+}
+
+func (m mockRepo) ReadExistingCashFlowItemIds(context.Context, uuid.UUID, []uuid.UUID) ([]uuid.UUID, error) {
 	panic("implement me")
 }
 

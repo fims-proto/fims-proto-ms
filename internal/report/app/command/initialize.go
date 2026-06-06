@@ -14,187 +14,215 @@ import (
 	"github.com/google/uuid"
 )
 
-type InitializeCmd struct {
-	SobId uuid.UUID
-}
-
 type InitializeHandler struct {
 	repo                 domain.Repository
 	generalLedgerService service.GeneralLedgerService
-
-	accounts map[string]uuid.UUID // key: accountNumber, value: accountId
 }
 
 func NewInitializeHandler(repo domain.Repository, generalLedgerService service.GeneralLedgerService) InitializeHandler {
 	if repo == nil {
-		panic("nil repo")
+		panic("nil repository")
 	}
-
 	if generalLedgerService == nil {
 		panic("nil general ledger service")
 	}
-
-	return InitializeHandler{
-		repo:                 repo,
-		generalLedgerService: generalLedgerService,
-		accounts:             make(map[string]uuid.UUID),
-	}
+	return InitializeHandler{repo: repo, generalLedgerService: generalLedgerService}
 }
 
-func (h *InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error {
-	workDir, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("could not get working directory: %w", err)
-	}
-
-	var balanceSheetCmd InitializeCmdReport
-	var incomeStatementCmd InitializeCmdReport
-
-	balanceSheetFile, err := os.ReadFile(filepath.Join(workDir, "dataload", "xqykjzz", "report_balance_sheet.json"))
-	if err != nil {
-		return fmt.Errorf("could not read balance sheet json file: %w", err)
-	}
-
-	incomeStatementFile, err := os.ReadFile(filepath.Join(workDir, "dataload", "xqykjzz", "report_income_statement.json"))
-	if err != nil {
-		return fmt.Errorf("could not read income statement json file: %w", err)
-	}
-
-	if err = json.Unmarshal(balanceSheetFile, &balanceSheetCmd); err != nil {
-		return fmt.Errorf("could not unmarshal balance sheet json: %w", err)
-	}
-	if err = json.Unmarshal(incomeStatementFile, &incomeStatementCmd); err != nil {
-		return fmt.Errorf("could not unmarshal income statement json: %w", err)
-	}
-
-	if err = h.prepareAccounts(ctx, cmd.SobId, balanceSheetCmd, incomeStatementCmd); err != nil {
-		return fmt.Errorf("could not prepare accounts with account numbers: %w", err)
-	}
-
-	balanceSheetReport, err := h.convertReport(cmd.SobId, balanceSheetCmd)
-	if err != nil {
-		return fmt.Errorf("could not convert balance sheet report: %w", err)
-	}
-	incomeStatementReport, err := h.convertReport(cmd.SobId, incomeStatementCmd)
-	if err != nil {
-		return fmt.Errorf("could not convert income statement report: %w", err)
-	}
-
-	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
-		return h.repo.CreateReports(txCtx, []*report.Report{balanceSheetReport, incomeStatementReport})
-	})
-}
-
-func (h *InitializeHandler) convertReport(sobId uuid.UUID, cmd InitializeCmdReport) (*report.Report, error) {
-	var sections []*report.Section
-	for i, cmdSection := range cmd.Sections {
-		section, err := h.convertSection(cmdSection, i+1)
-		if err != nil {
-			return nil, err
-		}
-		sections = append(sections, section)
-	}
-
-	return report.New(
-		uuid.New(),
-		sobId,
-		uuid.Nil,
-		cmd.Title,
-		true,
-		cmd.Class,
-		cmd.AmountTypes,
-		sections,
-	)
-}
-
-func (h *InitializeHandler) convertSection(cmd InitializeCmdSection, sequence int) (*report.Section, error) {
-	var subSections []*report.Section
-	for i, cmdSubSection := range cmd.Sections {
-		subSection, err := h.convertSection(cmdSubSection, i+1)
-		if err != nil {
-			return nil, err
-		}
-		subSections = append(subSections, subSection)
-	}
-
-	var items []*report.Item
-	for i, cmdItem := range cmd.Items {
-		item, err := h.convertItem(cmdItem, i+1)
-		if err != nil {
-			return nil, err
-		}
-		items = append(items, item)
-	}
-
-	return report.NewSection(
-		uuid.New(),
-		cmd.Title,
-		sequence,
-		cmd.SectionType,
-		nil,
-		subSections,
-		items,
-	)
-}
-
-func (h *InitializeHandler) convertItem(cmd InitializeCmdItem, sequence int) (*report.Item, error) {
-	var formulas []*report.Formula
-	for i, cmdFormula := range cmd.Formulas {
-		formula, err := h.convertFormula(cmdFormula, i+1)
-		if err != nil {
-			return nil, err
-		}
-		formulas = append(formulas, formula)
-	}
-
-	return report.NewItem(uuid.New(), cmd.Text, cmd.Level, sequence, cmd.ItemType, cmd.SumFactor, cmd.DisplaySumFactor, cmd.DataSource, formulas, nil, cmd.IsEditable, cmd.IsBreakdownItem, cmd.IsAbleToAddChild)
-}
-
-func (h *InitializeHandler) convertFormula(cmd InitializeCmdFormula, sequence int) (*report.Formula, error) {
-	accountId, ok := h.accounts[cmd.AccountNumber]
-	if !ok {
-		return nil, fmt.Errorf("could not find account number %s", cmd.AccountNumber)
-	}
-
-	return report.NewFormula(
-		uuid.New(),
-		sequence,
-		accountId,
-		cmd.SumFactor,
-		cmd.Rule,
-		nil,
-	)
-}
-
-func (h *InitializeHandler) prepareAccounts(ctx context.Context, sobId uuid.UUID, cmds ...InitializeCmdReport) error {
-	var accountNumbers []string
-
-	for _, cmd := range cmds {
-		for _, section := range cmd.Sections {
-			accountNumbers = append(accountNumbers, collectAccountNumbersFromSection(section)...)
-		}
-	}
-
-	accountIds, err := h.generalLedgerService.ReadAccountIdsByNumbers(ctx, sobId, accountNumbers)
+func (h InitializeHandler) Handle(ctx context.Context, cmd InitializeCmd) error {
+	reports, err := h.loadReports(ctx, cmd.SobId)
 	if err != nil {
 		return err
 	}
-
-	h.accounts = accountIds
-	return nil
+	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
+		return h.repo.CreateReports(txCtx, reports)
+	})
 }
 
-func collectAccountNumbersFromSection(section InitializeCmdSection) []string {
-	var result []string
-	for _, item := range section.Items {
-		for _, formula := range item.Formulas {
-			result = append(result, formula.AccountNumber)
+func (h InitializeHandler) loadReports(ctx context.Context, sobId uuid.UUID) ([]*report.Report, error) {
+	workDir, err := os.Getwd()
+	if err != nil {
+		return nil, fmt.Errorf("could not get working directory: %w", err)
+	}
+
+	files := []string{
+		"report_balance_sheet.json",
+		"report_income_statement.json",
+		"report_cash_flow_statement.json",
+	}
+
+	var reports []*report.Report
+	for _, file := range files {
+		raw, err := os.ReadFile(filepath.Join(workDir, "dataload", "xqykjzz", file))
+		if err != nil {
+			return nil, fmt.Errorf("could not read %s: %w", file, err)
+		}
+		var cmd initializeReport
+		if err = json.Unmarshal(raw, &cmd); err != nil {
+			return nil, fmt.Errorf("could not unmarshal %s: %w", file, err)
+		}
+		r, err := h.convertReport(ctx, sobId, cmd)
+		if err != nil {
+			return nil, fmt.Errorf("could not convert %s: %w", file, err)
+		}
+		reports = append(reports, r)
+	}
+	return reports, nil
+}
+
+type initializeReport struct {
+	Title   string             `json:"title"`
+	Class   string             `json:"class"`
+	Columns []initializeColumn `json:"columns"`
+	Rows    []initializeRow    `json:"rows"`
+}
+
+type initializeColumn struct {
+	Label     string `json:"label"`
+	ValueType string `json:"valueType"`
+}
+
+type initializeRow struct {
+	RowCode          string               `json:"rowCode"`
+	Text             string               `json:"text"`
+	LineNo           *int                 `json:"lineNo"`
+	ShowLineNo       bool                 `json:"showLineNo"`
+	SumFactor        int                  `json:"sumFactor"`
+	DisplaySumFactor bool                 `json:"displaySumFactor"`
+	Indent           int                  `json:"indent"`
+	CanEdit          *bool                `json:"canEdit"`
+	CanMove          *bool                `json:"canMove"`
+	CanAddChild      *bool                `json:"canAddChild"`
+	Expression       initializeExpression `json:"expression"`
+	Rows             []initializeRow      `json:"rows"`
+}
+
+type initializeExpression struct {
+	Kind           string                          `json:"kind"`
+	LedgerAccounts []report.LedgerAccountReference `json:"ledgerAccounts"`
+	CashFlowItems  []report.CashFlowItemReference  `json:"cashFlowItems"`
+	RowReferences  []report.RowReference           `json:"rowReferences"`
+}
+
+func (h InitializeHandler) convertReport(ctx context.Context, sobId uuid.UUID, cmd initializeReport) (*report.Report, error) {
+	columns := make([]*report.Column, 0, len(cmd.Columns))
+	for i, columnCmd := range cmd.Columns {
+		column, err := report.NewColumn(uuid.New(), columnCmd.Label, columnCmd.ValueType, i+1)
+		if err != nil {
+			return nil, err
+		}
+		columns = append(columns, column)
+	}
+
+	if err := h.resolveExpressionReferences(ctx, sobId, cmd.Rows); err != nil {
+		return nil, err
+	}
+
+	rows, err := convertRows(cmd.Rows)
+	if err != nil {
+		return nil, err
+	}
+
+	return report.New(uuid.New(), sobId, uuid.Nil, cmd.Title, true, cmd.Class, columns, rows)
+}
+
+func (h InitializeHandler) resolveExpressionReferences(ctx context.Context, sobId uuid.UUID, rows []initializeRow) error {
+	accountNumbers := make(map[string]struct{})
+	cashFlowCodes := make(map[string]struct{})
+	collectRefsFromRows(rows, accountNumbers, cashFlowCodes)
+
+	var rawAccountNumbers []string
+	for rawNumber := range accountNumbers {
+		rawAccountNumbers = append(rawAccountNumbers, rawNumber)
+	}
+	accountIds := map[string]uuid.UUID{}
+	if len(rawAccountNumbers) > 0 {
+		var err error
+		accountIds, err = h.generalLedgerService.ReadAccountIdsByRawNumbers(ctx, sobId, rawAccountNumbers)
+		if err != nil {
+			return fmt.Errorf("failed to resolve account ids: %w", err)
 		}
 	}
 
-	for _, subSection := range section.Sections {
-		result = append(result, collectAccountNumbersFromSection(subSection)...)
+	var codes []string
+	for code := range cashFlowCodes {
+		codes = append(codes, code)
+	}
+	cashFlowItemIds := map[string]uuid.UUID{}
+	if len(codes) > 0 {
+		var err error
+		cashFlowItemIds, err = h.generalLedgerService.ReadCashFlowItemIdsByCodes(ctx, sobId, codes)
+		if err != nil {
+			return fmt.Errorf("failed to resolve cash flow item ids: %w", err)
+		}
 	}
 
-	return result
+	return applyResolvedRefs(rows, accountIds, cashFlowItemIds)
+}
+
+func collectRefsFromRows(rows []initializeRow, accountNumbers map[string]struct{}, cashFlowCodes map[string]struct{}) {
+	for ri := range rows {
+		for _, ref := range rows[ri].Expression.LedgerAccounts {
+			accountNumbers[ref.RawAccountNumber] = struct{}{}
+		}
+		for _, ref := range rows[ri].Expression.CashFlowItems {
+			cashFlowCodes[ref.Code] = struct{}{}
+		}
+		collectRefsFromRows(rows[ri].Rows, accountNumbers, cashFlowCodes)
+	}
+}
+
+func applyResolvedRefs(rows []initializeRow, accountIds map[string]uuid.UUID, cashFlowItemIds map[string]uuid.UUID) error {
+	for ri := range rows {
+		for li := range rows[ri].Expression.LedgerAccounts {
+			ref := &rows[ri].Expression.LedgerAccounts[li]
+			id, ok := accountIds[ref.RawAccountNumber]
+			if !ok {
+				return fmt.Errorf("account %s not found", ref.RawAccountNumber)
+			}
+			ref.AccountId = id
+		}
+		for ci := range rows[ri].Expression.CashFlowItems {
+			ref := &rows[ri].Expression.CashFlowItems[ci]
+			id, ok := cashFlowItemIds[ref.Code]
+			if !ok {
+				return fmt.Errorf("cash flow item %s not found", ref.Code)
+			}
+			ref.ItemId = id
+		}
+		if err := applyResolvedRefs(rows[ri].Rows, accountIds, cashFlowItemIds); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func convertRows(cmds []initializeRow) ([]*report.Row, error) {
+	rows := make([]*report.Row, 0, len(cmds))
+	for i, cmd := range cmds {
+		expr, err := report.NewExpression(uuid.New(), cmd.Expression.Kind, cmd.Expression.LedgerAccounts, cmd.Expression.CashFlowItems, cmd.Expression.RowReferences)
+		if err != nil {
+			return nil, err
+		}
+		canEdit := boolValue(cmd.CanEdit, true)
+		canMove := boolValue(cmd.CanMove, true)
+		canAddChild := boolValue(cmd.CanAddChild, false)
+		childRows, err := convertRows(cmd.Rows)
+		if err != nil {
+			return nil, err
+		}
+		row, err := report.NewRow(uuid.New(), cmd.RowCode, cmd.Text, i+1, cmd.LineNo, cmd.ShowLineNo, cmd.SumFactor, cmd.DisplaySumFactor, cmd.Indent, canEdit, canMove, canAddChild, expr, childRows, nil)
+		if err != nil {
+			return nil, err
+		}
+		rows = append(rows, row)
+	}
+	return rows, nil
+}
+
+func boolValue(v *bool, defaultValue bool) bool {
+	if v == nil {
+		return defaultValue
+	}
+	return *v
 }

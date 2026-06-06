@@ -19,46 +19,69 @@ type Error struct {
 	Slug    string `json:"slug"`
 }
 
+type PeriodCloseWarningResponse struct {
+	Slug    string `json:"slug"`
+	Message string `json:"message"`
+}
+
 type AccountClass struct {
 	Class  string   `json:"id"`
 	Groups []string `json:"groups"`
 }
 
-type AccountResponse struct {
-	Id                  uuid.UUID                   `json:"id,omitempty"`
-	SobId               uuid.UUID                   `json:"sobId,omitempty"`
-	SuperiorAccountId   *uuid.UUID                  `json:"superiorAccountId,omitempty"`
-	Title               string                      `json:"title,omitempty"`
-	AccountNumber       string                      `json:"accountNumber,omitempty"`
-	NumberHierarchy     []int                       `json:"numberHierarchy,omitempty"`
-	Level               int                         `json:"level"`
-	IsLeaf              bool                        `json:"isLeaf"`
-	Class               string                      `json:"class"`
-	Group               string                      `json:"group"`
-	BalanceDirection    string                      `json:"balanceDirection,omitempty"`
-	AuxiliaryCategories []AuxiliaryCategoryResponse `json:"auxiliaryCategories,omitempty"`
-	CreatedAt           time.Time                   `json:"createdAt"`
-	UpdatedAt           time.Time                   `json:"updatedAt"`
+// DimensionCategoryResponse is embedded in AccountDetailResponse and DimensionOptionResponse.
+type DimensionCategoryResponse struct {
+	Id   uuid.UUID `json:"id"`
+	Name string    `json:"name"`
 }
 
-type AuxiliaryCategoryResponse struct {
-	Id         uuid.UUID `json:"id,omitempty"`
-	SobId      uuid.UUID `json:"sobId,omitempty"`
-	Key        string    `json:"key,omitempty"`
-	Title      string    `json:"title,omitempty"`
-	IsStandard bool      `json:"isStandard"`
-	CreatedAt  time.Time `json:"createdAt"`
-	UpdatedAt  time.Time `json:"updatedAt"`
+// DimensionOptionResponse is embedded in JournalLineResponse.
+// Category is nested to give the full context without an extra round-trip.
+type DimensionOptionResponse struct {
+	Id       uuid.UUID                 `json:"id"`
+	Name     string                    `json:"name"`
+	Category DimensionCategoryResponse `json:"category"`
 }
 
-type AuxiliaryAccountResponse struct {
-	Id          uuid.UUID                 `json:"id,omitempty"`
-	Category    AuxiliaryCategoryResponse `json:"category"`
-	Key         string                    `json:"key,omitempty"`
-	Title       string                    `json:"title,omitempty"`
-	Description string                    `json:"description,omitempty"`
-	CreatedAt   time.Time                 `json:"createdAt"`
-	UpdatedAt   time.Time                 `json:"updatedAt"`
+// AccountSlimResponse is used by list endpoints (GET /accounts).
+// It only contains fields from the account table itself — no cross-table dimension data.
+type AccountSlimResponse struct {
+	Id                             uuid.UUID  `json:"id,omitempty"`
+	SobId                          uuid.UUID  `json:"sobId,omitempty"`
+	SuperiorAccountId              *uuid.UUID `json:"superiorAccountId,omitempty"`
+	Title                          string     `json:"title,omitempty"`
+	RawAccountNumber               string     `json:"rawAccountNumber,omitempty"`
+	Level                          int        `json:"level"`
+	IsLeaf                         bool       `json:"isLeaf"`
+	Class                          string     `json:"class"`
+	Group                          string     `json:"group"`
+	BalanceDirection               string     `json:"balanceDirection,omitempty"`
+	IsCashEquivalent               bool       `json:"isCashEquivalent"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID `json:"defaultCashFlowItemIdForCredit,omitempty"`
+	CreatedAt                      time.Time  `json:"createdAt"`
+	UpdatedAt                      time.Time  `json:"updatedAt"`
+}
+
+// AccountDetailResponse is used by detail and create endpoints (GET /account/{id}, POST /accounts).
+// It includes full dimension category objects.
+type AccountDetailResponse struct {
+	Id                             uuid.UUID                   `json:"id,omitempty"`
+	SobId                          uuid.UUID                   `json:"sobId,omitempty"`
+	SuperiorAccountId              *uuid.UUID                  `json:"superiorAccountId,omitempty"`
+	Title                          string                      `json:"title,omitempty"`
+	RawAccountNumber               string                      `json:"rawAccountNumber,omitempty"`
+	Level                          int                         `json:"level"`
+	IsLeaf                         bool                        `json:"isLeaf"`
+	Class                          string                      `json:"class"`
+	Group                          string                      `json:"group"`
+	BalanceDirection               string                      `json:"balanceDirection,omitempty"`
+	IsCashEquivalent               bool                        `json:"isCashEquivalent"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID                  `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID                  `json:"defaultCashFlowItemIdForCredit,omitempty"`
+	DimensionCategories            []DimensionCategoryResponse `json:"dimensionCategories"`
+	CreatedAt                      time.Time                   `json:"createdAt"`
+	UpdatedAt                      time.Time                   `json:"updatedAt"`
 }
 
 type PeriodResponse struct {
@@ -76,7 +99,7 @@ type LedgerResponse struct {
 	SobId             uuid.UUID       `json:"sobId,omitempty"`
 	AccountId         uuid.UUID       `json:"accountId,omitempty"`
 	SuperiorAccountId *uuid.UUID      `json:"superiorAccountId,omitempty"`
-	AccountNumber     string          `json:"accountNumber,omitempty"`
+	RawAccountNumber  string          `json:"rawAccountNumber,omitempty"`
 	AccountTitle      string          `json:"accountTitle,omitempty"`
 	AccountClass      string          `json:"accountClass"`
 	AccountGroup      string          `json:"accountGroup"`
@@ -89,64 +112,56 @@ type LedgerResponse struct {
 	EndingAmount      decimal.Decimal `json:"endingAmount"`
 }
 
-type LedgerSummaryResponse struct {
-	AccountId     uuid.UUID       `json:"accountId"`
-	OpeningAmount decimal.Decimal `json:"openingAmount"`
-	PeriodAmount  decimal.Decimal `json:"periodAmount"`
-	PeriodDebit   decimal.Decimal `json:"periodDebit"`
-	PeriodCredit  decimal.Decimal `json:"periodCredit"`
-	EndingAmount  decimal.Decimal `json:"endingAmount"`
-}
-
-type AuxiliaryLedgerSummaryResponse struct {
-	AuxiliaryAccountId    uuid.UUID       `json:"auxiliaryAccountId"`
-	AuxiliaryAccountTitle string          `json:"auxiliaryAccountTitle"`
-	OpeningAmount         decimal.Decimal `json:"openingAmount"`
-	PeriodAmount          decimal.Decimal `json:"periodAmount"`
-	PeriodDebit           decimal.Decimal `json:"periodDebit"`
-	PeriodCredit          decimal.Decimal `json:"periodCredit"`
-	EndingAmount          decimal.Decimal `json:"endingAmount"`
-}
-
 type PeriodAndLedgersResponse struct {
 	Period  PeriodResponse   `json:"period"`
 	Ledgers []LedgerResponse `json:"ledgers"`
 }
 
-type AuxiliaryLedgerResponse struct {
-	Id                   uuid.UUID                 `json:"id,omitempty"`
-	SobId                uuid.UUID                 `json:"sobId,omitempty"`
-	PeriodId             uuid.UUID                 `json:"periodId,omitempty"`
-	Account              AccountResponse           `json:"account"`
-	AuxiliaryCategory    AuxiliaryCategoryResponse `json:"auxiliaryCategory"`
-	AuxiliaryAccount     AuxiliaryAccountResponse  `json:"auxiliaryAccount"`
-	OpeningDebitBalance  decimal.Decimal           `json:"openingBalance"`
-	OpeningCreditBalance decimal.Decimal           `json:"openingCreditBalance"`
-	PeriodDebit          decimal.Decimal           `json:"periodDebit"`
-	PeriodCredit         decimal.Decimal           `json:"periodCredit"`
-	EndingDebitBalance   decimal.Decimal           `json:"endingBalance"`
-	EndingCreditBalance  decimal.Decimal           `json:"endingCreditBalance"`
-	CreatedAt            time.Time                 `json:"createdAt"`
-	UpdatedAt            time.Time                 `json:"updatedAt"`
-}
-
 type JournalLineResponse struct {
-	Id                uuid.UUID                  `json:"id,omitempty"`
-	Account           AccountResponse            `json:"account"`
-	AuxiliaryAccounts []AuxiliaryAccountResponse `json:"auxiliaryAccounts,omitempty"`
-	Text              string                     `json:"text,omitempty"`
-	Amount            decimal.Decimal            `json:"amount"`
-	CreatedAt         time.Time                  `json:"createdAt"`
-	UpdatedAt         time.Time                  `json:"updatedAt"`
+	Id               uuid.UUID                 `json:"id,omitempty"`
+	Account          AccountDetailResponse     `json:"account"`
+	Text             string                    `json:"text,omitempty"`
+	Amount           decimal.Decimal           `json:"amount"`
+	CashFlowItemId   *uuid.UUID                `json:"cashFlowItemId,omitempty"`
+	DimensionOptions []DimensionOptionResponse `json:"dimensionOptions,omitempty"`
+	CreatedAt        time.Time                 `json:"createdAt"`
+	UpdatedAt        time.Time                 `json:"updatedAt"`
 }
 
-type JournalResponse struct {
+// JournalSlimResponse is used by list endpoints (GET /journals).
+// It only contains journal header fields — no journal lines.
+type JournalSlimResponse struct {
 	Id                 uuid.UUID                        `json:"id,omitempty"`
 	SobId              uuid.UUID                        `json:"sobId,omitempty"`
 	Period             PeriodResponse                   `json:"period"`
 	HeaderText         string                           `json:"headerText,omitempty"`
 	DocumentNumber     string                           `json:"documentNumber,omitempty"`
-	JournalType        string                           `json:"journalType,omitempty"`
+	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
+	AttachmentQuantity int                              `json:"attachmentQuantity"`
+	Creator            *UserResponse                    `json:"creator"`
+	Auditor            *UserResponse                    `json:"auditor"`
+	Reviewer           *UserResponse                    `json:"reviewer"`
+	Poster             *UserResponse                    `json:"poster"`
+	Amount             decimal.Decimal                  `json:"amount"`
+	IsAudited          bool                             `json:"isAudited"`
+	IsPosted           bool                             `json:"isPosted"`
+	IsReviewed         bool                             `json:"isReviewed"`
+	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
+	CreatedAt          time.Time                        `json:"createdAt"`
+	UpdatedAt          time.Time                        `json:"updatedAt"`
+}
+
+// JournalDetailResponse is used by detail and create endpoints (GET /journal/{id}, POST /journals).
+// It includes full journal lines with account details and dimension options.
+type JournalDetailResponse struct {
+	Id                 uuid.UUID                        `json:"id,omitempty"`
+	SobId              uuid.UUID                        `json:"sobId,omitempty"`
+	Period             PeriodResponse                   `json:"period"`
+	HeaderText         string                           `json:"headerText,omitempty"`
+	DocumentNumber     string                           `json:"documentNumber,omitempty"`
+	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
 	AttachmentQuantity int                              `json:"attachmentQuantity"`
 	Creator            *UserResponse                    `json:"creator"`
 	Auditor            *UserResponse                    `json:"auditor"`
@@ -177,40 +192,122 @@ type LedgerEntryResponse struct {
 	UpdatedAt       time.Time                        `json:"updatedAt"`
 }
 
+type LedgerDimensionOptionResponse struct {
+	DimensionOption DimensionOptionResponse `json:"dimensionOption"`
+	OpeningAmount   decimal.Decimal         `json:"openingAmount"`
+	PeriodDebit     decimal.Decimal         `json:"periodDebit"`
+	PeriodCredit    decimal.Decimal         `json:"periodCredit"`
+	PeriodAmount    decimal.Decimal         `json:"periodAmount"`
+	EndingAmount    decimal.Decimal         `json:"endingAmount"`
+}
+
+type PreCloseCheckJournalResponse struct {
+	Id              uuid.UUID                        `json:"id"`
+	DocumentNumber  string                           `json:"documentNumber"`
+	HeaderText      string                           `json:"headerText,omitempty"`
+	Amount          decimal.Decimal                  `json:"amount"`
+	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
+	IsReviewed      bool                             `json:"isReviewed"`
+	IsAudited       bool                             `json:"isAudited"`
+}
+
+type PreCloseCheckPnLAccountResponse struct {
+	RawAccountNumber string          `json:"rawAccountNumber"`
+	AccountTitle     string          `json:"accountTitle"`
+	EndingAmount     decimal.Decimal `json:"endingAmount"`
+}
+
+type PreCloseCheckUnpostedJournalsResponse struct {
+	Status   string                         `json:"status"`
+	Count    int                            `json:"count"`
+	Journals []PreCloseCheckJournalResponse `json:"journals"`
+}
+
+type PreCloseCheckPnLBalanceResponse struct {
+	Status   string                            `json:"status"`
+	Accounts []PreCloseCheckPnLAccountResponse `json:"accounts"`
+}
+
+type PreCloseCheckTrialBalanceResponse struct {
+	Status        string          `json:"status"`
+	OpeningAmount decimal.Decimal `json:"openingAmount"`
+	PeriodAmount  decimal.Decimal `json:"periodAmount"`
+	EndingAmount  decimal.Decimal `json:"endingAmount"`
+}
+
+type PreCloseCheckCurrentYearProfitAccountResponse struct {
+	Status           string          `json:"status"`
+	RawAccountNumber string          `json:"rawAccountNumber"`
+	AccountTitle     string          `json:"accountTitle"`
+	EndingAmount     decimal.Decimal `json:"endingAmount"`
+}
+
+type PreCloseCheckResponse struct {
+	UnpostedJournals         PreCloseCheckUnpostedJournalsResponse         `json:"unpostedJournals"`
+	ProfitAndLossBalance     PreCloseCheckPnLBalanceResponse               `json:"profitAndLossBalance"`
+	TrialBalance             PreCloseCheckTrialBalanceResponse             `json:"trialBalance"`
+	CurrentYearProfitAccount PreCloseCheckCurrentYearProfitAccountResponse `json:"currentYearProfitAccount"`
+}
+
+type BatchPreCloseCheckResponse struct {
+	UnpostedJournals PreCloseCheckUnpostedJournalsResponse `json:"unpostedJournals"`
+	TrialBalance     PreCloseCheckTrialBalanceResponse     `json:"trialBalance"`
+}
+
+type ClosingJournalResponse struct {
+	JournalId uuid.UUID `json:"journalId"`
+}
+
+type ClosingJournalIdsResponse struct {
+	MonthlyClosingJournalId *uuid.UUID `json:"monthlyClosingJournalId"`
+	YearEndClosingJournalId *uuid.UUID `json:"yearEndClosingJournalId"`
+}
+
 // mapper
 
-func accountDTOToVO(dto query.Account) AccountResponse {
-	return AccountResponse{
-		Id:                  dto.Id,
-		SobId:               dto.SobId,
-		SuperiorAccountId:   dto.SuperiorAccountId,
-		Title:               dto.Title,
-		AccountNumber:       dto.AccountNumber,
-		NumberHierarchy:     dto.NumberHierarchy,
-		Level:               dto.Level,
-		IsLeaf:              dto.IsLeaf,
-		Class:               strconv.Itoa(dto.Class),
-		Group:               strconv.Itoa(dto.Group),
-		BalanceDirection:    dto.BalanceDirection,
-		AuxiliaryCategories: converter.DTOsToVOs(dto.AuxiliaryCategories, auxiliaryCategoryDTOToVO),
-		CreatedAt:           dto.CreatedAt,
-		UpdatedAt:           dto.UpdatedAt,
+func accountDTOToSlimVO(dto query.Account) AccountSlimResponse {
+	return AccountSlimResponse{
+		Id:                             dto.Id,
+		SobId:                          dto.SobId,
+		SuperiorAccountId:              dto.SuperiorAccountId,
+		Title:                          dto.Title,
+		RawAccountNumber:               dto.RawAccountNumber,
+		Level:                          dto.Level,
+		IsLeaf:                         dto.IsLeaf,
+		Class:                          strconv.Itoa(dto.Class),
+		Group:                          strconv.Itoa(dto.Group),
+		BalanceDirection:               dto.BalanceDirection,
+		IsCashEquivalent:               dto.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  dto.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: dto.DefaultCashFlowItemIdForCredit,
+		CreatedAt:                      dto.CreatedAt,
+		UpdatedAt:                      dto.UpdatedAt,
 	}
 }
 
-func auxiliaryCategoryDTOToVO(dto query.AuxiliaryCategory) AuxiliaryCategoryResponse {
-	return AuxiliaryCategoryResponse(dto)
-}
+func accountDTOToDetailVO(dto query.Account) AccountDetailResponse {
+	categories := make([]DimensionCategoryResponse, 0, len(dto.DimensionCategories))
+	for _, cat := range dto.DimensionCategories {
+		categories = append(categories, DimensionCategoryResponse{Id: cat.Id, Name: cat.Name})
+	}
 
-func auxiliaryAccountDTOToVO(dto query.AuxiliaryAccount) AuxiliaryAccountResponse {
-	return AuxiliaryAccountResponse{
-		Id:          dto.Id,
-		Category:    auxiliaryCategoryDTOToVO(dto.Category),
-		Key:         dto.Key,
-		Title:       dto.Title,
-		Description: dto.Description,
-		CreatedAt:   dto.CreatedAt,
-		UpdatedAt:   dto.UpdatedAt,
+	return AccountDetailResponse{
+		Id:                             dto.Id,
+		SobId:                          dto.SobId,
+		SuperiorAccountId:              dto.SuperiorAccountId,
+		Title:                          dto.Title,
+		RawAccountNumber:               dto.RawAccountNumber,
+		Level:                          dto.Level,
+		IsLeaf:                         dto.IsLeaf,
+		Class:                          strconv.Itoa(dto.Class),
+		Group:                          strconv.Itoa(dto.Group),
+		BalanceDirection:               dto.BalanceDirection,
+		IsCashEquivalent:               dto.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  dto.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: dto.DefaultCashFlowItemIdForCredit,
+		DimensionCategories:            categories,
+		CreatedAt:                      dto.CreatedAt,
+		UpdatedAt:                      dto.UpdatedAt,
 	}
 }
 
@@ -223,7 +320,7 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 		SobId:             dto.SobId,
 		AccountId:         dto.AccountId,
 		SuperiorAccountId: dto.Account.SuperiorAccountId,
-		AccountNumber:     dto.Account.AccountNumber,
+		RawAccountNumber:  dto.Account.RawAccountNumber,
 		AccountTitle:      dto.Account.Title,
 		AccountClass:      strconv.Itoa(dto.Account.Class),
 		AccountGroup:      strconv.Itoa(dto.Account.Group),
@@ -237,50 +334,80 @@ func ledgerDTOToVO(dto query.Ledger) LedgerResponse {
 	}
 }
 
-func ledgerSummaryToVO(dto query.LedgerSummary) LedgerSummaryResponse {
-	return LedgerSummaryResponse(dto)
-}
-
-func auxiliaryLedgerSummaryToVO(dto query.AuxiliaryLedgerSummary) AuxiliaryLedgerSummaryResponse {
-	return AuxiliaryLedgerSummaryResponse(dto)
-}
-
 func journalLineDTOToVO(dto query.JournalLine) JournalLineResponse {
+	options := make([]DimensionOptionResponse, 0, len(dto.DimensionOptions))
+	for _, opt := range dto.DimensionOptions {
+		options = append(options, DimensionOptionResponse{
+			Id:   opt.Id,
+			Name: opt.Name,
+			Category: DimensionCategoryResponse{
+				Id:   opt.Category.Id,
+				Name: opt.Category.Name,
+			},
+		})
+	}
+
 	return JournalLineResponse{
-		Id:                dto.Id,
-		Account:           accountDTOToVO(dto.Account),
-		AuxiliaryAccounts: converter.DTOsToVOs(dto.AuxiliaryAccounts, auxiliaryAccountDTOToVO),
-		Text:              dto.Text,
-		Amount:            dto.Amount,
-		CreatedAt:         dto.CreatedAt,
-		UpdatedAt:         dto.UpdatedAt,
+		Id:               dto.Id,
+		Account:          accountDTOToDetailVO(dto.Account),
+		Text:             dto.Text,
+		Amount:           dto.Amount,
+		CashFlowItemId:   dto.CashFlowItemId,
+		DimensionOptions: options,
+		CreatedAt:        dto.CreatedAt,
+		UpdatedAt:        dto.UpdatedAt,
 	}
 }
 
-func journalDTOToVO(dto query.Journal) JournalResponse {
-	userOrNil := func(u *query.User) *UserResponse {
-		if u != nil {
-			return &UserResponse{
-				Id:     u.Id,
-				Traits: u.Traits,
-			}
+func journalUserOrNil(u *query.User) *UserResponse {
+	if u != nil {
+		return &UserResponse{
+			Id:     u.Id,
+			Traits: u.Traits,
 		}
-		return nil
 	}
+	return nil
+}
 
-	return JournalResponse{
+func journalDTOToSlimVO(dto query.Journal) JournalSlimResponse {
+	return JournalSlimResponse{
 		SobId:              dto.SobId,
 		Id:                 dto.Id,
 		Period:             periodDTOToVO(dto.Period),
 		HeaderText:         dto.HeaderText,
-		JournalType:        dto.JournalType,
 		DocumentNumber:     dto.DocumentNumber,
+		JournalType:        dto.JournalType,
+		ReferenceJournalId: dto.ReferenceJournalId,
 		AttachmentQuantity: dto.AttachmentQuantity,
 		Amount:             dto.Amount,
-		Creator:            userOrNil(dto.Creator),
-		Reviewer:           userOrNil(dto.Reviewer),
-		Auditor:            userOrNil(dto.Auditor),
-		Poster:             userOrNil(dto.Poster),
+		Creator:            journalUserOrNil(dto.Creator),
+		Reviewer:           journalUserOrNil(dto.Reviewer),
+		Auditor:            journalUserOrNil(dto.Auditor),
+		Poster:             journalUserOrNil(dto.Poster),
+		IsReviewed:         dto.IsReviewed,
+		IsAudited:          dto.IsAudited,
+		IsPosted:           dto.IsPosted,
+		TransactionDate:    dto.TransactionDate,
+		CreatedAt:          dto.CreatedAt,
+		UpdatedAt:          dto.UpdatedAt,
+	}
+}
+
+func journalDTOToDetailVO(dto query.Journal) JournalDetailResponse {
+	return JournalDetailResponse{
+		SobId:              dto.SobId,
+		Id:                 dto.Id,
+		Period:             periodDTOToVO(dto.Period),
+		HeaderText:         dto.HeaderText,
+		DocumentNumber:     dto.DocumentNumber,
+		JournalType:        dto.JournalType,
+		ReferenceJournalId: dto.ReferenceJournalId,
+		AttachmentQuantity: dto.AttachmentQuantity,
+		Amount:             dto.Amount,
+		Creator:            journalUserOrNil(dto.Creator),
+		Reviewer:           journalUserOrNil(dto.Reviewer),
+		Auditor:            journalUserOrNil(dto.Auditor),
+		Poster:             journalUserOrNil(dto.Poster),
 		IsReviewed:         dto.IsReviewed,
 		IsAudited:          dto.IsAudited,
 		IsPosted:           dto.IsPosted,
@@ -300,5 +427,118 @@ func ledgerEntryDTOToVO(dto query.LedgerEntry) LedgerEntryResponse {
 		Amount:          dto.Amount,
 		CreatedAt:       dto.CreatedAt,
 		UpdatedAt:       dto.UpdatedAt,
+	}
+}
+
+func ledgerDimensionSummaryItemToVO(dto query.LedgerDimensionSummaryItem) LedgerDimensionOptionResponse {
+	return LedgerDimensionOptionResponse{
+		DimensionOption: DimensionOptionResponse{
+			Id:   dto.DimensionOptionId,
+			Name: dto.DimensionOptionName,
+		},
+		OpeningAmount: dto.OpeningAmount,
+		PeriodDebit:   dto.PeriodDebit,
+		PeriodCredit:  dto.PeriodCredit,
+		PeriodAmount:  dto.PeriodAmount,
+		EndingAmount:  dto.EndingAmount,
+	}
+}
+
+func preCloseCheckDTOToVO(dto query.PreCloseCheck) PreCloseCheckResponse {
+	journals := make([]PreCloseCheckJournalResponse, 0, len(dto.UnpostedJournals.Journals))
+	for _, j := range dto.UnpostedJournals.Journals {
+		journals = append(journals, PreCloseCheckJournalResponse{
+			Id:              j.Id,
+			DocumentNumber:  j.DocumentNumber,
+			HeaderText:      j.HeaderText,
+			Amount:          j.Amount,
+			TransactionDate: j.TransactionDate,
+			IsReviewed:      j.IsReviewed,
+			IsAudited:       j.IsAudited,
+		})
+	}
+
+	accounts := make([]PreCloseCheckPnLAccountResponse, 0, len(dto.ProfitAndLossBalance.Accounts))
+	for _, a := range dto.ProfitAndLossBalance.Accounts {
+		accounts = append(accounts, PreCloseCheckPnLAccountResponse{
+			RawAccountNumber: a.RawAccountNumber,
+			AccountTitle:     a.AccountTitle,
+			EndingAmount:     a.EndingAmount,
+		})
+	}
+
+	return PreCloseCheckResponse{
+		UnpostedJournals: PreCloseCheckUnpostedJournalsResponse{
+			Status:   string(dto.UnpostedJournals.Status),
+			Count:    dto.UnpostedJournals.Count,
+			Journals: journals,
+		},
+		ProfitAndLossBalance: PreCloseCheckPnLBalanceResponse{
+			Status:   string(dto.ProfitAndLossBalance.Status),
+			Accounts: accounts,
+		},
+		TrialBalance: PreCloseCheckTrialBalanceResponse{
+			Status:        string(dto.TrialBalance.Status),
+			OpeningAmount: dto.TrialBalance.OpeningAmount,
+			PeriodAmount:  dto.TrialBalance.PeriodAmount,
+			EndingAmount:  dto.TrialBalance.EndingAmount,
+		},
+		CurrentYearProfitAccount: PreCloseCheckCurrentYearProfitAccountResponse{
+			Status:           string(dto.CurrentYearProfitAccount.Status),
+			RawAccountNumber: dto.CurrentYearProfitAccount.RawAccountNumber,
+			AccountTitle:     dto.CurrentYearProfitAccount.AccountTitle,
+			EndingAmount:     dto.CurrentYearProfitAccount.EndingAmount,
+		},
+	}
+}
+
+func batchPreCloseCheckDTOToVO(dto query.BatchPreCloseCheckResult) BatchPreCloseCheckResponse {
+	journals := make([]PreCloseCheckJournalResponse, 0, len(dto.UnpostedJournals.Journals))
+	for _, j := range dto.UnpostedJournals.Journals {
+		journals = append(journals, PreCloseCheckJournalResponse{
+			Id:              j.Id,
+			DocumentNumber:  j.DocumentNumber,
+			HeaderText:      j.HeaderText,
+			Amount:          j.Amount,
+			TransactionDate: j.TransactionDate,
+			IsReviewed:      j.IsReviewed,
+			IsAudited:       j.IsAudited,
+		})
+	}
+
+	return BatchPreCloseCheckResponse{
+		UnpostedJournals: PreCloseCheckUnpostedJournalsResponse{
+			Status:   string(dto.UnpostedJournals.Status),
+			Count:    dto.UnpostedJournals.Count,
+			Journals: journals,
+		},
+		TrialBalance: PreCloseCheckTrialBalanceResponse{
+			Status:        string(dto.TrialBalance.Status),
+			OpeningAmount: dto.TrialBalance.OpeningAmount,
+			PeriodAmount:  dto.TrialBalance.PeriodAmount,
+			EndingAmount:  dto.TrialBalance.EndingAmount,
+		},
+	}
+}
+
+type CashFlowItemResponse struct {
+	Id        uuid.UUID `json:"id"`
+	SobId     uuid.UUID `json:"sobId"`
+	Code      string    `json:"code"`
+	Name      string    `json:"name"`
+	Category  string    `json:"category"`
+	Direction string    `json:"direction"`
+	Sequence  int       `json:"sequence"`
+}
+
+func cashFlowItemDTOToVO(dto query.CashFlowItem) CashFlowItemResponse {
+	return CashFlowItemResponse{
+		Id:        dto.Id,
+		SobId:     dto.SobId,
+		Code:      dto.Code,
+		Name:      dto.Name,
+		Category:  dto.Category,
+		Direction: dto.Direction,
+		Sequence:  dto.Sequence,
 	}
 }

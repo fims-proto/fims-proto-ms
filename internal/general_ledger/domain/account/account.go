@@ -1,107 +1,125 @@
 package account
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
-	"strings"
 	"unicode/utf8"
 
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/balance_direction"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 
 	"github.com/google/uuid"
 )
 
 type Account struct {
-	id                  uuid.UUID
-	sobId               uuid.UUID
-	superiorAccountId   uuid.UUID
-	superiorAccount     *Account
-	title               string
-	accountNumber       string
-	numberHierarchy     []int
-	level               int
-	isLeaf              bool
-	class               class.Class
-	group               class.Group
-	balanceDirection    balance_direction.BalanceDirection
-	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory
+	id                             uuid.UUID
+	sobId                          uuid.UUID
+	superiorAccountId              uuid.UUID
+	superiorAccount                *Account
+	title                          string
+	rawAccountNumber               string
+	level                          int
+	isLeaf                         bool
+	class                          class.Class
+	group                          class.Group
+	balanceDirection               balance_direction.BalanceDirection
+	dimensionCategoryIds           []uuid.UUID
+	isCashEquivalent               bool
+	defaultCashFlowItemIdForDebit  *uuid.UUID
+	defaultCashFlowItemIdForCredit *uuid.UUID
 }
 
-// New takes all fields except:
-// - accountNumber: it's calculated from numberHierarchy
-// - superiorAccount: this method cannot create an entity with such nested structure
 func New(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	superiorAccountId uuid.UUID,
 	title string,
-	numberHierarchy []int,
-	codeLengths []int,
+	superiorRawNumber string,
+	levelNumber int,
 	level int,
 	isLeaf bool,
 	classId int,
 	groupId int,
 	balanceDirection string,
-	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
+	dimensionCategoryIds []uuid.UUID,
+	isCashEquivalent bool,
 ) (*Account, error) {
-	accountNumber, err := composeAccountNumber(numberHierarchy, codeLengths)
+	rawAccountNumber, err := AppendRawAccountNumber(superiorRawNumber, levelNumber)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewByAllFields(id, sobId, superiorAccountId, nil, title, accountNumber, numberHierarchy, level, isLeaf, classId, groupId, balanceDirection, auxiliaryCategories)
+	return NewByAllFields(
+		id,
+		sobId,
+		superiorAccountId,
+		nil,
+		title,
+		rawAccountNumber,
+		level,
+		isLeaf,
+		classId,
+		groupId,
+		balanceDirection,
+		dimensionCategoryIds,
+		isCashEquivalent,
+		nil,
+		nil,
+	)
 }
 
-// NewByAllFields takes all attributes of Account, and doesn't validate accountNumber field
-// Typically used in persistence level
+// NewByAllFields takes all attributes of Account, and doesn't validate rawAccountNumber field
+// Only used in persistence level
 func NewByAllFields(
 	id uuid.UUID,
 	sobId uuid.UUID,
 	superiorAccountId uuid.UUID,
 	superiorAccount *Account,
 	title string,
-	accountNumber string,
-	numberHierarchy []int,
+	rawAccountNumber string,
 	level int,
 	isLeaf bool,
 	classId int,
 	groupId int,
 	balanceDirection string,
-	auxiliaryCategories []*auxiliary_category.AuxiliaryCategory,
+	dimensionCategoryIds []uuid.UUID,
+	isCashEquivalent bool,
+	defaultCashFlowItemIdForDebit *uuid.UUID,
+	defaultCashFlowItemIdForCredit *uuid.UUID,
 ) (*Account, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("nil account id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilId)
 	}
 
 	if sobId == uuid.Nil {
-		return nil, errors.New("nil sob")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilSob)
 	}
 
-	if superiorAccountId == uuid.Nil && len(numberHierarchy) > 1 {
-		return nil, errors.New("nil superior account id")
+	if superiorAccountId == uuid.Nil && level > 1 {
+		return nil, commonErrors.NewInternalError(commonErrors.SlugAccountNilSuperiorId)
 	}
 
 	if title == "" {
-		return nil, errors.New("empty account title")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugAccountEmptyTitle)
 	}
 
 	if utf8.RuneCountInString(title) > 50 {
-		return nil, errors.New("account title exceeds max length (50)")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugAccountTitleTooLong)
 	}
 
-	if accountNumber == "" {
-		return nil, errors.New("empty account number")
+	if rawAccountNumber == "" {
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugAccountEmptyRawNumber)
 	}
 
-	if level < 1 {
-		return nil, fmt.Errorf("level %d must >= 1", level)
+	// Validate rawAccountNumber format
+	if _, err := HierarchyFromRaw(rawAccountNumber); err != nil {
+		return nil, fmt.Errorf("invalid raw account number: %w", err)
 	}
 
-	if level != len(numberHierarchy) {
-		return nil, fmt.Errorf("level %d not match to number hierarchy %v", level, numberHierarchy)
+	// Verify level matches raw account number
+	derivedLevel := LevelFromRaw(rawAccountNumber)
+	if level != derivedLevel {
+		return nil, fmt.Errorf("level %d does not match raw account number level %d", level, derivedLevel)
 	}
 
 	c := class.Class(classId)
@@ -115,51 +133,23 @@ func NewByAllFields(
 		return nil, err
 	}
 
-	for _, category := range auxiliaryCategories {
-		if category == nil {
-			return nil, errors.New("nil auxiliary category")
-		}
-	}
-
 	return &Account{
-		id:                  id,
-		sobId:               sobId,
-		superiorAccountId:   superiorAccountId,
-		superiorAccount:     superiorAccount,
-		title:               title,
-		accountNumber:       accountNumber,
-		numberHierarchy:     numberHierarchy,
-		level:               level,
-		isLeaf:              isLeaf,
-		class:               c,
-		group:               g,
-		balanceDirection:    bd,
-		auxiliaryCategories: auxiliaryCategories,
+		id:                             id,
+		sobId:                          sobId,
+		superiorAccountId:              superiorAccountId,
+		superiorAccount:                superiorAccount,
+		title:                          title,
+		rawAccountNumber:               rawAccountNumber,
+		level:                          level,
+		isLeaf:                         isLeaf,
+		class:                          c,
+		group:                          g,
+		balanceDirection:               bd,
+		dimensionCategoryIds:           dimensionCategoryIds,
+		isCashEquivalent:               isCashEquivalent,
+		defaultCashFlowItemIdForDebit:  defaultCashFlowItemIdForDebit,
+		defaultCashFlowItemIdForCredit: defaultCashFlowItemIdForCredit,
 	}, nil
-}
-
-func composeAccountNumber(numberHierarchy, codeLengths []int) (string, error) {
-	if len(numberHierarchy) > len(codeLengths) {
-		return "", fmt.Errorf("account number hierarchy %d exceeds max depth %d", len(numberHierarchy), len(codeLengths))
-	}
-
-	for i := 0; i < len(numberHierarchy); i++ {
-		if numberHierarchy[i] < 1 {
-			return "", fmt.Errorf("account number %d at level %d cannot be smaller than 1", numberHierarchy[i], i)
-		}
-		if len(strconv.Itoa(numberHierarchy[i])) > codeLengths[i] {
-			return "", fmt.Errorf("account number %d at level %d exceeds max length (%d)", numberHierarchy[i], i, codeLengths[i])
-		}
-	}
-
-	var builder strings.Builder
-	for i, number := range numberHierarchy {
-		if _, err := fmt.Fprintf(&builder, "%0*d", codeLengths[i], number); err != nil {
-			return "", fmt.Errorf("failed to compose account number: %w", err)
-		}
-	}
-
-	return builder.String(), nil
 }
 
 func (a *Account) Id() uuid.UUID {
@@ -182,12 +172,8 @@ func (a *Account) Title() string {
 	return a.title
 }
 
-func (a *Account) AccountNumber() string {
-	return a.accountNumber
-}
-
-func (a *Account) NumberHierarchy() []int {
-	return a.numberHierarchy
+func (a *Account) RawAccountNumber() string {
+	return a.rawAccountNumber
 }
 
 func (a *Account) Level() int {
@@ -210,6 +196,18 @@ func (a *Account) BalanceDirection() balance_direction.BalanceDirection {
 	return a.balanceDirection
 }
 
-func (a *Account) AuxiliaryCategories() []*auxiliary_category.AuxiliaryCategory {
-	return a.auxiliaryCategories
+func (a *Account) DimensionCategoryIds() []uuid.UUID {
+	return a.dimensionCategoryIds
+}
+
+func (a *Account) IsCashEquivalent() bool {
+	return a.isCashEquivalent
+}
+
+func (a *Account) DefaultCashFlowItemIdForDebit() *uuid.UUID {
+	return a.defaultCashFlowItemIdForDebit
+}
+
+func (a *Account) DefaultCashFlowItemIdForCredit() *uuid.UUID {
+	return a.defaultCashFlowItemIdForCredit
 }

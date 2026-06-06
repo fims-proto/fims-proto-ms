@@ -20,15 +20,17 @@ type UpdateJournalCmd struct {
 	HeaderText      string
 	JournalLines    []JournalLineCmd
 	TransactionDate transaction_date.TransactionDate
-	Updater         uuid.UUID
+	Updater         string
 }
 
 type UpdateJournalHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
+	dimensionService service.DimensionService
+	sobService       service.SobService
 }
 
-func NewUpdateJournalHandler(repo domain.Repository, numberingService service.NumberingService) UpdateJournalHandler {
+func NewUpdateJournalHandler(repo domain.Repository, numberingService service.NumberingService, dimensionService service.DimensionService, sobService service.SobService) UpdateJournalHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -37,9 +39,19 @@ func NewUpdateJournalHandler(repo domain.Repository, numberingService service.Nu
 		panic("nil numbering service")
 	}
 
+	if dimensionService == nil {
+		panic("nil dimension service")
+	}
+
+	if sobService == nil {
+		panic("nil sob service")
+	}
+
 	return UpdateJournalHandler{
 		repo:             repo,
 		numberingService: numberingService,
+		dimensionService: dimensionService,
+		sobService:       sobService,
 	}
 }
 
@@ -56,7 +68,7 @@ func (h UpdateJournalHandler) updateJournal(ctx context.Context, cmd UpdateJourn
 		func(j *journal.Journal) (*journal.Journal, error) {
 			// update journal lines
 			if len(cmd.JournalLines) > 0 {
-				journalLines, err := prepareJournalLines(ctx, h.repo, j.SobId(), cmd.JournalLines)
+				journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, j.SobId(), cmd.JournalLines)
 				if err != nil {
 					return nil, fmt.Errorf("failed to prepare journal lines: %w", err)
 				}
@@ -75,7 +87,7 @@ func (h UpdateJournalHandler) updateJournal(ctx context.Context, cmd UpdateJourn
 
 				if p.Id() != j.PeriodId() {
 					// different period, need to regenerate journal id
-					identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), j.JournalType().String())
+					identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id())
 					if err != nil {
 						return nil, fmt.Errorf("failed to re-generate journal number: %w", err)
 					}

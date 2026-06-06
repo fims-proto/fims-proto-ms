@@ -6,11 +6,8 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
-
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/period"
 
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/common/utils"
@@ -21,81 +18,144 @@ import (
 	"github.com/google/uuid"
 )
 
-// prepareJournalLines prepares journal line domain objects and performs necessary checks
+// prepareJournalLines prepares journal line domain objects, validates dimension options,
+// and performs necessary checks.
 func prepareJournalLines(
 	ctx context.Context,
 	repo domain.Repository,
+	dimensionService service.DimensionService,
 	sobId uuid.UUID,
 	commands []JournalLineCmd,
 ) ([]*journal.JournalLine, error) {
-	var accountNumbers []string
-	var auxiliaryPair []auxiliary_account.AuxiliaryPair
+	var rawAccountNumbers []string
 	for _, item := range commands {
-		accountNumbers = append(accountNumbers, item.AccountNumber)
-		for _, pair := range item.AuxiliaryAccounts {
-			auxiliaryPair = append(auxiliaryPair, auxiliary_account.AuxiliaryPair{
-				CategoryKey: pair.CategoryKey,
-				AccountKey:  pair.AccountKey,
-			})
-		}
+		rawAccountNumbers = append(rawAccountNumbers, item.RawAccountNumber)
 	}
 
 	// validate account numbers
-	accounts, err := repo.ReadAccountsByNumbers(ctx, sobId, accountNumbers)
+	accounts, err := repo.ReadAccountsByRawNumbers(ctx, sobId, rawAccountNumbers)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read accounts: %w", err)
 	}
 
 	accountsMap := utils.SliceToMap(
 		accounts,
-		func(a *account.Account) string { return a.AccountNumber() },
+		func(a *account.Account) string { return a.RawAccountNumber() },
 		func(a *account.Account) *account.Account { return a },
 	)
 
-	// validate auxiliary account keys
-	auxiliaryAccounts, err := repo.ReadAuxiliaryAccountsByPairs(ctx, sobId, auxiliaryPair)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read auxiliary accounts: %w", err)
+	// determine cash flow classification requirements
+	hasCashEquivalentLine := false
+	hasNonCashEquivalentLine := false
+	for i := range commands {
+		a := accountsMap[rawAccountNumbers[i]]
+		if a.IsCashEquivalent() {
+			hasCashEquivalentLine = true
+		} else {
+			hasNonCashEquivalentLine = true
+		}
 	}
 
-	auxiliaryAccountsMap := utils.SliceToMap(
-		auxiliaryAccounts,
-		func(a *auxiliary_account.AuxiliaryAccount) string { return a.Category().Key() + a.Key() },
-		func(a *auxiliary_account.AuxiliaryAccount) *auxiliary_account.AuxiliaryAccount { return a },
-	)
+	// validate cash flow item IDs when mixed entry (cash + non-cash lines)
+	if hasCashEquivalentLine && hasNonCashEquivalentLine {
+		var cfItemIds []uuid.UUID
+		for i, item := range commands {
+			a := accountsMap[rawAccountNumbers[i]]
+			if !a.IsCashEquivalent() {
+				if item.CashFlowItemId == nil {
+					return nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineMissingCashFlowItem)
+				}
+				cfItemIds = append(cfItemIds, *item.CashFlowItemId)
+			}
+		}
 
-	for _, key := range auxiliaryPair {
-		if _, ok := auxiliaryAccountsMap[key.CategoryKey+key.AccountKey]; !ok {
-			return nil, commonErrors.ErrInvalidAuxiliaryAccountKey(key.CategoryKey, key.AccountKey)
+		// batch-validate all provided CF item IDs exist in this SoB
+		existing, err := repo.ReadExistingCashFlowItemIds(ctx, sobId, cfItemIds)
+		if err != nil {
+			return nil, fmt.Errorf("failed to validate cash flow item ids: %w", err)
+		}
+		existingSet := utils.SliceToMap(existing,
+			func(id uuid.UUID) uuid.UUID { return id },
+			func(id uuid.UUID) struct{} { return struct{}{} },
+		)
+		for _, id := range cfItemIds {
+			if _, ok := existingSet[id]; !ok {
+				return nil, commonErrors.NewInvalidInputError(commonErrors.SlugJournalLineCashFlowItemNotFound, id)
+			}
 		}
 	}
 
 	// prepare journal lines
 	var journalLines []*journal.JournalLine
-	for _, item := range commands {
+	for i, item := range commands {
 		itemId := item.Id
 		if itemId == uuid.Nil {
 			itemId = uuid.New()
 		}
-		a := accountsMap[item.AccountNumber]
-		var auxiliaryAccountsForItem []*auxiliary_account.AuxiliaryAccount
-		for _, key := range item.AuxiliaryAccounts {
-			auxiliaryAccountsForItem = append(auxiliaryAccountsForItem, auxiliaryAccountsMap[key.CategoryKey+key.AccountKey])
+
+		a := accountsMap[rawAccountNumbers[i]]
+
+		// Validate dimension options for this journal line against the account's required categories.
+		if err = dimensionService.ValidateOptions(ctx, a.DimensionCategoryIds(), item.DimensionOptionIds); err != nil {
+			return nil, err
 		}
+
+		// Only attach CF item ID when this is a mixed entry (cash + non-cash)
+		var cashFlowItemId *uuid.UUID
+		if hasCashEquivalentLine && hasNonCashEquivalentLine && !a.IsCashEquivalent() {
+			cashFlowItemId = item.CashFlowItemId
+		}
+
 		journalLine, err := journal.NewJournalLine(
 			itemId,
 			a,
-			auxiliaryAccountsForItem,
 			item.Text,
 			item.Amount,
+			item.DimensionOptionIds,
+			cashFlowItemId,
 		)
 		if err != nil {
 			return nil, err
 		}
+
 		journalLines = append(journalLines, journalLine)
 	}
 
 	return journalLines, nil
+}
+
+func validateDefaultCashFlowItemIds(
+	ctx context.Context,
+	repo domain.Repository,
+	sobId uuid.UUID,
+	debitItemId *uuid.UUID,
+	creditItemId *uuid.UUID,
+) error {
+	var ids []uuid.UUID
+	if debitItemId != nil {
+		ids = append(ids, *debitItemId)
+	}
+	if creditItemId != nil {
+		ids = append(ids, *creditItemId)
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+
+	existing, err := repo.ReadExistingCashFlowItemIds(ctx, sobId, ids)
+	if err != nil {
+		return fmt.Errorf("failed to validate default cash flow item ids: %w", err)
+	}
+	existingSet := utils.SliceToMap(existing,
+		func(id uuid.UUID) uuid.UUID { return id },
+		func(id uuid.UUID) struct{} { return struct{}{} },
+	)
+	for _, id := range ids {
+		if _, ok := existingSet[id]; !ok {
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountCashFlowItemNotFound, id)
+		}
+	}
+	return nil
 }
 
 // readPeriodIdAndCheck tries to get period id by given transaction date of a journal, and will also check if the period is closed.
@@ -121,7 +181,7 @@ func readPeriodIdAndCheck(
 	}
 
 	if p.IsClosed() {
-		return nil, commonErrors.ErrPeriodClosed()
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugPeriodClosed)
 	}
 
 	return p, nil

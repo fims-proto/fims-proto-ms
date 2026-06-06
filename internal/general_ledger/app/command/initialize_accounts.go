@@ -7,7 +7,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 
@@ -20,13 +19,16 @@ import (
 )
 
 type accountEntry struct {
-	number           string
-	level            int
-	title            string
-	superiorNumber   string
-	class            int
-	group            int
-	balanceDirection string
+	number                           string
+	level                            int
+	title                            string
+	superiorNumber                   string
+	class                            int
+	group                            int
+	balanceDirection                 string
+	isCashEquivalent                 bool
+	defaultCashFlowItemCodeForDebit  string
+	defaultCashFlowItemCodeForCredit string
 }
 
 func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repository) error {
@@ -36,8 +38,18 @@ func initializeAccounts(ctx context.Context, sob sobQuery.Sob, repo domain.Repos
 		return err
 	}
 
+	cashFlowItems, err := repo.ReadCashFlowItemsBySobId(ctx, sob.Id)
+	if err != nil {
+		return fmt.Errorf("could not read cash flow items: %w", err)
+	}
+
+	cashFlowItemIdsByCode := make(map[string]uuid.UUID, len(cashFlowItems))
+	for _, item := range cashFlowItems {
+		cashFlowItemIdsByCode[item.Code()] = item.Id()
+	}
+
 	// 2. prepare accounts
-	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries, sob.AccountsCodeLength)
+	preparedAccounts, err := prepareAccounts(sob.Id, accountEntries, cashFlowItemIdsByCode)
 	if err != nil {
 		return err
 	}
@@ -55,6 +67,7 @@ func readFromCSV() ([]accountEntry, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %w", err)
 	}
+	defer func() { _ = csvFile.Close() }()
 
 	csvReader := csv.NewReader(csvFile)
 
@@ -73,6 +86,9 @@ func readFromCSV() ([]accountEntry, error) {
 		if err != nil {
 			return nil, fmt.Errorf("could not read file: %w", err)
 		}
+		if len(line) < 8 {
+			return nil, fmt.Errorf("invalid account csv row with %d columns", len(line))
+		}
 		level, err := strconv.Atoi(line[3])
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert level to number: %w", err)
@@ -89,76 +105,134 @@ func readFromCSV() ([]accountEntry, error) {
 		if balanceDirection == "" {
 			balanceDirection = balance_direction.NotDefined.String()
 		}
+		isCashEquivalent := line[7] == "true" || line[7] == "1"
+		var defaultCashFlowItemCodeForDebit, defaultCashFlowItemCodeForCredit string
+		if len(line) > 8 {
+			defaultCashFlowItemCodeForDebit = strings.TrimSpace(line[8])
+		}
+		if len(line) > 9 {
+			defaultCashFlowItemCodeForCredit = strings.TrimSpace(line[9])
+		}
 		entries = append(entries, accountEntry{
-			number:           line[2],
-			level:            level,
-			title:            line[4],
-			superiorNumber:   line[5],
-			class:            classId,
-			group:            groupId,
-			balanceDirection: balanceDirection,
+			number:                           line[2],
+			level:                            level,
+			title:                            line[4],
+			superiorNumber:                   line[5],
+			class:                            classId,
+			group:                            groupId,
+			balanceDirection:                 balanceDirection,
+			isCashEquivalent:                 isCashEquivalent,
+			defaultCashFlowItemCodeForDebit:  defaultCashFlowItemCodeForDebit,
+			defaultCashFlowItemCodeForCredit: defaultCashFlowItemCodeForCredit,
 		})
 	}
 
 	return entries, nil
 }
 
-func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthLimits []int) ([]*account.Account, error) {
-	var superiorNumbers []string
+func prepareAccounts(
+	sobId uuid.UUID,
+	accountEntries []accountEntry,
+	cashFlowItemIdsByCode map[string]uuid.UUID,
+) ([]*account.Account, error) {
+	// Build a set of superior account numbers for quick lookup (O(1) instead of binary search)
+	superiorNumbers := make(map[string]bool)
 	for _, entry := range accountEntries {
 		if entry.superiorNumber != "" {
-			superiorNumbers = append(superiorNumbers, entry.superiorNumber)
+			superiorNumbers[entry.superiorNumber] = true
 		}
 	}
-	slices.Sort(superiorNumbers)
 
-	preparedAccounts := make(map[string]*account.Account)
-	for i := 0; i < len(codeLengthLimits); i++ {
+	// Map from raw account number to domain account object
+	preparedAccounts := make(map[string]*account.Account) // keyed by raw account number
+
+	// Process accounts level by level to ensure superiors are created first
+	maxLevel := 0
+	for _, entry := range accountEntries {
+		if entry.level > maxLevel {
+			maxLevel = entry.level
+		}
+	}
+
+	for level := 1; level <= maxLevel; level++ {
 		for _, entry := range accountEntries {
-			if entry.level == i+1 {
+			if entry.level == level {
 				var levelNumber int
 				var superiorAccountId uuid.UUID
-				var numberHierarchy []int
+				var superiorRaw string
+
 				if entry.level == 1 {
+					// Level 1: extract the single 6-digit segment directly
 					superiorAccountId = uuid.Nil
-					levelNumber, _ = strconv.Atoi(entry.number)
-					numberHierarchy = []int{levelNumber}
+					levelNumberStr := entry.number[:6]
+					var err error
+					levelNumber, err = strconv.Atoi(levelNumberStr)
+					if err != nil {
+						return nil, fmt.Errorf("invalid level number in account %s: %w", entry.number, err)
+					}
+					superiorRaw = ""
 				} else {
-					levelNumber, _ = strconv.Atoi(strings.TrimPrefix(entry.number, entry.superiorNumber))
+					// Level 2+: get superior from already-prepared accounts
 					superiorAccount, ok := preparedAccounts[entry.superiorNumber]
 					if !ok {
-						return nil, fmt.Errorf("cannot find prepared superior account %s", entry.superiorNumber)
+						return nil, fmt.Errorf("cannot find prepared superior account %s for %s", entry.superiorNumber, entry.number)
 					}
 					superiorAccountId = superiorAccount.Id()
-					numberHierarchy = append(superiorAccount.NumberHierarchy(), levelNumber)
+					superiorRaw = superiorAccount.RawAccountNumber()
+
+					// Extract just the last 6-digit segment (the level number)
+					lastSegmentStr := entry.number[len(entry.number)-6:]
+					var err error
+					levelNumber, err = strconv.Atoi(lastSegmentStr)
+					if err != nil {
+						return nil, fmt.Errorf("invalid level number in account %s: %w", entry.number, err)
+					}
 				}
 
-				// when an account is not superior for all other accounts, it's a leaf
-				_, found := slices.BinarySearch(superiorNumbers, entry.number)
+				// Check if this account is a superior for any other account (O(1) lookup)
+				isLeaf := !superiorNumbers[entry.number]
 
 				domainAccount, err := account.New(
 					uuid.New(),
 					sobId,
 					superiorAccountId,
 					entry.title,
-					numberHierarchy,
-					codeLengthLimits,
+					superiorRaw,
+					levelNumber,
 					entry.level,
-					!found,
+					isLeaf,
 					entry.class,
 					entry.group,
 					entry.balanceDirection,
 					nil,
+					entry.isCashEquivalent,
 				)
 				if err != nil {
 					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
 				}
+				defaultDebitItemId, err := resolveDefaultCashFlowItemId(
+					entry.defaultCashFlowItemCodeForDebit,
+					cashFlowItemIdsByCode,
+				)
+				if err != nil {
+					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
+				}
+				defaultCreditItemId, err := resolveDefaultCashFlowItemId(
+					entry.defaultCashFlowItemCodeForCredit,
+					cashFlowItemIdsByCode,
+				)
+				if err != nil {
+					return nil, fmt.Errorf("dataload failed on account %s: %w", entry.number, err)
+				}
+				domainAccount.UpdateDefaultCashFlowItems(defaultDebitItemId, defaultCreditItemId)
+
+				// Store using entry.number (the raw account number from CSV)
 				preparedAccounts[entry.number] = domainAccount
 			}
 		}
 	}
 
-	// to slice
+	// Convert map to slice
 	accounts := make([]*account.Account, len(preparedAccounts))
 	i := 0
 	for _, v := range preparedAccounts {
@@ -169,4 +243,17 @@ func prepareAccounts(sobId uuid.UUID, accountEntries []accountEntry, codeLengthL
 		return nil, fmt.Errorf("prepared accounts size (%d) doesn't equal to CSV entries size (%d)", len(accounts), len(accountEntries))
 	}
 	return accounts, nil
+}
+
+func resolveDefaultCashFlowItemId(code string, cashFlowItemIdsByCode map[string]uuid.UUID) (*uuid.UUID, error) {
+	if code == "" {
+		return nil, nil
+	}
+
+	id, ok := cashFlowItemIdsByCode[code]
+	if !ok {
+		return nil, fmt.Errorf("cash flow item code %s not found", code)
+	}
+
+	return &id, nil
 }

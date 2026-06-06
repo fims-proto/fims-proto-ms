@@ -26,9 +26,9 @@ func NewAllAccountsHandler(readModel GeneralLedgerReadModel) AllAccountsHandler 
 }
 
 func (h AllAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID) ([]Account, error) {
-	sort, err := sortable.NewSort("accountNumber", "asc")
+	sort, err := sortable.NewSort("rawAccountNumber", "asc")
 	if err != nil {
-		panic(fmt.Errorf("failed to build sort 'accountNumber': %w", err))
+		panic(fmt.Errorf("failed to build sort 'rawAccountNumber': %w", err))
 	}
 
 	pageRequest := data.NewPageRequest(
@@ -40,5 +40,6 @@ func (h AllAccountsHandler) Handle(ctx context.Context, sobId uuid.UUID) ([]Acco
 	if err != nil {
 		return nil, fmt.Errorf("error getting accounts: %w", err)
 	}
+
 	return accounts.Content(), nil
 }

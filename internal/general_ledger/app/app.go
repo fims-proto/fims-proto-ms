@@ -8,21 +8,19 @@ import (
 )
 
 type Queries struct {
-	AllAccounts               query.AllAccountsHandler
-	PagingAccounts            query.PagingAccountsHandler
-	AccountById               query.AccountByIdHandler
-	PagingAuxiliaryCategories query.PagingAuxiliaryCategoriesHandler
-	AuxiliaryCategoryByKey    query.AuxiliaryCategoryByKeyHandler
-	PagingAuxiliaryAccounts   query.PagingAuxiliaryAccountsHandler
-	CurrentPeriod             query.CurrentPeriodHandler
-	AllPeriods                query.AllPeriodsHandler
-	FirstPeriodLedgers        query.FirstPeriodLedgersHandler
-	PagingLedgersByPeriod     query.LedgersByPeriodRangeHandler
-	LedgerSummary             query.LedgerSummaryHandler
-	AuxiliaryLedgerSummary    query.AuxiliaryLedgerSummaryHandler
-	PagingLedgerEntries       query.PagingLedgerEntriesHandler
-	JournalById               query.JournalByIdHandler
-	PagingJournals            query.PagingJournalsHandler
+	AllAccounts                query.AllAccountsHandler
+	AccountById                query.AccountByIdHandler
+	AllPeriods                 query.AllPeriodsHandler
+	FirstPeriodLedgers         query.FirstPeriodLedgersHandler
+	PagingLedgersByPeriod      query.LedgersByPeriodRangeHandler
+	LedgersByDimensionCategory query.LedgersByDimensionCategoryHandler
+	LedgerEntries              query.LedgerEntriesHandler
+	JournalById                query.JournalByIdHandler
+	PagingJournals             query.PagingJournalsHandler
+	PeriodPreCloseCheck        query.PeriodPreCloseCheckHandler
+	BatchPeriodPreCloseCheck   query.BatchPeriodPreCloseCheckHandler
+	ClosingJournalIdsByPeriod  query.ClosingJournalIdsByPeriodHandler
+	CashFlowItems              query.CashFlowItemsHandler
 }
 
 type Commands struct {
@@ -31,8 +29,10 @@ type Commands struct {
 
 	CreateAccount command.CreateAccountHandler
 	UpdateAccount command.UpdateAccountHandler
+	DeleteAccount command.DeleteAccountHandler
 
-	ClosePeriod command.ClosePeriodHandler
+	ClosePeriod  command.ClosePeriodHandler
+	ClosePeriods command.ClosePeriodsHandler
 
 	CreateJournal       command.CreateJournalHandler
 	AuditJournal        command.AuditJournalHandler
@@ -42,8 +42,9 @@ type Commands struct {
 	UpdateJournal       command.UpdateJournalHandler
 	PostJournal         command.PostJournalHandler
 
-	CreateAuxiliaryCategory command.CreateAuxiliaryCategoryHandler
-	CreateAuxiliaryAccount  command.CreateAuxiliaryAccountHandler
+	CreateMonthlyClosingJournal command.CreateMonthlyClosingJournalHandler
+	CreateYearEndClosingJournal command.CreateYearEndClosingJournalHandler
+	DeleteSystemJournal         command.DeleteSystemJournalHandler
 
 	Migrate command.MigrationHandler
 }
@@ -63,43 +64,46 @@ func (a *Application) Inject(
 	sobService service.SobService,
 	numberingService service.NumberingService,
 	userService service.UserService,
+	dimensionService service.DimensionService,
+	reportService service.ReportService,
 ) {
 	a.Queries = Queries{
-		AllAccounts:               query.NewAllAccountsHandler(readModel),
-		PagingAccounts:            query.NewPagingAccountsHandler(readModel),
-		AccountById:               query.NewAccountByIdHandler(readModel),
-		PagingAuxiliaryCategories: query.NewPagingAuxiliaryCategoriesHandler(readModel),
-		AuxiliaryCategoryByKey:    query.NewAuxiliaryCategoryByKeyHandler(readModel),
-		PagingAuxiliaryAccounts:   query.NewPagingAuxiliaryAccountsHandler(readModel),
-		CurrentPeriod:             query.NewCurrentPeriodHandler(readModel),
-		AllPeriods:                query.NewAllPeriodsHandler(readModel),
-		FirstPeriodLedgers:        query.NewFirstPeriodLedgersHandler(readModel),
-		PagingLedgersByPeriod:     query.NewLedgersByPeriodRangeHandler(readModel),
-		LedgerSummary:             query.NewLedgerSummaryHandler(readModel),
-		AuxiliaryLedgerSummary:    query.NewAuxiliaryLedgerSummaryHandler(readModel),
-		PagingLedgerEntries:       query.NewPagingLedgerEntriesHandler(readModel),
-		JournalById:               query.NewJournalByIdHandler(readModel, userService),
-		PagingJournals:            query.NewPagingJournalsHandler(readModel, userService),
+		AllAccounts:                query.NewAllAccountsHandler(readModel),
+		AccountById:                query.NewAccountByIdHandler(readModel, dimensionService),
+		AllPeriods:                 query.NewAllPeriodsHandler(readModel),
+		FirstPeriodLedgers:         query.NewFirstPeriodLedgersHandler(readModel),
+		PagingLedgersByPeriod:      query.NewLedgersByPeriodRangeHandler(readModel),
+		LedgersByDimensionCategory: query.NewLedgersByDimensionCategoryHandler(readModel),
+		LedgerEntries:              query.NewLedgerEntriesHandler(readModel),
+		JournalById:                query.NewJournalByIdHandler(readModel, userService, dimensionService),
+		PagingJournals:             query.NewPagingJournalsHandler(readModel, userService),
+		PeriodPreCloseCheck:        query.NewPeriodPreCloseCheckHandler(readModel),
+		BatchPeriodPreCloseCheck:   query.NewBatchPeriodPreCloseCheckHandler(readModel),
+		ClosingJournalIdsByPeriod:  query.NewClosingJournalIdsByPeriodHandler(readModel),
+		CashFlowItems:              query.NewCashFlowItemsHandler(readModel),
 	}
 	a.Commands = Commands{
 		Initialize:               command.NewInitializeHandler(repo, sobService, numberingService),
-		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo, sobService),
+		InitializeLedgersBalance: command.NewInitializeLedgersBalanceHandler(repo),
 
 		CreateAccount: command.NewCreateAccountHandler(repo, sobService),
 		UpdateAccount: command.NewUpdateAccountHandler(repo, sobService),
+		DeleteAccount: command.NewDeleteAccountHandler(repo),
 
-		ClosePeriod: command.NewClosePeriodHandler(repo, numberingService),
+		ClosePeriod:  command.NewClosePeriodHandler(repo, numberingService, reportService),
+		ClosePeriods: command.NewClosePeriodsHandler(repo, numberingService, dimensionService, sobService, reportService),
 
-		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService),
+		CreateJournal:       command.NewCreateJournalHandler(repo, numberingService, dimensionService, sobService),
 		AuditJournal:        command.NewAuditJournalHandler(repo),
 		CancelAuditJournal:  command.NewCancelAuditJournalHandler(repo),
 		ReviewJournal:       command.NewReviewJournalHandler(repo),
 		CancelReviewJournal: command.NewCancelReviewJournalHandler(repo),
-		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService),
+		UpdateJournal:       command.NewUpdateJournalHandler(repo, numberingService, dimensionService, sobService),
 		PostJournal:         command.NewPostJournalHandler(repo),
 
-		CreateAuxiliaryCategory: command.NewCreateAuxiliaryCategoryHandler(repo),
-		CreateAuxiliaryAccount:  command.NewCreateAuxiliaryAccountHandler(repo),
+		CreateMonthlyClosingJournal: command.NewCreateMonthlyClosingJournalHandler(repo, numberingService, dimensionService, sobService),
+		CreateYearEndClosingJournal: command.NewCreateYearEndClosingJournalHandler(repo, numberingService, dimensionService, sobService),
+		DeleteSystemJournal:         command.NewDeleteSystemJournalHandler(repo),
 
 		Migrate: command.NewMigrationHandler(repo),
 	}

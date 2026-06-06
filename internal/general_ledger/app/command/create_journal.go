@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github/fims-proto/fims-proto-ms/internal/common/errors"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/service"
@@ -19,18 +20,21 @@ type CreateJournalCmd struct {
 	SobId              uuid.UUID
 	HeaderText         string
 	JournalType        string
+	ReferenceJournalId uuid.UUID
 	AttachmentQuantity int
 	JournalLines       []JournalLineCmd
-	Creator            uuid.UUID
+	Creator            string
 	TransactionDate    transaction_date.TransactionDate
 }
 
 type CreateJournalHandler struct {
 	repo             domain.Repository
 	numberingService service.NumberingService
+	dimensionService service.DimensionService
+	sobService       service.SobService
 }
 
-func NewCreateJournalHandler(repo domain.Repository, numberingService service.NumberingService) CreateJournalHandler {
+func NewCreateJournalHandler(repo domain.Repository, numberingService service.NumberingService, dimensionService service.DimensionService, sobService service.SobService) CreateJournalHandler {
 	if repo == nil {
 		panic("nil repo")
 	}
@@ -39,9 +43,19 @@ func NewCreateJournalHandler(repo domain.Repository, numberingService service.Nu
 		panic("nil numbering service")
 	}
 
+	if dimensionService == nil {
+		panic("nil dimension service")
+	}
+
+	if sobService == nil {
+		panic("nil sob service")
+	}
+
 	return CreateJournalHandler{
 		repo:             repo,
 		numberingService: numberingService,
+		dimensionService: dimensionService,
+		sobService:       sobService,
 	}
 }
 
@@ -57,14 +71,27 @@ func (h CreateJournalHandler) Handle(ctx context.Context, cmd CreateJournalCmd) 
 }
 
 func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJournalCmd, p *period.Period) error {
+	journalType := journal.JournalType(cmd.JournalType)
+
+	// Verify reference journal exists in the same SoB when required
+	if journalType.RequiresReferenceJournal() {
+		exists, err := h.repo.ExistsJournalById(ctx, cmd.SobId, cmd.ReferenceJournalId)
+		if err != nil {
+			return fmt.Errorf("failed to check reference journal: %w", err)
+		}
+		if !exists {
+			return errors.NewInternalError(errors.SlugJournalReferenceNotFound)
+		}
+	}
+
 	// prepare journal lines
-	journalLines, err := prepareJournalLines(ctx, h.repo, cmd.SobId, cmd.JournalLines)
+	journalLines, err := prepareJournalLines(ctx, h.repo, h.dimensionService, cmd.SobId, cmd.JournalLines)
 	if err != nil {
 		return fmt.Errorf("failed to prepare journal lines: %w", err)
 	}
 
 	// get document number
-	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id(), cmd.JournalType)
+	identifier, err := h.numberingService.GenerateIdentifier(ctx, p.Id())
 	if err != nil {
 		return fmt.Errorf("failed to generate next number: %w", err)
 	}
@@ -73,14 +100,15 @@ func (h CreateJournalHandler) createJournal(ctx context.Context, cmd CreateJourn
 		cmd.JournalId,
 		cmd.SobId,
 		p,
-		cmd.JournalType,
 		cmd.HeaderText,
 		identifier,
+		journalType,
+		cmd.ReferenceJournalId,
 		cmd.AttachmentQuantity,
 		cmd.Creator,
-		uuid.Nil,
-		uuid.Nil,
-		uuid.Nil,
+		"",
+		"",
+		"",
 		false,
 		false,
 		false,

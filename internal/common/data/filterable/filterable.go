@@ -177,15 +177,18 @@ func (fe *FilterAST) ParseLiterals(node *node32) []any {
 	for node != nil {
 		if node.pegRule == ruleLiteral {
 			literalNode := node.up
-			if literalNode.pegRule == ruleStringLiteral {
+			switch literalNode.pegRule {
+			case ruleStringLiteral:
 				values = append(values, string(fe.buffer[literalNode.begin+1:literalNode.end-1]))
-			} else if literalNode.pegRule == ruleNumLiteral {
+			case ruleNumLiteral:
 				strVal := string(fe.buffer[literalNode.begin:literalNode.end])
 				val, err := strconv.ParseFloat(strVal, 64)
 				if err != nil {
 					return nil
 				}
 				values = append(values, val)
+			default:
+				// do nothing, just ignore
 			}
 		}
 		node = node.next

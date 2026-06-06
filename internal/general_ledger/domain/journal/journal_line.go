@@ -2,79 +2,58 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/common/utils"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_account"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/auxiliary_category"
 
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
 )
 
 type JournalLine struct {
-	id                uuid.UUID
-	accountId         uuid.UUID
-	account           *account.Account
-	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount
-	text              string
-	amount            decimal.Decimal
+	id                 uuid.UUID
+	accountId          uuid.UUID
+	account            *account.Account
+	text               string
+	amount             decimal.Decimal
+	dimensionOptionIds []uuid.UUID
+	cashFlowItemId     *uuid.UUID
 }
 
 func NewJournalLine(
 	id uuid.UUID,
 	account *account.Account,
-	auxiliaryAccounts []*auxiliary_account.AuxiliaryAccount,
 	text string,
 	amount decimal.Decimal,
+	dimensionOptionIds []uuid.UUID,
+	cashFlowItemId *uuid.UUID,
 ) (*JournalLine, error) {
 	if id == uuid.Nil {
-		return nil, errors.NewSlugError("journalLine-emptyId")
+		return nil, errors.NewInternalError(errors.SlugJournalLineEmptyId)
 	}
 
 	if account == nil {
-		return nil, errors.NewSlugError("journalLine-nilAccount")
+		return nil, errors.NewInternalError(errors.SlugJournalLineNilAccount)
 	}
 
 	if account.Id() == uuid.Nil {
-		return nil, errors.NewSlugError("journalLine-emptyAccountId")
-	}
-
-	if len(auxiliaryAccounts) != len(account.AuxiliaryCategories()) {
-		return nil, errors.NewSlugError("journalLine-unmatchedAuxiliaryAccount")
-	}
-
-	for _, auxiliaryAccount := range auxiliaryAccounts {
-		if auxiliaryAccount == nil {
-			return nil, errors.NewSlugError("journalLine-nilAuxiliaryAccount")
-		}
+		return nil, errors.NewInternalError(errors.SlugJournalLineEmptyAccountId)
 	}
 
 	if text == "" {
-		return nil, errors.NewSlugError("journalLine-emptyText")
+		return nil, errors.NewInvalidInputError(errors.SlugJournalLineEmptyText)
 	}
 
 	if amount.IsZero() {
-		return nil, errors.NewSlugError("journalLine-emptyAmount")
-	}
-
-	// validate each auxiliary account
-	categorySet := utils.SliceToSet(
-		account.AuxiliaryCategories(),
-		func(category *auxiliary_category.AuxiliaryCategory) uuid.UUID { return category.Id() },
-	)
-	for _, auxiliaryAccount := range auxiliaryAccounts {
-		if _, ok := categorySet[auxiliaryAccount.Category().Id()]; !ok {
-			return nil, errors.NewSlugError("journalLine-invalidAuxiliaryAccount", auxiliaryAccount.Title())
-		}
+		return nil, errors.NewInvalidInputError(errors.SlugJournalLineEmptyAmount)
 	}
 
 	return &JournalLine{
-		id:                id,
-		accountId:         account.Id(),
-		account:           account,
-		auxiliaryAccounts: auxiliaryAccounts,
-		text:              text,
-		amount:            amount,
+		id:                 id,
+		accountId:          account.Id(),
+		account:            account,
+		text:               text,
+		amount:             amount,
+		dimensionOptionIds: dimensionOptionIds,
+		cashFlowItemId:     cashFlowItemId,
 	}, nil
 }
 
@@ -90,14 +69,18 @@ func (i JournalLine) Account() *account.Account {
 	return i.account
 }
 
-func (i JournalLine) AuxiliaryAccounts() []*auxiliary_account.AuxiliaryAccount {
-	return i.auxiliaryAccounts
-}
-
 func (i JournalLine) Text() string {
 	return i.text
 }
 
 func (i JournalLine) Amount() decimal.Decimal {
 	return i.amount
+}
+
+func (i JournalLine) DimensionOptionIds() []uuid.UUID {
+	return i.dimensionOptionIds
+}
+
+func (i JournalLine) CashFlowItemId() *uuid.UUID {
+	return i.cashFlowItemId
 }

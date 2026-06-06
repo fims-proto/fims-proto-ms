@@ -1,9 +1,10 @@
 package sob
 
 import (
-	"errors"
 	"fmt"
 	"unicode/utf8"
+
+	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
 
 	"github.com/google/uuid"
 )
@@ -20,35 +21,35 @@ type Sob struct {
 
 func New(id uuid.UUID, name, description, baseCurrency string, startingPeriodYear, startingPeriodMonth int, accountsCodeLength []int) (*Sob, error) {
 	if id == uuid.Nil {
-		return nil, errors.New("nil sob id")
+		return nil, commonErrors.NewInternalError(commonErrors.SlugSobEmptyId)
 	}
 
 	if name == "" {
-		return nil, errors.New("empty sob name")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobEmptyName)
 	}
 
 	if utf8.RuneCountInString(name) > 50 {
-		return nil, errors.New("sob name too long")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobNameTooLong)
 	}
 
 	if utf8.RuneCountInString(description) > 500 {
-		return nil, errors.New("sob description too long")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobDescriptionTooLong)
 	}
 
 	if baseCurrency == "" {
-		return nil, errors.New("empty base currency")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobEmptyBaseCurrency)
 	}
 
 	if startingPeriodYear < 2000 || startingPeriodYear > 3000 {
-		return nil, errors.New("invalid starting period year")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobInvalidStartingYear)
 	}
 
 	if startingPeriodMonth < 1 || startingPeriodMonth > 12 {
-		return nil, errors.New("invalid starting period month")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobInvalidStartingMonth)
 	}
 
 	if len(accountsCodeLength) < 2 || len(accountsCodeLength) > 10 {
-		return nil, errors.New("invalid account level")
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugSobInvalidAccountLevel)
 	}
 
 	for i, accountCodeLength := range accountsCodeLength {

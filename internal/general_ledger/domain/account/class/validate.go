@@ -13,11 +13,11 @@ func Validate(c Class, g Group) error {
 	})
 
 	if !found {
-		return errors.ErrInvalidAccountClass(c.String())
+		return errors.NewInvalidInputError(errors.SlugInvalidAccountClass, c.String())
 	}
 
 	if !slices.Contains(Classes[i].Groups, g) {
-		return errors.ErrInvalidAccountGroup(c.String(), g.String())
+		return errors.NewInvalidInputError(errors.SlugInvalidAccountGroup, c.String(), g.String())
 	}
 
 	return nil

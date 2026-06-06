@@ -2,25 +2,25 @@ package journal
 
 import (
 	"github/fims-proto/fims-proto-ms/internal/common/errors"
-
-	"github.com/google/uuid"
 )
 
-func (j *Journal) Review(reviewer uuid.UUID) error {
+func (j *Journal) Review(reviewer string) error {
 	if j.isReviewed {
-		return errors.NewSlugError("journal-review-repeatReview")
+		return errors.NewInvalidInputError(errors.SlugJournalReviewRepeat)
 	}
 
-	if reviewer == uuid.Nil {
-		return errors.NewSlugError("journal-review-emptyReviewer")
+	if isEmptyUser(reviewer) {
+		return errors.NewInternalError(errors.SlugJournalReviewEmptyReviewer)
 	}
 
-	if reviewer == j.creator {
-		return errors.NewSlugError("journal-review-reviewerSameAsCreator")
-	}
+	if !IsSystemUser(reviewer) {
+		if reviewer == j.creator {
+			return errors.NewInvalidInputError(errors.SlugJournalReviewSameAsCreator)
+		}
 
-	if j.auditor != uuid.Nil && reviewer == j.auditor {
-		return errors.NewSlugError("journal-review-reviewerSameAsAuditor")
+		if !isEmptyUser(j.auditor) && reviewer == j.auditor {
+			return errors.NewInvalidInputError(errors.SlugJournalReviewSameAsAuditor)
+		}
 	}
 
 	j.isReviewed = true
@@ -28,20 +28,20 @@ func (j *Journal) Review(reviewer uuid.UUID) error {
 	return nil
 }
 
-func (j *Journal) CancelReview(reviewer uuid.UUID) error {
+func (j *Journal) CancelReview(reviewer string) error {
 	if !j.isReviewed {
-		return errors.NewSlugError("journal-cancelReview-notReviewed")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelReviewNotReviewed)
 	}
 
 	if j.reviewer != reviewer {
-		return errors.NewSlugError("journal-cancelReview-differentReviewer")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelReviewDiffReviewer)
 	}
 
 	if j.isPosted {
-		return errors.NewSlugError("journal-cancelReview-posted")
+		return errors.NewInvalidInputError(errors.SlugJournalCancelReviewPosted)
 	}
 
 	j.isReviewed = false
-	j.reviewer = uuid.Nil
+	j.reviewer = emptyUser
 	return nil
 }

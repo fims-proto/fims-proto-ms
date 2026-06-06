@@ -1,10 +1,10 @@
 basePath: /fims/api/v1
 definitions:
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse:
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse:
     properties:
       content:
         items:
-          $ref: '#/definitions/http.AuxiliaryAccountResponse'
+          $ref: '#/definitions/http.CategoryResponse'
         type: array
       numberOfElements:
         type: integer
@@ -15,11 +15,11 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse:
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalSlimResponse:
     properties:
       content:
         items:
-          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+          $ref: '#/definitions/http.JournalSlimResponse'
         type: array
       numberOfElements:
         type: integer
@@ -30,26 +30,11 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse:
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse:
     properties:
       content:
         items:
-          $ref: '#/definitions/http.AuxiliaryLedgerSummaryResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/http.JournalResponse'
+          $ref: '#/definitions/http.LedgerDimensionOptionResponse'
         type: array
       numberOfElements:
         type: integer
@@ -65,6 +50,36 @@ definitions:
       content:
         items:
           $ref: '#/definitions/http.LedgerEntryResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.LedgerResponse'
+        type: array
+      numberOfElements:
+        type: integer
+      pageNumber:
+        type: integer
+      pageSize:
+        type: integer
+      totalPage:
+        type: integer
+    type: object
+  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse:
+    properties:
+      content:
+        items:
+          $ref: '#/definitions/http.OptionResponse'
         type: array
       numberOfElements:
         type: integer
@@ -105,30 +120,6 @@ definitions:
       totalPage:
         type: integer
     type: object
-  github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse:
-    properties:
-      content:
-        items:
-          $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
-        type: array
-      numberOfElements:
-        type: integer
-      pageNumber:
-        type: integer
-      pageSize:
-        type: integer
-      totalPage:
-        type: integer
-    type: object
-  github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate:
-    properties:
-      day:
-        type: integer
-      month:
-        type: integer
-      year:
-        type: integer
-    type: object
   http.AccountClass:
     properties:
       groups:
@@ -138,103 +129,181 @@ definitions:
       id:
         type: string
     type: object
+  http.AccountDetailResponse:
+    properties:
+      balanceDirection:
+        type: string
+      class:
+        type: string
+      createdAt:
+        type: string
+      defaultCashFlowItemIdForCredit:
+        type: string
+      defaultCashFlowItemIdForDebit:
+        type: string
+      dimensionCategories:
+        items:
+          $ref: '#/definitions/http.DimensionCategoryResponse'
+        type: array
+      group:
+        type: string
+      id:
+        type: string
+      isCashEquivalent:
+        type: boolean
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      rawAccountNumber:
+        type: string
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.AccountSlimResponse:
+    properties:
+      balanceDirection:
+        type: string
+      class:
+        type: string
+      createdAt:
+        type: string
+      defaultCashFlowItemIdForCredit:
+        type: string
+      defaultCashFlowItemIdForDebit:
+        type: string
+      group:
+        type: string
+      id:
+        type: string
+      isCashEquivalent:
+        type: boolean
+      isLeaf:
+        type: boolean
+      level:
+        type: integer
+      rawAccountNumber:
+        type: string
+      sobId:
+        type: string
+      superiorAccountId:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
   http.AuditJournalRequest:
     properties:
       auditor:
         type: string
     type: object
-  http.AuxiliaryAccountResponse:
+  http.BatchPreCloseCheckResponse:
+    properties:
+      trialBalance:
+        $ref: '#/definitions/http.PreCloseCheckTrialBalanceResponse'
+      unpostedJournals:
+        $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
+    type: object
+  http.CashFlowItemReferenceResponse:
+    properties:
+      code:
+        type: string
+      itemId:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
+  http.CashFlowItemResponse:
     properties:
       category:
-        $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-      createdAt:
         type: string
-      description:
+      code:
+        type: string
+      direction:
         type: string
       id:
         type: string
-      key:
+      name:
         type: string
-      title:
-        type: string
-      updatedAt:
+      sequence:
+        type: integer
+      sobId:
         type: string
     type: object
-  http.AuxiliaryCategoryResponse:
+  http.CategoryResponse:
     properties:
       createdAt:
         type: string
       id:
         type: string
-      isStandard:
-        type: boolean
-      key:
+      name:
         type: string
       sobId:
         type: string
-      title:
-        type: string
       updatedAt:
         type: string
     type: object
-  http.AuxiliaryItemRequest:
+  http.ClosingJournalIdsResponse:
     properties:
-      accountKey:
+      monthlyClosingJournalId:
         type: string
-      categoryKey:
+      yearEndClosingJournalId:
         type: string
     type: object
-  http.AuxiliaryLedgerSummaryResponse:
+  http.ClosingJournalResponse:
     properties:
-      auxiliaryAccountId:
+      journalId:
         type: string
-      auxiliaryAccountTitle:
+    type: object
+  http.ColumnResponse:
+    properties:
+      id:
         type: string
-      endingAmount:
-        type: number
-      openingAmount:
-        type: number
-      periodAmount:
-        type: number
-      periodCredit:
-        type: number
-      periodDebit:
-        type: number
+      label:
+        type: string
+      sequence:
+        type: integer
+      valueType:
+        type: string
     type: object
   http.CreateAccountRequest:
     properties:
       balanceDirection:
         type: string
-      categoryKeys:
+      class:
+        type: string
+      defaultCashFlowItemIdForCredit:
+        type: string
+      defaultCashFlowItemIdForDebit:
+        type: string
+      dimensionCategoryIds:
         items:
           type: string
         type: array
-      class:
-        type: string
       group:
         type: string
+      isCashEquivalent:
+        type: boolean
       levelNumber:
         type: integer
-      superiorAccountNumber:
+      superiorRawAccountNumber:
         type: string
       title:
         type: string
     type: object
-  http.CreateAuxiliaryAccountRequest:
+  http.CreateCategoryRequest:
     properties:
-      description:
+      name:
         type: string
-      key:
-        type: string
-      title:
-        type: string
-    type: object
-  http.CreateAuxiliaryCategoryRequest:
-    properties:
-      key:
-        type: string
-      title:
-        type: string
+    required:
+    - name
     type: object
   http.CreateJournalRequest:
     properties:
@@ -249,9 +318,23 @@ definitions:
           $ref: '#/definitions/http.JournalLineRequest'
         type: array
       journalType:
+        enum:
+        - GENERAL
+        - ADJUSTING
+        - REVERSING
+        - CLOSING
+        type: string
+      referenceJournalId:
         type: string
       transactionDate:
-        $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_general_ledger_domain_transaction_date.TransactionDate'
+        type: string
+    type: object
+  http.CreateOptionRequest:
+    properties:
+      name:
+        type: string
+    required:
+    - name
     type: object
   http.CreateSobRequest:
     properties:
@@ -270,42 +353,47 @@ definitions:
       startingPeriodYear:
         type: integer
     type: object
-  http.FormulaResponse:
+  http.DimensionCategoryResponse:
     properties:
-      account:
-        $ref: '#/definitions/internal_report_port_public_http.AccountResponse'
-      amounts:
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.DimensionOptionResponse:
+    properties:
+      category:
+        $ref: '#/definitions/http.DimensionCategoryResponse'
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  http.ExpressionResponse:
+    properties:
+      cashFlowItems:
         items:
-          type: number
+          $ref: '#/definitions/http.CashFlowItemReferenceResponse'
         type: array
       id:
         type: string
-      rule:
+      kind:
         type: string
-      sequence:
-        type: integer
-      sumFactor:
-        type: integer
-    type: object
-  http.GenerateReportRequest:
-    properties:
-      amountTypes:
+      ledgerAccounts:
         items:
-          type: string
+          $ref: '#/definitions/http.LedgerAccountReferenceResponse'
         type: array
-      periodFiscalYear:
-        type: integer
-      periodNumber:
-        type: integer
-      title:
-        type: string
+      rowReferences:
+        items:
+          $ref: '#/definitions/http.RowReferenceResponse'
+        type: array
     type: object
   http.InitializeLedgersBalanceItemRequest:
     properties:
-      accountNumber:
-        type: string
       openingBalance:
         type: number
+      rawAccountNumber:
+        type: string
     type: object
   http.InitializeLedgersBalanceRequest:
     properties:
@@ -316,70 +404,7 @@ definitions:
     required:
     - ledgers
     type: object
-  http.ItemResponse:
-    properties:
-      amounts:
-        items:
-          type: number
-        type: array
-      dataSource:
-        type: string
-      displaySumFactor:
-        type: boolean
-      formulas:
-        items:
-          $ref: '#/definitions/http.FormulaResponse'
-        type: array
-      id:
-        type: string
-      isAbleToAddChild:
-        type: boolean
-      isBreakdownItem:
-        type: boolean
-      isEditable:
-        type: boolean
-      level:
-        type: integer
-      sumFactor:
-        type: integer
-      text:
-        type: string
-    type: object
-  http.JournalLineRequest:
-    properties:
-      accountNumber:
-        type: string
-      amount:
-        type: number
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryItemRequest'
-        type: array
-      id:
-        type: string
-      text:
-        type: string
-    type: object
-  http.JournalLineResponse:
-    properties:
-      account:
-        $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
-      amount:
-        type: number
-      auxiliaryAccounts:
-        items:
-          $ref: '#/definitions/http.AuxiliaryAccountResponse'
-        type: array
-      createdAt:
-        type: string
-      id:
-        type: string
-      text:
-        type: string
-      updatedAt:
-        type: string
-    type: object
-  http.JournalResponse:
+  http.JournalDetailResponse:
     properties:
       amount:
         type: number
@@ -408,11 +433,18 @@ definitions:
           $ref: '#/definitions/http.JournalLineResponse'
         type: array
       journalType:
+        enum:
+        - GENERAL
+        - ADJUSTING
+        - REVERSING
+        - CLOSING
         type: string
       period:
         $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
       poster:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      referenceJournalId:
+        type: string
       reviewer:
         $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
       sobId:
@@ -421,6 +453,116 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  http.JournalLineRequest:
+    properties:
+      amount:
+        type: number
+      cashFlowItemId:
+        type: string
+      dimensionOptionIds:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      rawAccountNumber:
+        type: string
+      text:
+        type: string
+    type: object
+  http.JournalLineResponse:
+    properties:
+      account:
+        $ref: '#/definitions/http.AccountDetailResponse'
+      amount:
+        type: number
+      cashFlowItemId:
+        type: string
+      createdAt:
+        type: string
+      dimensionOptions:
+        items:
+          $ref: '#/definitions/http.DimensionOptionResponse'
+        type: array
+      id:
+        type: string
+      text:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.JournalSlimResponse:
+    properties:
+      amount:
+        type: number
+      attachmentQuantity:
+        type: integer
+      auditor:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      createdAt:
+        type: string
+      creator:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      documentNumber:
+        type: string
+      headerText:
+        type: string
+      id:
+        type: string
+      isAudited:
+        type: boolean
+      isPosted:
+        type: boolean
+      isReviewed:
+        type: boolean
+      journalType:
+        enum:
+        - GENERAL
+        - ADJUSTING
+        - REVERSING
+        - CLOSING
+        type: string
+      period:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
+      poster:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      referenceJournalId:
+        type: string
+      reviewer:
+        $ref: '#/definitions/internal_general_ledger_port_public_http.UserResponse'
+      sobId:
+        type: string
+      transactionDate:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  http.LedgerAccountReferenceResponse:
+    properties:
+      accountId:
+        type: string
+      measure:
+        type: string
+      rawAccountNumber:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
+  http.LedgerDimensionOptionResponse:
+    properties:
+      dimensionOption:
+        $ref: '#/definitions/http.DimensionOptionResponse'
+      endingAmount:
+        type: number
+      openingAmount:
+        type: number
+      periodAmount:
+        type: number
+      periodCredit:
+        type: number
+      periodDebit:
+        type: number
     type: object
   http.LedgerEntryResponse:
     properties:
@@ -447,8 +589,6 @@ definitions:
         type: string
       accountId:
         type: string
-      accountNumber:
-        type: string
       accountTitle:
         type: string
       balanceDirection:
@@ -465,25 +605,25 @@ definitions:
         type: number
       periodDebit:
         type: number
+      rawAccountNumber:
+        type: string
       sobId:
         type: string
       superiorAccountId:
         type: string
     type: object
-  http.LedgerSummaryResponse:
+  http.OptionResponse:
     properties:
-      accountId:
+      categoryId:
         type: string
-      endingAmount:
-        type: number
-      openingAmount:
-        type: number
-      periodAmount:
-        type: number
-      periodCredit:
-        type: number
-      periodDebit:
-        type: number
+      createdAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      updatedAt:
+        type: string
     type: object
   http.PeriodAndLedgersResponse:
     properties:
@@ -494,28 +634,114 @@ definitions:
       period:
         $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
     type: object
+  http.PeriodCloseWarningResponse:
+    properties:
+      message:
+        type: string
+      slug:
+        type: string
+    type: object
   http.PostJournalRequest:
     properties:
       poster:
         type: string
     type: object
+  http.PreCloseCheckCurrentYearProfitAccountResponse:
+    properties:
+      accountTitle:
+        type: string
+      endingAmount:
+        type: number
+      rawAccountNumber:
+        type: string
+      status:
+        type: string
+    type: object
+  http.PreCloseCheckJournalResponse:
+    properties:
+      amount:
+        type: number
+      documentNumber:
+        type: string
+      headerText:
+        type: string
+      id:
+        type: string
+      isAudited:
+        type: boolean
+      isReviewed:
+        type: boolean
+      transactionDate:
+        type: string
+    type: object
+  http.PreCloseCheckPnLAccountResponse:
+    properties:
+      accountTitle:
+        type: string
+      endingAmount:
+        type: number
+      rawAccountNumber:
+        type: string
+    type: object
+  http.PreCloseCheckPnLBalanceResponse:
+    properties:
+      accounts:
+        items:
+          $ref: '#/definitions/http.PreCloseCheckPnLAccountResponse'
+        type: array
+      status:
+        type: string
+    type: object
+  http.PreCloseCheckResponse:
+    properties:
+      currentYearProfitAccount:
+        $ref: '#/definitions/http.PreCloseCheckCurrentYearProfitAccountResponse'
+      profitAndLossBalance:
+        $ref: '#/definitions/http.PreCloseCheckPnLBalanceResponse'
+      trialBalance:
+        $ref: '#/definitions/http.PreCloseCheckTrialBalanceResponse'
+      unpostedJournals:
+        $ref: '#/definitions/http.PreCloseCheckUnpostedJournalsResponse'
+    type: object
+  http.PreCloseCheckTrialBalanceResponse:
+    properties:
+      endingAmount:
+        type: number
+      openingAmount:
+        type: number
+      periodAmount:
+        type: number
+      status:
+        type: string
+    type: object
+  http.PreCloseCheckUnpostedJournalsResponse:
+    properties:
+      count:
+        type: integer
+      journals:
+        items:
+          $ref: '#/definitions/http.PreCloseCheckJournalResponse'
+        type: array
+      status:
+        type: string
+    type: object
   http.ReportResponse:
     properties:
-      amountTypes:
-        items:
-          type: string
-        type: array
       class:
         type: string
+      columns:
+        items:
+          $ref: '#/definitions/http.ColumnResponse'
+        type: array
       createdAt:
         type: string
       id:
         type: string
       period:
         $ref: '#/definitions/internal_report_port_public_http.PeriodResponse'
-      sections:
+      rows:
         items:
-          $ref: '#/definitions/http.SectionResponse'
+          $ref: '#/definitions/http.RowResponse'
         type: array
       sobId:
         type: string
@@ -531,23 +757,48 @@ definitions:
       reviewer:
         type: string
     type: object
-  http.SectionResponse:
+  http.RowReferenceResponse:
+    properties:
+      rowCode:
+        type: string
+      sumFactor:
+        type: integer
+    type: object
+  http.RowResponse:
     properties:
       amounts:
         items:
           type: number
         type: array
+      canAddChild:
+        type: boolean
+      canEdit:
+        type: boolean
+      canMove:
+        type: boolean
+      displaySumFactor:
+        type: boolean
+      expression:
+        $ref: '#/definitions/http.ExpressionResponse'
       id:
         type: string
-      items:
+      indent:
+        type: integer
+      lineNo:
+        type: integer
+      rowCode:
+        type: string
+      rows:
         items:
-          $ref: '#/definitions/http.ItemResponse'
+          $ref: '#/definitions/http.RowResponse'
         type: array
-      sections:
-        items:
-          $ref: '#/definitions/http.SectionResponse'
-        type: array
-      title:
+      sequence:
+        type: integer
+      showLineNo:
+        type: boolean
+      sumFactor:
+        type: integer
+      text:
         type: string
     type: object
   http.SobResponse:
@@ -577,93 +828,132 @@ definitions:
     properties:
       balanceDirection:
         type: string
-      categoryKeys:
+      defaultCashFlowItemIdForCredit:
+        type: string
+      defaultCashFlowItemIdForDebit:
+        type: string
+      dimensionCategoryIds:
         items:
           type: string
         type: array
       group:
         type: string
+      isCashEquivalent:
+        type: boolean
       levelNumber:
         type: integer
       title:
         type: string
     type: object
-  http.UpdateJournalRequest:
-    type: object
-  http.UpdateReportFormulaRequest:
+  http.UpdateCashFlowItemReferenceRequest:
     properties:
-      accountNumber:
+      code:
         type: string
-      id:
-        type: string
-      rule:
+      itemId:
         type: string
       sumFactor:
         type: integer
+    type: object
+  http.UpdateCategoryRequest:
+    properties:
+      name:
+        type: string
     required:
-    - accountNumber
-    - rule
-    - sumFactor
+    - name
     type: object
-  http.UpdateReportItemRequest:
+  http.UpdateExpressionRequest:
     properties:
-      dataSource:
-        type: string
-      displaySumFactor:
-        type: boolean
-      formulas:
+      cashFlowItems:
         items:
-          $ref: '#/definitions/http.UpdateReportFormulaRequest'
+          $ref: '#/definitions/http.UpdateCashFlowItemReferenceRequest'
         type: array
-      id:
-        description: Identity
+      kind:
         type: string
-      isAbleToAddChild:
-        type: boolean
-      isBreakdownItem:
-        type: boolean
-      level:
-        type: integer
+      ledgerAccounts:
+        items:
+          $ref: '#/definitions/http.UpdateLedgerAccountReferenceRequest'
+        type: array
+      rowReferences:
+        items:
+          $ref: '#/definitions/http.UpdateRowReferenceRequest'
+        type: array
+    type: object
+  http.UpdateJournalRequest:
+    properties:
+      headerText:
+        type: string
+      journalLines:
+        items:
+          $ref: '#/definitions/http.JournalLineRequest'
+        type: array
+      transactionDate:
+        type: string
+      updater:
+        type: string
+    type: object
+  http.UpdateLedgerAccountReferenceRequest:
+    properties:
+      accountId:
+        type: string
+      measure:
+        type: string
+      rawAccountNumber:
+        type: string
       sumFactor:
         type: integer
-      text:
-        description: Content (required for new items, optional for updates to existing
-          items)
+    type: object
+  http.UpdateOptionRequest:
+    properties:
+      name:
         type: string
+    required:
+    - name
     type: object
   http.UpdateReportRequest:
     properties:
-      amountTypes:
-        description: 'Optional: update amount types'
+      rows:
         items:
-          type: string
-        type: array
-      sections:
-        description: 'Required: complete section structure'
-        items:
-          $ref: '#/definitions/http.UpdateSectionRequest'
+          $ref: '#/definitions/http.UpdateRowRequest'
         type: array
       title:
-        description: 'Optional: update report title'
         type: string
     type: object
-  http.UpdateSectionRequest:
+  http.UpdateRowReferenceRequest:
     properties:
-      id:
-        description: Section ID
+      rowCode:
         type: string
-      items:
-        description: Complete item list for this section
+      sumFactor:
+        type: integer
+    type: object
+  http.UpdateRowRequest:
+    properties:
+      canAddChild:
+        type: boolean
+      canEdit:
+        type: boolean
+      canMove:
+        type: boolean
+      displaySumFactor:
+        type: boolean
+      expression:
+        $ref: '#/definitions/http.UpdateExpressionRequest'
+      id:
+        type: string
+      indent:
+        type: integer
+      lineNo:
+        type: integer
+      rowCode:
+        type: string
+      rows:
         items:
-          $ref: '#/definitions/http.UpdateReportItemRequest'
+          $ref: '#/definitions/http.UpdateRowRequest'
         type: array
-      sections:
-        description: 'Optional: nested sections'
-        items:
-          $ref: '#/definitions/http.UpdateSectionRequest'
-        type: array
-      title:
-        description: 'Optional: update section title'
+      showLineNo:
+        type: boolean
+      sumFactor:
+        type: integer
+      text:
         type: string
     type: object
   http.UpdateSobRequest:
@@ -680,41 +970,6 @@ definitions:
   http.UpdateUserRequest:
     properties:
       traits:
-        type: string
-    type: object
-  internal_general_ledger_port_public_http.AccountResponse:
-    properties:
-      accountNumber:
-        type: string
-      auxiliaryCategories:
-        items:
-          $ref: '#/definitions/http.AuxiliaryCategoryResponse'
-        type: array
-      balanceDirection:
-        type: string
-      class:
-        type: string
-      createdAt:
-        type: string
-      group:
-        type: string
-      id:
-        type: string
-      isLeaf:
-        type: boolean
-      level:
-        type: integer
-      numberHierarchy:
-        items:
-          type: integer
-        type: array
-      sobId:
-        type: string
-      superiorAccountId:
-        type: string
-      title:
-        type: string
-      updatedAt:
         type: string
     type: object
   internal_general_ledger_port_public_http.Error:
@@ -748,29 +1003,6 @@ definitions:
       id:
         type: string
       traits: {}
-    type: object
-  internal_report_port_public_http.AccountResponse:
-    properties:
-      accountNumber:
-        type: string
-      balanceDirection:
-        type: string
-      class:
-        type: integer
-      group:
-        type: integer
-      id:
-        type: string
-      isLeaf:
-        type: boolean
-      level:
-        type: integer
-      sobId:
-        type: string
-      superiorAccountId:
-        type: string
-      title:
-        type: string
     type: object
   internal_report_port_public_http.Error:
     properties:
@@ -843,6 +1075,28 @@ paths:
       tags:
       - accounts
   /sob/{sobId}/account/{accountId}:
+    delete:
+      description: Delete account
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Account ID
+        in: path
+        name: accountId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - accounts
     get:
       consumes:
       - application/json
@@ -864,7 +1118,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+            $ref: '#/definitions/http.AccountDetailResponse'
         "404":
           description: Not Found
         "500":
@@ -923,7 +1177,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+              $ref: '#/definitions/http.AccountSlimResponse'
             type: array
         "500":
           description: Internal Server Error
@@ -953,43 +1207,23 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.AccountResponse'
+            $ref: '#/definitions/http.AccountDetailResponse'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - accounts
-  /sob/{sobId}/auxiliaries:
+  /sob/{sobId}/cash-flow-items:
     get:
       consumes:
       - application/json
-      description: List all auxiliary categories
+      description: List all cash flow items for a Set of Books
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
         type: string
       produces:
       - application/json
@@ -997,160 +1231,213 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryCategoryResponse'
+            items:
+              $ref: '#/definitions/http.CashFlowItemResponse'
+            type: array
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
-      - auxiliary accounts
-    post:
-      consumes:
-      - application/json
-      description: Create auxiliary category
+      - cash-flow-items
+  /sob/{sobId}/dimension/categories:
+    get:
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Create auxiliary category request
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_CategoryResponse'
+      summary: Search dimension categories
+      tags:
+      - dimension
+    post:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Create category request
         in: body
-        name: CreateAuxiliaryCategoryRequest
+        name: CreateCategoryRequest
         required: true
         schema:
-          $ref: '#/definitions/http.CreateAuxiliaryCategoryRequest'
-      produces:
-      - application/json
+          $ref: '#/definitions/http.CreateCategoryRequest'
       responses:
         "201":
           description: Created
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      summary: Create a dimension category
       tags:
-      - auxiliary accounts
-  /sob/{sobId}/auxiliary/{categoryKey}:
-    get:
-      consumes:
-      - application/json
-      description: Get an auxiliary category by key
+      - dimension
+  /sob/{sobId}/dimension/category/{categoryId}:
+    delete:
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Category Key
+      - description: Category ID
         in: path
-        name: categoryKey
+        name: categoryId
         required: true
         type: string
-      produces:
-      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a dimension category
+      tags:
+      - dimension
+    get:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.AuxiliaryCategoryResponse'
+            $ref: '#/definitions/http.CategoryResponse'
         "404":
           description: Not Found
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      summary: Get a dimension category by ID
       tags:
-      - auxiliary accounts
-  /sob/{sobId}/auxiliary/{categoryKey}/accounts:
-    get:
-      consumes:
-      - application/json
-      description: List all auxiliary accounts
+      - dimension
+    patch:
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Category Key
+      - description: Category ID
         in: path
-        name: categoryKey
+        name: categoryId
         required: true
         type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
+      - description: Update category request
+        in: body
+        name: UpdateCategoryRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateCategoryRequest'
+      responses:
+        "200":
+          description: OK
+      summary: Update a dimension category
+      tags:
+      - dimension
+  /sob/{sobId}/dimension/category/{categoryId}/option/{optionId}:
+    delete:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
         type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
         type: string
-      produces:
-      - application/json
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Delete a dimension option
+      tags:
+      - dimension
+    patch:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
+      - description: Option ID
+        in: path
+        name: optionId
+        required: true
+        type: string
+      - description: Update option request
+        in: body
+        name: UpdateOptionRequest
+        required: true
+        schema:
+          $ref: '#/definitions/http.UpdateOptionRequest'
+      responses:
+        "200":
+          description: OK
+      summary: Update a dimension option
+      tags:
+      - dimension
+  /sob/{sobId}/dimension/category/{categoryId}/options:
+    get:
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Category ID
+        in: path
+        name: categoryId
+        required: true
+        type: string
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryAccountResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_OptionResponse'
+      summary: Search dimension options within a category
       tags:
-      - auxiliary accounts
+      - dimension
     post:
-      consumes:
-      - application/json
-      description: Create auxiliary account
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Category Key
+      - description: Category ID
         in: path
-        name: categoryKey
+        name: categoryId
         required: true
         type: string
-      - description: Create auxiliary account request
+      - description: Create option request
         in: body
-        name: CreateAuxiliaryAccountRequest
+        name: CreateOptionRequest
         required: true
         schema:
-          $ref: '#/definitions/http.CreateAuxiliaryAccountRequest'
-      produces:
-      - application/json
+          $ref: '#/definitions/http.CreateOptionRequest'
       responses:
         "201":
           description: Created
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      summary: Create a dimension option within a category
       tags:
-      - auxiliary accounts
+      - dimension
   /sob/{sobId}/first-period/ledgers:
     get:
       consumes:
@@ -1176,6 +1463,38 @@ paths:
       tags:
       - ledgers
   /sob/{sobId}/journal/{journalId}:
+    delete:
+      description: Delete a CLOSING or YEARLY_CLOSING journal and reverse its ledger
+        posts.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Journal ID
+        in: path
+        name: journalId
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      summary: Delete system journal
+      tags:
+      - journals
     get:
       consumes:
       - application/json
@@ -1197,7 +1516,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.JournalResponse'
+            $ref: '#/definitions/http.JournalDetailResponse'
         "404":
           description: Not Found
         "500":
@@ -1459,7 +1778,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalResponse'
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_JournalSlimResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1488,7 +1807,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/http.JournalResponse'
+            $ref: '#/definitions/http.JournalDetailResponse'
         "400":
           description: Bad Request
           schema:
@@ -1499,31 +1818,20 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - journals
-  /sob/{sobId}/ledger/{accountId}:
+  /sob/{sobId}/journals/closing-journal:
     get:
       consumes:
       - application/json
-      description: Get aggregated ledger summary for a single account across a period
-        range
+      description: Get both monthly and year-end closing journal IDs for a given period
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Account ID
-        in: path
-        name: accountId
-        required: true
-        type: string
-      - description: From period (YYYY-MM)
+      - description: Period in YYYY-MM format
         in: query
-        name: fromPeriod
-        required: true
-        type: string
-      - description: To period (YYYY-MM)
-        in: query
-        name: toPeriod
+        name: period
         required: true
         type: string
       produces:
@@ -1532,167 +1840,86 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/http.LedgerSummaryResponse'
+            $ref: '#/definitions/http.ClosingJournalIdsResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "404":
-          description: Not Found
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
-      - ledgers
-  /sob/{sobId}/ledger/{accountId}/auxiliary:
-    get:
+      - journals
+  /sob/{sobId}/journals/monthly-closing-journal:
+    post:
       consumes:
       - application/json
-      description: Get aggregated auxiliary ledger summary grouped by auxiliary account
-        for a specific category
+      description: Generate and post monthly closing journal that reverses all leaf
+        P&L account balances to zero and transfers the net result to the Current Year
+        Profit account
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Account ID
-        in: path
-        name: accountId
-        required: true
-        type: string
-      - description: Category key (e.g., customer, project)
-        in: query
-        name: categoryKey
-        required: true
-        type: string
-      - description: From period (YYYY-MM)
-        in: query
-        name: fromPeriod
-        required: true
-        type: string
-      - description: To period (YYYY-MM)
-        in: query
-        name: toPeriod
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_AuxiliaryLedgerSummaryResponse'
+            $ref: '#/definitions/http.ClosingJournalResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "404":
-          description: Not Found
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
-      - ledgers
-  /sob/{sobId}/ledger/{accountId}/entries:
-    get:
+      - journals
+  /sob/{sobId}/journals/year-end-closing-journal:
+    post:
       consumes:
       - application/json
-      description: Get detailed ledger entries for a single account across a period
-        range
+      description: Generate and post year-end closing journal that transfers the Current
+        Year Profit account balance to Retained Earnings. Only callable in period
+        12 (year-end) after monthly closing is complete
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Account ID
-        in: path
-        name: accountId
-        required: true
-        type: string
-      - description: From period (YYYY-MM)
-        in: query
-        name: fromPeriod
-        required: true
-        type: string
-      - description: To period (YYYY-MM)
-        in: query
-        name: toPeriod
-        required: true
-        type: string
-      - description: Auxiliary Account ID (optional)
-        in: query
-        name: auxiliaryAccountId
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: text eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
       produces:
       - application/json
       responses:
-        "200":
-          description: OK
+        "201":
+          description: Created
           schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse'
+            $ref: '#/definitions/http.ClosingJournalResponse'
         "400":
           description: Bad Request
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-        "404":
-          description: Not Found
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
-      - ledgers
+      - journals
   /sob/{sobId}/ledgers:
     get:
       consumes:
       - application/json
       description: List all ledgers for a SoB aggregated across a period range. Returns
         one entry per account with opening amount from the first period, summed period
-        debit/credit/amount, and ending amount from the last period.
+        debit/credit/amount, and ending amount from the last period. When dimensionOptionId
+        is provided, only accounts that have journal lines tagged with that dimension
+        option are returned.
       parameters:
       - description: Sob ID
         in: path
@@ -1709,15 +1936,86 @@ paths:
         name: toPeriod
         required: true
         type: string
+      - description: Dimension Option ID (optional filter)
+        in: query
+        name: dimensionOptionId
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/http.LedgerResponse'
-            type: array
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
+  /sob/{sobId}/ledgers/dimension-category/{dimensionCategoryId}/options:
+    get:
+      consumes:
+      - application/json
+      description: Get total amounts from journal lines for a specific dimension category
+        across a period range, grouped by dimension option. When accountId is provided,
+        results are scoped to that account only; otherwise all accounts are aggregated.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Dimension Category ID
+        in: path
+        name: dimensionCategoryId
+        required: true
+        type: string
+      - description: Account ID (optional — omit to aggregate all accounts)
+        in: query
+        name: accountId
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerDimensionOptionResponse'
         "400":
           description: Bad Request
           schema:
@@ -1760,6 +2058,78 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - ledgers
+  /sob/{sobId}/ledgers/transactions:
+    get:
+      consumes:
+      - application/json
+      description: Get detailed ledger transaction entries across a period range.
+        At least one of accountId or dimensionOptionId must be provided. When both
+        are provided, entries matching both filters are returned.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: From period (YYYY-MM)
+        in: query
+        name: fromPeriod
+        required: true
+        type: string
+      - description: To period (YYYY-MM)
+        in: query
+        name: toPeriod
+        required: true
+        type: string
+      - description: Account ID (optional filter — must provide at least one of accountId
+          or dimensionOptionId)
+        in: query
+        name: accountId
+        type: string
+      - description: Dimension Option ID (optional filter — must provide at least
+          one of accountId or dimensionOptionId)
+        in: query
+        name: dimensionOptionId
+        type: string
+      - default: 1
+        description: page number
+        in: query
+        name: $page
+        type: integer
+      - default: 40
+        description: page size
+        in: query
+        name: $size
+        type: integer
+      - description: sort on field(s)
+        example: updatedAt desc,createdAt
+        in: query
+        name: $sort
+        type: string
+      - description: filter on field(s)
+        example: text eq 'something' and amount lt 10
+        in: query
+        name: $filter
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-http_LedgerEntryResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - ledgers
   /sob/{sobId}/period/{periodId}/close:
     post:
       consumes:
@@ -1779,8 +2149,42 @@ paths:
       produces:
       - application/json
       responses:
+        "200":
+          description: Period closed but report generation failed
+          schema:
+            $ref: '#/definitions/http.PeriodCloseWarningResponse'
         "204":
           description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - periods
+  /sob/{sobId}/period/{periodId}/pre-close-check:
+    get:
+      consumes:
+      - application/json
+      description: Validate period against closing conditions and return detailed
+        results for each check
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Period ID
+        in: path
+        name: periodId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.PreCloseCheckResponse'
         "500":
           description: Internal Server Error
           schema:
@@ -1813,15 +2217,60 @@ paths:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
-  /sob/{sobId}/periods/current:
-    get:
+  /sob/{sobId}/periods/batch-close:
+    post:
       consumes:
       - application/json
-      description: Current period
+      description: Sequentially close all periods from the current period to the target
+        period (inclusive) in a single atomic transaction. For each period, automatically
+        creates monthly and year-end closing journals before closing. Rolls back entirely
+        if any period fails validation.
       parameters:
       - description: Sob ID
         in: path
         name: sobId
+        required: true
+        type: string
+      - description: Target period in YYYY-MM format
+        in: query
+        name: targetPeriod
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Periods closed but report generation failed
+          schema:
+            $ref: '#/definitions/http.PeriodCloseWarningResponse'
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
+      tags:
+      - periods
+  /sob/{sobId}/periods/batch-pre-close-check:
+    get:
+      consumes:
+      - application/json
+      description: Validate from the current period to the target period. Checks for
+        unposted journals and trial balance in each existing period. P&L and CYP checks
+        are omitted because auto-transfer handles them during batch close.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Target period in YYYY-MM format
+        in: query
+        name: targetPeriod
         required: true
         type: string
       produces:
@@ -1830,27 +2279,34 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.PeriodResponse'
+            $ref: '#/definitions/http.BatchPreCloseCheckResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
       tags:
       - periods
-  /sob/{sobId}/report/{reportId}:
+  /sob/{sobId}/report:
     get:
-      consumes:
-      - application/json
-      description: Show report by sob and id
+      description: Returns the report instance for a given SoB, class, and period.
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Report ID
-        in: path
-        name: reportId
+      - description: Report class
+        in: query
+        name: class
+        required: true
+        type: string
+      - description: Period (YYYY-MM)
+        in: query
+        name: period
         required: true
         type: string
       produces:
@@ -1866,14 +2322,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Get report instance by class and period
       tags:
       - reports
+  /sob/{sobId}/report/{reportId}:
     patch:
       consumes:
       - application/json
-      description: Updates report metadata, sections, and items. Supports add, update,
-        delete, and reorder operations in a single atomic transaction. Sections can
-        contain nested sections. Items are sequenced by their position in the array.
+      description: Updates report title, row tree, and expressions.
       parameters:
       - description: Sob ID
         in: path
@@ -1885,7 +2341,7 @@ paths:
         name: reportId
         required: true
         type: string
-      - description: Complete report structure
+      - description: Report update payload
         in: body
         name: UpdateReportRequest
         required: true
@@ -1904,52 +2360,21 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
-      summary: Update entire report structure
+      summary: Update report structure
       tags:
       - reports
-  /sob/{sobId}/report/{reportId}/generate:
+  /sob/{sobId}/report/{reportId}/recalculate:
     post:
-      consumes:
-      - application/json
-      description: Generate report
+      description: Recalculates amounts while preserving the existing report structure.
       parameters:
       - description: Sob ID
         in: path
         name: sobId
         required: true
         type: string
-      - description: Generate report request
-        in: body
-        name: GenerateReportRequest
-        required: true
-        schema:
-          $ref: '#/definitions/http.GenerateReportRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/http.ReportResponse'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
-      tags:
-      - reports
-  /sob/{sobId}/report/{reportId}/regenerate:
-    post:
-      consumes:
-      - application/json
-      description: Regenerate report
-      parameters:
-      - description: Sob ID
+      - description: Report ID
         in: path
-        name: sobId
+        name: reportId
         required: true
         type: string
       produces:
@@ -1957,14 +2382,102 @@ paths:
       responses:
         "204":
           description: No Content
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/internal_report_port_public_http.Error'
         "500":
           description: Internal Server Error
           schema:
             $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Recalculate report amounts
+      tags:
+      - reports
+  /sob/{sobId}/report/{reportId}/regenerate:
+    post:
+      description: Rebuilds an existing report instance from the latest template and
+        recalculates amounts.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report ID
+        in: path
+        name: reportId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Regenerate report instance
+      tags:
+      - reports
+  /sob/{sobId}/report/generate:
+    post:
+      description: Creates a report instance from the latest template. If one already
+        exists, returns it unchanged.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report class
+        in: query
+        name: class
+        required: true
+        type: string
+      - description: Period (YYYY-MM)
+        in: query
+        name: period
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Generate missing report instance
+      tags:
+      - reports
+  /sob/{sobId}/report/template:
+    get:
+      description: Returns the report template for a given SoB and class.
+      parameters:
+      - description: Sob ID
+        in: path
+        name: sobId
+        required: true
+        type: string
+      - description: Report class
+        in: query
+        name: class
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/http.ReportResponse'
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/internal_report_port_public_http.Error'
+      summary: Get report template by class
       tags:
       - reports
   /sob/{sobId}/reports:
@@ -2010,50 +2523,6 @@ paths:
             $ref: '#/definitions/internal_report_port_public_http.Error'
       tags:
       - reports
-  /sob/{sobId}/search-accounts:
-    get:
-      consumes:
-      - application/json
-      description: Search accounts with filters
-      parameters:
-      - description: Sob ID
-        in: path
-        name: sobId
-        required: true
-        type: string
-      - default: 1
-        description: page number
-        in: query
-        name: $page
-        type: integer
-      - default: 40
-        description: page size
-        in: query
-        name: $size
-        type: integer
-      - description: sort on field(s)
-        example: updatedAt desc,createdAt
-        in: query
-        name: $sort
-        type: string
-      - description: filter on field(s)
-        example: title eq 'something' and amount lt 10
-        in: query
-        name: $filter
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/github_fims-proto_fims-proto-ms_internal_common_data.PageResponse-internal_general_ledger_port_public_http_AccountResponse'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/internal_general_ledger_port_public_http.Error'
-      tags:
-      - accounts
   /sobs:
     get:
       consumes:

@@ -10,13 +10,15 @@ import (
 )
 
 type JournalByIdHandler struct {
-	readModel   GeneralLedgerReadModel
-	userService service.UserService
+	readModel        GeneralLedgerReadModel
+	userService      service.UserService
+	dimensionService service.DimensionService
 }
 
 func NewJournalByIdHandler(
 	readModel GeneralLedgerReadModel,
 	userService service.UserService,
+	dimensionService service.DimensionService,
 ) JournalByIdHandler {
 	if readModel == nil {
 		panic("nil read model")
@@ -26,9 +28,14 @@ func NewJournalByIdHandler(
 		panic("nil user service")
 	}
 
+	if dimensionService == nil {
+		panic("nil dimension service")
+	}
+
 	return JournalByIdHandler{
-		readModel:   readModel,
-		userService: userService,
+		readModel:        readModel,
+		userService:      userService,
+		dimensionService: dimensionService,
 	}
 }
 
@@ -43,5 +50,19 @@ func (h JournalByIdHandler) Handle(ctx context.Context, journalId uuid.UUID) (Jo
 		return Journal{}, fmt.Errorf("failed to enrich user in journal: %w", err)
 	}
 
-	return singletonList[0], nil
+	journal := singletonList[0]
+
+	journal.JournalLines, err = enrichJournalLineDimensionOptions(ctx, h.dimensionService, journal.JournalLines)
+	if err != nil {
+		return Journal{}, fmt.Errorf("failed to enrich dimension options in journal lines: %w", err)
+	}
+
+	for i, line := range journal.JournalLines {
+		journal.JournalLines[i].Account, err = enrichAccountDimensionCategories(ctx, h.dimensionService, line.Account)
+		if err != nil {
+			return Journal{}, fmt.Errorf("failed to enrich dimension categories in journal line account: %w", err)
+		}
+	}
+
+	return journal, nil
 }
