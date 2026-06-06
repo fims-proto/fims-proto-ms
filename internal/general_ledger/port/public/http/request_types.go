@@ -1,6 +1,8 @@
 package http
 
 import (
+	"encoding/json"
+
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
@@ -9,23 +11,49 @@ import (
 )
 
 type CreateAccountRequest struct {
-	Title                    string      `json:"title"`
-	LevelNumber              int         `json:"levelNumber"`
-	SuperiorRawAccountNumber string      `json:"superiorRawAccountNumber,omitempty"`
-	BalanceDirection         string      `json:"balanceDirection"`
-	Class                    string      `json:"class,omitempty"`
-	Group                    string      `json:"group,omitempty"`
-	DimensionCategoryIds     []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
-	IsCashEquivalent         bool        `json:"isCashEquivalent"`
+	Title                          string      `json:"title"`
+	LevelNumber                    int         `json:"levelNumber"`
+	SuperiorRawAccountNumber       string      `json:"superiorRawAccountNumber,omitempty"`
+	BalanceDirection               string      `json:"balanceDirection"`
+	Class                          string      `json:"class,omitempty"`
+	Group                          string      `json:"group,omitempty"`
+	DimensionCategoryIds           []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	IsCashEquivalent               bool        `json:"isCashEquivalent"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID  `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID  `json:"defaultCashFlowItemIdForCredit,omitempty"`
 }
 
 type UpdateAccountRequest struct {
-	Title                string      `json:"title,omitempty"`
-	LevelNumber          int         `json:"levelNumber,omitempty"`
-	BalanceDirection     string      `json:"balanceDirection,omitempty"`
-	Group                string      `json:"group"`
-	DimensionCategoryIds []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
-	IsCashEquivalent     *bool       `json:"isCashEquivalent,omitempty"`
+	Title                          string      `json:"title,omitempty"`
+	LevelNumber                    int         `json:"levelNumber,omitempty"`
+	BalanceDirection               string      `json:"balanceDirection,omitempty"`
+	Group                          string      `json:"group"`
+	DimensionCategoryIds           []uuid.UUID `json:"dimensionCategoryIds,omitempty"`
+	IsCashEquivalent               *bool       `json:"isCashEquivalent,omitempty"`
+	DefaultCashFlowItemIdForDebit  *uuid.UUID  `json:"defaultCashFlowItemIdForDebit,omitempty"`
+	DefaultCashFlowItemIdForCredit *uuid.UUID  `json:"defaultCashFlowItemIdForCredit,omitempty"`
+	UpdateDefaultCashFlowItems     bool        `json:"-" swaggerignore:"true"`
+}
+
+// UnmarshalJSON detects whether cash flow item fields were explicitly present in the JSON body (even as null),
+// so the update handler can distinguish "omitted = don't touch" from "null = clear the value".
+func (r *UpdateAccountRequest) UnmarshalJSON(data []byte) error {
+	type alias UpdateAccountRequest
+	var decoded alias
+	if err := json.Unmarshal(data, &decoded); err != nil {
+		return err
+	}
+
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+
+	*r = UpdateAccountRequest(decoded)
+	_, debitProvided := raw["defaultCashFlowItemIdForDebit"]
+	_, creditProvided := raw["defaultCashFlowItemIdForCredit"]
+	r.UpdateDefaultCashFlowItems = debitProvided || creditProvided
+	return nil
 }
 
 type CreateJournalRequest struct {

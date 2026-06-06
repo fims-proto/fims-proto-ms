@@ -192,5 +192,6 @@
     "account-classMismatch": "科目类别 {{.A}} 与上级科目类别 {{.B}} 不匹配",
     "account-groupMismatch": "科目组 {{.A}} 与上级科目组 {{.B}} 不匹配",
     "account-levelExceedsLimit": "科目层级 {{.A}} 超过最大层级限制 {{.B}}",
-    "account-codeLengthExceeded": "层级编号 {{.A}}（长度 {{.B}}）超过第 {{.D}} 层的编号长度限制 {{.C}}"
+    "account-codeLengthExceeded": "层级编号 {{.A}}（长度 {{.B}}）超过第 {{.D}} 层的编号长度限制 {{.C}}",
+    "account-cashFlowItemNotFound": "指定的默认现金流量项目不存在"
 }

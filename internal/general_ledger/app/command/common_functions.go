@@ -124,6 +124,40 @@ func prepareJournalLines(
 	return journalLines, nil
 }
 
+func validateDefaultCashFlowItemIds(
+	ctx context.Context,
+	repo domain.Repository,
+	sobId uuid.UUID,
+	debitItemId *uuid.UUID,
+	creditItemId *uuid.UUID,
+) error {
+	var ids []uuid.UUID
+	if debitItemId != nil {
+		ids = append(ids, *debitItemId)
+	}
+	if creditItemId != nil {
+		ids = append(ids, *creditItemId)
+	}
+	if len(ids) == 0 {
+		return nil
+	}
+
+	existing, err := repo.ReadExistingCashFlowItemIds(ctx, sobId, ids)
+	if err != nil {
+		return fmt.Errorf("failed to validate default cash flow item ids: %w", err)
+	}
+	existingSet := utils.SliceToMap(existing,
+		func(id uuid.UUID) uuid.UUID { return id },
+		func(id uuid.UUID) struct{} { return struct{}{} },
+	)
+	for _, id := range ids {
+		if _, ok := existingSet[id]; !ok {
+			return commonErrors.NewInvalidInputError(commonErrors.SlugAccountCashFlowItemNotFound, id)
+		}
+	}
+	return nil
+}
+
 // readPeriodIdAndCheck tries to get period id by given transaction date of a journal, and will also check if the period is closed.
 // if no period exists for given transaction date, it creates one
 func readPeriodIdAndCheck(

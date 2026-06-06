@@ -83,10 +83,11 @@ const (
 	SlugAccountDeleteUsedByJLine  = "account-delete-usedByJournalLine"
 	SlugAccountDeleteHasOpBalance = "account-delete-hasOpeningBalance"
 
-	SlugAccountClassMismatch      = "account-classMismatch"
-	SlugAccountGroupMismatch      = "account-groupMismatch"
-	SlugAccountLevelExceedsLimit  = "account-levelExceedsLimit"
-	SlugAccountCodeLengthExceeded = "account-codeLengthExceeded"
+	SlugAccountClassMismatch        = "account-classMismatch"
+	SlugAccountGroupMismatch        = "account-groupMismatch"
+	SlugAccountLevelExceedsLimit    = "account-levelExceedsLimit"
+	SlugAccountCodeLengthExceeded   = "account-codeLengthExceeded"
+	SlugAccountCashFlowItemNotFound = "account-cashFlowItemNotFound"
 )
 
 // Ledger

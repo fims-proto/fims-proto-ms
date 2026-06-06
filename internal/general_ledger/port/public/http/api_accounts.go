@@ -115,16 +115,18 @@ func (h Handler) CreateAccount(c *gin.Context) {
 		return
 	}
 	cmd := command.CreateAccountCmd{
-		AccountId:                uuid.New(),
-		SobId:                    uuid.MustParse(c.Param("sobId")),
-		Title:                    req.Title,
-		LevelNumber:              req.LevelNumber,
-		BalanceDirection:         req.BalanceDirection,
-		Class:                    classReq,
-		Group:                    group,
-		SuperiorRawAccountNumber: req.SuperiorRawAccountNumber,
-		DimensionCategoryIds:     req.DimensionCategoryIds,
-		IsCashEquivalent:         req.IsCashEquivalent,
+		AccountId:                      uuid.New(),
+		SobId:                          uuid.MustParse(c.Param("sobId")),
+		Title:                          req.Title,
+		LevelNumber:                    req.LevelNumber,
+		BalanceDirection:               req.BalanceDirection,
+		Class:                          classReq,
+		Group:                          group,
+		SuperiorRawAccountNumber:       req.SuperiorRawAccountNumber,
+		DimensionCategoryIds:           req.DimensionCategoryIds,
+		IsCashEquivalent:               req.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  req.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: req.DefaultCashFlowItemIdForCredit,
 	}
 
 	if err = h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
@@ -164,14 +166,17 @@ func (h Handler) UpdateAccount(c *gin.Context) {
 		return
 	}
 	cmd := command.UpdateAccountCmd{
-		AccountId:            uuid.MustParse(c.Param("accountId")),
-		SobId:                uuid.MustParse(c.Param("sobId")),
-		Title:                req.Title,
-		LevelNumber:          req.LevelNumber,
-		BalanceDirection:     req.BalanceDirection,
-		Group:                group,
-		DimensionCategoryIds: req.DimensionCategoryIds,
-		IsCashEquivalent:     req.IsCashEquivalent,
+		AccountId:                      uuid.MustParse(c.Param("accountId")),
+		SobId:                          uuid.MustParse(c.Param("sobId")),
+		Title:                          req.Title,
+		LevelNumber:                    req.LevelNumber,
+		BalanceDirection:               req.BalanceDirection,
+		Group:                          group,
+		DimensionCategoryIds:           req.DimensionCategoryIds,
+		IsCashEquivalent:               req.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  req.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: req.DefaultCashFlowItemIdForCredit,
+		UpdateDefaultCashFlowItems:     req.UpdateDefaultCashFlowItems,
 	}
 	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
 		_ = c.Error(err)

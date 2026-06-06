@@ -2876,6 +2876,12 @@ const docTemplate = `{
                 "class": {
                     "type": "string"
                 },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
+                    "type": "string"
+                },
                 "dimensionCategoryIds": {
                     "type": "array",
                     "items": {
@@ -3704,6 +3710,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "balanceDirection": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForCredit": {
+                    "type": "string"
+                },
+                "defaultCashFlowItemIdForDebit": {
                     "type": "string"
                 },
                 "dimensionCategoryIds": {

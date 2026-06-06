@@ -18,16 +18,18 @@ import (
 )
 
 type CreateAccountCmd struct {
-	AccountId                uuid.UUID
-	SobId                    uuid.UUID
-	Title                    string
-	LevelNumber              int
-	SuperiorRawAccountNumber string
-	BalanceDirection         string
-	Class                    int
-	Group                    int
-	DimensionCategoryIds     []uuid.UUID
-	IsCashEquivalent         bool
+	AccountId                      uuid.UUID
+	SobId                          uuid.UUID
+	Title                          string
+	LevelNumber                    int
+	SuperiorRawAccountNumber       string
+	BalanceDirection               string
+	Class                          int
+	Group                          int
+	DimensionCategoryIds           []uuid.UUID
+	IsCashEquivalent               bool
+	DefaultCashFlowItemIdForDebit  *uuid.UUID
+	DefaultCashFlowItemIdForCredit *uuid.UUID
 }
 
 type CreateAccountHandler struct {
@@ -96,6 +98,20 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 		return commonErrors.NewInvalidInputError(commonErrors.SlugAccountCodeLengthExceeded, cmd.LevelNumber, len(levelNumberStr), codeLength, level)
 	}
 
+	if cmd.IsCashEquivalent {
+		cmd.DefaultCashFlowItemIdForDebit = nil
+		cmd.DefaultCashFlowItemIdForCredit = nil
+	}
+	if err = validateDefaultCashFlowItemIds(
+		ctx,
+		h.repo,
+		cmd.SobId,
+		cmd.DefaultCashFlowItemIdForDebit,
+		cmd.DefaultCashFlowItemIdForCredit,
+	); err != nil {
+		return err
+	}
+
 	newAccount, err := account.New(
 		cmd.AccountId,
 		cmd.SobId,
@@ -114,6 +130,7 @@ func (h CreateAccountHandler) Handle(ctx context.Context, cmd CreateAccountCmd) 
 	if err != nil {
 		return fmt.Errorf("failed to create new account: %w", err)
 	}
+	newAccount.UpdateDefaultCashFlowItems(cmd.DefaultCashFlowItemIdForDebit, cmd.DefaultCashFlowItemIdForCredit)
 
 	return h.repo.EnableTx(ctx, func(txCtx context.Context) error {
 		// create account

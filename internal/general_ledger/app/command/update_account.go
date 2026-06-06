@@ -13,14 +13,17 @@ import (
 )
 
 type UpdateAccountCmd struct {
-	AccountId            uuid.UUID
-	SobId                uuid.UUID
-	Title                string
-	LevelNumber          int
-	BalanceDirection     string
-	Group                int
-	DimensionCategoryIds []uuid.UUID
-	IsCashEquivalent     *bool
+	AccountId                      uuid.UUID
+	SobId                          uuid.UUID
+	Title                          string
+	LevelNumber                    int
+	BalanceDirection               string
+	Group                          int
+	DimensionCategoryIds           []uuid.UUID
+	IsCashEquivalent               *bool
+	DefaultCashFlowItemIdForDebit  *uuid.UUID
+	DefaultCashFlowItemIdForCredit *uuid.UUID
+	UpdateDefaultCashFlowItems     bool
 }
 
 type UpdateAccountHandler struct {
@@ -100,6 +103,24 @@ func (h UpdateAccountHandler) update(ctx context.Context, cmd UpdateAccountCmd, 
 
 		if cmd.IsCashEquivalent != nil {
 			a.UpdateCashEquivalent(*cmd.IsCashEquivalent)
+		}
+
+		if a.IsCashEquivalent() {
+			a.UpdateDefaultCashFlowItems(nil, nil)
+			return a, nil
+		}
+
+		if cmd.UpdateDefaultCashFlowItems {
+			if err := validateDefaultCashFlowItemIds(
+				ctx,
+				h.repo,
+				cmd.SobId,
+				cmd.DefaultCashFlowItemIdForDebit,
+				cmd.DefaultCashFlowItemIdForCredit,
+			); err != nil {
+				return nil, err
+			}
+			a.UpdateDefaultCashFlowItems(cmd.DefaultCashFlowItemIdForDebit, cmd.DefaultCashFlowItemIdForCredit)
 		}
 
 		return a, nil
