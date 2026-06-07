@@ -1,11 +1,14 @@
 package main
 
 import (
+	"encoding/json"
+	"flag"
 	"net/http"
+	"os"
 	"strings"
 
-	_ "github/fims-proto/fims-proto-ms/docs/swagger_generated"
 	"github/fims-proto/fims-proto-ms/internal/common/config"
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/datasource"
 	dedicatedDatasource "github/fims-proto/fims-proto-ms/internal/common/datasource/dedicated-datasource"
 	multitenantDatasource "github/fims-proto/fims-proto-ms/internal/common/datasource/multitenant-datasource"
@@ -50,12 +53,15 @@ import (
 	userIntraPort "github/fims-proto/fims-proto-ms/internal/user/port/private/intraprocess"
 	userPublicHttpPort "github/fims-proto/fims-proto-ms/internal/user/port/public/http"
 
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humagin"
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
+	genSpec := flag.Bool("gen-spec", false, "generate static openapi.json and exit")
+	flag.Parse()
+
 	defer cleanup()
 
 	config.Initialize()
@@ -151,18 +157,24 @@ func main() {
 	router.Use(datasource.ResolveSubdomain())
 	router.Use(commonErrors.ErrorHandler(localizer))
 
-	// public http API
-	publicApiRouter := router.Group("/api/v1")
-	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), publicApiRouter)
+	// huma API (OAS3)
+	humaConfig := huma.DefaultConfig("FIMS prototype", "0.1")
+	humaConfig.Components.Schemas = huma.NewMapRegistry("#/components/schemas/", data.SchemaNamer)
+	humaConfig.Servers = []*huma.Server{{URL: "http://127.0.0.1:4455/fims"}}
+	api := humagin.New(router, humaConfig)
+	commonErrors.InitHumaErrorHandler(localizer)
+
+	// public http API — registered through huma for OAS3 spec
+	sobPublicHttpPort.InitRouter(sobPublicHttpPort.NewHandler(&sobApplication), api)
 	generalLedgerPublicHttpPort.InitRouter(
 		generalLedgerPublicHttpPort.NewHandler(&generalLedgerApplication, localizer),
-		publicApiRouter,
+		api,
 	)
-	reportPublicHttpPort.InitRouter(reportPublicHttpPort.NewHandler(&reportApplication), publicApiRouter)
-	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), publicApiRouter)
-	dimensionPublicHttpPort.InitRouter(dimensionPublicHttpPort.NewHandler(&dimensionApplication), publicApiRouter)
+	reportPublicHttpPort.InitRouter(reportPublicHttpPort.NewHandler(&reportApplication), api)
+	userPublicHttpPort.InitRouter(userPublicHttpPort.NewHandler(&userApplication), api)
+	dimensionPublicHttpPort.InitRouter(dimensionPublicHttpPort.NewHandler(&dimensionApplication), api)
 
-	// private http API, should have different authentication method then public API
+	// private http API — plain Gin, no spec
 	privateApiRouter := router.Group("/internal")
 	sobPrivateHttpPort.InitRouter(sobPrivateHttpPort.NewHandler(&sobApplication), privateApiRouter)
 	numberingPrivateHttpPort.InitRouter(numberingPrivateHttpPort.NewHandler(&numberingApplication), privateApiRouter)
@@ -175,14 +187,26 @@ func main() {
 	dimensionPrivateHttpPort.InitRouter(dimensionPrivateHttpPort.NewHandler(&dimensionApplication), privateApiRouter)
 
 	if strings.HasPrefix(config.GetString("profile"), "dev") {
-		// gin-swagger
-		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-		// devops
 		devopsApiRouter := router.Group("/devops/")
 		devops.InitJwtHandler(devopsApiRouter)
 	}
 
 	log.InfoWithoutCxt("All module routers initiated")
+
+	if *genSpec {
+		jsonBytes, err := json.Marshal(api.OpenAPI())
+		if err != nil {
+			panic("failed to marshal openapi spec: " + err.Error())
+		}
+		if err = os.MkdirAll("docs/swagger_generated", 0o755); err != nil {
+			panic("failed to create docs/swagger_generated: " + err.Error())
+		}
+		if err = os.WriteFile("docs/swagger_generated/openapi.json", jsonBytes, 0o644); err != nil {
+			panic("failed to write openapi spec: " + err.Error())
+		}
+		log.InfoWithoutCxt("openapi.json generated at docs/swagger_generated/openapi.json")
+		return
+	}
 
 	log.InfoWithoutCxt("Starting gin engine...")
 	if err := router.Run(":" + config.GetString("app.port")); err != nil {

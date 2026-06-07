@@ -1,122 +1,93 @@
 package http
 
 import (
-	"net/http"
+	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
-	"github/fims-proto/fims-proto-ms/internal/sob/app/query"
-
 	"github/fims-proto/fims-proto-ms/internal/sob/app/command"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 )
 
-// SearchSobs godoc
-//
-//	@Text			List all sobs
-//	@Description	List all sobs
-//	@Tags			sobs
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Success		200	{object}	data.PageResponse[SobResponse]
-//	@Failure		500	{object}	Error
-//	@Router			/sobs [get]
-func (h Handler) SearchSobs(c *gin.Context) {
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.Sob], error) {
-			return h.app.Queries.PagingSobs.Handle(c, pageRequest)
-		},
-		sobDTOToVO,
-	)
+type SearchSobsInput struct {
+	data.PaginationInput
 }
 
-// ReadSobById godoc
-//
-//	@Text			Show sob by id
-//	@Description	Show sob by id
-//	@Tags			sobs
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"ID of a SobId"
-//	@Success		200		{object}	SobResponse
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sobs/{sobId} [get]
-func (h Handler) ReadSobById(c *gin.Context) {
-	sob, err := h.app.Queries.SobById.Handle(c, uuid.MustParse(c.Param("sobId")))
+type SearchSobsOutput struct {
+	Body data.PageResponse[SobResponse]
+}
+
+// SearchSobs lists sets of books.
+func (h Handler) SearchSobs(ctx context.Context, input *SearchSobsInput) (*SearchSobsOutput, error) {
+	pageRequest, err := data.PageRequestFromInput(input.PaginationInput)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest(err.Error())
+	}
+	page, err := h.app.Queries.PagingSobs.Handle(ctx, pageRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &SearchSobsOutput{Body: data.MapPageResponse(page, sobDTOToVO)}, nil
+}
+
+type ReadSobByIdInput struct {
+	SobId uuid.UUID `path:"sobId"`
+}
+
+type ReadSobByIdOutput struct {
+	Body SobResponse
+}
+
+// ReadSobById returns one set of books by ID.
+func (h Handler) ReadSobById(ctx context.Context, input *ReadSobByIdInput) (*ReadSobByIdOutput, error) {
+	sob, err := h.app.Queries.SobById.Handle(ctx, input.SobId)
+	if err != nil {
+		return nil, err
 	}
 	if sob.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
+		return nil, huma.Error404NotFound("sob not found")
 	}
-	c.JSON(http.StatusOK, sobDTOToVO(sob))
+	return &ReadSobByIdOutput{Body: sobDTOToVO(sob)}, nil
 }
 
-// CreateSob godoc
-//
-//	@Text			Create sob
-//	@Description	Create sob
-//	@Tags			sobs
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			CreateSobRequest	body		CreateSobRequest	true	"CreateSob SobId"
-//	@Success		201					{object}	SobResponse
-//	@Failure		400					{object}	Error
-//	@Failure		500					{object}	Error
-//	@Router			/sobs [post]
-func (h Handler) CreateSob(c *gin.Context) {
-	var req CreateSobRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-	cmd := req.mapToCommand()
-	err := h.app.Commands.CreateSob.Handle(c, cmd)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	createdSob, err := h.app.Queries.SobById.Handle(c, cmd.SobId)
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.JSON(http.StatusCreated, sobDTOToVO(createdSob))
+type CreateSobInput struct {
+	Body CreateSobRequest
 }
 
-// UpdateSob godoc
-//
-//	@Text			Update sob
-//	@Description	Update sob
-//	@Tags			sobs
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path	string				true	"SobId ID"
-//	@Param			UpdateSobRequest	body	UpdateSobRequest	true	"UpdateJournalLines sob request"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sobs/{sobId} [patch]
-func (h Handler) UpdateSob(c *gin.Context) {
-	var req UpdateSobRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
+type CreateSobOutput struct {
+	Status int
+	Body   SobResponse
+}
+
+// CreateSob creates a set of books and returns created detail.
+func (h Handler) CreateSob(ctx context.Context, input *CreateSobInput) (*CreateSobOutput, error) {
+	cmd := input.Body.mapToCommand()
+	if err := h.app.Commands.CreateSob.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
+	createdSob, err := h.app.Queries.SobById.Handle(ctx, cmd.SobId)
+	if err != nil {
+		return nil, err
+	}
+	return &CreateSobOutput{Status: 201, Body: sobDTOToVO(createdSob)}, nil
+}
+
+type UpdateSobInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	Body  UpdateSobRequest
+}
+
+// UpdateSob updates set of books metadata and account code length.
+func (h Handler) UpdateSob(ctx context.Context, input *UpdateSobInput) (*struct{}, error) {
 	cmd := command.UpdateSobCmd{
-		SobId:              uuid.MustParse(c.Param("sobId")),
-		Name:               req.Name,
-		Description:        req.Description,
-		AccountsCodeLength: req.AccountsCodeLength,
+		SobId:              input.SobId,
+		Name:               input.Body.Name,
+		Description:        input.Body.Description,
+		AccountsCodeLength: input.Body.AccountsCodeLength,
 	}
-	if err := h.app.Commands.UpdateSob.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.UpdateSob.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }

@@ -1,31 +1,26 @@
 package http
 
 import (
-	"net/http"
+	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 
-	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
-// ReadCashFlowItems godoc
-//
-//	@Text			List cash flow items
-//	@Description	List all cash flow items for a Set of Books
-//	@Tags			cash-flow-items
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		200		{array}		CashFlowItemResponse
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/cash-flow-items [get]
-func (h Handler) ReadCashFlowItems(c *gin.Context) {
-	items, err := h.app.Queries.CashFlowItems.Handle(c, uuid.MustParse(c.Param("sobId")))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
+type ReadCashFlowItemsInput struct {
+	SobId uuid.UUID `path:"sobId"`
+}
 
-	c.JSON(http.StatusOK, converter.DTOsToVOs(items, cashFlowItemDTOToVO))
+type ReadCashFlowItemsOutput struct {
+	Body []CashFlowItemResponse
+}
+
+// ReadCashFlowItems lists cash flow items for a SoB.
+func (h Handler) ReadCashFlowItems(ctx context.Context, input *ReadCashFlowItemsInput) (*ReadCashFlowItemsOutput, error) {
+	items, err := h.app.Queries.CashFlowItems.Handle(ctx, input.SobId)
+	if err != nil {
+		return nil, err
+	}
+	return &ReadCashFlowItemsOutput{Body: converter.DTOsToVOs(items, cashFlowItemDTOToVO)}, nil
 }

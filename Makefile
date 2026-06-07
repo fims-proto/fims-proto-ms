@@ -12,9 +12,8 @@ lint:
 
 .PHONY: swag
 swag:
-	swag init -g api/api.go -o docs/swagger_generated --parseDependencyLevel 1
+	go run cmd/main.go --gen-spec
 
 .PHONY: fmt
 fmt:
-	swag fmt
 	gofumpt -l -w internal/ cmd/

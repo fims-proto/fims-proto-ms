@@ -1,397 +1,286 @@
 package http
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 )
 
-// SearchJournals godoc
-//
-//	@Text			List all journals by sob
-//	@Description	List all journals by sob with pagination
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			$page	query		int		false	"page number"		default(1)
-//	@Param			$size	query		int		false	"page size"			default(40)
-//	@Param			$sort	query		string	false	"sort on field(s)"	example(updatedAt desc,createdAt)
-//	@Param			$filter	query		string	false	"filter on field(s)"
-//	@Success		200		{object}	data.PageResponse[JournalSlimResponse]
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/journals [get]
-func (h Handler) SearchJournals(c *gin.Context) {
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.Journal], error) {
-			return h.app.Queries.PagingJournals.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
-		},
-		journalDTOToSlimVO,
-	)
+type SearchJournalsInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	data.PaginationInput
 }
 
-// ReadJournalById godoc
-//
-//	@Text			Show journal by sob and id
-//	@Description	Show journal by sob and id
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId		path		string	true	"Sob ID"
-//	@Param			journalId	path		string	true	"Journal ID"
-//	@Success		200			{object}	JournalDetailResponse
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId} [get]
-func (h Handler) ReadJournalById(c *gin.Context) {
-	j, err := h.app.Queries.JournalById.Handle(c, uuid.MustParse(c.Param("journalId")))
+type SearchJournalsOutput struct {
+	Body data.PageResponse[JournalSlimResponse]
+}
+
+// SearchJournals lists journals for a SoB.
+func (h Handler) SearchJournals(ctx context.Context, input *SearchJournalsInput) (*SearchJournalsOutput, error) {
+	pageRequest, err := data.PageRequestFromInput(input.PaginationInput)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest(err.Error())
+	}
+	page, err := h.app.Queries.PagingJournals.Handle(ctx, input.SobId, pageRequest)
+	if err != nil {
+		return nil, err
+	}
+	vos := make([]JournalSlimResponse, len(page.Content()))
+	for i, dto := range page.Content() {
+		vos[i] = journalDTOToSlimVO(dto)
+	}
+	return &SearchJournalsOutput{Body: data.PageResponse[JournalSlimResponse]{
+		Content:          vos,
+		PageNumber:       page.PageNumber(),
+		PageSize:         page.PageSize(),
+		TotalPage:        page.TotalPage(),
+		NumberOfElements: page.NumberOfElements(),
+	}}, nil
+}
+
+type ReadJournalByIdInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+}
+
+type ReadJournalByIdOutput struct {
+	Body JournalDetailResponse
+}
+
+// ReadJournalById returns one journal by ID.
+func (h Handler) ReadJournalById(ctx context.Context, input *ReadJournalByIdInput) (*ReadJournalByIdOutput, error) {
+	j, err := h.app.Queries.JournalById.Handle(ctx, input.JournalId)
+	if err != nil {
+		return nil, err
 	}
 	if j.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
+		return nil, huma.Error404NotFound("journal not found")
 	}
-	c.JSON(http.StatusOK, journalDTOToDetailVO(j))
+	return &ReadJournalByIdOutput{Body: journalDTOToDetailVO(j)}, nil
 }
 
-// CreateJournal godoc
-//
-//	@Text			Create journal
-//	@Description	Create journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId					path		string					true	"Sob ID"
-//	@Param			CreateJournalRequest	body		CreateJournalRequest	true	"Create journal request"
-//	@Success		201						{object}	JournalDetailResponse
-//	@Failure		400						{object}	Error
-//	@Failure		500						{object}	Error
-//	@Router			/sob/{sobId}/journals [post]
-func (h Handler) CreateJournal(c *gin.Context) {
-	var req CreateJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
+type CreateJournalInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	Body  CreateJournalRequest
+}
+
+type CreateJournalOutput struct {
+	Status int
+	Body   JournalDetailResponse
+}
+
+// CreateJournal creates a journal and returns created detail.
+func (h Handler) CreateJournal(ctx context.Context, input *CreateJournalInput) (*CreateJournalOutput, error) {
+	cmd := input.Body.mapToCommand(input.SobId)
+	if err := h.app.Commands.CreateJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	cmd := req.mapToCommand(uuid.MustParse(c.Param("sobId")))
-	if err := h.app.Commands.CreateJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	createdJournal, err := h.app.Queries.JournalById.Handle(c, cmd.JournalId)
+	createdJournal, err := h.app.Queries.JournalById.Handle(ctx, cmd.JournalId)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusCreated, journalDTOToDetailVO(createdJournal))
+	return &CreateJournalOutput{Status: http.StatusCreated, Body: journalDTOToDetailVO(createdJournal)}, nil
 }
 
-// UpdateJournal godoc
-//
-//	@Text			Update journal
-//	@Description	Update journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId					path	string					true	"Sob ID"
-//	@Param			journalId				path	string					true	"Journal ID"
-//	@Param			UpdateJournalRequest	body	UpdateJournalRequest	true	"Update journal request"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId} [patch]
-func (h Handler) UpdateJournal(c *gin.Context) {
-	var req UpdateJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
+type UpdateJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+	Body      UpdateJournalRequest
+}
+
+// UpdateJournal updates an unaudited journal.
+func (h Handler) UpdateJournal(ctx context.Context, input *UpdateJournalInput) (*struct{}, error) {
 	var items []command.JournalLineCmd
-	for _, itemReq := range req.JournalLines {
-		item := itemReq.mapToCommand()
-		items = append(items, item)
+	for _, itemReq := range input.Body.JournalLines {
+		items = append(items, itemReq.mapToCommand())
 	}
 	cmd := command.UpdateJournalCmd{
-		JournalId:       uuid.MustParse(c.Param("journalId")),
-		HeaderText:      req.HeaderText,
+		JournalId:       input.JournalId,
+		HeaderText:      input.Body.HeaderText,
 		JournalLines:    items,
-		TransactionDate: req.TransactionDate,
-		Updater:         req.Updater,
+		TransactionDate: input.Body.TransactionDate,
+		Updater:         input.Body.Updater,
 	}
-	if err := h.app.Commands.UpdateJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.UpdateJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// AuditJournal godoc
-//
-//	@Text			AuditJournal journal
-//	@Description	AuditJournal journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path	string				true	"Sob ID"
-//	@Param			journalId			path	string				true	"Journal ID"
-//	@Param			AuditJournalRequest	body	AuditJournalRequest	true	"AuditJournal journal request, auditor user ID"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId}/audit [post]
-func (h Handler) AuditJournal(c *gin.Context) {
-	var req AuditJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
+type AuditJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+	Body      AuditJournalRequest
+}
+
+// AuditJournal audits a reviewed journal.
+func (h Handler) AuditJournal(ctx context.Context, input *AuditJournalInput) (*struct{}, error) {
 	cmd := command.AuditJournalCmd{
-		JournalId: uuid.MustParse(c.Param("journalId")),
-		Auditor:   req.Auditor,
+		JournalId: input.JournalId,
+		Auditor:   input.Body.Auditor,
 	}
-	if err := h.app.Commands.AuditJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.AuditJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// CancelAuditJournal godoc
-//
-//	@Text			Cancel audit journal
-//	@Description	Cancel audit journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path	string				true	"Sob ID"
-//	@Param			journalId			path	string				true	"Journal ID"
-//	@Param			AuditJournalRequest	body	AuditJournalRequest	true	"Cancel audit journal request, auditor user ID"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId}/cancel-audit [post]
-func (h Handler) CancelAuditJournal(c *gin.Context) {
-	var req AuditJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
+type CancelAuditJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+	Body      AuditJournalRequest
+}
+
+// CancelAuditJournal reverts journal audit status.
+func (h Handler) CancelAuditJournal(ctx context.Context, input *CancelAuditJournalInput) (*struct{}, error) {
 	cmd := command.CancelAuditJournalCmd{
-		JournalId: uuid.MustParse(c.Param("journalId")),
-		Auditor:   req.Auditor,
+		JournalId: input.JournalId,
+		Auditor:   input.Body.Auditor,
 	}
-	if err := h.app.Commands.CancelAuditJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.CancelAuditJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// ReviewJournal godoc
-//
-//	@Text			ReviewJournal journal
-//	@Description	ReviewJournal journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId					path	string					true	"Sob ID"
-//	@Param			journalId				path	string					true	"Journal ID"
-//	@Param			ReviewJournalRequest	body	ReviewJournalRequest	true	"ReviewJournal journal request, reviewer user ID"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId}/review [post]
-func (h Handler) ReviewJournal(c *gin.Context) {
-	var req ReviewJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
+type ReviewJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+	Body      ReviewJournalRequest
+}
+
+// ReviewJournal reviews a journal before audit.
+func (h Handler) ReviewJournal(ctx context.Context, input *ReviewJournalInput) (*struct{}, error) {
 	cmd := command.ReviewJournalCmd{
-		JournalId: uuid.MustParse(c.Param("journalId")),
-		Reviewer:  req.Reviewer,
+		JournalId: input.JournalId,
+		Reviewer:  input.Body.Reviewer,
 	}
-	if err := h.app.Commands.ReviewJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.ReviewJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// CancelReviewJournal godoc
-//
-//	@Text			Cancel review journal
-//	@Description	Cancel review journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId					path	string					true	"Sob ID"
-//	@Param			journalId				path	string					true	"Journal ID"
-//	@Param			ReviewJournalRequest	body	ReviewJournalRequest	true	"Cancel review journal request, reviewer user ID"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId}/cancel-review [post]
-func (h Handler) CancelReviewJournal(c *gin.Context) {
-	var req ReviewJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
+type CancelReviewJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+	Body      ReviewJournalRequest
+}
+
+// CancelReviewJournal reverts journal review status.
+func (h Handler) CancelReviewJournal(ctx context.Context, input *CancelReviewJournalInput) (*struct{}, error) {
 	cmd := command.CancelReviewJournalCmd{
-		JournalId: uuid.MustParse(c.Param("journalId")),
-		Reviewer:  req.Reviewer,
+		JournalId: input.JournalId,
+		Reviewer:  input.Body.Reviewer,
 	}
-	if err := h.app.Commands.CancelReviewJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.CancelReviewJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// PostJournal godoc
-//
-//	@Text			PostJournal journal
-//	@Description	PostJournal journal
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path	string				true	"Sob ID"
-//	@Param			journalId			path	string				true	"Journal ID"
-//	@Param			PostJournalRequest	body	PostJournalRequest	true	"PostJournal journal request, poster user ID"
-//	@Success		204
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId}/post [post]
-func (h Handler) PostJournal(c *gin.Context) {
-	var req PostJournalRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
+type PostJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+	Body      PostJournalRequest
+}
 
+// PostJournal posts an audited journal to ledgers.
+func (h Handler) PostJournal(ctx context.Context, input *PostJournalInput) (*struct{}, error) {
 	cmd := command.PostJournalCmd{
-		JournalId: uuid.MustParse(c.Param("journalId")),
-		Poster:    req.Poster,
+		JournalId: input.JournalId,
+		Poster:    input.Body.Poster,
 	}
-	if err := h.app.Commands.PostJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.PostJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// CreateMonthlyClosingJournal godoc
-//
-//	@Text			Create monthly closing journal
-//	@Description	Generate and post monthly closing journal that reverses all leaf P&L account balances to zero and transfers the net result to the Current Year Profit account
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		201		{object}	ClosingJournalResponse
-//	@Failure		400		{object}	Error
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/journals/monthly-closing-journal [post]
-func (h Handler) CreateMonthlyClosingJournal(c *gin.Context) {
-	sobId := uuid.MustParse(c.Param("sobId"))
-	journalId, err := h.app.Commands.CreateMonthlyClosingJournal.Handle(c,
-		command.CreateMonthlyClosingJournalCmd{SobId: sobId},
+type CreateMonthlyClosingJournalInput struct {
+	SobId uuid.UUID `path:"sobId"`
+}
+
+type CreateMonthlyClosingJournalOutput struct {
+	Status int
+	Body   ClosingJournalResponse
+}
+
+// CreateMonthlyClosingJournal creates a monthly closing journal.
+func (h Handler) CreateMonthlyClosingJournal(ctx context.Context, input *CreateMonthlyClosingJournalInput) (*CreateMonthlyClosingJournalOutput, error) {
+	journalId, err := h.app.Commands.CreateMonthlyClosingJournal.Handle(ctx,
+		command.CreateMonthlyClosingJournalCmd{SobId: input.SobId},
 	)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+	return &CreateMonthlyClosingJournalOutput{Status: http.StatusCreated, Body: ClosingJournalResponse{JournalId: journalId}}, nil
 }
 
-// CreateYearEndClosingJournal godoc
-//
-//	@Text			Create year-end closing journal
-//	@Description	Generate and post year-end closing journal that transfers the Current Year Profit account balance to Retained Earnings. Only callable in period 12 (year-end) after monthly closing is complete
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		201		{object}	ClosingJournalResponse
-//	@Failure		400		{object}	Error
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/journals/year-end-closing-journal [post]
-func (h Handler) CreateYearEndClosingJournal(c *gin.Context) {
-	sobId := uuid.MustParse(c.Param("sobId"))
-	journalId, err := h.app.Commands.CreateYearEndClosingJournal.Handle(c,
-		command.CreateYearEndClosingJournalCmd{SobId: sobId},
+type CreateYearEndClosingJournalInput struct {
+	SobId uuid.UUID `path:"sobId"`
+}
+
+type CreateYearEndClosingJournalOutput struct {
+	Status int
+	Body   ClosingJournalResponse
+}
+
+// CreateYearEndClosingJournal creates a year-end closing journal.
+func (h Handler) CreateYearEndClosingJournal(ctx context.Context, input *CreateYearEndClosingJournalInput) (*CreateYearEndClosingJournalOutput, error) {
+	journalId, err := h.app.Commands.CreateYearEndClosingJournal.Handle(ctx,
+		command.CreateYearEndClosingJournalCmd{SobId: input.SobId},
 	)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusCreated, ClosingJournalResponse{JournalId: journalId})
+	return &CreateYearEndClosingJournalOutput{Status: http.StatusCreated, Body: ClosingJournalResponse{JournalId: journalId}}, nil
 }
 
-// GetClosingJournal godoc
-//
-//	@Text			Get closing journals by period
-//	@Description	Get both monthly and year-end closing journal IDs for a given period
-//	@Tags			journals
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			period	query		string	true	"Period in YYYY-MM format"
-//	@Success		200		{object}	ClosingJournalIdsResponse
-//	@Failure		400		{object}	Error
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/journals/closing-journal [get]
-func (h Handler) GetClosingJournal(c *gin.Context) {
-	sobId := uuid.MustParse(c.Param("sobId"))
+type GetClosingJournalInput struct {
+	SobId  uuid.UUID `path:"sobId"`
+	Period string    `query:"period" doc:"Period in YYYY-MM format"`
+}
 
-	periodStr := c.Query("period")
+type GetClosingJournalOutput struct {
+	Body ClosingJournalIdsResponse
+}
+
+// GetClosingJournal returns closing journal IDs for a period.
+func (h Handler) GetClosingJournal(ctx context.Context, input *GetClosingJournalInput) (*GetClosingJournalOutput, error) {
 	var fiscalYear, periodNumber int
-	if _, err := fmt.Sscanf(periodStr, "%d-%d", &fiscalYear, &periodNumber); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid period format, expected YYYY-MM"})
-		return
+	if _, err := fmt.Sscanf(input.Period, "%d-%d", &fiscalYear, &periodNumber); err != nil {
+		return nil, huma.Error400BadRequest("invalid period format, expected YYYY-MM")
 	}
-
-	result, err := h.app.Queries.ClosingJournalIdsByPeriod.Handle(c, sobId, fiscalYear, periodNumber)
+	result, err := h.app.Queries.ClosingJournalIdsByPeriod.Handle(ctx, input.SobId, fiscalYear, periodNumber)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-
-	c.JSON(http.StatusOK, ClosingJournalIdsResponse{
+	return &GetClosingJournalOutput{Body: ClosingJournalIdsResponse{
 		MonthlyClosingJournalId: result.MonthlyClosingJournalId,
 		YearEndClosingJournalId: result.YearEndClosingJournalId,
-	})
+	}}, nil
 }
 
-// DeleteSystemJournal godoc
-//
-//	@Tags			journals
-//	@Summary		Delete system journal
-//	@Description	Delete a CLOSING or YEARLY_CLOSING journal and reverse its ledger posts.
-//	@Param			sobId		path	string	true	"Sob ID"
-//	@Param			journalId	path	string	true	"Journal ID"
-//	@Success		204
-//	@Failure		404	{object}	Error
-//	@Failure		422	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/journal/{journalId} [delete]
-func (h Handler) DeleteSystemJournal(c *gin.Context) {
+type DeleteSystemJournalInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	JournalId uuid.UUID `path:"journalId"`
+}
+
+// DeleteSystemJournal deletes a system closing journal and reverses ledger impact.
+func (h Handler) DeleteSystemJournal(ctx context.Context, input *DeleteSystemJournalInput) (*struct{}, error) {
 	cmd := command.DeleteSystemJournalCmd{
-		SobId:     uuid.MustParse(c.Param("sobId")),
-		JournalId: uuid.MustParse(c.Param("journalId")),
+		SobId:     input.SobId,
+		JournalId: input.JournalId,
 	}
-	if err := h.app.Commands.DeleteSystemJournal.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.DeleteSystemJournal.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }

@@ -1,50 +1,48 @@
 package http
 
 import (
+	"context"
 	"net/http"
 	"strconv"
-
-	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/account/class"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 )
 
-// ReadAllAccounts godoc
-//
-//	@Text			List all accounts
-//	@Description	List all accounts
-//	@Tags			accounts
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		200		{array}		AccountSlimResponse
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/accounts [get]
-func (h Handler) ReadAllAccounts(c *gin.Context) {
-	accounts, err := h.app.Queries.AllAccounts.Handle(c, uuid.MustParse(c.Param("sobId")))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-
-	c.JSON(http.StatusOK, converter.DTOsToVOs(accounts, accountDTOToSlimVO))
+type ReadAllAccountsInput struct {
+	SobId uuid.UUID `path:"sobId"`
 }
 
-// ReadAccountClasses godoc
-//
-//	@Text			List allowed account classes and their allowed groups
-//	@Description	List allowed account classes and their allowed groups
-//	@Tags			accounts
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path	string	true	"Sob ID"
-//	@Success		200		{array}	AccountClass
-//	@Router			/sob/{sobId}/account-classes [get]
-func (h Handler) ReadAccountClasses(c *gin.Context) {
+type ReadAllAccountsOutput struct {
+	Body []AccountSlimResponse
+}
+
+// ReadAllAccounts lists all accounts for a SoB.
+func (h Handler) ReadAllAccounts(ctx context.Context, input *ReadAllAccountsInput) (*ReadAllAccountsOutput, error) {
+	accounts, err := h.app.Queries.AllAccounts.Handle(ctx, input.SobId)
+	if err != nil {
+		return nil, err
+	}
+	vos := make([]AccountSlimResponse, len(accounts))
+	for i, a := range accounts {
+		vos[i] = accountDTOToSlimVO(a)
+	}
+	return &ReadAllAccountsOutput{Body: vos}, nil
+}
+
+type ReadAccountClassesInput struct {
+	SobId uuid.UUID `path:"sobId"`
+}
+
+type ReadAccountClassesOutput struct {
+	Body []AccountClass
+}
+
+// ReadAccountClasses returns supported account class and group mappings.
+func (h Handler) ReadAccountClasses(_ context.Context, _ *ReadAccountClassesInput) (*ReadAccountClassesOutput, error) {
 	var resp []AccountClass
 	for _, c := range class.Classes {
 		var groups []string
@@ -56,153 +54,118 @@ func (h Handler) ReadAccountClasses(c *gin.Context) {
 			Groups: groups,
 		})
 	}
-
-	c.JSON(http.StatusOK, resp)
+	return &ReadAccountClassesOutput{Body: resp}, nil
 }
 
-// ReadAccountById godoc
-//
-//	@Text			Get an account by id
-//	@Description	Get an account by id
-//	@Tags			accounts
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId		path		string	true	"Sob ID"
-//	@Param			accountId	path		string	true	"Account ID"
-//	@Success		200			{object}	AccountDetailResponse
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/account/{accountId} [get]
-func (h Handler) ReadAccountById(c *gin.Context) {
-	v, err := h.app.Queries.AccountById.Handle(c, uuid.MustParse(c.Param("accountId")))
+type ReadAccountByIdInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	AccountId uuid.UUID `path:"accountId"`
+}
+
+type ReadAccountByIdOutput struct {
+	Body AccountDetailResponse
+}
+
+// ReadAccountById returns one account by ID.
+func (h Handler) ReadAccountById(ctx context.Context, input *ReadAccountByIdInput) (*ReadAccountByIdOutput, error) {
+	v, err := h.app.Queries.AccountById.Handle(ctx, input.AccountId)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
 	if v.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
+		return nil, huma.Error404NotFound("account not found")
 	}
-	c.JSON(http.StatusOK, accountDTOToDetailVO(v))
+	return &ReadAccountByIdOutput{Body: accountDTOToDetailVO(v)}, nil
 }
 
-// CreateAccount godoc
-//
-//	@Text			Create account
-//	@Description	Create account
-//	@Tags			accounts
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId					path		string					true	"Sob ID"
-//	@Param			CreateAccountRequest	body		CreateAccountRequest	true	"Create account request"
-//	@Success		201						{object}	AccountDetailResponse
-//	@Failure		500						{object}	Error
-//	@Router			/sob/{sobId}/accounts [post]
-func (h Handler) CreateAccount(c *gin.Context) {
-	var req CreateAccountRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-	classReq, err := strconv.Atoi(req.Class)
+type CreateAccountInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	Body  CreateAccountRequest
+}
+
+type CreateAccountOutput struct {
+	Status int
+	Body   AccountDetailResponse
+}
+
+// CreateAccount creates an account and returns created detail.
+func (h Handler) CreateAccount(ctx context.Context, input *CreateAccountInput) (*CreateAccountOutput, error) {
+	classReq, err := strconv.Atoi(input.Body.Class)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest("invalid class value")
 	}
-	group, err := strconv.Atoi(req.Group)
+	group, err := strconv.Atoi(input.Body.Group)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest("invalid group value")
 	}
 	cmd := command.CreateAccountCmd{
 		AccountId:                      uuid.New(),
-		SobId:                          uuid.MustParse(c.Param("sobId")),
-		Title:                          req.Title,
-		LevelNumber:                    req.LevelNumber,
-		BalanceDirection:               req.BalanceDirection,
+		SobId:                          input.SobId,
+		Title:                          input.Body.Title,
+		LevelNumber:                    input.Body.LevelNumber,
+		BalanceDirection:               input.Body.BalanceDirection,
 		Class:                          classReq,
 		Group:                          group,
-		SuperiorRawAccountNumber:       req.SuperiorRawAccountNumber,
-		DimensionCategoryIds:           req.DimensionCategoryIds,
-		IsCashEquivalent:               req.IsCashEquivalent,
-		DefaultCashFlowItemIdForDebit:  req.DefaultCashFlowItemIdForDebit,
-		DefaultCashFlowItemIdForCredit: req.DefaultCashFlowItemIdForCredit,
+		SuperiorRawAccountNumber:       input.Body.SuperiorRawAccountNumber,
+		DimensionCategoryIds:           input.Body.DimensionCategoryIds,
+		IsCashEquivalent:               input.Body.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  input.Body.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: input.Body.DefaultCashFlowItemIdForCredit,
 	}
-
-	if err = h.app.Commands.CreateAccount.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err = h.app.Commands.CreateAccount.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	createdAccount, err := h.app.Queries.AccountById.Handle(c, cmd.AccountId)
+	createdAccount, err := h.app.Queries.AccountById.Handle(ctx, cmd.AccountId)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusCreated, accountDTOToDetailVO(createdAccount))
+	return &CreateAccountOutput{Status: http.StatusCreated, Body: accountDTOToDetailVO(createdAccount)}, nil
 }
 
-// UpdateAccount godoc
-//
-//	@Text			Update account
-//	@Description	Update account
-//	@Tags			accounts
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId					path	string					true	"Sob ID"
-//	@Param			accountId				path	string					true	"Account ID"
-//	@Param			UpdateAccountRequest	body	UpdateAccountRequest	true	"Update account request"
-//	@Success		204
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/account/{accountId} [patch]
-func (h Handler) UpdateAccount(c *gin.Context) {
-	var req UpdateAccountRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-	group, err := strconv.Atoi(req.Group)
+type UpdateAccountInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	AccountId uuid.UUID `path:"accountId"`
+	Body      UpdateAccountRequest
+}
+
+// UpdateAccount updates account settings and dimension bindings.
+func (h Handler) UpdateAccount(ctx context.Context, input *UpdateAccountInput) (*struct{}, error) {
+	group, err := strconv.Atoi(input.Body.Group)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest("invalid group value")
 	}
 	cmd := command.UpdateAccountCmd{
-		AccountId:                      uuid.MustParse(c.Param("accountId")),
-		SobId:                          uuid.MustParse(c.Param("sobId")),
-		Title:                          req.Title,
-		LevelNumber:                    req.LevelNumber,
-		BalanceDirection:               req.BalanceDirection,
+		AccountId:                      input.AccountId,
+		SobId:                          input.SobId,
+		Title:                          input.Body.Title,
+		LevelNumber:                    input.Body.LevelNumber,
+		BalanceDirection:               input.Body.BalanceDirection,
 		Group:                          group,
-		DimensionCategoryIds:           req.DimensionCategoryIds,
-		IsCashEquivalent:               req.IsCashEquivalent,
-		DefaultCashFlowItemIdForDebit:  req.DefaultCashFlowItemIdForDebit,
-		DefaultCashFlowItemIdForCredit: req.DefaultCashFlowItemIdForCredit,
-		UpdateDefaultCashFlowItems:     req.UpdateDefaultCashFlowItems,
+		DimensionCategoryIds:           input.Body.DimensionCategoryIds,
+		IsCashEquivalent:               input.Body.IsCashEquivalent,
+		DefaultCashFlowItemIdForDebit:  input.Body.DefaultCashFlowItemIdForDebit,
+		DefaultCashFlowItemIdForCredit: input.Body.DefaultCashFlowItemIdForCredit,
+		UpdateDefaultCashFlowItems:     input.Body.UpdateDefaultCashFlowItems,
 	}
-	if err = h.app.Commands.UpdateAccount.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err = h.app.Commands.UpdateAccount.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// DeleteAccount godoc
-//
-//	@Text			Delete account
-//	@Description	Delete account
-//	@Tags			accounts
-//	@Param			sobId		path	string	true	"Sob ID"
-//	@Param			accountId	path	string	true	"Account ID"
-//	@Success		204
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/account/{accountId} [delete]
-func (h Handler) DeleteAccount(c *gin.Context) {
+type DeleteAccountInput struct {
+	SobId     uuid.UUID `path:"sobId"`
+	AccountId uuid.UUID `path:"accountId"`
+}
+
+// DeleteAccount deletes an account from a SoB.
+func (h Handler) DeleteAccount(ctx context.Context, input *DeleteAccountInput) (*struct{}, error) {
 	cmd := command.DeleteAccountCmd{
-		AccountId: uuid.MustParse(c.Param("accountId")),
-		SobId:     uuid.MustParse(c.Param("sobId")),
+		AccountId: input.AccountId,
+		SobId:     input.SobId,
 	}
-	if err := h.app.Commands.DeleteAccount.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.DeleteAccount.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
