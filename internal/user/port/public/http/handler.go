@@ -21,6 +21,18 @@ func NewHandler(app *app.Application) Handler {
 func InitRouter(h Handler, api huma.API) {
 	usersApi := data.WithTag(api, "users")
 
-	huma.Register(usersApi, huma.Operation{Method: "GET", Path: "/api/v1/user/{userId}", Summary: "Get user by ID"}, h.ReadUserById)
-	huma.Register(usersApi, huma.Operation{Method: "PATCH", Path: "/api/v1/user/{userId}", Summary: "Update user", DefaultStatus: 204}, h.UpdateUser)
+	huma.Register(usersApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/user/{userId}",
+		Summary:     "Get user by ID",
+		OperationID: "readUserById",
+	}, h.ReadUserById)
+
+	huma.Register(usersApi, data.WithResponseLinks(huma.Operation{Method: "PATCH", Path: "/api/v1/user/{userId}", Summary: "Update user", OperationID: "updateUser", DefaultStatus: 204}, 204, map[string]*huma.Link{
+		"readUser": {
+			OperationID: "readUserById",
+			Parameters:  map[string]any{"userId": "$request.path.userId"},
+			Description: "Read updated user.",
+		},
+	}), h.UpdateUser)
 }

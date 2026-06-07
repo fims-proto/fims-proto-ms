@@ -2,7 +2,9 @@ package data
 
 import (
 	"fmt"
+	"net/http"
 	"reflect"
+	"strconv"
 	"strings"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data/filterable"
@@ -91,6 +93,21 @@ func WithTag(api huma.API, tag string) huma.API {
 		}
 	})
 	return group
+}
+
+// WithResponseLinks attaches OpenAPI response links to an operation.
+func WithResponseLinks(op huma.Operation, status int, links map[string]*huma.Link) huma.Operation {
+	if op.Responses == nil {
+		op.Responses = map[string]*huma.Response{}
+	}
+
+	statusText := strconv.Itoa(status)
+	if op.Responses[statusText] == nil {
+		op.Responses[statusText] = &huma.Response{Description: http.StatusText(status)}
+	}
+	op.Responses[statusText].Links = links
+
+	return op
 }
 
 // SchemaNamer prefixes project schemas with the internal module name so
