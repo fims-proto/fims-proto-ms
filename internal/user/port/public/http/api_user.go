@@ -1,71 +1,52 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
-	"net/http"
 
 	"github/fims-proto/fims-proto-ms/internal/user/app/command"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 )
 
-// ReadUserById godoc
-//
-//	@Text			Show user by id
-//	@Description	Show user by id
-//	@Tags			users
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			userId	path		string	true	"Updater ID"
-//	@Success		200		{object}	UserResponse
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/user/{userId} [get]
-func (h Handler) ReadUserById(c *gin.Context) {
-	user, err := h.app.Queries.UserById.Handle(c, uuid.MustParse(c.Param("userId")))
-	if err != nil {
-		_ = c.Error(err)
-		return
-	}
-	if user.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
-	}
-	c.JSON(http.StatusOK, userDTOToVO(user))
+type ReadUserByIdInput struct {
+	UserId uuid.UUID `path:"userId"`
 }
 
-// UpdateUser godoc
-//
-//	@Text			Update user
-//	@Description	Update user
-//	@Tags			users
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			userId				path	string				true	"Updater ID"
-//	@Param			UpdateUserRequest	body	UpdateUserRequest	true	"Update user request"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/user/{userId} [patch]
-func (h Handler) UpdateUser(c *gin.Context) {
-	var req UpdateUserRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
+type ReadUserByIdOutput struct {
+	Body UserResponse
+}
+
+// ReadUserById returns one user by ID.
+func (h Handler) ReadUserById(ctx context.Context, input *ReadUserByIdInput) (*ReadUserByIdOutput, error) {
+	user, err := h.app.Queries.UserById.Handle(ctx, input.UserId)
+	if err != nil {
+		return nil, err
 	}
+	if user.Id == uuid.Nil {
+		return nil, huma.Error404NotFound("user not found")
+	}
+	return &ReadUserByIdOutput{Body: userDTOToVO(user)}, nil
+}
+
+type UpdateUserInput struct {
+	UserId uuid.UUID `path:"userId"`
+	Body   UpdateUserRequest
+}
+
+// UpdateUser updates user traits JSON.
+func (h Handler) UpdateUser(ctx context.Context, input *UpdateUserInput) (*struct{}, error) {
 	var traits json.RawMessage
-	if err := traits.UnmarshalJSON([]byte(req.Traits)); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
+	if err := traits.UnmarshalJSON([]byte(input.Body.Traits)); err != nil {
+		return nil, huma.Error400BadRequest("invalid traits JSON")
 	}
 	cmd := command.UpdateUserCmd{
-		Id:     uuid.MustParse(c.Param("userId")),
+		Id:     input.UserId,
 		Traits: traits,
 	}
-	if err := h.app.Commands.UpdateUser.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err := h.app.Commands.UpdateUser.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }

@@ -1,200 +1,157 @@
 package http
 
 import (
-	"net/http"
+	"context"
 	"time"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/report/app/command"
-	"github/fims-proto/fims-proto-ms/internal/report/app/query"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 )
 
-// SearchReports godoc
-//
-//	@Text			List all reports by sob
-//	@Description	List all reports by sob with pagination
-//	@Tags			reports
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			$page	query		int		false	"page number"		default(1)
-//	@Param			$size	query		int		false	"page size"			default(40)
-//	@Param			$sort	query		string	false	"sort on field(s)"	example(updatedAt desc,createdAt)
-//	@Param			$filter	query		string	false	"filter on field(s)"
-//	@Success		200		{object}	data.PageResponse[ReportResponse]
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/reports [get]
-func (h Handler) SearchReports(c *gin.Context) {
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.Report], error) {
-			return h.app.Queries.PagingReports.Handle(c, uuid.MustParse(c.Param("sobId")), pageRequest)
-		},
-		reportDTOToVO,
-	)
+type SearchReportsInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	data.PaginationInput
 }
 
-// ReadReportTemplateByClass godoc
-//
-//	@Summary		Get report template by class
-//	@Description	Returns the report template for a given SoB and class.
-//	@Tags			reports
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			class	query		string	true	"Report class"
-//	@Success		200		{object}	ReportResponse
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report/template [get]
-func (h Handler) ReadReportTemplateByClass(c *gin.Context) {
-	r, err := h.app.Queries.ReportTemplateByClass.Handle(c, uuid.MustParse(c.Param("sobId")), c.Query("class"))
+type SearchReportsOutput struct {
+	Body data.PageResponse[ReportResponse]
+}
+
+// SearchReports lists reports for a SoB.
+func (h Handler) SearchReports(ctx context.Context, input *SearchReportsInput) (*SearchReportsOutput, error) {
+	pageRequest, err := data.PageRequestFromInput(input.PaginationInput)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest(err.Error())
+	}
+	page, err := h.app.Queries.PagingReports.Handle(ctx, input.SobId, pageRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &SearchReportsOutput{Body: data.MapPageResponse(page, reportDTOToVO)}, nil
+}
+
+type ReadReportTemplateByClassInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	Class string    `query:"class" doc:"Report class"`
+}
+
+type ReadReportTemplateByClassOutput struct {
+	Body ReportResponse
+}
+
+// ReadReportTemplateByClass returns report template by class.
+func (h Handler) ReadReportTemplateByClass(ctx context.Context, input *ReadReportTemplateByClassInput) (*ReadReportTemplateByClassOutput, error) {
+	r, err := h.app.Queries.ReportTemplateByClass.Handle(ctx, input.SobId, input.Class)
+	if err != nil {
+		return nil, err
 	}
 	if r.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
+		return nil, huma.Error404NotFound("report template not found")
 	}
-	c.JSON(http.StatusOK, reportDTOToVO(r))
+	return &ReadReportTemplateByClassOutput{Body: reportDTOToVO(r)}, nil
 }
 
-// ReadReportByClassAndPeriod godoc
-//
-//	@Summary		Get report instance by class and period
-//	@Description	Returns the report instance for a given SoB, class, and period.
-//	@Tags			reports
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			class	query		string	true	"Report class"
-//	@Param			period	query		string	true	"Period (YYYY-MM)"
-//	@Success		200		{object}	ReportResponse
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report [get]
-func (h Handler) ReadReportByClassAndPeriod(c *gin.Context) {
-	t, err := time.Parse("2006-01", c.Query("period"))
+type ReadReportByClassAndPeriodInput struct {
+	SobId  uuid.UUID `path:"sobId"`
+	Class  string    `query:"class" doc:"Report class"`
+	Period string    `query:"period" doc:"Period in YYYY-MM format"`
+}
+
+type ReadReportByClassAndPeriodOutput struct {
+	Body ReportResponse
+}
+
+// ReadReportByClassAndPeriod returns generated report by class and period.
+func (h Handler) ReadReportByClassAndPeriod(ctx context.Context, input *ReadReportByClassAndPeriodInput) (*ReadReportByClassAndPeriodOutput, error) {
+	t, err := time.Parse("2006-01", input.Period)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "period must be YYYY-MM"})
-		return
+		return nil, huma.Error400BadRequest("period must be YYYY-MM")
 	}
-	r, err := h.app.Queries.ReportByClassAndPeriod.Handle(c, uuid.MustParse(c.Param("sobId")), c.Query("class"), t.Year(), int(t.Month()))
+	r, err := h.app.Queries.ReportByClassAndPeriod.Handle(ctx, input.SobId, input.Class, t.Year(), int(t.Month()))
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
 	if r.Id == uuid.Nil {
-		c.Status(http.StatusNotFound)
-		return
+		return nil, huma.Error404NotFound("report not found")
 	}
-	c.JSON(http.StatusOK, reportDTOToVO(r))
+	return &ReadReportByClassAndPeriodOutput{Body: reportDTOToVO(r)}, nil
 }
 
-// GenerateReport godoc
-//
-//	@Summary		Generate missing report instance
-//	@Description	Creates a report instance from the latest template. If one already exists, returns it unchanged.
-//	@Tags			reports
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Param			class	query		string	true	"Report class"
-//	@Param			period	query		string	true	"Period (YYYY-MM)"
-//	@Success		200		{object}	ReportResponse
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/report/generate [post]
-func (h Handler) GenerateReport(c *gin.Context) {
-	t, err := time.Parse("2006-01", c.Query("period"))
+type GenerateReportInput struct {
+	SobId  uuid.UUID `path:"sobId"`
+	Class  string    `query:"class" doc:"Report class"`
+	Period string    `query:"period" doc:"Period in YYYY-MM format"`
+}
+
+type GenerateReportOutput struct {
+	Body ReportResponse
+}
+
+// GenerateReport generates a report for one class and period.
+func (h Handler) GenerateReport(ctx context.Context, input *GenerateReportInput) (*GenerateReportOutput, error) {
+	t, err := time.Parse("2006-01", input.Period)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "period must be YYYY-MM"})
-		return
+		return nil, huma.Error400BadRequest("period must be YYYY-MM")
 	}
-	actualId, err := h.app.Commands.Generate.Handle(c, command.GenerateReportCmd{
-		SobId:        uuid.MustParse(c.Param("sobId")),
-		Class:        c.Query("class"),
+	actualId, err := h.app.Commands.Generate.Handle(ctx, command.GenerateReportCmd{
+		SobId:        input.SobId,
+		Class:        input.Class,
 		FiscalYear:   t.Year(),
 		PeriodNumber: int(t.Month()),
 	})
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-	generatedReport, err := h.app.Queries.ReportById.Handle(c, actualId)
+	generatedReport, err := h.app.Queries.ReportById.Handle(ctx, actualId)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, err
 	}
-	c.JSON(http.StatusOK, reportDTOToVO(generatedReport))
+	return &GenerateReportOutput{Body: reportDTOToVO(generatedReport)}, nil
 }
 
-// RecalculateReport godoc
-//
-//	@Summary		Recalculate report amounts
-//	@Description	Recalculates amounts while preserving the existing report structure.
-//	@Tags			reports
-//	@Produce		application/json
-//	@Param			sobId		path	string	true	"Sob ID"
-//	@Param			reportId	path	string	true	"Report ID"
-//	@Success		204
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report/{reportId}/recalculate [post]
-func (h Handler) RecalculateReport(c *gin.Context) {
-	if err := h.app.Commands.Recalculate.Handle(c, command.RecalculateReportCmd{ReportId: uuid.MustParse(c.Param("reportId"))}); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.Status(http.StatusNoContent)
+type RecalculateReportInput struct {
+	SobId    uuid.UUID `path:"sobId"`
+	ReportId uuid.UUID `path:"reportId"`
 }
 
-// RegenerateReport godoc
-//
-//	@Summary		Regenerate report instance
-//	@Description	Rebuilds an existing report instance from the latest template and recalculates amounts.
-//	@Tags			reports
-//	@Produce		application/json
-//	@Param			sobId		path	string	true	"Sob ID"
-//	@Param			reportId	path	string	true	"Report ID"
-//	@Success		204
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report/{reportId}/regenerate [post]
-func (h Handler) RegenerateReport(c *gin.Context) {
-	if err := h.app.Commands.Regenerate.Handle(c, command.RegenerateReportCmd{ReportId: uuid.MustParse(c.Param("reportId"))}); err != nil {
-		_ = c.Error(err)
-		return
+// RecalculateReport recalculates report values in place.
+func (h Handler) RecalculateReport(ctx context.Context, input *RecalculateReportInput) (*struct{}, error) {
+	if err := h.app.Commands.Recalculate.Handle(ctx, command.RecalculateReportCmd{ReportId: input.ReportId}); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }
 
-// UpdateReport godoc
-//
-//	@Tags			reports
-//	@Summary		Update report structure
-//	@Description	Updates report title, row tree, and expressions.
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path	string				true	"Sob ID"
-//	@Param			reportId			path	string				true	"Report ID"
-//	@Param			UpdateReportRequest	body	UpdateReportRequest	true	"Report update payload"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/report/{reportId} [patch]
-func (h Handler) UpdateReport(c *gin.Context) {
-	var req UpdateReportRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
+type RegenerateReportInput struct {
+	SobId    uuid.UUID `path:"sobId"`
+	ReportId uuid.UUID `path:"reportId"`
+}
+
+// RegenerateReport regenerates report structure and values.
+func (h Handler) RegenerateReport(ctx context.Context, input *RegenerateReportInput) (*struct{}, error) {
+	if err := h.app.Commands.Regenerate.Handle(ctx, command.RegenerateReportCmd{ReportId: input.ReportId}); err != nil {
+		return nil, err
 	}
-	cmd, err := req.mapToCommand(uuid.MustParse(c.Param("reportId")), uuid.MustParse(c.Param("sobId")))
+	return nil, nil
+}
+
+type UpdateReportInput struct {
+	SobId    uuid.UUID `path:"sobId"`
+	ReportId uuid.UUID `path:"reportId"`
+	Body     UpdateReportRequest
+}
+
+// UpdateReport updates report rows and formulas.
+func (h Handler) UpdateReport(ctx context.Context, input *UpdateReportInput) (*struct{}, error) {
+	cmd, err := input.Body.mapToCommand(input.ReportId, input.SobId)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
+		return nil, huma.Error400BadRequest(err.Error())
 	}
-	if err = h.app.Commands.UpdateReport.Handle(c, cmd); err != nil {
-		_ = c.Error(err)
-		return
+	if err = h.app.Commands.UpdateReport.Handle(ctx, cmd); err != nil {
+		return nil, err
 	}
-	c.Status(http.StatusNoContent)
+	return nil, nil
 }

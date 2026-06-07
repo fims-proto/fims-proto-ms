@@ -1,198 +1,130 @@
 package http
 
 import (
-	"net/http"
+	"context"
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
-	"github/fims-proto/fims-proto-ms/internal/common/data/converter"
 	commonErrors "github/fims-proto/fims-proto-ms/internal/common/errors"
-	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/query"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
 )
 
-// ReadLedgersByPeriodRange godoc
-//
-//	@Text			List ledgers aggregated across a period range
-//	@Description	List all ledgers for a SoB aggregated across a period range. Returns one entry per account with opening amount from the first period, summed period debit/credit/amount, and ending amount from the last period. When dimensionOptionId is provided, only accounts that have journal lines tagged with that dimension option are returned.
-//	@Tags			ledgers
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path		string	true	"Sob ID"
-//	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
-//	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
-//	@Param			dimensionOptionId	query		string	false	"Dimension Option ID (optional filter)"
-//	@Param			$page				query		int		false	"page number"	default(1)
-//	@Param			$size				query		int		false	"page size"		default(40)
-//	@Success		200					{object}	data.PageResponse[LedgerResponse]
-//	@Failure		400					{object}	Error
-//	@Failure		500					{object}	Error
-//	@Router			/sob/{sobId}/ledgers [get]
-func (h Handler) ReadLedgersByPeriodRange(c *gin.Context) {
-	var dimensionOptionId *uuid.UUID
-	if raw := c.Query("dimensionOptionId"); raw != "" {
-		dimensionOptionId = new(uuid.MustParse(raw))
-	}
-
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.Ledger], error) {
-			return h.app.Queries.PagingLedgersByPeriod.Handle(
-				c,
-				uuid.MustParse(c.Param("sobId")),
-				c.Query("fromPeriod"),
-				c.Query("toPeriod"),
-				dimensionOptionId,
-				pageRequest,
-			)
-		},
-		ledgerDTOToVO,
-	)
+type ReadLedgersByPeriodRangeInput struct {
+	SobId             uuid.UUID                     `path:"sobId"`
+	FromPeriod        string                        `query:"fromPeriod" doc:"From period (YYYY-MM)"`
+	ToPeriod          string                        `query:"toPeriod" doc:"To period (YYYY-MM)"`
+	DimensionOptionId data.OptionalParam[uuid.UUID] `query:"dimensionOptionId" doc:"Optional dimension option filter"`
+	data.PaginationInput
 }
 
-// ReadFirstPeriodLedgers godoc
-//
-//	@Text			List ledgers in first period
-//	@Description	List ledgers in first period
-//	@Tags			ledgers
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId	path		string	true	"Sob ID"
-//	@Success		200		{object}	PeriodAndLedgersResponse
-//	@Failure		500		{object}	Error
-//	@Router			/sob/{sobId}/first-period/ledgers [get]
-func (h Handler) ReadFirstPeriodLedgers(c *gin.Context) {
-	period, ledgers, err := h.app.Queries.FirstPeriodLedgers.Handle(c, uuid.MustParse(c.Param("sobId")))
+type ReadLedgersByPeriodRangeOutput struct {
+	Body data.PageResponse[LedgerResponse]
+}
+
+// ReadLedgersByPeriodRange lists ledger balances across a period range.
+func (h Handler) ReadLedgersByPeriodRange(ctx context.Context, input *ReadLedgersByPeriodRangeInput) (*ReadLedgersByPeriodRangeOutput, error) {
+	pageRequest, err := data.PageRequestFromInput(input.PaginationInput)
 	if err != nil {
-		_ = c.Error(err)
-		return
+		return nil, huma.Error400BadRequest(err.Error())
 	}
+	page, err := h.app.Queries.PagingLedgersByPeriod.Handle(ctx, input.SobId, input.FromPeriod, input.ToPeriod, input.DimensionOptionId.Ptr(), pageRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &ReadLedgersByPeriodRangeOutput{Body: data.MapPageResponse(page, ledgerDTOToVO)}, nil
+}
 
-	c.JSON(http.StatusOK, PeriodAndLedgersResponse{
+type ReadFirstPeriodLedgersInput struct {
+	SobId uuid.UUID `path:"sobId"`
+}
+
+type ReadFirstPeriodLedgersOutput struct {
+	Body PeriodAndLedgersResponse
+}
+
+// ReadFirstPeriodLedgers returns opening ledgers for first period.
+func (h Handler) ReadFirstPeriodLedgers(ctx context.Context, input *ReadFirstPeriodLedgersInput) (*ReadFirstPeriodLedgersOutput, error) {
+	period, ledgers, err := h.app.Queries.FirstPeriodLedgers.Handle(ctx, input.SobId)
+	if err != nil {
+		return nil, err
+	}
+	vos := make([]LedgerResponse, len(ledgers))
+	for i, l := range ledgers {
+		vos[i] = ledgerDTOToVO(l)
+	}
+	return &ReadFirstPeriodLedgersOutput{Body: PeriodAndLedgersResponse{
 		Period:  periodDTOToVO(period),
-		Ledgers: converter.DTOsToVOs(ledgers, ledgerDTOToVO),
-	})
+		Ledgers: vos,
+	}}, nil
 }
 
-// InitializeLedgers godoc
-//
-//	@Text			Initialize ledgers in first period of current SoB
-//	@Description	Initialize ledgers in first period of current SoB
-//	@Tags			ledgers
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId							path	string							true	"Sob ID"
-//	@Param			InitializeLedgersBalanceRequest	body	InitializeLedgersBalanceRequest	true	"Ledgers with opening balance"
-//	@Success		204
-//	@Failure		400	{object}	Error
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/ledgers/initialize [post]
-func (h Handler) InitializeLedgers(c *gin.Context) {
-	var req InitializeLedgersBalanceRequest
-	if err := c.ShouldBind(&req); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	if err := h.app.Commands.InitializeLedgersBalance.Handle(c, req.mapToCommand(uuid.MustParse(c.Param("sobId")))); err != nil {
-		_ = c.Error(err)
-		return
-	}
-	c.Status(http.StatusNoContent)
+type InitializeLedgersInput struct {
+	SobId uuid.UUID `path:"sobId"`
+	Body  InitializeLedgersBalanceRequest
 }
 
-// ReadLedgerTransactions godoc
-//
-//	@Text			Get ledger transaction entries across period range
-//	@Description	Get detailed ledger transaction entries across a period range. At least one of accountId or dimensionOptionId must be provided. When both are provided, entries matching both filters are returned.
-//	@Tags			ledgers
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path		string	true	"Sob ID"
-//	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
-//	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
-//	@Param			accountId			query		string	false	"Account ID (optional filter — must provide at least one of accountId or dimensionOptionId)"
-//	@Param			dimensionOptionId	query		string	false	"Dimension Option ID (optional filter — must provide at least one of accountId or dimensionOptionId)"
-//	@Param			$page				query		int		false	"page number"			default(1)
-//	@Param			$size				query		int		false	"page size"				default(40)
-//	@Param			$sort				query		string	false	"sort on field(s)"		example(updatedAt desc,createdAt)
-//	@Param			$filter				query		string	false	"filter on field(s)"	example(text eq 'something' and amount lt 10)
-//	@Success		200					{object}	data.PageResponse[LedgerEntryResponse]
-//	@Failure		400					{object}	Error
-//	@Failure		404
-//	@Failure		500	{object}	Error
-//	@Router			/sob/{sobId}/ledgers/transactions [get]
-func (h Handler) ReadLedgerTransactions(c *gin.Context) {
-	var accountId *uuid.UUID
-	if raw := c.Query("accountId"); raw != "" {
-		accountId = new(uuid.MustParse(raw))
+// InitializeLedgers sets initial ledger balances for a SoB.
+func (h Handler) InitializeLedgers(ctx context.Context, input *InitializeLedgersInput) (*struct{}, error) {
+	if err := h.app.Commands.InitializeLedgersBalance.Handle(ctx, input.Body.mapToCommand(input.SobId)); err != nil {
+		return nil, err
 	}
+	return nil, nil
+}
 
-	var dimensionOptionId *uuid.UUID
-	if raw := c.Query("dimensionOptionId"); raw != "" {
-		dimensionOptionId = new(uuid.MustParse(raw))
-	}
+type ReadLedgerTransactionsInput struct {
+	SobId             uuid.UUID                     `path:"sobId"`
+	FromPeriod        string                        `query:"fromPeriod" doc:"From period (YYYY-MM)"`
+	ToPeriod          string                        `query:"toPeriod" doc:"To period (YYYY-MM)"`
+	AccountId         data.OptionalParam[uuid.UUID] `query:"accountId" doc:"Optional account filter"`
+	DimensionOptionId data.OptionalParam[uuid.UUID] `query:"dimensionOptionId" doc:"Optional dimension option filter"`
+	data.PaginationInput
+}
 
+type ReadLedgerTransactionsOutput struct {
+	Body data.PageResponse[LedgerEntryResponse]
+}
+
+// ReadLedgerTransactions lists ledger entries by account or dimension filter.
+func (h Handler) ReadLedgerTransactions(ctx context.Context, input *ReadLedgerTransactionsInput) (*ReadLedgerTransactionsOutput, error) {
+	accountId := input.AccountId.Ptr()
+	dimensionOptionId := input.DimensionOptionId.Ptr()
 	if accountId == nil && dimensionOptionId == nil {
-		_ = c.Error(commonErrors.NewInvalidInputError(commonErrors.SlugLedgerTransactionsMissingFilter))
-		return
+		return nil, commonErrors.NewInvalidInputError(commonErrors.SlugLedgerTransactionsMissingFilter)
 	}
-
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.LedgerEntry], error) {
-			return h.app.Queries.LedgerEntries.Handle(
-				c,
-				uuid.MustParse(c.Param("sobId")),
-				accountId,
-				c.Query("fromPeriod"),
-				c.Query("toPeriod"),
-				dimensionOptionId,
-				pageRequest,
-			)
-		},
-		ledgerEntryDTOToVO,
-	)
+	pageRequest, err := data.PageRequestFromInput(input.PaginationInput)
+	if err != nil {
+		return nil, huma.Error400BadRequest(err.Error())
+	}
+	page, err := h.app.Queries.LedgerEntries.Handle(ctx, input.SobId, accountId, input.FromPeriod, input.ToPeriod, dimensionOptionId, pageRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &ReadLedgerTransactionsOutput{Body: data.MapPageResponse(page, ledgerEntryDTOToVO)}, nil
 }
 
-// ReadLedgerByDimensionCategory godoc
-//
-//	@Text			Get ledger amounts aggregated by dimension option
-//	@Description	Get total amounts from journal lines for a specific dimension category across a period range, grouped by dimension option. When accountId is provided, results are scoped to that account only; otherwise all accounts are aggregated.
-//	@Tags			ledgers
-//	@Accept			application/json
-//	@Produce		application/json
-//	@Param			sobId				path		string	true	"Sob ID"
-//	@Param			dimensionCategoryId	path		string	true	"Dimension Category ID"
-//	@Param			accountId			query		string	false	"Account ID (optional — omit to aggregate all accounts)"
-//	@Param			fromPeriod			query		string	true	"From period (YYYY-MM)"
-//	@Param			toPeriod			query		string	true	"To period (YYYY-MM)"
-//	@Param			$page				query		int		false	"page number"	default(1)
-//	@Param			$size				query		int		false	"page size"		default(40)
-//	@Success		200					{object}	data.PageResponse[LedgerDimensionOptionResponse]
-//	@Failure		400					{object}	Error
-//	@Failure		500					{object}	Error
-//	@Router			/sob/{sobId}/ledgers/dimension-category/{dimensionCategoryId}/options [get]
-func (h Handler) ReadLedgerByDimensionCategory(c *gin.Context) {
-	var accountId *uuid.UUID
-	if raw := c.Query("accountId"); raw != "" {
-		accountId = new(uuid.MustParse(raw))
-	}
+type ReadLedgerByDimensionCategoryInput struct {
+	SobId               uuid.UUID                     `path:"sobId"`
+	DimensionCategoryId uuid.UUID                     `path:"dimensionCategoryId"`
+	AccountId           data.OptionalParam[uuid.UUID] `query:"accountId" doc:"Optional account filter"`
+	FromPeriod          string                        `query:"fromPeriod" doc:"From period (YYYY-MM)"`
+	ToPeriod            string                        `query:"toPeriod" doc:"To period (YYYY-MM)"`
+	data.PaginationInput
+}
 
-	data.PagingResponseProcessor(
-		c,
-		func(pageRequest data.PageRequest) (data.Page[query.LedgerDimensionSummaryItem], error) {
-			return h.app.Queries.LedgersByDimensionCategory.Handle(
-				c,
-				uuid.MustParse(c.Param("sobId")),
-				uuid.MustParse(c.Param("dimensionCategoryId")),
-				accountId,
-				c.Query("fromPeriod"),
-				c.Query("toPeriod"),
-				pageRequest,
-			)
-		},
-		ledgerDimensionSummaryItemToVO,
-	)
+type ReadLedgerByDimensionCategoryOutput struct {
+	Body data.PageResponse[LedgerDimensionOptionResponse]
+}
+
+// ReadLedgerByDimensionCategory summarizes ledger amounts by dimension option.
+func (h Handler) ReadLedgerByDimensionCategory(ctx context.Context, input *ReadLedgerByDimensionCategoryInput) (*ReadLedgerByDimensionCategoryOutput, error) {
+	pageRequest, err := data.PageRequestFromInput(input.PaginationInput)
+	if err != nil {
+		return nil, huma.Error400BadRequest(err.Error())
+	}
+	page, err := h.app.Queries.LedgersByDimensionCategory.Handle(ctx, input.SobId, input.DimensionCategoryId, input.AccountId.Ptr(), input.FromPeriod, input.ToPeriod, pageRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &ReadLedgerByDimensionCategoryOutput{Body: data.MapPageResponse(page, ledgerDimensionSummaryItemToVO)}, nil
 }

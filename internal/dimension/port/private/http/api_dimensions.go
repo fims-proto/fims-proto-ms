@@ -19,6 +19,7 @@ func NewHandler(app *app.Application) Handler {
 	return Handler{app: app}
 }
 
+// Migrate runs dimension schema migration.
 func (h Handler) Migrate(c *gin.Context) {
 	if err := h.app.Commands.Migrate.Handle(c); err != nil {
 		c.String(http.StatusInternalServerError, err.Error())

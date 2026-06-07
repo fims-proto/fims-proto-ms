@@ -1,10 +1,11 @@
 package http
 
 import (
+	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/common/localization"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 )
 
 type Handler struct {
@@ -19,39 +20,288 @@ func NewHandler(app *app.Application, localizer localization.Localizer) Handler 
 	return Handler{app: app, localizer: localizer}
 }
 
-func InitRouter(h Handler, r *gin.RouterGroup) {
-	r.GET("/sob/:sobId/account-classes", h.ReadAccountClasses)
-	r.GET("/sob/:sobId/accounts", h.ReadAllAccounts)
-	r.GET("/sob/:sobId/account/:accountId", h.ReadAccountById)
-	r.POST("/sob/:sobId/accounts", h.CreateAccount)
-	r.PATCH("/sob/:sobId/account/:accountId", h.UpdateAccount)
-	r.DELETE("/sob/:sobId/account/:accountId", h.DeleteAccount)
+func InitRouter(h Handler, api huma.API) {
+	accountsApi := data.WithTag(api, "accounts")
+	cashFlowItemsApi := data.WithTag(api, "cash-flow-items")
+	ledgersApi := data.WithTag(api, "ledgers")
+	periodsApi := data.WithTag(api, "periods")
+	journalsApi := data.WithTag(api, "journals")
 
-	r.GET("/sob/:sobId/cash-flow-items", h.ReadCashFlowItems)
+	accountDetailLink := map[string]*huma.Link{
+		"readAccount": {
+			OperationID: "readAccountById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"accountId": "$response.body#/id",
+			},
+			Description: "Read account detail.",
+		},
+	}
+	accountDetailLinkFromPath := map[string]*huma.Link{
+		"readAccount": {
+			OperationID: "readAccountById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"accountId": "$request.path.accountId",
+			},
+			Description: "Read updated account.",
+		},
+	}
+	journalDetailLinkFromBodyID := map[string]*huma.Link{
+		"readJournal": {
+			OperationID: "readJournalById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"journalId": "$response.body#/id",
+			},
+			Description: "Read journal detail.",
+		},
+	}
+	journalDetailLinkFromPath := map[string]*huma.Link{
+		"readJournal": {
+			OperationID: "readJournalById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"journalId": "$request.path.journalId",
+			},
+			Description: "Read updated journal.",
+		},
+	}
+	journalDetailLinkFromJournalID := map[string]*huma.Link{
+		"readJournal": {
+			OperationID: "readJournalById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"journalId": "$response.body#/journalId",
+			},
+			Description: "Read created closing journal.",
+		},
+	}
 
-	r.GET("/sob/:sobId/first-period/ledgers", h.ReadFirstPeriodLedgers)
-	r.POST("/sob/:sobId/ledgers/initialize", h.InitializeLedgers)
-	r.GET("/sob/:sobId/ledgers", h.ReadLedgersByPeriodRange)
-	r.GET("/sob/:sobId/ledgers/transactions", h.ReadLedgerTransactions)
-	r.GET("/sob/:sobId/ledgers/dimension-category/:dimensionCategoryId/options", h.ReadLedgerByDimensionCategory)
+	huma.Register(accountsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/account-classes",
+		Summary:     "List allowed account classes",
+		OperationID: "readAccountClasses",
+	}, h.ReadAccountClasses)
 
-	r.GET("/sob/:sobId/periods", h.ReadPeriods)
-	r.GET("/sob/:sobId/period/:periodId/pre-close-check", h.PreCloseCheck)
-	r.POST("/sob/:sobId/period/:periodId/close", h.ClosePeriod)
-	r.GET("/sob/:sobId/periods/batch-pre-close-check", h.BatchPreCloseCheck)
-	r.POST("/sob/:sobId/periods/batch-close", h.ClosePeriods)
+	huma.Register(accountsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/accounts",
+		Summary:     "List all accounts",
+		OperationID: "readAllAccounts",
+	}, h.ReadAllAccounts)
 
-	r.GET("/sob/:sobId/journals", h.SearchJournals)
-	r.GET("/sob/:sobId/journal/:journalId", h.ReadJournalById)
-	r.POST("/sob/:sobId/journals", h.CreateJournal)
-	r.PATCH("/sob/:sobId/journal/:journalId", h.UpdateJournal)
-	r.POST("/sob/:sobId/journal/:journalId/audit", h.AuditJournal)
-	r.POST("/sob/:sobId/journal/:journalId/cancel-audit", h.CancelAuditJournal)
-	r.POST("/sob/:sobId/journal/:journalId/review", h.ReviewJournal)
-	r.POST("/sob/:sobId/journal/:journalId/cancel-review", h.CancelReviewJournal)
-	r.POST("/sob/:sobId/journal/:journalId/post", h.PostJournal)
-	r.DELETE("/sob/:sobId/journal/:journalId", h.DeleteSystemJournal)
-	r.POST("/sob/:sobId/journals/monthly-closing-journal", h.CreateMonthlyClosingJournal)
-	r.POST("/sob/:sobId/journals/year-end-closing-journal", h.CreateYearEndClosingJournal)
-	r.GET("/sob/:sobId/journals/closing-journal", h.GetClosingJournal)
+	huma.Register(accountsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/account/{accountId}",
+		Summary:     "Get account by ID",
+		OperationID: "readAccountById",
+	}, h.ReadAccountById)
+
+	huma.Register(accountsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/accounts",
+		Summary:     "Create account",
+		OperationID: "createAccount", DefaultStatus: 201,
+	}, 201, accountDetailLink), h.CreateAccount)
+
+	huma.Register(accountsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "PATCH",
+		Path:        "/api/v1/sob/{sobId}/account/{accountId}",
+		Summary:     "Update account",
+		OperationID: "updateAccount", DefaultStatus: 204,
+	}, 204, accountDetailLinkFromPath), h.UpdateAccount)
+
+	huma.Register(accountsApi, huma.Operation{
+		Method:      "DELETE",
+		Path:        "/api/v1/sob/{sobId}/account/{accountId}",
+		Summary:     "Delete account",
+		OperationID: "deleteAccount", DefaultStatus: 204,
+	}, h.DeleteAccount)
+
+	huma.Register(cashFlowItemsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/cash-flow-items",
+		Summary:     "List cash flow items",
+		OperationID: "readCashFlowItems",
+	}, h.ReadCashFlowItems)
+
+	huma.Register(ledgersApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/first-period/ledgers",
+		Summary:     "List ledgers in first period",
+		OperationID: "readFirstPeriodLedgers",
+	}, h.ReadFirstPeriodLedgers)
+
+	huma.Register(ledgersApi, huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/ledgers/initialize",
+		Summary:     "Initialize ledgers balance",
+		OperationID: "initializeLedgers", DefaultStatus: 204,
+	}, h.InitializeLedgers)
+
+	huma.Register(ledgersApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/ledgers",
+		Summary:     "List ledgers by period range",
+		OperationID: "readLedgersByPeriodRange",
+	}, h.ReadLedgersByPeriodRange)
+
+	huma.Register(ledgersApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/ledgers/transactions",
+		Summary:     "Get ledger transactions",
+		OperationID: "readLedgerTransactions",
+	}, h.ReadLedgerTransactions)
+
+	huma.Register(ledgersApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/ledgers/dimension-category/{dimensionCategoryId}/options",
+		Summary:     "Get ledger by dimension category",
+		OperationID: "readLedgerByDimensionCategory",
+	}, h.ReadLedgerByDimensionCategory)
+
+	huma.Register(periodsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/periods",
+		Summary:     "List all periods",
+		OperationID: "readPeriods",
+	}, h.ReadPeriods)
+
+	huma.Register(periodsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/period/{periodId}/pre-close-check",
+		Summary:     "Pre-close check",
+		OperationID: "preCloseCheck",
+	}, h.PreCloseCheck)
+
+	huma.Register(periodsApi, huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/period/{periodId}/close",
+		Summary:     "Close period",
+		OperationID: "closePeriod",
+	}, h.ClosePeriod)
+
+	huma.Register(periodsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/periods/batch-pre-close-check",
+		Summary:     "Batch pre-close check",
+		OperationID: "batchPreCloseCheck",
+	}, h.BatchPreCloseCheck)
+
+	huma.Register(periodsApi, huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/periods/batch-close",
+		Summary:     "Batch close periods",
+		OperationID: "closePeriods", DefaultStatus: 204,
+	}, h.ClosePeriods)
+
+	huma.Register(journalsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/journals",
+		Summary:     "List journals",
+		OperationID: "searchJournals",
+	}, h.SearchJournals)
+
+	huma.Register(journalsApi, huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}",
+		Summary:     "Get journal by ID",
+		OperationID: "readJournalById",
+	}, h.ReadJournalById)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journals",
+		Summary:     "Create journal",
+		OperationID: "createJournal", DefaultStatus: 201,
+	}, 201, journalDetailLinkFromBodyID), h.CreateJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "PATCH",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}",
+		Summary:     "Update journal",
+		OperationID: "updateJournal", DefaultStatus: 204,
+	}, 204, journalDetailLinkFromPath), h.UpdateJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}/audit",
+		Summary:     "Audit journal",
+		OperationID: "auditJournal", DefaultStatus: 204,
+	}, 204, journalDetailLinkFromPath), h.AuditJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}/cancel-audit",
+		Summary:     "Cancel audit journal",
+		OperationID: "cancelAuditJournal", DefaultStatus: 204,
+	}, 204, journalDetailLinkFromPath), h.CancelAuditJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}/review",
+		Summary:     "Review journal",
+		OperationID: "reviewJournal", DefaultStatus: 204,
+	}, 204, journalDetailLinkFromPath), h.ReviewJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}/cancel-review",
+		Summary:     "Cancel review journal",
+		OperationID: "cancelReviewJournal", DefaultStatus: 204,
+	}, 204, journalDetailLinkFromPath), h.CancelReviewJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}/post",
+		Summary:     "Post journal",
+		OperationID: "postJournal", DefaultStatus: 204,
+	}, 204, journalDetailLinkFromPath), h.PostJournal)
+
+	huma.Register(journalsApi, huma.Operation{
+		Method:      "DELETE",
+		Path:        "/api/v1/sob/{sobId}/journal/{journalId}",
+		Summary:     "Delete system journal",
+		OperationID: "deleteSystemJournal", DefaultStatus: 204,
+	}, h.DeleteSystemJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journals/monthly-closing-journal",
+		Summary:     "Create monthly closing journal",
+		OperationID: "createMonthlyClosingJournal", DefaultStatus: 201,
+	}, 201, journalDetailLinkFromJournalID), h.CreateMonthlyClosingJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "POST",
+		Path:        "/api/v1/sob/{sobId}/journals/year-end-closing-journal",
+		Summary:     "Create year-end closing journal",
+		OperationID: "createYearEndClosingJournal", DefaultStatus: 201,
+	}, 201, journalDetailLinkFromJournalID), h.CreateYearEndClosingJournal)
+
+	huma.Register(journalsApi, data.WithResponseLinks(huma.Operation{
+		Method:      "GET",
+		Path:        "/api/v1/sob/{sobId}/journals/closing-journal",
+		Summary:     "Get closing journal IDs",
+		OperationID: "getClosingJournal",
+	}, 200, map[string]*huma.Link{
+		"readMonthlyClosingJournal": {
+			OperationID: "readJournalById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"journalId": "$response.body#/monthlyClosingJournalId",
+			},
+			Description: "Read monthly closing journal when monthlyClosingJournalId is present.",
+		},
+		"readYearEndClosingJournal": {
+			OperationID: "readJournalById",
+			Parameters: map[string]any{
+				"sobId":     "$request.path.sobId",
+				"journalId": "$response.body#/yearEndClosingJournalId",
+			},
+			Description: "Read year-end closing journal when yearEndClosingJournalId is present.",
+		},
+	}), h.GetClosingJournal)
 }
