@@ -1,7 +1,5 @@
 # AGENTS.md
 
-This file provides guidance to Codex (Codex.ai/code) when working with code in this repository.
-
 ## Project Overview
 
 Financial Information Management System (FIMS) - A multi-tenant accounting system built with Go, using hexagonal architecture with CQRS patterns. Core domains: Set of Books (SoB/账套), General Ledger (总账), Dimension (维度), Reports, Numbering, and User management.
@@ -36,7 +34,7 @@ go test ./internal/general_ledger/domain/journal/... -run TestJournalPost -count
 ### Code Quality
 
 ```bash
-make fmt           # Format code with swag fmt + gofumpt
+make fmt           # Format code with gofumpt
 make lint          # Run golangci-lint
 
 # Manual formatting
@@ -46,7 +44,7 @@ gofumpt -l -w internal/ cmd/
 ### Swagger Documentation
 
 ```bash
-make swag          # Regenerate from @Tags/@Summary comments
+make swag          # Regenerate OpenAPI via go run cmd/main.go --gen-spec
 # Visit: http://127.0.0.1:4455/fims/swagger/index.html
 ```
 
@@ -98,8 +96,8 @@ Always use `datasource.DataSource` interface, never raw GORM:
 
 ```go
 type DataSource interface {
-GetConnection(ctx context.Context) *gorm.DB
-EnableTransaction(ctx context.Context, transactionalFn func(txCtx context.Context) error) error
+	GetConnection(ctx context.Context) *gorm.DB
+	EnableTransaction(ctx context.Context, transactionalFn func(txCtx context.Context) error) error
 }
 ```
 
@@ -249,7 +247,7 @@ Process:
 
 ### Report Generation (High Risk Area)
 
-File: `internal/report/domain/generator/generator.go`
+File: `internal/report/domain/evaluator/evaluator.go`
 
 Reports use two data source types:
 
@@ -257,7 +255,7 @@ Reports use two data source types:
 - **Formulas** - Four formula rules: `Net`, `Debit`, `Credit`, `Transaction`
 
 **Why high risk:**
-- `ledgersCache` is a shared in-memory map across all formula evaluations — stale or incorrect entries produce wrong financial figures with no runtime error
+- `ledgerCache` is a shared in-memory map across all formula evaluations — stale or incorrect entries produce wrong financial figures with no runtime error
 - Formula rules interact with `balance_direction` and `data_source` in non-obvious ways; bugs only surface in output numbers, not compile time
 - Balance sheet (`report-balanceSheet-imbalance`) and income statement (`report-incomeStatement-profitMismatch`) validations only catch end-to-end failures, not intermediate calculation errors
 
@@ -309,7 +307,7 @@ These fields are **not stored in the DB** — populated on read only. The raw `D
 
 #### LedgerDimensionSummary Query
 
-`internal/general_ledger/app/query/ledger_dimension_summary.go` — aggregates ledger entries by dimension option within a period range for a given account and dimension category. Returns `[]LedgerDimensionSummaryItem{DimensionOptionId, DimensionOptionName, TotalAmount}`.
+`internal/general_ledger/app/query/ledgers_by_dimension_category.go` — aggregates ledger entries by dimension option within a period range for a given account and dimension category. Returns `[]LedgerDimensionSummaryItem{DimensionOptionId, DimensionOptionName, TotalAmount}` from `internal/general_ledger/app/query/types.go`.
 
 #### Cross-Module Wiring
 
@@ -383,7 +381,7 @@ Use these flows as integration test templates.
 **Critical Implementations**:
 
 - `internal/general_ledger/app/command/post_journal.go` - Posting logic
-- `internal/report/domain/generator/generator.go` - Report generation
+- `internal/report/domain/evaluator/evaluator.go` - Report generation
 - `internal/common/errors/gin_middleware.go` - Error translation
 
 **Dev-only**: `internal/devops/jwt_handler.go` — JWT utility registered at `/devops/` route only when `profile` starts with `"dev"` (controlled via `cmd/main.go`)
@@ -395,20 +393,22 @@ Use these flows as integration test templates.
 ❌ Forgetting i18n entries for new slug errors
 ❌ Direct cross-module repository calls
 ❌ Modifying report formulas without tests
-❌ Skipping `swag init` after API changes
+❌ Skipping `make swag` after API changes
 
-## Swagger Annotations
+## API Documentation
 
-HTTP handlers require swagger annotations:
+Public HTTP handlers are registered with Huma. Route metadata belongs in `huma.Operation` values passed to `huma.Register`:
 
 ```go
-// @Tags        journals
-// @Summary     Post journal to ledgers
-// @Param       sobId path string true "Sob ID"
-// @Router      /sob/{sobId}/journal/{journalId}/post [patch]
+huma.Register(journalsApi, huma.Operation{
+	Method:      "PATCH",
+	Path:        "/api/v1/sob/{sobId}/journal/{journalId}/post",
+	Summary:     "Post journal to ledgers",
+	OperationID: "postJournal",
+}, h.PostJournal)
 ```
 
-Main swagger config in `api/api.go`
+After API changes, run `make swag` to regenerate `docs/swagger_generated/openapi.json`.
 
 ## Code Style & Approach section
 

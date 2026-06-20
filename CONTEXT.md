@@ -47,6 +47,14 @@ A batch operation that closes a sequence of accounting periods from the current 
 
 A validation that confirms the sum of all signed amounts across level-1 accounts equals zero (opening, period, and ending balances). Passes when the books are in balance. Used as a precondition for period closing.
 
+### Initial Ledger Balance (期初余额)
+
+The account-level balance carried into FIMS when a SoB is first set up from existing books. It belongs to accounts, not dimensions, because historical balances imported during setup are not allocated to FIMS dimension options.
+
+### Dimension Ledger Balance (维度余额)
+
+A balance derived from in-system journal lines tagged with dimension options. It may carry forward prior tagged activity as its opening amount, but it does not include Initial Ledger Balance.
+
 ### Current Year Profit (本年利润)
 
 Account number 003103. Accumulates the net P&L result across all months of the fiscal year via Monthly Closing Journals. Must be transferred to Retained Earnings (003104000002) via the Year-End Closing Journal before period 12 can be closed.

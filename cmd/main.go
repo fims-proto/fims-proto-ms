@@ -194,7 +194,7 @@ func main() {
 	log.InfoWithoutCxt("All module routers initiated")
 
 	if *genSpec {
-		jsonBytes, err := json.Marshal(api.OpenAPI())
+		jsonBytes, err := json.MarshalIndent(api.OpenAPI(), "", "  ")
 		if err != nil {
 			panic("failed to marshal openapi spec: " + err.Error())
 		}

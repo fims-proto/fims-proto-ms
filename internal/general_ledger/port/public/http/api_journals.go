@@ -7,6 +7,7 @@ import (
 
 	"github/fims-proto/fims-proto-ms/internal/common/data"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
+	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/google/uuid"
@@ -104,7 +105,7 @@ func (h Handler) UpdateJournal(ctx context.Context, input *UpdateJournalInput) (
 		JournalId:       input.JournalId,
 		HeaderText:      input.Body.HeaderText,
 		JournalLines:    items,
-		TransactionDate: input.Body.TransactionDate,
+		TransactionDate: transaction_date.TransactionDate(input.Body.TransactionDate),
 		Updater:         input.Body.Updater,
 	}
 	if err := h.app.Commands.UpdateJournal.Handle(ctx, cmd); err != nil {

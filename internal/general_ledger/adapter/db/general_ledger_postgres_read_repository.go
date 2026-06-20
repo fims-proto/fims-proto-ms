@@ -160,14 +160,10 @@ func addSobFilter(sobId uuid.UUID, pageRequest data.PageRequest) {
 	}
 }
 
-// LedgersByPeriodRange aggregates journal line amounts grouped by account for a SoB within a period range.
-// Always queries from journal_lines (the authoritative source) — never from the ledgers snapshot table.
-// Two queries are executed and merged in Go:
-//  1. Opening balances (all posted lines strictly before fromPeriod)
-//  2. Period activity (posted lines within [fromPeriod, toPeriod])
-//
-// When dimensionOptionId is non-nil, only journal lines tagged with that dimension option are included.
-// Account details are fetched in a single batch query after merging.
+// LedgersByPeriodRange lists account balances for a SoB within a period range.
+// Account-level balances come from the ledgers snapshot table, which includes setup opening balances.
+// Dimension-filtered balances are derived from tagged journal lines because imported setup balances
+// are not allocated to dimensions.
 func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 	ctx context.Context,
 	sobId uuid.UUID,
@@ -175,21 +171,97 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 	dimensionOptionId *uuid.UUID,
 	pageRequest data.PageRequest,
 ) (data.Page[query.Ledger], error) {
+	if dimensionOptionId != nil {
+		return r.ledgersByPeriodRangeByDimensionOption(
+			ctx,
+			sobId,
+			fromFiscalYear,
+			fromPeriodNumber,
+			toFiscalYear,
+			toPeriodNumber,
+			*dimensionOptionId,
+			pageRequest,
+		)
+	}
+
+	return r.ledgersByPeriodRangeFromLedgerSnapshots(
+		ctx,
+		sobId,
+		fromFiscalYear,
+		fromPeriodNumber,
+		toFiscalYear,
+		toPeriodNumber,
+		pageRequest,
+	)
+}
+
+func (r GeneralLedgerPostgresReadRepository) ledgersByPeriodRangeFromLedgerSnapshots(
+	ctx context.Context,
+	sobId uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+	pageRequest data.PageRequest,
+) (data.Page[query.Ledger], error) {
+	db := r.dataSource.GetConnection(ctx)
+
+	fromPeriodKey := fromFiscalYear*100 + fromPeriodNumber
+	toPeriodKey := toFiscalYear*100 + toPeriodNumber
+
+	var rows []ledgerBalanceRangeRow
+	if err := db.Model(&ledgerPO{}).
+		Select(
+			"ledgers.account_id, "+
+				"SUM(CASE WHEN (periods.fiscal_year * 100 + periods.period_number) = ? THEN ledgers.opening_amount ELSE 0 END) AS opening_amount, "+
+				"SUM(ledgers.period_debit) AS period_debit, "+
+				"SUM(ledgers.period_credit) AS period_credit, "+
+				"SUM(ledgers.period_amount) AS period_amount",
+			fromPeriodKey,
+		).
+		Joins("INNER JOIN periods ON ledgers.period_id = periods.id").
+		Where("ledgers.sob_id = ?", sobId).
+		Where(
+			"(periods.fiscal_year * 100 + periods.period_number) >= ? AND (periods.fiscal_year * 100 + periods.period_number) <= ?",
+			fromPeriodKey, toPeriodKey,
+		).
+		Group("ledgers.account_id").
+		Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	merged := make(map[uuid.UUID]*ledgerRangeMergedItem, len(rows))
+	for _, row := range rows {
+		if row.OpeningAmount.IsZero() && row.PeriodDebit.IsZero() && row.PeriodCredit.IsZero() && row.PeriodAmount.IsZero() {
+			continue
+		}
+		merged[row.AccountId] = &ledgerRangeMergedItem{
+			opening: row.OpeningAmount,
+			debit:   row.PeriodDebit,
+			credit:  row.PeriodCredit,
+			period:  row.PeriodAmount,
+		}
+	}
+
+	return r.buildLedgerRangePage(db, sobId, merged, pageRequest)
+}
+
+func (r GeneralLedgerPostgresReadRepository) ledgersByPeriodRangeByDimensionOption(
+	ctx context.Context,
+	sobId uuid.UUID,
+	fromFiscalYear, fromPeriodNumber, toFiscalYear, toPeriodNumber int,
+	dimensionOptionId uuid.UUID,
+	pageRequest data.PageRequest,
+) (data.Page[query.Ledger], error) {
 	db := r.dataSource.GetConnection(ctx)
 
 	commonJoins := func(q *gorm.DB) *gorm.DB {
-		q = q.
+		return q.
 			Joins("INNER JOIN journals ON journal_lines.journal_id = journals.id").
 			Joins("INNER JOIN periods ON journals.period_id = periods.id").
+			Joins(
+				"INNER JOIN journal_line_dimension_options jldo ON jldo.journal_line_id = journal_lines.id AND jldo.dimension_option_id = ?",
+				dimensionOptionId,
+			).
 			Where("journals.sob_id = ?", sobId).
 			Where("journals.is_posted = ?", true)
-		if dimensionOptionId != nil {
-			q = q.Joins(
-				"INNER JOIN journal_line_dimension_options jldo ON jldo.journal_line_id = journal_lines.id AND jldo.dimension_option_id = ?",
-				*dimensionOptionId,
-			)
-		}
-		return q
 	}
 
 	// Query 1: opening balances — all periods strictly before fromPeriod
@@ -223,22 +295,15 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 		return nil, err
 	}
 
-	// Merge results in Go, keyed by account ID
-	type mergedItem struct {
-		opening decimal.Decimal
-		debit   decimal.Decimal
-		credit  decimal.Decimal
-		period  decimal.Decimal
-	}
-	merged := make(map[uuid.UUID]*mergedItem)
+	merged := make(map[uuid.UUID]*ledgerRangeMergedItem)
 
 	for _, row := range openingRows {
-		merged[row.AccountId] = &mergedItem{opening: row.OpeningAmount}
+		merged[row.AccountId] = &ledgerRangeMergedItem{opening: row.OpeningAmount}
 	}
 	for _, row := range periodRows {
 		item, ok := merged[row.AccountId]
 		if !ok {
-			item = &mergedItem{}
+			item = &ledgerRangeMergedItem{}
 			merged[row.AccountId] = item
 		}
 		item.debit = row.PeriodDebit
@@ -246,6 +311,15 @@ func (r GeneralLedgerPostgresReadRepository) LedgersByPeriodRange(
 		item.period = row.PeriodAmount
 	}
 
+	return r.buildLedgerRangePage(db, sobId, merged, pageRequest)
+}
+
+func (r GeneralLedgerPostgresReadRepository) buildLedgerRangePage(
+	db *gorm.DB,
+	sobId uuid.UUID,
+	merged map[uuid.UUID]*ledgerRangeMergedItem,
+	pageRequest data.PageRequest,
+) (data.Page[query.Ledger], error) {
 	if len(merged) == 0 {
 		return data.NewPage([]query.Ledger{}, pageRequest, 0)
 	}
@@ -422,6 +496,21 @@ type ledgerDimensionSummaryPeriodRow struct {
 	PeriodDebit         decimal.Decimal `gorm:"column:period_debit"`
 	PeriodCredit        decimal.Decimal `gorm:"column:period_credit"`
 	PeriodAmount        decimal.Decimal `gorm:"column:period_amount"`
+}
+
+type ledgerBalanceRangeRow struct {
+	AccountId     uuid.UUID       `gorm:"column:account_id"`
+	OpeningAmount decimal.Decimal `gorm:"column:opening_amount"`
+	PeriodDebit   decimal.Decimal `gorm:"column:period_debit"`
+	PeriodCredit  decimal.Decimal `gorm:"column:period_credit"`
+	PeriodAmount  decimal.Decimal `gorm:"column:period_amount"`
+}
+
+type ledgerRangeMergedItem struct {
+	opening decimal.Decimal
+	debit   decimal.Decimal
+	credit  decimal.Decimal
+	period  decimal.Decimal
 }
 
 // LedgersByAccountAndDimensionOption aggregates journal line amounts grouped by dimension option

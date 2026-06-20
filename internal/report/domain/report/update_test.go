@@ -152,6 +152,36 @@ func TestReportUpdate_LockedRowCannotEditOrDelete(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestReportUpdate_LockedRowAllowsEquivalentEmptyExpressionReferences(t *testing.T) {
+	oldExpr, _ := NewExpression(uuid.New(), ExpressionChildrenSum, nil, nil, nil)
+	desiredExpr, _ := NewExpression(
+		uuid.New(),
+		ExpressionChildrenSum,
+		[]LedgerAccountReference{},
+		[]CashFlowItemReference{},
+		[]RowReference{},
+	)
+	lockedRow, _ := NewRow(uuid.New(), "LOCKED", "Locked", 1, intPtr(1), true, 1, false, 0, false, false, false, oldExpr, nil, nil)
+	column, _ := NewColumn(uuid.New(), "本月金额", ColumnPeriodAmount, 1)
+	r, _ := New(uuid.New(), uuid.New(), uuid.Nil, "Template", true, ClassIncomeStatement, []*Column{column}, []*Row{lockedRow})
+
+	err := r.UpdateStructure(UpdateParams{
+		Rows: []UpdateRowParams{
+			{
+				RowId:      lockedRow.Id(),
+				RowCode:    "LOCKED",
+				Text:       "Locked",
+				LineNo:     intPtr(1),
+				ShowLineNo: true,
+				SumFactor:  1,
+				Expression: desiredExpr,
+			},
+		},
+	})
+
+	require.NoError(t, err)
+}
+
 func intPtr(v int) *int {
 	return &v
 }

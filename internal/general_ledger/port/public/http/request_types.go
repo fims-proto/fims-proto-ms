@@ -3,6 +3,7 @@ package http
 import (
 	"encoding/json"
 
+	commonRequest "github/fims-proto/fims-proto-ms/internal/common/request"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/app/command"
 	"github/fims-proto/fims-proto-ms/internal/general_ledger/domain/transaction_date"
 
@@ -57,22 +58,22 @@ func (r *UpdateAccountRequest) UnmarshalJSON(data []byte) error {
 }
 
 type CreateJournalRequest struct {
-	HeaderText         string                           `json:"headerText"`
-	JournalType        string                           `json:"journalType" enums:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
-	ReferenceJournalId *uuid.UUID                       `json:"referenceJournalId,omitempty"`
-	AttachmentQuantity int                              `json:"attachmentQuantity"`
-	Creator            string                           `json:"creator"`
-	TransactionDate    transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
-	JournalLines       []JournalLineRequest             `json:"journalLines"`
+	HeaderText         string                    `json:"headerText"`
+	JournalType        string                    `json:"journalType,omitempty" default:"GENERAL" enum:"GENERAL,ADJUSTING,REVERSING,CLOSING"`
+	ReferenceJournalId *uuid.UUID                `json:"referenceJournalId,omitempty"`
+	AttachmentQuantity int                       `json:"attachmentQuantity"`
+	Creator            string                    `json:"creator"`
+	TransactionDate    commonRequest.DateRequest `json:"transactionDate"`
+	JournalLines       []JournalLineRequest      `json:"journalLines"`
 }
 
 type JournalLineRequest struct {
-	Id                 uuid.UUID       `json:"id"`
-	RawAccountNumber   string          `json:"rawAccountNumber"`
-	Text               string          `json:"text"`
-	Amount             decimal.Decimal `json:"amount"`
-	CashFlowItemId     *uuid.UUID      `json:"cashFlowItemId,omitempty"`
-	DimensionOptionIds []uuid.UUID     `json:"dimensionOptionIds,omitempty"`
+	Id                 uuid.UUID                    `json:"id,omitempty"`
+	RawAccountNumber   string                       `json:"rawAccountNumber"`
+	Text               string                       `json:"text"`
+	Amount             commonRequest.DecimalRequest `json:"amount"`
+	CashFlowItemId     *uuid.UUID                   `json:"cashFlowItemId,omitempty"`
+	DimensionOptionIds []uuid.UUID                  `json:"dimensionOptionIds,omitempty"`
 }
 
 type AuditJournalRequest struct {
@@ -88,10 +89,10 @@ type PostJournalRequest struct {
 }
 
 type UpdateJournalRequest struct {
-	HeaderText      string                           `json:"headerText"`
-	TransactionDate transaction_date.TransactionDate `json:"transactionDate" swaggertype:"string"`
-	JournalLines    []JournalLineRequest             `json:"journalLines"`
-	Updater         string                           `json:"updater"`
+	HeaderText      string                    `json:"headerText"`
+	TransactionDate commonRequest.DateRequest `json:"transactionDate"`
+	JournalLines    []JournalLineRequest      `json:"journalLines"`
+	Updater         string                    `json:"updater"`
 }
 
 type InitializeLedgersBalanceRequest struct {
@@ -110,7 +111,7 @@ func (r JournalLineRequest) mapToCommand() command.JournalLineCmd {
 		Id:                 r.Id,
 		Text:               r.Text,
 		RawAccountNumber:   r.RawAccountNumber,
-		Amount:             r.Amount,
+		Amount:             decimal.Decimal(r.Amount),
 		CashFlowItemId:     r.CashFlowItemId,
 		DimensionOptionIds: r.DimensionOptionIds,
 	}
@@ -141,7 +142,7 @@ func (r CreateJournalRequest) mapToCommand(sobId uuid.UUID) command.CreateJourna
 		AttachmentQuantity: r.AttachmentQuantity,
 		JournalLines:       itemCmd,
 		Creator:            r.Creator,
-		TransactionDate:    r.TransactionDate,
+		TransactionDate:    transaction_date.TransactionDate(r.TransactionDate),
 	}
 }
 
