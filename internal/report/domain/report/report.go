@@ -2,7 +2,6 @@ package report
 
 import (
 	"fmt"
-	"reflect"
 	"slices"
 
 	"github.com/google/uuid"
@@ -400,7 +399,7 @@ func expressionsEqual(a, b *Expression) bool {
 		return a == b
 	}
 	return a.kind == b.kind &&
-		reflect.DeepEqual(a.ledgerAccounts, b.ledgerAccounts) &&
-		reflect.DeepEqual(a.cashFlowItems, b.cashFlowItems) &&
-		reflect.DeepEqual(a.rowReferences, b.rowReferences)
+		slices.Equal(a.ledgerAccounts, b.ledgerAccounts) &&
+		slices.Equal(a.cashFlowItems, b.cashFlowItems) &&
+		slices.Equal(a.rowReferences, b.rowReferences)
 }
