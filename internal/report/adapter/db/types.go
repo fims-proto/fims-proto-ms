@@ -27,7 +27,7 @@ type reportPO struct {
 
 	Columns []*reportColumnPO `gorm:"foreignKey:ReportId"`
 	Rows    []*reportRowPO    `gorm:"foreignKey:ReportId"`
-	Period  *periodPO         `gorm:"foreignKey:PeriodId"`
+	Period  *periodPO         `gorm:"foreignKey:PeriodId;-:migration"`
 
 	CreatedAt time.Time `gorm:"<-:create"`
 	UpdatedAt time.Time

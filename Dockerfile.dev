@@ -1,0 +1,14 @@
+FROM golang:1.26-alpine
+
+RUN apk add --no-cache git build-base
+
+WORKDIR /app
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+
+EXPOSE 5002
+
+CMD ["go", "run", "cmd/main.go"]
